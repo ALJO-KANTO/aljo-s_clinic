@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="../Clinic_Business/Clinic_Business.csproj" Id="e9c52c97-1b60-4551-82fc-b2941f22ebae" />
+  <Project Path="../Clinic_DataAccess/Clinic_DataAccess.csproj" Id="4bb65931-586d-45ee-8a8e-5fb60a76bb66" />
+  <Project Path="Clinic.csproj" Id="5b2279b7-6c94-426a-977e-f89df2870c18" />
+</Solution>
