@@ -181,6 +181,12 @@ namespace Clinic
             this.listPrescriptionToolStripMenuItem.Name = "listPrescriptionToolStripMenuItem";
             this.listPrescriptionToolStripMenuItem.Size = new System.Drawing.Size(325, 30);
             this.listPrescriptionToolStripMenuItem.Text = "List Prescription";
+
+            this.listPrescriptionToolStripMenuItem.Click +=
+                new System.EventHandler(this.listPrescriptionToolStripMenuItem_Click);
+
+
+
             // 
             // FinancialstoolStripMenuItem
             // 

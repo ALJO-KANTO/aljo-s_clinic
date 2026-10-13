@@ -25,19 +25,27 @@ namespace Clinic
     {
 
         private frmLogin _frmLogin;
+
         public frmMain(frmLogin frmLogin)
         {
             InitializeComponent();
 
             _frmLogin = frmLogin;
 
+            // Force the List Prescription click event to be connected
+            listPrescriptionToolStripMenuItem.Click -=
+                listPrescriptionToolStripMenuItem_Click;
+
+            listPrescriptionToolStripMenuItem.Click +=
+                listPrescriptionToolStripMenuItem_Click;
+
             if (LicenseManager.UsageMode != LicenseUsageMode.Designtime)
             {
                 BuildModernDashboardDesign();
-
                 AddTranslateButton();
             }
         }
+
         private void frmMain_Load(object sender, EventArgs e)
         {
             timer1.Start();
@@ -203,7 +211,35 @@ namespace Clinic
 
         private void prescriptionDispensingToolStripMenuItem_Click(object sender, EventArgs e)
         {
-           
+            using (frmPrescriptionDispnsing frm = new frmPrescriptionDispnsing())
+            {
+                frm.ShowDialog(this);
+            }
         }
+
+
+
+        private void listPrescriptionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                using (frmAllPrescriptions frm = new frmAllPrescriptions())
+                {
+                    frm.ShowDialog(this);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    ex.ToString(),
+                    "Unable to Open Prescriptions",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+            }
+        }
+
+
+
     }
 }

@@ -166,7 +166,8 @@ namespace Clinic
             AddMenuHeading(menu, "Clinic Services");
             menu.Controls.Add(MakeNav("▣", "Billing & Payments", null));
             menu.Controls.Add(MakeNav("▤", "Invoices", null));
-            menu.Controls.Add(MakeNav("✚", "Prescriptions", null));
+            menu.Controls.Add(MakeNav("✚", "Prescriptions",
+    () => listPrescriptionToolStripMenuItem_Click(this, EventArgs.Empty)));
             menu.Controls.Add(MakeNav("◈", "Inventory / Medicines", null));
             menu.Controls.Add(MakeNav("⚗", "Laboratory", null));
             menu.Controls.Add(MakeNav("▥", "Reports", null));
@@ -252,9 +253,17 @@ namespace Clinic
             roleRows.Controls.Add(RoleCard("$", "Cashier Role Dashboard", Color.FromArgb(0, 169, 116),
                 new string[] { "Manage\nBills", "Process\nPayments", "Issue\nInvoice", "Check in\nAppointment" },
                 new Action[] { null, null, null, () => appointmentsToolStripMenuItem_Click(this, EventArgs.Empty) }), 1, 0);
+
             roleRows.Controls.Add(RoleCard("✚", "Pharmacist Role Dashboard", Color.FromArgb(159, 37, 225),
                 new string[] { "All\nPrescriptions", "In-Clinic\nPrescriptions", "Add New\nDrug", "Direct Medicine\nDispensing" },
-                new Action[] { null, null, null, () => prescriptionDispensingToolStripMenuItem_Click(this, EventArgs.Empty) }), 0, 1);
+                new Action[]
+                {
+        () => listPrescriptionToolStripMenuItem_Click(this, EventArgs.Empty),
+        null,
+        null,
+        () => prescriptionDispensingToolStripMenuItem_Click(this, EventArgs.Empty)
+                }), 0, 1);
+
             roleRows.Controls.Add(RoleCard("♙", "Receptionist Role Dashboard", Color.FromArgb(248, 105, 35),
                 new string[] { "Register\nNew Patient", "Schedule\nAppointment", "Appointment\nQueue", "Patient\nCheck-in" },
                 new Action[] { () => PatientsToolStripMenuItem_Click(this, EventArgs.Empty),
