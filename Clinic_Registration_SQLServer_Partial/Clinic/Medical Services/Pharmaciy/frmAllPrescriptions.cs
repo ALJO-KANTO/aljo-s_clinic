@@ -4,6 +4,7 @@ using Clinic_Business;
 using System;
 using System.Data;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace Clinic.Medical_Services.Pharmaciy
@@ -84,25 +85,53 @@ namespace Clinic.Medical_Services.Pharmaciy
 
         }
 
+
         private void LoadMasterData()
         {
-            dtMaster = clsPrescription.GetAllPrescriptionRecords();
-
-            if (dtMaster == null || dtMaster.Rows.Count == 0) return;
-
-            // هام جداً: إبقاء AutoGenerateColumns = false
-            dgPrescriptionDetails.AutoGenerateColumns = false;
-            dgPrescriptionDetails.DataSource = dtMaster;
-
-            // بما أننا قمنا بإنشاء الأعمدة يدوياً، سيتم ربط الـ DataPropertyName تلقائياً
-            // يبقى فقط تعبئة الـ ExpandButton يدوياً بعد التحميل
-            foreach (DataGridViewRow row in dgPrescriptionDetails.Rows)
+            try
             {
-                row.Cells["ExpandButton"].Value = "➕";
-            }
+                dtMaster = clsPrescription.GetAllPrescriptionRecords();
 
-            dgPrescriptionDetails.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 13.8F, FontStyle.Bold);
+                if (dtMaster == null)
+                {
+                    MessageBox.Show(
+                        "GetAllPrescriptionRecords returned null.",
+                        "Prescription Data"
+                    );
+                    return;
+                }
+
+                MessageBox.Show(
+                    "Prescription records returned: " + dtMaster.Rows.Count +
+                    "\nColumns: " + string.Join(", ",
+                        dtMaster.Columns.Cast<DataColumn>()
+                            .Select(c => c.ColumnName)),
+                    "Prescription Data"
+                );
+
+                dgPrescriptionDetails.AutoGenerateColumns = false;
+                dgPrescriptionDetails.DataSource = dtMaster;
+
+                foreach (DataGridViewRow row in dgPrescriptionDetails.Rows)
+                {
+                    if (row.Cells["ExpandButton"] != null)
+                        row.Cells["ExpandButton"].Value = "➕";
+                }
+
+                dgPrescriptionDetails.ColumnHeadersDefaultCellStyle.Font =
+                    new Font("Segoe UI", 13.8F, FontStyle.Bold);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    ex.ToString(),
+                    "Error Loading Prescriptions",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+            }
         }
+
 
         private void dgPrescriptionDetails_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
