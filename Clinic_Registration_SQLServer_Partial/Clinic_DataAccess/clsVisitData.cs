@@ -5,6 +5,7 @@ using System.Data.Common;
 using System.Text;
 using MySql.Data.MySqlClient;
 namespace Clinic_DataAccess
+
 {
     public class clsVisitData
     {
@@ -250,30 +251,35 @@ namespace Clinic_DataAccess
         public static DataTable GetAllVisits()
         {
             DataTable dt = new DataTable();
+
+            string query = @"
+        SELECT *
+        FROM View_VisitDetails
+        ORDER BY VisitDate DESC;";
+
             try
             {
-                using (MySqlConnection connection = new MySqlConnection(clsDataAccessSettings.ConnectionString))
+                using (MySqlConnection connection =
+                    new MySqlConnection(clsDataAccessSettings.ConnectionString))
+                using (MySqlCommand command =
+                    new MySqlCommand(query, connection))
                 {
-                    string query = @"SELECT * FROM View_VisitDetails
-                                  ORDER BY VisitDate DESC;";
+                    connection.Open();
 
-                    using (MySqlCommand command = new MySqlCommand(query, connection))
+                    using (MySqlDataReader reader = command.ExecuteReader())
                     {
-                        connection.Open();
-                        using (MySqlDataReader reader = command.ExecuteReader())
-                        {
-                            if (reader.HasRows)
-                            {
-                                dt.Load(reader);
-                            }
-                        }
+                        dt.Load(reader);
                     }
                 }
             }
-            catch (MySqlException ex)
+            catch (Exception ex)
             {
-                clsGlobalLogger.LogMySqlException(ex, clsGlobalLogger.LogLevel.Error);
+                System.Diagnostics.Debug.WriteLine(
+                    "GetAllVisits ERROR: " + ex);
+
+                throw;
             }
+
             return dt;
         }
     }

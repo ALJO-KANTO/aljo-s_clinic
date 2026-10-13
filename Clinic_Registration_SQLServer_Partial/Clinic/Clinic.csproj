@@ -236,6 +236,9 @@
     <Compile Include="Medical Services\Visit\frmAddUpdateMedicineToPrescription.Designer.cs">
       <DependentUpon>frmAddUpdateMedicineToPrescription.cs</DependentUpon>
     </Compile>
+    <Compile Include="Medical Services\Visit\frmDoctor.ModernDesign.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Medical Services\Visit\frmListVisit.cs">
       <SubType>Form</SubType>
     </Compile>
