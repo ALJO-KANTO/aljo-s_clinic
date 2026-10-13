@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace Clinic.Medical_Services.Visit
@@ -28,8 +29,11 @@ namespace Clinic.Medical_Services.Visit
         public frmDoctor(int visitID = -1, enMode mode = enMode.AddNew)
         {
             InitializeComponent();
+
             _VisitID = visitID;
             _Mode = mode;
+
+            ApplyModernDoctorDesign();
         }
         #endregion
 
@@ -236,12 +240,34 @@ namespace Clinic.Medical_Services.Visit
         private void _FillServicesInCheckBox()
         {
             DataTable dtServices = clsServicesType.GetServiceList();
-            if (dtServices != null)
+
+            cmbServices.DataSource = null;
+
+            if (dtServices == null)
+                return;
+
+            cmbServices.DisplayMember = "ServiceName";
+            cmbServices.ValueMember = "ServiceID";
+            cmbServices.DataSource = dtServices;
+        }
+
+        private string FindServiceColumn(DataTable table, params string[] names)
+        {
+            foreach (string name in names)
             {
-                cmbServices.DataSource = dtServices;
-                cmbServices.DisplayMember = "ServiceName";
-                cmbServices.ValueMember = "ServiceID";
+                foreach (DataColumn column in table.Columns)
+                {
+                    if (string.Equals(
+                        column.ColumnName,
+                        name,
+                        StringComparison.OrdinalIgnoreCase))
+                    {
+                        return column.ColumnName;
+                    }
+                }
             }
+
+            return null;
         }
 
         #endregion

@@ -1,11 +1,8 @@
-﻿using Clinic.Login;
-using Clinic.Medical_Services.Pharmaciy;
+﻿
+using Clinic.Login;
 using Clinic_Business;
+using Clinic_DataAccess;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Clinic
@@ -13,20 +10,51 @@ namespace Clinic
     internal static class Program
     {
         /// <summary>
-        /// The main entry point for the application.
+        /// Main entry point for the Clinic application.
         /// </summary>
         [STAThread]
-
         static void Main()
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            clsCountry.GetAllCountriesList();
-            Application.Run(new frmLogin());
-            //Application.Run(new frmPrescriptionDispnsing());
-            //Application.Run(new frm());
+            try
+            {
+                // STEP 1: Connect to MySQL
+                using (var connection = ClinicDatabase.GetConnection())
+                {
+                    connection.Open();
 
+                    System.Diagnostics.Debug.WriteLine(
+                        "Connected to MySQL: " +
+                        connection.DataSource + " / " +
+                        connection.Database);
+                }
+
+                // STEP 2: Apply pending database migrations
+                // This creates schema_migrations automatically.
+                ClinicDatabase.ApplyMigrations();
+
+                System.Diagnostics.Debug.WriteLine(
+                    "Database migrations completed successfully.");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Database initialization failed:\n\n" +
+                    ex.ToString(),
+                    "Database Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+
+                return;
+            }
+
+            // STEP 3: Existing application startup
+            clsCountry.GetAllCountriesList();
+
+            // STEP 4: Open login form
+            Application.Run(new frmLogin());
         }
     }
 }

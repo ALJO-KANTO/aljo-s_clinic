@@ -149,9 +149,14 @@ namespace Clinic_DataAccess
             {
                 using (MySqlConnection conn = new MySqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    string query = @"SELECT ServiceID, ServiceName, 
-                            Description, ServiceFees
-                                FROM Services";
+                    string query = @"
+    SELECT
+        ServiceID,
+        ServiceName,
+        ServicePrice AS ServiceFees
+    FROM services
+    WHERE IsActive = 1
+    ORDER BY ServiceName;";
                     using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {
                         conn.Open();

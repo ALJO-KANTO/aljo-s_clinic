@@ -83,6 +83,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClinicDatabase.cs" />
+    <Compile Include="ClinicDatabase.Migrations.cs" />
     <Compile Include="ClinicDatabase.Registration.cs" />
     <Compile Include="clsAppointmentData.cs" />
     <Compile Include="clsAppointmentTypeData.cs" />

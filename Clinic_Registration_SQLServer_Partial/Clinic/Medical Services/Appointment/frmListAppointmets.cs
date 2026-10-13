@@ -6,6 +6,7 @@ using Clinic_Business;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Windows.Forms;
 using static Clinic_Business.clsDoctor;
 
@@ -29,6 +30,12 @@ namespace Clinic.Medical_Services.Appointment
         private void _RefreshAppointmentsList()
         {
             _dtAppointmets = clsAppointment.GetAllAppointments();
+            MessageBox.Show(
+    string.Join(", ",
+        _dtAppointmets.Columns
+            .Cast<DataColumn>()
+            .Select(c => c.ColumnName)),
+    "Appointment Columns");
             _dtAppointmets.PrimaryKey = new DataColumn[] { _dtAppointmets.Columns["AppointmentID"] };
             _dtAppointmets.Columns["AppointmentStatusText"].ReadOnly = false;
             lblRecordsCount.Text = _dtAppointmets.Rows.Count.ToString();
@@ -128,24 +135,61 @@ namespace Clinic.Medical_Services.Appointment
 
         private void txtFilterValue_TextChanged(object sender, EventArgs e)
         {
-            if (_dtAppointmets == null) return;
+            if (_dtAppointmets == null)
+                return;
 
-            string FilterColumn = _GetFilterColumnName(cbFilterBy.Text);
+            string filterColumn = _GetFilterColumnName(cbFilterBy.Text);
+            string searchText = txtFilterValue.Text.Trim();
 
-            if (string.IsNullOrEmpty(txtFilterValue.Text) || FilterColumn == "None")
+            if (string.IsNullOrWhiteSpace(searchText) ||
+                filterColumn == "None")
             {
                 _dtAppointmets.DefaultView.RowFilter = string.Empty;
+                lblRecordsCount.Text =
+                    _dtAppointmets.DefaultView.Count.ToString();
+                return;
+            }
+
+            // Check whether the requested column exists.
+            if (!_dtAppointmets.Columns.Contains(filterColumn))
+            {
+                _dtAppointmets.DefaultView.RowFilter = string.Empty;
+
+                System.Diagnostics.Debug.WriteLine(
+                    "Missing appointment filter column: " + filterColumn);
+
+                return;
+            }
+
+            if (filterColumn == "AppointmentID" ||
+                filterColumn == "CreatedByUserID")
+            {
+                int number;
+
+                if (!int.TryParse(searchText, out number))
+                {
+                    _dtAppointmets.DefaultView.RowFilter = "1 = 0";
+                }
+                else
+                {
+                    _dtAppointmets.DefaultView.RowFilter =
+                        $"[{filterColumn}] = {number}";
+                }
             }
             else
             {
-                // استخدام LIKE للنصوص و = للأرقام
-                if (FilterColumn == "AppointmentID" || FilterColumn == "CreatedByUserID")
-                    _dtAppointmets.DefaultView.RowFilter = $"{FilterColumn} = {txtFilterValue.Text}";
+                string safeText = searchText
+                    .Replace("'", "''")
+                    .Replace("[", "[[]")
+                    .Replace("%", "[%]")
+                    .Replace("*", "[*]");
 
-                else
-                    _dtAppointmets.DefaultView.RowFilter = $"{FilterColumn} LIKE '{txtFilterValue.Text}%'";
+                _dtAppointmets.DefaultView.RowFilter =
+                    $"Convert([{filterColumn}], 'System.String') LIKE '{safeText}%'";
             }
-            lblRecordsCount.Text = _dtAppointmets.Rows.Count.ToString();
+
+            lblRecordsCount.Text =
+                _dtAppointmets.DefaultView.Count.ToString();
         }
 
         private string _GetFilterColumnName(string FilterBy)
