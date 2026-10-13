@@ -31,8 +31,7 @@ namespace Clinic
                         connection.Database);
                 }
 
-                // STEP 2: Apply pending database migrations
-                // This creates schema_migrations automatically.
+                
                 ClinicDatabase.ApplyMigrations();
 
                 System.Diagnostics.Debug.WriteLine(
@@ -50,10 +49,9 @@ namespace Clinic
                 return;
             }
 
-            // STEP 3: Existing application startup
+           
             clsCountry.GetAllCountriesList();
 
-            // STEP 4: Open login form
             Application.Run(new frmLogin());
         }
     }
