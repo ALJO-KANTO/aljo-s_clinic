@@ -693,6 +693,16 @@ namespace Clinic.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        public static System.Drawing.Bitmap eye {
+            get {
+                object obj = ResourceManager.GetObject("eye", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         public static System.Drawing.Bitmap Female_512 {
             get {
                 object obj = ResourceManager.GetObject("Female 512", resourceCulture);

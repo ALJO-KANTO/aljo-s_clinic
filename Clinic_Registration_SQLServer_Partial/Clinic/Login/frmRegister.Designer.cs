@@ -78,14 +78,16 @@ namespace Clinic.Login
             this.username = new System.Windows.Forms.TextBox();
             this.password = new System.Windows.Forms.TextBox();
             this.confirm = new System.Windows.Forms.TextBox();
-            this.btnShowPassword = new System.Windows.Forms.Button();
             this.btnShowConfirm = new System.Windows.Forms.Button();
             this.btnRegister = new System.Windows.Forms.Button();
             this.lblApproval = new System.Windows.Forms.Label();
+            this.btnShowPassword = new System.Windows.Forms.Button();
             this.pictureBox4 = new System.Windows.Forms.PictureBox();
             this.pictureBox3 = new System.Windows.Forms.PictureBox();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.lblRole = new System.Windows.Forms.Label();
+            this.cmbRole = new System.Windows.Forms.ComboBox();
             this.panelBrand.SuspendLayout();
             this.panelForm.SuspendLayout();
             this.panelFields.SuspendLayout();
@@ -108,7 +110,7 @@ namespace Clinic.Login
             this.panelBrand.Dock = System.Windows.Forms.DockStyle.Left;
             this.panelBrand.Location = new System.Drawing.Point(0, 0);
             this.panelBrand.Name = "panelBrand";
-            this.panelBrand.Size = new System.Drawing.Size(400, 780);
+            this.panelBrand.Size = new System.Drawing.Size(400, 749);
             this.panelBrand.TabIndex = 0;
             // 
             // lblBrandHeading
@@ -154,7 +156,7 @@ namespace Clinic.Login
             this.panelForm.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelForm.Location = new System.Drawing.Point(400, 0);
             this.panelForm.Name = "panelForm";
-            this.panelForm.Size = new System.Drawing.Size(830, 780);
+            this.panelForm.Size = new System.Drawing.Size(830, 749);
             this.panelForm.TabIndex = 1;
             // 
             // btnClose
@@ -167,7 +169,7 @@ namespace Clinic.Login
             this.btnClose.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(13)))), ((int)(((byte)(34)))), ((int)(((byte)(67)))));
             this.btnClose.Location = new System.Drawing.Point(769, 18);
             this.btnClose.Name = "btnClose";
-            this.btnClose.Size = new System.Drawing.Size(42, 40);
+            this.btnClose.Size = new System.Drawing.Size(40, 50);
             this.btnClose.TabIndex = 0;
             this.btnClose.Text = "×";
             this.btnClose.UseVisualStyleBackColor = false;
@@ -197,6 +199,8 @@ namespace Clinic.Login
             // panelFields
             // 
             this.panelFields.BackColor = System.Drawing.Color.White;
+            this.panelFields.Controls.Add(this.lblRole);
+            this.panelFields.Controls.Add(this.cmbRole);
             this.panelFields.Controls.Add(this.lblField0);
             this.panelFields.Controls.Add(this.lblField1);
             this.panelFields.Controls.Add(this.lblField2);
@@ -247,7 +251,7 @@ namespace Clinic.Login
             // lblField2
             // 
             this.lblField2.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.lblField2.Location = new System.Drawing.Point(28, 110);
+            this.lblField2.Location = new System.Drawing.Point(28, 97);
             this.lblField2.Name = "lblField2";
             this.lblField2.Size = new System.Drawing.Size(315, 27);
             this.lblField2.TabIndex = 2;
@@ -256,7 +260,7 @@ namespace Clinic.Login
             // lblField3
             // 
             this.lblField3.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.lblField3.Location = new System.Drawing.Point(390, 110);
+            this.lblField3.Location = new System.Drawing.Point(390, 97);
             this.lblField3.Name = "lblField3";
             this.lblField3.Size = new System.Drawing.Size(315, 27);
             this.lblField3.TabIndex = 3;
@@ -265,7 +269,7 @@ namespace Clinic.Login
             // lblField4
             // 
             this.lblField4.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.lblField4.Location = new System.Drawing.Point(28, 201);
+            this.lblField4.Location = new System.Drawing.Point(28, 178);
             this.lblField4.Name = "lblField4";
             this.lblField4.Size = new System.Drawing.Size(315, 27);
             this.lblField4.TabIndex = 4;
@@ -274,7 +278,7 @@ namespace Clinic.Login
             // lblField5
             // 
             this.lblField5.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.lblField5.Location = new System.Drawing.Point(390, 201);
+            this.lblField5.Location = new System.Drawing.Point(390, 178);
             this.lblField5.Name = "lblField5";
             this.lblField5.Size = new System.Drawing.Size(315, 27);
             this.lblField5.TabIndex = 5;
@@ -283,7 +287,7 @@ namespace Clinic.Login
             // lblField6
             // 
             this.lblField6.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.lblField6.Location = new System.Drawing.Point(28, 292);
+            this.lblField6.Location = new System.Drawing.Point(28, 257);
             this.lblField6.Name = "lblField6";
             this.lblField6.Size = new System.Drawing.Size(315, 27);
             this.lblField6.TabIndex = 6;
@@ -292,7 +296,7 @@ namespace Clinic.Login
             // lblField7
             // 
             this.lblField7.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.lblField7.Location = new System.Drawing.Point(390, 292);
+            this.lblField7.Location = new System.Drawing.Point(390, 257);
             this.lblField7.Name = "lblField7";
             this.lblField7.Size = new System.Drawing.Size(315, 27);
             this.lblField7.TabIndex = 7;
@@ -301,7 +305,7 @@ namespace Clinic.Login
             // lblField8
             // 
             this.lblField8.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.lblField8.Location = new System.Drawing.Point(28, 383);
+            this.lblField8.Location = new System.Drawing.Point(28, 335);
             this.lblField8.Name = "lblField8";
             this.lblField8.Size = new System.Drawing.Size(315, 27);
             this.lblField8.TabIndex = 8;
@@ -310,7 +314,7 @@ namespace Clinic.Login
             // lblField9
             // 
             this.lblField9.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.lblField9.Location = new System.Drawing.Point(390, 383);
+            this.lblField9.Location = new System.Drawing.Point(390, 335);
             this.lblField9.Name = "lblField9";
             this.lblField9.Size = new System.Drawing.Size(315, 27);
             this.lblField9.TabIndex = 9;
@@ -322,7 +326,7 @@ namespace Clinic.Login
             this.fullName.Font = new System.Drawing.Font("Segoe UI", 11F);
             this.fullName.Location = new System.Drawing.Point(28, 52);
             this.fullName.Name = "fullName";
-            this.fullName.Size = new System.Drawing.Size(314, 32);
+            this.fullName.Size = new System.Drawing.Size(314, 27);
             this.fullName.TabIndex = 10;
             // 
             // dob
@@ -331,72 +335,70 @@ namespace Clinic.Login
             this.dob.Format = System.Windows.Forms.DateTimePickerFormat.Short;
             this.dob.Location = new System.Drawing.Point(390, 52);
             this.dob.Name = "dob";
-            this.dob.Size = new System.Drawing.Size(314, 32);
+            this.dob.Size = new System.Drawing.Size(314, 27);
             this.dob.TabIndex = 11;
             // 
             // gender
             // 
             this.gender.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.gender.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.gender.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.gender.Location = new System.Drawing.Point(28, 143);
+            this.gender.Location = new System.Drawing.Point(28, 130);
             this.gender.Name = "gender";
-            this.gender.Size = new System.Drawing.Size(314, 33);
+            this.gender.Size = new System.Drawing.Size(314, 28);
             this.gender.TabIndex = 12;
             // 
             // phone
             // 
             this.phone.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.phone.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.phone.Location = new System.Drawing.Point(390, 143);
+            this.phone.Location = new System.Drawing.Point(390, 130);
             this.phone.Name = "phone";
-            this.phone.Size = new System.Drawing.Size(314, 32);
+            this.phone.Size = new System.Drawing.Size(314, 27);
             this.phone.TabIndex = 13;
             // 
             // email
             // 
             this.email.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.email.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.email.Location = new System.Drawing.Point(28, 234);
+            this.email.Location = new System.Drawing.Point(28, 211);
             this.email.Name = "email";
-            this.email.Size = new System.Drawing.Size(314, 32);
+            this.email.Size = new System.Drawing.Size(314, 27);
             this.email.TabIndex = 14;
             // 
             // address
             // 
             this.address.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.address.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.address.Location = new System.Drawing.Point(390, 234);
+            this.address.Location = new System.Drawing.Point(390, 211);
             this.address.Name = "address";
-            this.address.Size = new System.Drawing.Size(314, 32);
+            this.address.Size = new System.Drawing.Size(314, 27);
             this.address.TabIndex = 15;
             // 
             // country
             // 
             this.country.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.country.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.country.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.country.Location = new System.Drawing.Point(28, 325);
+            this.country.Location = new System.Drawing.Point(28, 290);
             this.country.Name = "country";
-            this.country.Size = new System.Drawing.Size(314, 33);
+            this.country.Size = new System.Drawing.Size(314, 28);
             this.country.TabIndex = 16;
             // 
             // username
             // 
             this.username.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.username.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.username.Location = new System.Drawing.Point(390, 325);
+            this.username.Location = new System.Drawing.Point(390, 290);
             this.username.Name = "username";
-            this.username.Size = new System.Drawing.Size(314, 32);
+            this.username.Size = new System.Drawing.Size(314, 27);
             this.username.TabIndex = 17;
             // 
             // password
             // 
             this.password.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.password.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.password.Location = new System.Drawing.Point(28, 416);
+            this.password.Location = new System.Drawing.Point(28, 368);
             this.password.Name = "password";
-            this.password.Size = new System.Drawing.Size(252, 32);
+            this.password.Size = new System.Drawing.Size(252, 27);
             this.password.TabIndex = 18;
             this.password.UseSystemPasswordChar = true;
             // 
@@ -404,36 +406,24 @@ namespace Clinic.Login
             // 
             this.confirm.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.confirm.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.confirm.Location = new System.Drawing.Point(390, 416);
+            this.confirm.Location = new System.Drawing.Point(390, 368);
             this.confirm.Name = "confirm";
-            this.confirm.Size = new System.Drawing.Size(252, 32);
+            this.confirm.Size = new System.Drawing.Size(252, 27);
             this.confirm.TabIndex = 19;
             this.confirm.UseSystemPasswordChar = true;
-            // 
-            // btnShowPassword
-            // 
-            this.btnShowPassword.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(231)))), ((int)(((byte)(248)))), ((int)(((byte)(253)))));
-            this.btnShowPassword.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.btnShowPassword.FlatAppearance.BorderSize = 0;
-            this.btnShowPassword.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnShowPassword.Location = new System.Drawing.Point(280, 415);
-            this.btnShowPassword.Name = "btnShowPassword";
-            this.btnShowPassword.Size = new System.Drawing.Size(62, 33);
-            this.btnShowPassword.TabIndex = 20;
-            this.btnShowPassword.Text = "Show";
-            this.btnShowPassword.UseVisualStyleBackColor = false;
             // 
             // btnShowConfirm
             // 
             this.btnShowConfirm.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(231)))), ((int)(((byte)(248)))), ((int)(((byte)(253)))));
+            this.btnShowConfirm.BackgroundImage = global::Clinic.Properties.Resources.eye;
+            this.btnShowConfirm.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.btnShowConfirm.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnShowConfirm.FlatAppearance.BorderSize = 0;
             this.btnShowConfirm.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnShowConfirm.Location = new System.Drawing.Point(642, 415);
+            this.btnShowConfirm.Location = new System.Drawing.Point(642, 367);
             this.btnShowConfirm.Name = "btnShowConfirm";
-            this.btnShowConfirm.Size = new System.Drawing.Size(62, 33);
+            this.btnShowConfirm.Size = new System.Drawing.Size(36, 28);
             this.btnShowConfirm.TabIndex = 21;
-            this.btnShowConfirm.Text = "Show";
             this.btnShowConfirm.UseVisualStyleBackColor = false;
             // 
             // btnRegister
@@ -444,7 +434,7 @@ namespace Clinic.Login
             this.btnRegister.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnRegister.Font = new System.Drawing.Font("Segoe UI", 15F, System.Drawing.FontStyle.Bold);
             this.btnRegister.ForeColor = System.Drawing.Color.White;
-            this.btnRegister.Location = new System.Drawing.Point(28, 480);
+            this.btnRegister.Location = new System.Drawing.Point(28, 477);
             this.btnRegister.Name = "btnRegister";
             this.btnRegister.Size = new System.Drawing.Size(676, 53);
             this.btnRegister.TabIndex = 12;
@@ -455,12 +445,26 @@ namespace Clinic.Login
             // 
             this.lblApproval.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.lblApproval.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(94)))), ((int)(((byte)(118)))), ((int)(((byte)(146)))));
-            this.lblApproval.Location = new System.Drawing.Point(28, 538);
+            this.lblApproval.Location = new System.Drawing.Point(28, 535);
             this.lblApproval.Name = "lblApproval";
             this.lblApproval.Size = new System.Drawing.Size(680, 30);
             this.lblApproval.TabIndex = 22;
             this.lblApproval.Text = "Registration requires administrator approval before login.";
             this.lblApproval.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // btnShowPassword
+            // 
+            this.btnShowPassword.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(231)))), ((int)(((byte)(248)))), ((int)(((byte)(253)))));
+            this.btnShowPassword.BackgroundImage = global::Clinic.Properties.Resources.eye;
+            this.btnShowPassword.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btnShowPassword.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnShowPassword.FlatAppearance.BorderSize = 0;
+            this.btnShowPassword.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnShowPassword.Location = new System.Drawing.Point(280, 367);
+            this.btnShowPassword.Name = "btnShowPassword";
+            this.btnShowPassword.Size = new System.Drawing.Size(36, 28);
+            this.btnShowPassword.TabIndex = 20;
+            this.btnShowPassword.UseVisualStyleBackColor = false;
             // 
             // pictureBox4
             // 
@@ -506,20 +510,40 @@ namespace Clinic.Login
             this.pictureBox1.TabIndex = 6;
             this.pictureBox1.TabStop = false;
             // 
+            // lblRole
+            // 
+            this.lblRole.Font = new System.Drawing.Font("Segoe UI", 11F);
+            this.lblRole.Location = new System.Drawing.Point(28, 408);
+            this.lblRole.Name = "lblRole";
+            this.lblRole.Size = new System.Drawing.Size(252, 27);
+            this.lblRole.TabIndex = 23;
+            this.lblRole.Text = "Role";
+            this.lblRole.Visible = false;
+            // 
+            // cmbRole
+            // 
+            this.cmbRole.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbRole.Font = new System.Drawing.Font("Segoe UI", 11F);
+            this.cmbRole.Location = new System.Drawing.Point(28, 441);
+            this.cmbRole.Name = "cmbRole";
+            this.cmbRole.Size = new System.Drawing.Size(251, 28);
+            this.cmbRole.TabIndex = 24;
+            this.cmbRole.Visible = false;
+            // 
             // frmRegister
             // 
             this.AcceptButton = this.btnRegister;
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 23F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(247)))), ((int)(((byte)(253)))));
-            this.ClientSize = new System.Drawing.Size(1230, 780);
+            this.ClientSize = new System.Drawing.Size(1230, 749);
             this.Controls.Add(this.panelForm);
             this.Controls.Add(this.panelBrand);
             this.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.MaximizeBox = false;
             this.MaximumSize = new System.Drawing.Size(1230, 780);
-            this.MinimumSize = new System.Drawing.Size(1230, 780);
+            this.MinimumSize = new System.Drawing.Size(1230, 718);
             this.Name = "frmRegister";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Register Clinic Account";
@@ -539,5 +563,7 @@ namespace Clinic.Login
         private PictureBox pictureBox2;
         private PictureBox pictureBox3;
         private PictureBox pictureBox4;
+        private Label lblRole;
+        private ComboBox cmbRole;
     }
 }

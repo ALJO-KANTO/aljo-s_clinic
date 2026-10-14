@@ -5,14 +5,13 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Net.Mail;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace Clinic.Login
 {
     public partial class frmRegister : Form
     {
-        public frmRegister()
+        private readonly bool _isRoleVisible;
+        public frmRegister(bool isRoleVisible = false)
         {
             InitializeComponent();
             DoubleBuffered = true;
@@ -28,6 +27,7 @@ namespace Clinic.Login
             btnShowConfirm.Click += (s, e) => TogglePassword(confirm, btnShowConfirm);
             panelBrand.Paint += PanelBrand_Paint;
             btnRegister.Paint += BtnRegister_Paint;
+            _isRoleVisible = isRoleVisible;
         }
 
         private static void UpdateRegistrationHint(Control parent)
@@ -65,6 +65,23 @@ namespace Clinic.Login
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Warning);
                 }
+
+                cmbRole.Visible = lblRole.Visible = _isRoleVisible;
+
+                DataTable dt0 = ClinicDatabase.GetRoles();
+
+                cmbRole.DataSource = null;
+                cmbRole.Items.Clear();
+
+                cmbRole.DisplayMember = "RoleName";
+                cmbRole.ValueMember = "RoleID";
+                cmbRole.DataSource = dt0;
+
+                cmbRole.SelectedIndex = -1;
+                if (cmbRole.Visible)
+                {
+                    cmbRole.SelectedIndex = 0;
+                }
             }
             catch (Exception ex)
             {
@@ -79,7 +96,7 @@ namespace Clinic.Login
         private static void TogglePassword(TextBox field, Button button)
         {
             field.UseSystemPasswordChar = !field.UseSystemPasswordChar;
-            button.Text = field.UseSystemPasswordChar ? "Show" : "Hide";
+            //button.Text = field.UseSystemPasswordChar ? "Show" : "Hide";
         }
 
         private void Register_Click(object sender, EventArgs e)
@@ -89,6 +106,7 @@ namespace Clinic.Login
             string mail = email.Text.Trim();
             string addr = address.Text.Trim();
             string user = username.Text.Trim();
+            int roleId = cmbRole.Visible && cmbRole.SelectedValue != null && cmbRole.SelectedValue is int ? (int)cmbRole.SelectedValue : 5;
             if (name.Length == 0)
             {
                 MessageBox.Show("Please enter Full Name.", "Validation",
@@ -158,15 +176,16 @@ namespace Clinic.Login
                 // Preserve the hashing approach used by the existing login code.
                 string passwordHash = clsGlobal.ComputeHash(password.Text);
                 ClinicDatabase.RegisterClinicAccount(
-      name,
-      dob.Value.Date,
-      (byte)gender.SelectedIndex,
-      mobile,
-      mail,
-      addr,
-      Convert.ToInt32(country.SelectedValue),
-      user,
-      passwordHash);
+                  name,
+                  dob.Value.Date,
+                  (byte)gender.SelectedIndex,
+                  mobile,
+                  mail,
+                  addr,
+                  Convert.ToInt32(country.SelectedValue),
+                  user,
+                  passwordHash,roleId);
+
                 string emailMessage = "Account created. You can log in now with your username and password.";
                 try
                 {

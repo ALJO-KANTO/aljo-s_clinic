@@ -196,17 +196,14 @@
   <data name="method 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\method 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Neon Blue Group Users Icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Neon Blue Group Users Icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="sign_in 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\sign_in 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="Number 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Number 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="address" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\address.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ID 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ID 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="closeBlack32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\closeBlack32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -238,6 +235,9 @@
   <data name="Gemini_Generated_Image_9c3q299c3q299c3q" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Gemini_Generated_Image_9c3q299c3q299c3q.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Glossy Medical Coding Emblem" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Glossy Medical Coding Emblem.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="doctor 64" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\doctor 64.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -250,11 +250,14 @@
   <data name="call 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\call 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="status 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\status 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Count 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Count 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Delete 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Delete 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="High Tech PNG Image, High Tech Brain, Science And Technology, High Tech PNG Image For Free Download" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\High Tech PNG Image, High Tech Brain, Science And Technology, High Tech PNG Image For Free Download.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="bill 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\bill 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -277,9 +280,6 @@
   <data name="prescription 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\prescription 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="appoint date 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\appoint date 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="send email 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\send email 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -298,8 +298,8 @@
   <data name="Calendar 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Calendar 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Add Person 40" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Add Person 40.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="appoint date 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\appoint date 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="money 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\money 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -346,8 +346,8 @@
   <data name="Mange Services3 64" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Mange Services3 64.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="appointment type 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\appointment type 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Account Setttings 64" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Account Setttings 64.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="clinic" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\clinic.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -385,17 +385,14 @@
   <data name="People 64" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\People 64.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Glossy Blue 3D Padlock Icon2" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Glossy Blue 3D Padlock Icon2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Glossy Teal Glass User Avatar Icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Glossy Teal Glass User Avatar Icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Glossy Blue Chrome Caduceus2" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Glossy Blue Chrome Caduceus2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Manage Applications 64" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Manage Applications 64.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="doctor" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\doctor.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Add Appointment 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Add Appointment 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="doctor 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\doctor 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -424,8 +421,14 @@
   <data name="details 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\details 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Next 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Next 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Visits 64" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Visits 64.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="edit 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\edit 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Glossy Blue 3D Padlock Icon1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Glossy Blue 3D Padlock Icon1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -442,8 +445,8 @@
   <data name="Medical History 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Medical History 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Diagnosis 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Diagnosis 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Neon Blue Group Users Icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Neon Blue Group Users Icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Phone 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Phone 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -453,9 +456,6 @@
   </data>
   <data name="Glossy Blue Chrome Caduceus3" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Glossy Blue Chrome Caduceus3.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="User Options 64" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\User Options 64.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="role 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\role 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -469,6 +469,9 @@
   <data name="PersonDetails 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\PersonDetails 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Patients 512" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Patients 512.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Services2 64" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Services2 64.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -477,9 +480,6 @@
   </data>
   <data name="Glossy Neon Clinic Management Logo1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Glossy Neon Clinic Management Logo1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Account Setttings 64" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Account Setttings 64.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Female 512" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Female 512.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -508,11 +508,14 @@
   <data name="Next 64" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Next 64.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Count 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Count 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Add Person 40" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Add Person 40.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="start 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\start 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="appointment type 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\appointment type 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="User Options 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\User Options 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -532,9 +535,6 @@
   <data name="User 32 -2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\User 32 -2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="doctor1 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\doctor1 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="Glossy Neon Clinic Management Logo2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Glossy Neon Clinic Management Logo2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -547,26 +547,26 @@
   <data name="Financials" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Financials.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="High Tech PNG Image, High Tech Brain, Science And Technology, High Tech PNG Image For Free Download" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\High Tech PNG Image, High Tech Brain, Science And Technology, High Tech PNG Image For Free Download.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Glossy Blue Chrome Caduceus2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Glossy Blue Chrome Caduceus2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Manage Applications 64" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Manage Applications 64.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Cars 48" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Cars 48.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Glossy Blue 3D Padlock Icon2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Glossy Blue 3D Padlock Icon2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="AddPerson 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\AddPerson 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="refrsh2" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\refrsh2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="patient" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\patient.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="appointment type 512" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\appointment type 512.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Glowing Cyan AI Profile Network1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Glowing Cyan AI Profile Network1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="List Services 512" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\List Services 512.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="MedicalServices" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\MedicalServices.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -580,17 +580,17 @@
   <data name="refresh-48 1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\refresh-48 1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="List Services 512" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\List Services 512.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="doctor1 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\doctor1 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="edit 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\edit 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="sign_in 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\sign_in 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Glossy Neon Shield Checkmark Icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Glossy Neon Shield Checkmark Icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Patients 512" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Patients 512.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="User Options 64" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\User Options 64.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="High Tech PNG Image, High Tech Brain, Science And Technology, High Tech PNG Image For Free Download1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\High Tech PNG Image, High Tech Brain, Science And Technology, High Tech PNG Image For Free Download1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -598,14 +598,14 @@
   <data name="Emergency Contact 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Emergency Contact 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Add Appointment 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Add Appointment 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Glossy Teal Glass User Avatar Icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Glossy Teal Glass User Avatar Icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Glossy Medical Coding Emblem" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Glossy Medical Coding Emblem.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Diagnosis 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Diagnosis 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="ID 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\ID 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Cars 48" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Cars 48.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="dosage 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\dosage 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -619,8 +619,8 @@
   <data name="instruction 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\instruction 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Glowing Cyan AI Profile Network1" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Glowing Cyan AI Profile Network1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="status 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\status 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="List 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\List 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -634,8 +634,8 @@
   <data name="Futuristic AI Circuitry Profile" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Futuristic AI Circuitry Profile.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Next 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Next 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="refrsh2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\refrsh2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Visits 512" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Visits 512.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -645,5 +645,8 @@
   </data>
   <data name="Glossy Neon Clinic Management Logo" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Glossy Neon Clinic Management Logo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="eye" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\eye.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

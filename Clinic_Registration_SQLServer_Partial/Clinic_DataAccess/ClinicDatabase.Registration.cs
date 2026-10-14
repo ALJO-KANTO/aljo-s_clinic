@@ -47,11 +47,20 @@ namespace Clinic_DataAccess
         public static DataTable GetRegistrationCountries()
         {
             return ExecuteDataTable(@"
-        SELECT
-            CountryID,
-            CountryName
-        FROM countries
-        ORDER BY CountryName ASC;");
+                    SELECT
+                        CountryID,
+                        CountryName
+                    FROM countries
+                    ORDER BY CountryName ASC;");
+        }
+
+        public static DataTable GetRoles()
+        {
+            return ExecuteDataTable(@"
+                    SELECT
+                        RoleID,
+                        RoleName
+                    FROM roles;");
         }
 
 
@@ -64,7 +73,8 @@ namespace Clinic_DataAccess
             string address,
             int countryId,
             string username,
-            string passwordHash)
+            string passwordHash,
+            int roleID)
         {
             using (MySqlConnection connection = GetConnection())
             {
@@ -81,9 +91,9 @@ namespace Clinic_DataAccess
 
                         // 1. Check username
                         using (MySqlCommand cmd = new MySqlCommand(@"
-                    SELECT COUNT(*)
-                    FROM users
-                    WHERE UserName = @Username;",
+                                SELECT COUNT(*)
+                                FROM users
+                                WHERE UserName = @Username;",
                             connection, transaction))
                         {
                             cmd.Parameters.AddWithValue(
@@ -96,26 +106,27 @@ namespace Clinic_DataAccess
 
                         // 2. Insert person
                         using (MySqlCommand cmd = new MySqlCommand(@"
-                    INSERT INTO persons
-                    (
-                        FullName,
-                        DateOfBirth,
-                        Gender,
-                        PhoneNumber,
-                        Email,
-                        Address,
-                        NationalityCountryID
-                    )
-                    VALUES
-                    (
-                        @FullName,
-                        @DOB,
-                        @Gender,
-                        @Phone,
-                        @Email,
-                        @Address,
-                        @CountryID
-                    );", connection, transaction))
+                            INSERT INTO persons
+                            (
+                                FullName,
+                                DateOfBirth,
+                                Gender,
+                                PhoneNumber,
+                                Email,
+                                Address,
+                                NationalityCountryID
+                            )
+                            VALUES
+                            (
+                                @FullName,
+                                @DOB,
+                                @Gender,
+                                @Phone,
+                                @Email,
+                                @Address,
+                                @CountryID
+                            );", connection, transaction)
+                        )
                         {
                             cmd.Parameters.AddWithValue(
                                 "@FullName", fullName);
@@ -142,22 +153,35 @@ namespace Clinic_DataAccess
                         // Staff role only. Administrator must be
                         // assigned through an authorized workflow.
                         using (MySqlCommand cmd = new MySqlCommand(@"
-                    INSERT INTO users
-                    (
-                        PersonID,
-                        UserName,
-                        Password,
-                        IsActive,
-                        RoleID
-                    )
-                    VALUES
-                    (
-                        @PersonID,
-                        @Username,
-                        @Password,
-                        1,
-                        5
-                    );", connection, transaction))
+                            SELECT COUNT(*) FROM users;", connection, transaction)
+                        )
+                        {
+                            int userCount = Convert.ToInt32(cmd.ExecuteScalar());
+
+                            if (userCount > 0)
+                                roleID = 5;
+                            else
+                                roleID = 1;
+                        }
+
+                        using (MySqlCommand cmd = new MySqlCommand(@"
+                            INSERT INTO users
+                            (
+                                PersonID,
+                                UserName,
+                                Password,
+                                IsActive,
+                                RoleID
+                            )
+                            VALUES
+                            (
+                                @PersonID,
+                                @Username,
+                                @Password,
+                                1,
+                                @RoleID
+                            );", connection, transaction)
+                        )
                         {
                             cmd.Parameters.AddWithValue(
                                 "@PersonID", personId);
@@ -165,6 +189,8 @@ namespace Clinic_DataAccess
                                 "@Username", username);
                             cmd.Parameters.AddWithValue(
                                 "@Password", passwordHash);
+                            cmd.Parameters.AddWithValue(
+                                "@RoleID", roleID);
 
                             cmd.ExecuteNonQuery();
 
@@ -174,36 +200,37 @@ namespace Clinic_DataAccess
 
                         // 4. Save registration history
                         using (MySqlCommand cmd = new MySqlCommand(@"
-                    INSERT INTO tbl_registration_account
-                    (
-                        FullName,
-                        DateOfBirth,
-                        Gender,
-                        Phone,
-                        Email,
-                        Address,
-                        CountryID,
-                        Username,
-                        PasswordHash,
-                        IsActive,
-                        ApprovalStatus,
-                        ApprovedAt
-                    )
-                    VALUES
-                    (
-                        @FullName,
-                        @DOB,
-                        @Gender,
-                        @Phone,
-                        @Email,
-                        @Address,
-                        @CountryID,
-                        @Username,
-                        @PasswordHash,
-                        1,
-                        'Approved',
-                        NOW()
-                    );", connection, transaction))
+                                INSERT INTO tbl_registration_account
+                                (
+                                    FullName,
+                                    DateOfBirth,
+                                    Gender,
+                                    Phone,
+                                    Email,
+                                    Address,
+                                    CountryID,
+                                    Username,
+                                    PasswordHash,
+                                    IsActive,
+                                    ApprovalStatus,
+                                    ApprovedAt
+                                )
+                                VALUES
+                                (
+                                    @FullName,
+                                    @DOB,
+                                    @Gender,
+                                    @Phone,
+                                    @Email,
+                                    @Address,
+                                    @CountryID,
+                                    @Username,
+                                    @PasswordHash,
+                                    1,
+                                    'Approved',
+                                    NOW()
+                                );", connection, transaction)
+                        )
                         {
                             cmd.Parameters.AddWithValue(
                                 "@FullName", fullName);

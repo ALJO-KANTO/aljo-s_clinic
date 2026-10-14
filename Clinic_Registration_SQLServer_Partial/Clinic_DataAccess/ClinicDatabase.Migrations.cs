@@ -2,6 +2,7 @@
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 
 namespace Clinic_DataAccess
@@ -160,5 +161,6 @@ namespace Clinic_DataAccess
                     "All database migrations completed.");
             }
         }
+
     }
 }
