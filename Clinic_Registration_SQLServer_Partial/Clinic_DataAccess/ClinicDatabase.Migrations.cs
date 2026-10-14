@@ -169,8 +169,108 @@ new DatabaseMigration
           AND B.PaymentStatus = 'Paid'
           AND COALESCE(PAY.PaidAmount, 0)
               >= B.TotalAmount;"
-}
+},new DatabaseMigration
+{
+    Version = "20261014_005",
+    Description = "Create or repair appointments details view",
+    Sql = @"
+        CREATE OR REPLACE VIEW View_AppointmentsDetails AS
+        SELECT
+            A.AppointmentID,
+            A.PatientID,
+            PE.FullName AS PatientName,
+            A.DoctorID,
+            DPE.FullName AS DoctorName,
+            A.AppointmentDate,
+            A.AppointmentStatus,
+            A.AppointmentStatus AS AppointmentStatusText,
+            A.AppointmentTypeID,
+            AT.AppointmentTypeName AS TypeName,
+            A.AppointmentFees,
+            A.CreatedByUserID
 
+        FROM appointments A
+
+        LEFT JOIN patients P
+            ON A.PatientID = P.PatientID
+
+        LEFT JOIN persons PE
+            ON P.PersonID = PE.PersonID
+
+        LEFT JOIN doctors D
+            ON A.DoctorID = D.DoctorID
+
+        LEFT JOIN persons DPE
+            ON D.PersonID = DPE.PersonID
+
+        LEFT JOIN appointmenttypes AT
+            ON A.AppointmentTypeID = AT.AppointmentTypeID;"
+},new DatabaseMigration
+{
+    Version = "20261014_006",
+    Description = "Configure working days for Doctor ID 1",
+    Sql = @"
+        INSERT INTO doctorworkingdays
+        (
+            DoctorID,
+            DayID,
+            StartTime,
+            EndTime
+        )
+        SELECT
+            1,
+            D.DayID,
+            '09:00:00',
+            '17:00:00'
+        FROM days D
+        WHERE D.DayID IN (3, 4, 5, 6, 7)
+          AND EXISTS
+          (
+              SELECT 1
+              FROM doctors DR
+              WHERE DR.DoctorID = 1
+          )
+          AND NOT EXISTS
+          (
+              SELECT 1
+              FROM doctorworkingdays DW
+              WHERE DW.DoctorID = 1
+                AND DW.DayID = D.DayID
+          );"
+},
+new DatabaseMigration
+{
+    Version = "20261014_007",
+    Description = "Configure working days for Doctor ID 2",
+    Sql = @"
+        INSERT INTO doctorworkingdays
+        (
+            DoctorID,
+            DayID,
+            StartTime,
+            EndTime
+        )
+        SELECT
+            2,
+            D.DayID,
+            '09:00:00',
+            '17:00:00'
+        FROM days D
+        WHERE D.DayID IN (3, 4, 5, 6, 7)
+          AND EXISTS
+          (
+              SELECT 1
+              FROM doctors DR
+              WHERE DR.DoctorID = 2
+          )
+          AND NOT EXISTS
+          (
+              SELECT 1
+              FROM doctorworkingdays DW
+              WHERE DW.DoctorID = 2
+                AND DW.DayID = D.DayID
+          );"
+},
       };
 
                 // STEP 4: Apply pending migrations
@@ -199,11 +299,25 @@ new DatabaseMigration
                         }
                     }
 
-                    // Execute migration SQL
-                    using (MySqlCommand command =
-                        new MySqlCommand(migration.Sql, connection))
+                    try
                     {
-                        command.ExecuteNonQuery();
+                        Debug.WriteLine(
+                            "Executing migration: " + migration.Version);
+
+                        using (MySqlCommand command =
+                            new MySqlCommand(migration.Sql, connection))
+                        {
+                            command.ExecuteNonQuery();
+                        }
+                    }
+                    catch (MySqlException ex)
+                    {
+                        throw new InvalidOperationException(
+                            "Database migration failed: " +
+                            migration.Version + Environment.NewLine +
+                            migration.Description + Environment.NewLine +
+                            ex.Message,
+                            ex);
                     }
 
                     // Save migration history after successful execution

@@ -25,14 +25,28 @@ namespace Clinic_DataAccess
                             if (reader.Read())
                             {
 
-                                PatientID = (int)reader["PatientID"];
-                                DoctorID = (int)reader["DoctorID"];
-                                CreatedByUserID = (int)reader["CreatedByUserID"];
-                                AppointmentStatus = (byte)reader["AppointmentStatus"];
-                                AppointmentTypeID = (int)reader["AppointmentTypeID"];
-                                AppointmentFees = (decimal)reader["AppointmentFees"];
-                                AppointmentDate = (DateTime)reader["AppointmentDate"];
-                                CreatedDate = (DateTime)reader["CreatedDate"];
+                                PatientID = Convert.ToInt32(reader["PatientID"]);
+                                DoctorID = Convert.ToInt32(reader["DoctorID"]);
+                                CreatedByUserID =
+                                    reader["CreatedByUserID"] == DBNull.Value
+                                        ? 0
+                                        : Convert.ToInt32(reader["CreatedByUserID"]);
+
+                                AppointmentStatus = StatusFromDatabase(
+     Convert.ToString(reader["AppointmentStatus"]));
+
+                                AppointmentTypeID =
+                                    Convert.ToInt32(reader["AppointmentTypeID"]);
+
+                                AppointmentFees =
+                                    Convert.ToDecimal(reader["AppointmentFees"]);
+
+                                AppointmentDate =
+                                    Convert.ToDateTime(reader["AppointmentDate"]);
+
+                                CreatedDate =
+                                    Convert.ToDateTime(reader["CreatedDate"]);
+
                                 return true;
                             }
                         }
@@ -47,7 +61,46 @@ namespace Clinic_DataAccess
             return false;
         }
 
+        private static byte StatusFromDatabase(string status)
+        {
+        clsAppointmentStatusMapDummy:
+            switch (status)
+            {
+                case "Scheduled": return 1;
+                case "InQueue": return 2;
+                case "Progress": return 3;
+                case "Postponed": return 4;
+                case "Completed": return 5;
+                case "Cancelled": return 6;
+                case "Waiting_For_Vitals": return 7;
+                case "Ready_For_Doctor": return 8;
+                case "In_Billing": return 9;
 
+                default:
+                    throw new InvalidOperationException(
+                        "Unknown appointment status: " + status);
+            }
+        }
+
+        private static string StatusToDatabase(byte status)
+        {
+            switch (status)
+            {
+                case 1: return "Scheduled";
+                case 2: return "InQueue";
+                case 3: return "Progress";
+                case 4: return "Postponed";
+                case 5: return "Completed";
+                case 6: return "Cancelled";
+                case 7: return "Waiting_For_Vitals";
+                case 8: return "Ready_For_Doctor";
+                case 9: return "In_Billing";
+
+                default:
+                    throw new ArgumentOutOfRangeException(
+                        nameof(status));
+            }
+        }
         public static DataRow GetAppointmentInfoByID(int AppointmentID)
         {
             DataTable dt = new DataTable();
@@ -185,33 +238,56 @@ namespace Clinic_DataAccess
         public static DataTable GetAllAppointments()
         {
             DataTable dt = new DataTable();
+
+            string query = @"
+        SELECT
+            AppointmentID,
+            PatientID,
+            PatientName,
+            DoctorID,
+            DoctorName,
+            AppointmentDate,
+            AppointmentStatus,
+            AppointmentStatusText,
+            AppointmentTypeID,
+            TypeName,
+            AppointmentFees,
+            CreatedByUserID
+        FROM View_AppointmentsDetails
+        ORDER BY AppointmentID DESC;";
+
             try
             {
-                using (MySqlConnection connection = new MySqlConnection(clsDataAccessSettings.ConnectionString))
+                using (MySqlConnection connection =
+                    new MySqlConnection(
+                        clsDataAccessSettings.ConnectionString))
+                using (MySqlCommand command =
+                    new MySqlCommand(query, connection))
                 {
-                    string query = @"SELECT * FROM View_AppointmentsDetails
-                                         ORDER BY AppointmentID DESC";
-                    using (MySqlCommand command = new MySqlCommand(query, connection))
+                    connection.Open();
+
+                    using (MySqlDataReader reader =
+                        command.ExecuteReader())
                     {
-
-
-                        connection.Open();
-                        using (MySqlDataReader reader = command.ExecuteReader())
-                        {
-                            if (reader.HasRows) dt.Load(reader);
-                        }
+                        dt.Load(reader);
                     }
                 }
             }
-
             catch (MySqlException ex)
             {
-                clsGlobalLogger.LogMySqlException(ex, clsGlobalLogger.LogLevel.Error);
+                clsGlobalLogger.LogMySqlException(
+                    ex,
+                    clsGlobalLogger.LogLevel.Error);
+
+                System.Diagnostics.Debug.WriteLine(
+                    "GetAllAppointments ERROR: " + ex);
+
+                // Do not silently return an empty table
+                throw;
             }
 
             return dt;
         }
-
 
         public static bool DoesAppointmentExist(int AppointmentID)
         {
@@ -220,8 +296,11 @@ namespace Clinic_DataAccess
             {
                 using (MySqlConnection connection = new MySqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    string query = "SELECT Found = 1 FROM Appointments WHERE AppointmentID = @AppointmentID";
-                    using (MySqlCommand command = new MySqlCommand(query, connection))
+                    string query = @"
+    SELECT 1
+    FROM Appointments
+    WHERE AppointmentID = @AppointmentID
+    LIMIT 1;"; using (MySqlCommand command = new MySqlCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@AppointmentID", AppointmentID);
 
@@ -348,56 +427,84 @@ namespace Clinic_DataAccess
 
             return (DayOfWeek == 6) ? 1 : (DayOfWeek + 2);
         }
-        public static bool IsTimeCapacityAvailable(int DoctorID, DateTime AppointmentDate, int AppointmentTypeID)
+        public static bool IsTimeCapacityAvailable(
+            int DoctorID,
+            DateTime AppointmentDate,
+            int AppointmentTypeID)
         {
             try
             {
-                using (MySqlConnection conn = new MySqlConnection(clsDataAccessSettings.ConnectionString))
+                using (MySqlConnection conn =
+                    new MySqlConnection(
+                        clsDataAccessSettings.ConnectionString))
                 {
-                    // الاستعلام المحدث ليتوافق مع جداولك الحالية
                     string query = @"
-            -- 1. جلب مدة الموعد الجديد
-            DECLARE @NewDuration INT = (SELECT TOP 1 DefaultDuration FROM AppointmentTypes WHERE AppointmentTypeID = @AppointmentTypeID);
-            
-            -- 2. حساب السعة المتبقية من اليوم (فقط الفترات المستقبلية)
-            DECLARE @DailyCap INT = (SELECT ISNULL(SUM(DATEDIFF(MINUTE, 
-                                     CASE 
-                                        WHEN StartTime > CAST(@Date AS TIME) THEN StartTime 
-                                        ELSE CAST(@Date AS TIME) 
-                                     END, EndTime)), 0)
-                                     FROM DoctorWorkingDays 
-                                     WHERE DoctorID = @DoctorID AND DayID = @DayID
-                                     AND EndTime > CAST(@Date AS TIME));
+                SELECT
+                    CASE
+                        WHEN COALESCE(
+                            (
+                                SELECT SUM(
+                                    TIMESTAMPDIFF(
+                                        MINUTE,
+                                        GREATEST(
+                                            DW.StartTime,
+                                            TIME(@AppointmentDate)
+                                        ),
+                                        DW.EndTime
+                                    )
+                                )
+                                FROM doctorworkingdays DW
+                                WHERE DW.DoctorID = @DoctorID
+                                  AND DW.DayID = @DayID
+                                  AND DW.EndTime >
+                                      TIME(@AppointmentDate)
+                            ), 0
+                        ) >=
+                        (
+                            SELECT COUNT(*) * 30
+                            FROM appointments A
+                            WHERE A.DoctorID = @DoctorID
+                              AND DATE(A.AppointmentDate) =
+                                  DATE(@AppointmentDate)
+                              AND A.AppointmentDate >=
+                                  @AppointmentDate
+                              AND A.AppointmentStatus NOT IN
+                                  ('Cancelled', '6')
+                        ) + 30
+                        THEN 1
+                        ELSE 0
+                    END AS IsCapacityAvailable;";
 
-            -- 3. حساب المستهلك من المواعيد المستقبلية فقط
-            DECLARE @Consumed INT = (SELECT ISNULL(SUM(AT.DefaultDuration), 0)
-                                     FROM Appointments A
-                                     INNER JOIN AppointmentTypes AT ON A.AppointmentTypeID = AT.AppointmentTypeID
-                                     WHERE A.DoctorID = @DoctorID
-                                     AND CAST(A.AppointmentDate AS DATE) = CAST(@Date AS DATE)
-                                     AND A.AppointmentStatus != 6 
-                                     AND A.AppointmentDate > GETDATE());
-                                     
-            SELECT CASE WHEN (@Consumed + @NewDuration) <= @DailyCap THEN 1 ELSE 0 END;";
-
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (MySqlCommand cmd =
+                        new MySqlCommand(query, conn))
                     {
-                        cmd.Parameters.AddWithValue("@DoctorID", DoctorID);
-                        cmd.Parameters.AddWithValue("@AppointmentTypeID", AppointmentTypeID);
-                        cmd.Parameters.AddWithValue("@DayID", GetDayID(AppointmentDate));
-                        cmd.Parameters.AddWithValue("@Date", AppointmentDate.Date);
+                        cmd.Parameters.AddWithValue(
+                            "@DoctorID", DoctorID);
+
+                        cmd.Parameters.AddWithValue(
+                            "@DayID", GetDayID(AppointmentDate));
+
+                        cmd.Parameters.AddWithValue(
+                            "@AppointmentDate", AppointmentDate);
 
                         conn.Open();
-                        return Convert.ToBoolean(cmd.ExecuteScalar());
+
+                        object result = cmd.ExecuteScalar();
+
+                        return result != null &&
+                               result != DBNull.Value &&
+                               Convert.ToInt32(result) == 1;
                     }
                 }
             }
             catch (MySqlException ex)
             {
-                clsGlobalLogger.LogMySqlException(ex, clsGlobalLogger.LogLevel.Error);
-                return false;
-            }
+                clsGlobalLogger.LogMySqlException(
+                    ex,
+                    clsGlobalLogger.LogLevel.Error);
 
+                throw;
+            }
         }
         public static bool UpdateAppointmentStatus(
       int AppointmentID,

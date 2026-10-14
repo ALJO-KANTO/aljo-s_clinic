@@ -66,13 +66,28 @@ namespace Clinic.Medical_Services.Appointment
 
         private void _FillAppointmentInCompbox()
         {
-            DataTable dataTable = clsAppointmentType.GetAllAppointmentType();
+            DataTable dt =
+                clsAppointmentType.GetAllAppointmentType();
+
+            cbAppointmentType.DataSource = null;
+
+            if (dt == null || dt.Rows.Count == 0)
+            {
+                cbAppointmentType.Enabled = false;
+                btnSave.Enabled = false;
+                return;
+            }
+
+            cbAppointmentType.DisplayMember =
+                dt.Columns.Contains("TypeName")
+                    ? "TypeName"
+                    : "AppointmentTypeName";
+
             cbAppointmentType.ValueMember = "AppointmentTypeID";
-            cbAppointmentType.DisplayMember = "TypeName";
-            cbAppointmentType.DataSource = dataTable;
+
+            cbAppointmentType.DataSource = dt;
             cbAppointmentType.SelectedIndex = 0;
         }
-
         private void _LoadData()
         {
             _Appointment=clsAppointment.Find(_AppointmentID);
@@ -213,35 +228,58 @@ namespace Clinic.Medical_Services.Appointment
 
         private void dtpAppointmentDate_ValueChanged(object sender, EventArgs e)
         {
+            // No doctor selected yet
+            if (_DoctorID <= 0)
+            {
+                btnSave.Enabled = false;
+                return;
+            }
+
             DateTime selectedDateTime = new DateTime(
-        dtpAppointmentDate.Value.Year,
-        dtpAppointmentDate.Value.Month,
-        dtpAppointmentDate.Value.Day,
-        dtpAppointmentDate.Value.Hour,
-        dtpAppointmentDate.Value.Minute,
-        0 // الثواني = 0
-                    );
+                dtpAppointmentDate.Value.Year,
+                dtpAppointmentDate.Value.Month,
+                dtpAppointmentDate.Value.Day,
+                dtpAppointmentDate.Value.Hour,
+                dtpAppointmentDate.Value.Minute,
+                0
+            );
 
-           if (selectedDateTime < DateTime.Now)
-    {
-        errorProvider1.SetError(dtpAppointmentDate, "Date cannot be in the past.");
-        btnSave.Enabled = false;
-        return;
-    }
+            if (selectedDateTime < DateTime.Now)
+            {
+                errorProvider1.SetError(
+                    dtpAppointmentDate,
+                    "Date cannot be in the past.");
 
-            bool isAvailable = clsAppointment.IsDoctorAvailable(_DoctorID, selectedDateTime);
+                btnSave.Enabled = false;
+                return;
+            }
+
+            bool isAvailable = clsAppointment.IsDoctorAvailable(
+                _DoctorID,
+                selectedDateTime);
+
+            MessageBox.Show(
+                "Doctor ID: " + _DoctorID +
+                "\nAppointment Date: " + selectedDateTime +
+                "\nDay: " + selectedDateTime.DayOfWeek +
+                "\nAvailable: " + isAvailable,
+                "Doctor Availability Test");
+
             if (!isAvailable)
             {
-                errorProvider1.SetError(dtpAppointmentDate, "Doctor is not available at this time!");
+                errorProvider1.SetError(
+                    dtpAppointmentDate,
+                    "Doctor is not available at this time!");
+
                 btnSave.Enabled = false;
             }
             else
             {
-                errorProvider1.Clear();
+                errorProvider1.SetError(dtpAppointmentDate, "");
+
                 btnSave.Enabled = true;
             }
         }
-
         private void btnPersonInfoNext_Click(object sender, EventArgs e)
         {
             if (ctrlPatientCardWithFilter1.PatientID == -1)
@@ -285,6 +323,9 @@ namespace Clinic.Medical_Services.Appointment
             cbAppointmentType.Focus();
             paAppointmentInfo.Enabled = true;
             tcAppointmentInfo.SelectTab(2);
+            dtpAppointmentDate_ValueChanged(
+    dtpAppointmentDate,
+    EventArgs.Empty);
         }
 
         private void cbAppointmentType_SelectedIndexChanged(object sender, EventArgs e)
