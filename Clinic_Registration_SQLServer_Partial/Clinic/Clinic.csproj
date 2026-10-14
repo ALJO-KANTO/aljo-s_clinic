@@ -33,6 +33,10 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>
+    </StartupObject>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="BouncyCastle.Crypto, Version=1.9.0.0, Culture=neutral, PublicKeyToken=0e99375e54769942, processorArchitecture=MSIL">
       <HintPath>packages\Portable.BouncyCastle.1.9.0\lib\net40\BouncyCastle.Crypto.dll</HintPath>
@@ -112,8 +116,20 @@
     <Compile Include="frm.Designer.cs">
       <DependentUpon>frm.cs</DependentUpon>
     </Compile>
+    <Compile Include="frmConfig.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmConfig.Designer.cs">
+      <DependentUpon>frmConfig.cs</DependentUpon>
+    </Compile>
     <Compile Include="frmMain.ModernDesign.cs">
       <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmSplashScreen.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmSplashScreen.Designer.cs">
+      <DependentUpon>frmSplashScreen.cs</DependentUpon>
     </Compile>
     <Compile Include="global classes\clsFormHelper.cs" />
     <Compile Include="Login\frmRegister.cs">
@@ -251,6 +267,7 @@
     <Compile Include="Medical Services\Vital\frmNurse.Designer.cs">
       <DependentUpon>frmNurse.cs</DependentUpon>
     </Compile>
+    <Compile Include="PasswordHelper.cs" />
     <Compile Include="Person\Controls\ctrlPersonCard.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -438,6 +455,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="frm.resx">
       <DependentUpon>frm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmConfig.resx">
+      <DependentUpon>frmConfig.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmSplashScreen.resx">
+      <DependentUpon>frmSplashScreen.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Login\frmRegister.resx">
       <DependentUpon>frmRegister.cs</DependentUpon>
@@ -1054,6 +1077,8 @@
     <None Include="Resources\High_Tech_PNG_Image__High_Tech_Brain__Science_And_Technology__High_Tech_PNG_Image_For_Free_Download-removebg-preview.png" />
     <None Include="Resources\High Tech PNG Image, High Tech Brain, Science And Technology, High Tech PNG Image For Free Download2.png" />
     <None Include="Resources\High Tech PNG Image, High Tech Brain, Science And Technology, High Tech PNG Image For Free Download1.png" />
+    <Content Include="Resources\loading.gif" />
+    <None Include="Resources\loading1.gif" />
     <Content Include="Resources\Staff Of Hermes Caduceus As A Symbol Of Medicine Rod Of Asclepius PNG.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
