@@ -1,19 +1,28 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
 using System.Data;
+using System.IO;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Clinic_DataAccess
 {
    public static partial class ClinicDatabase
     {
-        private const string DatabaseName = "clinic_management";
+        public const string DatabaseName = "clinic_management";
 
-        // Change these values to your local MySQL credentials.
-        private static readonly string ServerConnection =
-            "Server=127.0.0.1;Port=3306;Uid=root;Pwd=;SslMode=None;";
+        public static string GetConnectionString()
+        {
+            string cc = Environment.GetEnvironmentVariable("clinic_connection", EnvironmentVariableTarget.User);
 
-        private static string ConnectionString =>
-            ServerConnection + "Database=" + DatabaseName + ";";
+            string connectionString = string.IsNullOrEmpty(cc) ? "" : CryptoHelper.Decrypt(cc);
+            var builder = new MySqlConnectionStringBuilder(connectionString);
+            return builder.ToString();
+        }
+
+        private static readonly string ServerConnection = GetConnectionString();
+
+        private static string ConnectionString => GetConnectionString() + ";Database=" + DatabaseName + ";";
 
         public static MySqlConnection GetConnection()
         {
@@ -156,6 +165,53 @@ namespace Clinic_DataAccess
             catch
             {
                 return false;
+            }
+        }
+    }
+}
+public static class CryptoHelper
+{
+    // Simple fixed key and IV. Ensure these are 16 bytes for AES-128.
+    private static readonly string key = "1234567890123456";  // 16 bytes key for AES-128
+    private static readonly string iv = "1234567890123456";   // 16 bytes IV
+
+    // Encrypt method
+    public static string Encrypt(string plainText)
+    {
+        using (Aes aesAlg = Aes.Create())
+        {
+            aesAlg.Key = Encoding.UTF8.GetBytes(key);
+            aesAlg.IV = Encoding.UTF8.GetBytes(iv);
+
+            using (MemoryStream msEncrypt = new MemoryStream())
+            using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, aesAlg.CreateEncryptor(), CryptoStreamMode.Write))
+            using (StreamWriter swEncrypt = new StreamWriter(csEncrypt))
+            {
+                swEncrypt.Write(plainText);
+                swEncrypt.Flush();
+                csEncrypt.FlushFinalBlock();
+                return Convert.ToBase64String(msEncrypt.ToArray());
+            }
+        }
+    }
+
+    // Decrypt method
+    public static string Decrypt(string cipherText)
+    {
+        byte[] cipherBytes = Convert.FromBase64String(cipherText);  // Convert Base64 to byte array
+
+        using (Aes aesAlg = Aes.Create())
+        {
+            aesAlg.Key = Encoding.UTF8.GetBytes(key);  // Ensure key is 16 bytes
+            aesAlg.IV = Encoding.UTF8.GetBytes(iv);    // Ensure IV is 16 bytes
+
+            ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
+
+            using (MemoryStream msDecrypt = new MemoryStream(cipherBytes))
+            using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
+            using (StreamReader srDecrypt = new StreamReader(csDecrypt))
+            {
+                return srDecrypt.ReadToEnd();  // Return the decrypted string
             }
         }
     }

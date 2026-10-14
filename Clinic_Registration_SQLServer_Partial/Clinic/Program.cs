@@ -18,41 +18,29 @@ namespace Clinic
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            try
+            int navigate = 0;
+
+            // Splash screen
+            using (frmSplashScreen splash = new frmSplashScreen())
             {
-                // STEP 1: Connect to MySQL
-                using (var connection = ClinicDatabase.GetConnection())
-                {
-                    connection.Open();
-
-                    System.Diagnostics.Debug.WriteLine(
-                        "Connected to MySQL: " +
-                        connection.DataSource + " / " +
-                        connection.Database);
-                }
-
-                
-                ClinicDatabase.ApplyMigrations();
-
-                System.Diagnostics.Debug.WriteLine(
-                    "Database migrations completed successfully.");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    "Database initialization failed:\n\n" +
-                    ex.ToString(),
-                    "Database Error",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-
-                return;
+                splash.ShowDialog();
+                navigate = splash.NavigationCode;
             }
 
-           
-            clsCountry.GetAllCountriesList();
 
-            Application.Run(new frmLogin());
+            if (navigate == 1)
+            {
+                Application.Run(new frmConfig());
+            }
+            else if (navigate == 2)
+            {
+                clsCountry.GetAllCountriesList();
+                Application.Run(new frmLogin());
+            }
+            else
+            {
+                Application.Run(new frmConfig());
+            }
         }
     }
 }

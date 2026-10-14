@@ -4,13 +4,8 @@ namespace Clinic_DataAccess
 {
     public class clsDataAccessSettings
     {
-        public static string ConnectionString =
-            "Server=127.0.0.1;" +
-            "Port=3306;" +
-            "Database=clinic_management;" +
-            "Uid=root;" +
-            "Pwd=;" +
-            "SslMode=None;";
+        // abc
+        public static string ConnectionString => ClinicDatabase.GetConnectionString() + ";Database=" + ClinicDatabase.DatabaseName + ";";
 
         public static MySqlConnection GetConnection()
         {
