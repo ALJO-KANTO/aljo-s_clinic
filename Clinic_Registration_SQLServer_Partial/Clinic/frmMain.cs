@@ -18,7 +18,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
+using Clinic.Medical_Services.Casher;
 namespace Clinic
 {
     public partial class frmMain : Form
@@ -45,7 +45,24 @@ namespace Clinic
                 AddTranslateButton();
             }
         }
-
+        private void OpenManageBills()
+        {
+            try
+            {
+                using (frmManageBills frm = new frmManageBills())
+                {
+                    frm.ShowDialog(this);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    ex.ToString(),
+                    "Unable to Open Billing Payments",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
         private void frmMain_Load(object sender, EventArgs e)
         {
             timer1.Start();
