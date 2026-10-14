@@ -1,4 +1,5 @@
 ﻿using Clinic_DataAccess;
+using MySql.Data.MySqlClient;
 using System;
 using System.Data;
 
@@ -100,7 +101,27 @@ namespace Clinic_Business
 
         public static bool IsBillPaidOrPartiallyPaid(int billID)
         {
-            return clsSalesReturnDataAccess.IsBillPaidOrPartiallyPaid(billID);
+            string query = @"
+        SELECT COUNT(*)
+        FROM bills
+        WHERE BillID = @BillID
+          AND LOWER(TRIM(PaymentStatus)) IN ('paid', 'partial');";
+
+            using (MySqlConnection connection =
+                new MySqlConnection(clsDataAccessSettings.ConnectionString))
+            {
+                using (MySqlCommand command =
+                    new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@BillID", billID);
+
+                    connection.Open();
+
+                    int count = Convert.ToInt32(command.ExecuteScalar());
+
+                    return count > 0;
+                }
+            }
         }
     }
 }

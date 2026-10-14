@@ -98,7 +98,78 @@ namespace Clinic_DataAccess
             INDEX IX_VisitServices_VisitID (VisitID),
             INDEX IX_VisitServices_ServiceID (ServiceID)
         ) ENGINE=InnoDB;"
+},
+       
+        new DatabaseMigration
+{
+    Version = "20261014_003",
+    Description = "Create billing list view",
+    Sql = @"
+        CREATE OR REPLACE VIEW View_Bills AS
+        SELECT
+            B.BillID,
+            CONCAT(
+                'INV-',
+                YEAR(B.BillDate),
+                '-',
+                LPAD(B.BillID, 4, '0')
+            ) AS BillNumber,
+            B.VisitID,
+            V.PatientID,
+            P.PersonID,
+            PE.FullName AS PatientName,
+            V.DoctorID,
+            V.AppointmentID,
+            B.BillDate,
+            B.TotalAmount,
+            B.PaymentStatus,
+            B.CreatedByUserID,
+            COALESCE(PAY.PaymentAmount, 0) AS PaidAmount,
+            GREATEST(
+                B.TotalAmount - COALESCE(PAY.PaymentAmount, 0),
+                0
+            ) AS BalanceDue
+        FROM bills B
+        INNER JOIN visits V
+            ON B.VisitID = V.VisitID
+        INNER JOIN patients P
+            ON V.PatientID = P.PatientID
+        INNER JOIN persons PE
+            ON P.PersonID = PE.PersonID
+        LEFT JOIN
+        (
+            SELECT
+                BillID,
+                SUM(PaymentAmount) AS PaymentAmount
+            FROM payments
+            GROUP BY BillID
+        ) PAY
+            ON B.BillID = PAY.BillID;"
+},
+new DatabaseMigration
+{
+    Version = "20261014_004",
+    Description = "Synchronize fully paid bills with visit status",
+    Sql = @"
+        UPDATE visits V
+        INNER JOIN bills B
+            ON B.VisitID = V.VisitID
+        LEFT JOIN
+        (
+            SELECT
+                BillID,
+                SUM(PaymentAmount) AS PaidAmount
+            FROM payments
+            GROUP BY BillID
+        ) PAY
+            ON PAY.BillID = B.BillID
+        SET V.VisitStatus = 'Completed'
+        WHERE V.VisitStatus = 'Pending_Billing'
+          AND B.PaymentStatus = 'Paid'
+          AND COALESCE(PAY.PaidAmount, 0)
+              >= B.TotalAmount;"
 }
+
       };
 
                 // STEP 4: Apply pending migrations

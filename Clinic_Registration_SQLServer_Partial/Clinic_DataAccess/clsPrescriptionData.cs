@@ -598,18 +598,70 @@ namespace Clinic_DataAccess
             }
         }
 
-        public static bool UpdatePrescriptionStatusByBill(int billId, int newStatus, MySqlTransaction transaction)
+        public static bool UpdatePrescriptionStatusByBill(
+    int billId,
+    int newStatus,
+    MySqlTransaction transaction)
         {
-            string query = @"UPDATE Prescriptions 
-                     SET PrescriptionStatus = @Status 
-                     WHERE BillID = @BillID";
+            if (transaction == null || transaction.Connection == null)
+                throw new ArgumentNullException(nameof(transaction));
 
-            using (MySqlCommand command = new MySqlCommand(query, transaction.Connection, transaction))
+            string statusText;
+
+            switch (newStatus)
+            {
+                case 1:
+                    statusText = "Pending";
+                    break;
+
+                case 2:
+                    statusText = "Waiting For Payment";
+                    break;
+
+                case 3:
+                    statusText = "Ready For Dispensing";
+                    break;
+
+                case 4:
+                    statusText = "Dispensed";
+                    break;
+
+                case 5:
+                    statusText = "Partially Dispensed";
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(
+                        nameof(newStatus),
+                        "Invalid prescription status.");
+            }
+
+            string query = @"
+        UPDATE prescriptions P
+        INNER JOIN bills B
+            ON P.VisitID = B.VisitID
+        SET P.PrescriptionStatus = @Status
+        WHERE B.BillID = @BillID
+          AND P.PrescriptionStatus IN
+          (
+              'Pending',
+              'Waiting For Payment',
+              '1',
+              '2'
+          );";
+
+            using (MySqlCommand command = new MySqlCommand(
+                query,
+                transaction.Connection,
+                transaction))
             {
                 command.Parameters.AddWithValue("@BillID", billId);
-                command.Parameters.AddWithValue("@Status", newStatus);
-                return command.ExecuteNonQuery() > 0;
+                command.Parameters.AddWithValue("@Status", statusText);
+
+                command.ExecuteNonQuery();
             }
+
+            return true;
         }
         public static bool UpdatePrescriptionStatus(int prescriptionId, byte newStatus)
         {

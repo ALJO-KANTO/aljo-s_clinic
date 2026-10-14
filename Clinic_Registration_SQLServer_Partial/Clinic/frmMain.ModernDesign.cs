@@ -164,8 +164,11 @@ namespace Clinic
             menu.Controls.Add(MakeNav("✚", "Visits", () => listVisitToolStripMenuItem_Click(this, EventArgs.Empty)));
             menu.Controls.Add(MakeNav("▤", "Medical Records", () => doctorToolStripMenuItem2_Click(this, EventArgs.Empty)));
             AddMenuHeading(menu, "Clinic Services");
-            menu.Controls.Add(MakeNav("▣", "Billing & Payments", null));
-            menu.Controls.Add(MakeNav("▤", "Invoices", null));
+            menu.Controls.Add(MakeNav(
+                "▣",
+                "Billing & Payments",
+                () => OpenManageBills()
+            )); menu.Controls.Add(MakeNav("▤", "Invoices", null));
             menu.Controls.Add(MakeNav("✚", "Prescriptions",
     () => listPrescriptionToolStripMenuItem_Click(this, EventArgs.Empty)));
             menu.Controls.Add(MakeNav("◈", "Inventory / Medicines", null));
@@ -250,9 +253,25 @@ namespace Clinic
                     () => doctorToolStripMenuItem2_Click(this, EventArgs.Empty),
                     () => btnFindPatient_Click(this, EventArgs.Empty),
                     () => doctorToolStripMenuItem2_Click(this, EventArgs.Empty) }), 0, 0);
-            roleRows.Controls.Add(RoleCard("$", "Cashier Role Dashboard", Color.FromArgb(0, 169, 116),
-                new string[] { "Manage\nBills", "Process\nPayments", "Issue\nInvoice", "Check in\nAppointment" },
-                new Action[] { null, null, null, () => appointmentsToolStripMenuItem_Click(this, EventArgs.Empty) }), 1, 0);
+            roleRows.Controls.Add(RoleCard(
+     "$",
+     "Cashier Role Dashboard",
+     Color.FromArgb(0, 169, 116),
+     new string[]
+     {
+        "Manage\nBills",
+        "Process\nPayments",
+        "Issue\nInvoice",
+        "Check in\nAppointment"
+     },
+     new Action[]
+     {
+        () => OpenManageBills(),
+        () => OpenManageBills(),
+        () => OpenManageBills(),
+        () => appointmentsToolStripMenuItem_Click(this, EventArgs.Empty)
+     }
+ ), 1, 0);
 
             roleRows.Controls.Add(RoleCard("✚", "Pharmacist Role Dashboard", Color.FromArgb(159, 37, 225),
                 new string[] { "All\nPrescriptions", "In-Clinic\nPrescriptions", "Add New\nDrug", "Direct Medicine\nDispensing" },

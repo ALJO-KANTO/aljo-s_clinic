@@ -74,7 +74,7 @@ namespace Clinic.Medical_Services.Casher
             clsSalesReturn.clsBillMasterInfo billMaster;
 
             _dtReturnItems = clsSalesReturn.GetBillCompleteDetails(billID, out billMaster);
-            if (!billMaster.IsFound|| _dtReturnItems.Rows.Count == 0 || _dtReturnItems == null)
+            if (!billMaster.IsFound || _dtReturnItems == null || _dtReturnItems.Rows.Count == 0)
             {
                 MessageBox.Show("This bill was not found in the system, or its medicines have not been dispensed yet.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 _ResetForm();

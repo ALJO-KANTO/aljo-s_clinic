@@ -129,33 +129,58 @@ namespace Clinic_DataAccess
         public static DataTable GetAllBills()
         {
             DataTable dt = new DataTable();
-            try
+
+            using (MySqlConnection connection =
+                new MySqlConnection(
+                    clsDataAccessSettings.ConnectionString))
             {
-                using (MySqlConnection connection = new MySqlConnection(clsDataAccessSettings.ConnectionString))
+                string query = @"
+            SELECT
+                VB.*,
+
+                DATE_FORMAT(
+                    VB.BillDate,
+                    '%Y-%m-%d'
+                ) AS BillDateString,
+
+                CASE
+                    WHEN VB.PaymentStatus IN ('0', 'Pending', 'Unpaid')
+                        THEN 'Pending'
+
+                    WHEN VB.PaymentStatus IN ('1', 'Partial')
+                        THEN 'Partial'
+
+                    WHEN VB.PaymentStatus IN ('2', 'Paid')
+                        THEN 'Paid'
+
+                    WHEN VB.PaymentStatus IN ('3', 'Refunded')
+                        THEN 'Refunded'
+
+                    WHEN VB.PaymentStatus IN ('4', 'Cancelled')
+                        THEN 'Cancelled'
+
+                    ELSE VB.PaymentStatus
+                END AS Status
+
+            FROM View_Bills VB
+
+            ORDER BY VB.BillDate DESC, VB.BillID DESC;";
+
+                using (MySqlCommand command =
+                    new MySqlCommand(query, connection))
                 {
-                    string query = @"SElECT * FROM View_Bills
-                                     ORDER BY BillNumber DESC;";
-                    using (MySqlCommand command = new MySqlCommand(query, connection))
+                    connection.Open();
+
+                    using (MySqlDataReader reader =
+                        command.ExecuteReader())
                     {
-
-
-                        connection.Open();
-                        using (MySqlDataReader reader = command.ExecuteReader())
-                        {
-                            if (reader.HasRows) dt.Load(reader);
-                        }
+                        dt.Load(reader);
                     }
                 }
             }
 
-            catch (MySqlException ex)
-            {
-                clsGlobalLogger.LogMySqlException(ex, clsGlobalLogger.LogLevel.Error);
-            }
-
             return dt;
         }
-
         public static DataRow GetBillByID(int BillID)
         {
             DataTable dt = new DataTable();
@@ -311,74 +336,107 @@ namespace Clinic_DataAccess
 
             return isCancelled;
         }
-        public static bool GetBillSummaryData(int BillID,
-         ref string billNumber, ref string patientName,
-         ref decimal appointmentFees, ref decimal totalMedicines, ref decimal totalServices,
-         ref decimal totalDiscount, ref decimal totalTax, ref decimal paymentAmount, ref decimal balanceDue,
-         ref decimal totalBeforeDiscountAndTax, ref decimal finalTotalIncludingAll, DataTable dtBillDetails)
+
+        public static bool GetBillSummaryData(
+            int BillID,
+            ref string billNumber,
+            ref string patientName,
+            ref decimal appointmentFees,
+            ref decimal totalMedicines,
+            ref decimal totalServices,
+            ref decimal totalDiscount,
+            ref decimal totalTax,
+            ref decimal paymentAmount,
+            ref decimal balanceDue,
+            ref decimal totalBeforeDiscountAndTax,
+            ref decimal finalTotalIncludingAll,
+            DataTable dtBillDetails)
         {
             try
             {
-                using (MySqlConnection connection = new MySqlConnection(clsDataAccessSettings.ConnectionString))
+                using (MySqlConnection connection =
+                    new MySqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    string query = @"SELECT 
-                                    BillNumber, PatientName, AppointmentFees, MedicinesTotal, 
-                                    ServicesTotal, TotalDiscount, TotalTax, PaymentAmount, BalanceDue,
-                                    (AppointmentFees + MedicinesTotal + ServicesTotal) AS TotalBeforeDiscountAndTax,
-                                    ((AppointmentFees + MedicinesTotal + ServicesTotal - TotalDiscount) + TotalTax) AS FinalTotalIncludingAll
-                                 FROM View_BillSummaries 
-                                 WHERE BillID = @BillID";
+                    string query = @"
+                SELECT
+                    BillID,
+                    BillNumber,
+                    PatientName,
+                    TotalAmount,
+                    PaidAmount,
+                    BalanceDue
+                FROM View_Bills
+                WHERE BillID = @BillID
+                LIMIT 1;";
 
-                    using (MySqlCommand command = new MySqlCommand(query, connection))
+                    using (MySqlCommand command =
+                        new MySqlCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@BillID", BillID);
                         connection.Open();
 
                         using (MySqlDataReader reader = command.ExecuteReader())
                         {
-                            if (reader.Read())
-                            {
-                                billNumber = reader["BillNumber"].ToString();
-                                patientName = reader["PatientName"].ToString();
-                                appointmentFees = reader["AppointmentFees"] is DBNull ? 0 : Convert.ToDecimal(reader["AppointmentFees"]);
-                                totalMedicines = reader["MedicinesTotal"] is DBNull ? 0 : Convert.ToDecimal(reader["MedicinesTotal"]);
-                                totalServices = reader["ServicesTotal"] is DBNull ? 0 : Convert.ToDecimal(reader["ServicesTotal"]);
-                                totalDiscount = reader["TotalDiscount"] is DBNull ? 0 : Convert.ToDecimal(reader["TotalDiscount"]);
-                                totalTax = reader["TotalTax"] is DBNull ? 0 : Convert.ToDecimal(reader["TotalTax"]);
-                                paymentAmount = reader["PaymentAmount"] is DBNull ? 0 : Convert.ToDecimal(reader["PaymentAmount"]);
-                                balanceDue = reader["BalanceDue"] is DBNull ? 0 : Convert.ToDecimal(reader["BalanceDue"]);
-                                totalBeforeDiscountAndTax = reader["TotalBeforeDiscountAndTax"] is DBNull ? 0 : Convert.ToDecimal(reader["TotalBeforeDiscountAndTax"]);
-                                finalTotalIncludingAll = reader["FinalTotalIncludingAll"] is DBNull ? 0 : Convert.ToDecimal(reader["FinalTotalIncludingAll"]);
+                            if (!reader.Read())
+                                return false;
 
-                                // تعبئة الـ DataTable الممرر
-                                dtBillDetails.Clear();
-                                if (dtBillDetails.Columns.Count == 0)
-                                {
-                                    dtBillDetails.Columns.Add("BillNumber", typeof(string));
-                                    dtBillDetails.Columns.Add("PatientName", typeof(string));
-                                    dtBillDetails.Columns.Add("TotalBeforeDiscountAndTax", typeof(decimal));
-                                    dtBillDetails.Columns.Add("FinalTotalIncludingAll", typeof(decimal));
-                                    dtBillDetails.Columns.Add("BalanceDue", typeof(decimal));
-                                }
-                                DataRow row = dtBillDetails.NewRow();
-                                row["BillNumber"] = billNumber;
-                                row["PatientName"] = patientName;
-                                row["TotalBeforeDiscountAndTax"] = totalBeforeDiscountAndTax;
-                                row["FinalTotalIncludingAll"] = finalTotalIncludingAll;
-                                row["BalanceDue"] = balanceDue;
-                                dtBillDetails.Rows.Add(row);
+                            billNumber = Convert.ToString(reader["BillNumber"]);
+                            patientName = Convert.ToString(reader["PatientName"]);
 
-                                return true;
-                            }
+                            decimal totalAmount = reader["TotalAmount"] == DBNull.Value
+                                ? 0m : Convert.ToDecimal(reader["TotalAmount"]);
+
+                            paymentAmount = reader["PaidAmount"] == DBNull.Value
+                                ? 0m : Convert.ToDecimal(reader["PaidAmount"]);
+
+                            balanceDue = reader["BalanceDue"] == DBNull.Value
+                                ? 0m : Convert.ToDecimal(reader["BalanceDue"]);
+
+                            // View_Bills currently provides aggregate totals only.
+                            // Do not invent medicine, service, tax or discount amounts.
+                            appointmentFees = 0m;
+                            totalMedicines = 0m;
+                            totalServices = 0m;
+                            totalDiscount = 0m;
+                            totalTax = 0m;
+
+                            totalBeforeDiscountAndTax = totalAmount;
+                            finalTotalIncludingAll = totalAmount;
+
+                            dtBillDetails.Clear();
+                            dtBillDetails.Columns.Clear();
+
+                            dtBillDetails.Columns.Add("BillNumber", typeof(string));
+                            dtBillDetails.Columns.Add("PatientName", typeof(string));
+                            dtBillDetails.Columns.Add("TotalAmount", typeof(decimal));
+                            dtBillDetails.Columns.Add("PaidAmount", typeof(decimal));
+                            dtBillDetails.Columns.Add("BalanceDue", typeof(decimal));
+
+                            DataRow row = dtBillDetails.NewRow();
+
+                            row["BillNumber"] = billNumber;
+                            row["PatientName"] = patientName;
+                            row["TotalAmount"] = totalAmount;
+                            row["PaidAmount"] = paymentAmount;
+                            row["BalanceDue"] = balanceDue;
+
+                            dtBillDetails.Rows.Add(row);
+
+                            return true;
                         }
                     }
                 }
             }
             catch (MySqlException ex)
             {
-                clsGlobalLogger.LogMySqlException(ex, clsGlobalLogger.LogLevel.Error);
+                clsGlobalLogger.LogMySqlException(
+                    ex,
+                    clsGlobalLogger.LogLevel.Error);
+
+                throw new InvalidOperationException(
+                    "Unable to load bill summary for BillID " + BillID,
+                    ex);
             }
-            return false;
         }
 
 

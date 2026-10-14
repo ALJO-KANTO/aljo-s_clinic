@@ -1,7 +1,9 @@
 ﻿using Clinic_Business;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
@@ -17,17 +19,38 @@ namespace Clinic.Medical_Services.Casher
         {
             InitializeComponent();
 
-            txtSearchByPatientName.TextChanged += txtSearchByPatientName_TextChanged;
-            dateTimePicker1.ValueChanged += dateTimePicker1_ValueChanged;
+            txtSearchByPatientName.TextChanged +=
+                txtSearchByPatientName_TextChanged;
 
-            chePending.CheckedChanged += FilterStatus_CheckedChanged;
-            chePartial.CheckedChanged += FilterStatus_CheckedChanged;
-            chePaid.CheckedChanged += FilterStatus_CheckedChanged;
+            dateTimePicker1.ValueChanged +=
+                dateTimePicker1_ValueChanged;
 
-            dgMasterBillList.CellFormatting += dgMasterBillList_CellFormatting;
-            dgMasterBillList.CellContentClick += dgMasterBillList_CellContentClick;
+            chePending.CheckedChanged +=
+                FilterStatus_CheckedChanged;
+
+            chePartial.CheckedChanged +=
+                FilterStatus_CheckedChanged;
+
+            chePaid.CheckedChanged +=
+                FilterStatus_CheckedChanged;
+
+            CheckBox chkAllDates = this.Controls
+                .Find("chkAllDates", true)
+                .OfType<CheckBox>()
+                .FirstOrDefault();
+
+            if (chkAllDates != null)
+            {
+                chkAllDates.CheckedChanged -= chkAllDates_CheckedChanged;
+                chkAllDates.CheckedChanged += chkAllDates_CheckedChanged;
+            }
+
+            dgMasterBillList.CellFormatting +=
+                dgMasterBillList_CellFormatting;
+
+            dgMasterBillList.CellContentClick +=
+                dgMasterBillList_CellContentClick;
         }
-
         private void frmManageBills_Load(object sender, EventArgs e)
         {
             lbCurrentUser.Text = clsGlobal.PersonName;
@@ -36,19 +59,101 @@ namespace Clinic.Medical_Services.Casher
             chePartial.Checked = true;
             chePaid.Checked = true;
 
+            // Show all dates initially
+            CheckBox chkAllDates = this.Controls
+                .Find("chkAllDates", true)
+                .OfType<CheckBox>()
+                .FirstOrDefault();
+
+            if (chkAllDates != null)
+                chkAllDates.Checked = true;
+
             _RefreshBillsList();
         }
 
         private void _RefreshBillsList()
         {
-            _dtBills = clsBillingService.GetAllBills();
-            _dvBills = _dtBills.DefaultView;
-            dgMasterBillList.DataSource = _dvBills;
+            try
+            {
+                // 1. Load bills from MySQL
+                _dtBills = clsBillingService.GetAllBills();
 
-            // تطبيق الفلترة الافتراضية وتحديث العدادات
-            _ApplyAdvancedFilter();
-            _UpdateKPICards(_dtBills);
-            _AddActionButtonsOnce();
+                if (_dtBills == null)
+                    _dtBills = new DataTable();
+
+                // 2. Check only the columns actually needed
+                string[] requiredColumns =
+                {
+            "BillID",
+            "BillDate",
+            "Status",
+            "PatientName"
+        };
+
+                foreach (string column in requiredColumns)
+                {
+                    if (!_dtBills.Columns.Contains(column))
+                    {
+                        MessageBox.Show(
+                            "Missing billing column: " + column,
+                            "Billing Column Missing",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Warning
+                        );
+
+                        return;
+                    }
+                }
+
+                // 3. Create DataView
+                _dvBills = new DataView(_dtBills);
+
+                // 4. Bind to the actual billing grid
+                dgMasterBillList.DataSource = _dvBills;
+
+                string[] hiddenColumns =
+                {
+                    "BillID", "VisitID", "PatientID", "PersonID",
+                    "DoctorID", "AppointmentID", "CreatedByUserID", "PaymentStatus"
+                };
+                foreach (string column in hiddenColumns)
+                {
+                    if (dgMasterBillList.Columns.Contains(column))
+                        dgMasterBillList.Columns[column].Visible = false;
+                }
+
+                dgMasterBillList.AutoSizeColumnsMode =
+                    DataGridViewAutoSizeColumnsMode.Fill;
+                dgMasterBillList.ColumnHeadersHeightSizeMode =
+                    DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+                dgMasterBillList.ColumnHeadersHeight = 42;
+
+                if (dgMasterBillList.Columns.Contains("BillNumber"))
+                    dgMasterBillList.Columns["BillNumber"].HeaderText = "Bill Number";
+                if (dgMasterBillList.Columns.Contains("PatientName"))
+                    dgMasterBillList.Columns["PatientName"].HeaderText = "Patient Name";
+                if (dgMasterBillList.Columns.Contains("TotalAmount"))
+                    dgMasterBillList.Columns["TotalAmount"].HeaderText = "Total Amount";
+                if (dgMasterBillList.Columns.Contains("PaidAmount"))
+                    dgMasterBillList.Columns["PaidAmount"].HeaderText = "Paid Amount";
+                if (dgMasterBillList.Columns.Contains("BalanceDue"))
+                    dgMasterBillList.Columns["BalanceDue"].HeaderText = "Balance Due";
+
+                // 5. Apply date, status and patient filters
+                _ApplyAdvancedFilter();
+
+                // 6. Add action buttons
+                _AddActionButtonsOnce();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    ex.ToString(),
+                    "Unable to Load Bills",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+            }
         }
 
 
@@ -90,39 +195,57 @@ namespace Clinic.Medical_Services.Casher
 
         private void _UpdateKPICards(DataTable dt)
         {
-            // 1. التحقق من أن جدول البيانات يحتوي على أسطر فعلياً لتجنب الأخطاء
+            lblCountPending.Text = "0";
+            lblCountPartial.Text = "0";
+            lblCountPaid.Text = "0";
+
             if (dt == null || dt.Rows.Count == 0)
-            {
-                lblCountPending.Text = "0";
-                lblCountPartial.Text = "0";
-                lblCountPaid.Text = "0";
                 return;
-            }
 
-            // 2. جلب التاريخ المختار من الـ DateTimePicker
-            string targetDateStr = dateTimePicker1.Value.ToString("dd/MM/yyyy");
+            CheckBox chkAllDates = this.Controls
+                .Find("chkAllDates", true)
+                .OfType<CheckBox>()
+                .FirstOrDefault();
 
-            // 3. فحص هل الكاشير اختار "عرض كل التواريخ" chkAllDates
-            CheckBox chkAllDates = (CheckBox)this.Controls["chkAllDates"];
+            bool showAllDates =
+                chkAllDates != null && chkAllDates.Checked;
 
-            int pendingCount, partialCount, paidCount;
+            DateTime selectedDate = dateTimePicker1.Value.Date;
 
-            if (chkAllDates != null && chkAllDates.Checked)
+            int pendingCount = 0;
+            int partialCount = 0;
+            int paidCount = 0;
+
+            foreach (DataRow row in dt.Rows)
             {
-                // 🔓 إذا كان يعرض كل التواريخ: نحسب الإجمالي الشامل لجميع الفواتير في النظام
-                pendingCount = dt.Select("Status = 'Pending'").Length;
-                partialCount = dt.Select("Status = 'Partial'").Length;
-                paidCount = dt.Select("Status = 'Paid'").Length;
-            }
-            else
-            {
-                // 🔒 إذا كان يفلتر بتاريخ معين: نحسب الإحصائيات لهذا التاريخ المختار فقط (تعديلك الممتاز)
-                pendingCount = dt.Select($"Status = 'Pending' AND BillDateString = '{targetDateStr}'").Length;
-                partialCount = dt.Select($"Status = 'Partial' AND BillDateString = '{targetDateStr}'").Length;
-                paidCount = dt.Select($"Status = 'Paid' AND BillDateString = '{targetDateStr}'").Length;
+                if (row["BillDate"] == DBNull.Value)
+                    continue;
+
+                DateTime billDate =
+                    Convert.ToDateTime(row["BillDate"]).Date;
+
+                if (!showAllDates && billDate != selectedDate)
+                    continue;
+
+                string status = Convert.ToString(row["Status"])
+                    .Trim();
+
+                switch (status)
+                {
+                    case "Pending":
+                        pendingCount++;
+                        break;
+
+                    case "Partial":
+                        partialCount++;
+                        break;
+
+                    case "Paid":
+                        paidCount++;
+                        break;
+                }
             }
 
-            // 4. تحديث الواجهة الرقمية المضيئة
             lblCountPending.Text = pendingCount.ToString();
             lblCountPartial.Text = partialCount.ToString();
             lblCountPaid.Text = paidCount.ToString();
@@ -130,56 +253,86 @@ namespace Clinic.Medical_Services.Casher
 
         private void _ApplyAdvancedFilter()
         {
-            string nameTarget = txtSearchByPatientName.Text.Replace("'", "''").Trim();
+            if (_dtBills == null || _dvBills == null)
+                return;
 
-            // 1. بناء فلتر الحالات
-            string statusFilter = "";
-            if (chePending.Checked) statusFilter += "'Pending',";
-            if (chePartial.Checked) statusFilter += "'Partial',";
-            if (chePaid.Checked) statusFilter += "'Paid',";
+            if (!_dtBills.Columns.Contains("Status") ||
+                !_dtBills.Columns.Contains("BillDate") ||
+                !_dtBills.Columns.Contains("PatientName"))
+                return;
 
-            if (statusFilter.EndsWith(","))
-                statusFilter = statusFilter.TrimEnd(',');
+            List<string> filters = new List<string>();
 
-            // 2. فحص خيار منع فلترة التاريخ (عرض كل التواريخ)
-            string finalFilter = "";
+            // 1. DATE FILTER
+            CheckBox chkAllDates = this.Controls
+                .Find("chkAllDates", true)
+                .OfType<CheckBox>()
+                .FirstOrDefault();
 
-            // ابحث عن الشيك بوكس الذي أضفناه
-            CheckBox chkAllDates = (CheckBox)this.Controls["chkAllDates"];
+            bool allDates = chkAllDates != null && chkAllDates.Checked;
 
-            if (chkAllDates != null && chkAllDates.Checked)
+            if (!allDates)
             {
-                // 🔓 إذا كان مؤشراً عليه: نضع شرطاً وهمياً دائماً صحيح ليتم تجاهل التاريخ وعرض الكل
-                finalFilter = "1=1";
+                DateTime selectedDate = dateTimePicker1.Value.Date;
+
+                string fromDate = selectedDate.ToString(
+                    "MM/dd/yyyy",
+                    System.Globalization.CultureInfo.InvariantCulture);
+
+                string toDate = selectedDate.AddDays(1).ToString(
+                    "MM/dd/yyyy",
+                    System.Globalization.CultureInfo.InvariantCulture);
+
+                filters.Add(
+                    $"BillDate >= #{fromDate}# AND BillDate < #{toDate}#");
+            }
+
+            // 2. STATUS FILTER
+            List<string> selectedStatuses = new List<string>();
+
+            if (chePending.Checked)
+                selectedStatuses.Add("'Pending'");
+
+            if (chePartial.Checked)
+                selectedStatuses.Add("'Partial'");
+
+            if (chePaid.Checked)
+                selectedStatuses.Add("'Paid'");
+
+            if (selectedStatuses.Count == 0)
+            {
+                filters.Add("1 = 0");
             }
             else
             {
-                // 🔒 إذا لم يكن مؤشراً عليه: نفلتر بالتاريخ المختار كالمعتاد
-                string dateTarget = dateTimePicker1.Value.ToString("dd/MM/yyyy");
-                finalFilter = $"BillDateString = '{dateTarget}'";
+                filters.Add(
+                    "Status IN (" + string.Join(",", selectedStatuses) + ")");
             }
 
-            // 3. دمج فلتر الحالات
-            if (!string.IsNullOrEmpty(statusFilter))
+            // 3. PATIENT NAME FILTER
+            string patientName = txtSearchByPatientName.Text.Trim();
+
+            if (!string.IsNullOrWhiteSpace(patientName))
             {
-                finalFilter += $" AND Status IN ({statusFilter})";
-            }
-            else
-            {
-                finalFilter += " AND 1=1"; ;
+                patientName = patientName
+                    .Replace("'", "''")
+                    .Replace("[", "[[]")
+                    .Replace("%", "[%]")
+                    .Replace("*", "[*]");
+
+                filters.Add(
+                    $"PatientName LIKE '%{patientName}%'");
             }
 
-            // 4. دمج فلتر اسم المريض
-            if (!string.IsNullOrEmpty(nameTarget))
-            {
-                finalFilter += $" AND PatientName LIKE '%{nameTarget}%'";
-            }
+            // 4. APPLY FILTER
+            _dvBills.RowFilter = string.Join(" AND ", filters);
 
-            // 5. تطبيق التصفية النهائية
-            _dvBills.RowFilter = finalFilter;
+            // 5. REFRESH GRID
+            dgMasterBillList.Refresh();
+
+            // 6. UPDATE COUNTS
             _UpdateKPICards(_dtBills);
         }
-
         private void txtSearchByPatientName_TextChanged(object sender, EventArgs e) => _ApplyAdvancedFilter();
         private void dateTimePicker1_ValueChanged(object sender, EventArgs e) => _ApplyAdvancedFilter();
         private void FilterStatus_CheckedChanged(object sender, EventArgs e) => _ApplyAdvancedFilter();
@@ -222,161 +375,128 @@ namespace Clinic.Medical_Services.Casher
             editColumn.DisplayIndex = dgMasterBillList.Columns.Count - 2;
             cancelColumn.DisplayIndex = dgMasterBillList.Columns.Count - 1;
         }
+        private string GetBillItemsTotal(DataGridViewRow row)
+        {
+            if (row == null)
+                return "";
 
+            if (!dgMasterBillList.Columns.Contains("ItemsTotal"))
+                return "";
+
+            return Convert.ToString(
+                row.Cells["ItemsTotal"].Value
+            ) ?? "";
+        }
         private void dgMasterBillList_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
-            if (e.RowIndex < 0 || e.RowIndex >= dgMasterBillList.Rows.Count)
+            if (e.RowIndex < 0 || e.ColumnIndex < 0 ||
+                e.RowIndex >= dgMasterBillList.Rows.Count)
                 return;
 
-            string status = dgMasterBillList.Rows[e.RowIndex].Cells["Status"].Value?.ToString();
-            string itemsTotal = dgMasterBillList.Rows[e.RowIndex].Cells["ItemsTotal"].Value?.ToString();
-
-            if (string.IsNullOrWhiteSpace(status))
-                return;
-
+            DataGridViewRow row = dgMasterBillList.Rows[e.RowIndex];
+            string status = Convert.ToString(row.Cells["Status"].Value) ?? "";
+            string columnName = dgMasterBillList.Columns[e.ColumnIndex].Name;
+            bool hasItemDetails = dgMasterBillList.Columns.Contains("ItemsTotal");
+            string itemsTotal = GetBillItemsTotal(row);
             int prescriptionCount = GetPrescriptionCount(itemsTotal);
             int pharmacySaleCount = GetPharmacySaleCount(itemsTotal);
             bool hasServices = GetServiceCount(itemsTotal) > 0;
 
-            // ===== STATUS =====
-            if (dgMasterBillList.Columns[e.ColumnIndex].Name == "Status")
+            if (columnName == "Status")
             {
                 switch (status)
                 {
-                    case "Paid":
-                        e.CellStyle.ForeColor = Color.SpringGreen;
-                        break;
-
-                    case "Partial":
-                        e.CellStyle.ForeColor = Color.Orange;
-                        break;
-
-                    case "Pending":
-                        e.CellStyle.ForeColor = Color.Tomato;
-                        break;
-
-                    case "Cancelled":
-                        e.CellStyle.ForeColor = Color.Crimson;
-                        break;
-
-                    case "Refunded":
-                        e.CellStyle.ForeColor = Color.DodgerBlue;
-                        break;
+                    case "Paid": e.CellStyle.ForeColor = Color.SpringGreen; break;
+                    case "Partial": e.CellStyle.ForeColor = Color.Orange; break;
+                    case "Pending": e.CellStyle.ForeColor = Color.Tomato; break;
+                    case "Cancelled": e.CellStyle.ForeColor = Color.Crimson; break;
+                    case "Refunded": e.CellStyle.ForeColor = Color.DodgerBlue; break;
                 }
-
                 e.CellStyle.Font = new Font(dgMasterBillList.Font, FontStyle.Bold);
             }
-
-            // ===== PAY BUTTON =====
-            if (dgMasterBillList.Columns[e.ColumnIndex].Name == "btnPayAction")
+            else if (columnName == "btnPayAction")
             {
-                if (IsEmptyBill(itemsTotal) && status == "Pending")
+                // Do not infer an empty bill if ItemsTotal was not loaded.
+                if (status == "Pending" && hasItemDetails && IsEmptyBill(itemsTotal))
                 {
-                    e.Value = "🗑 Delete";
+                    e.Value = "Delete";
                     e.CellStyle.BackColor = Color.FromArgb(120, 40, 40);
                     e.CellStyle.ForeColor = Color.White;
-                    return;
                 }
-
-                if (status == "Pending")
+                else if (status == "Pending" || status == "Partial")
                 {
-                    e.Value = "💳 Pay";
-                    e.CellStyle.BackColor = Color.FromArgb(14, 114, 95);
-                    e.CellStyle.ForeColor = Color.White;
-                }
-                else if (status == "Partial")
-                {
-                    e.Value = "🔸 Complete";
+                    e.Value = status == "Partial" ? "Complete" : "Pay";
                     e.CellStyle.BackColor = Color.FromArgb(14, 114, 95);
                     e.CellStyle.ForeColor = Color.White;
                 }
                 else
                 {
-                    e.Value = "🖨 Print";
+                    e.Value = status == "Paid" || status == "Refunded" ? "Print" : "Locked";
                     e.CellStyle.BackColor = Color.FromArgb(28, 58, 68);
                     e.CellStyle.ForeColor = Color.FromArgb(0, 210, 190);
                 }
             }
-
-            // ===== EDIT BUTTON =====
-            if (dgMasterBillList.Columns[e.ColumnIndex].Name == "btnEditAction")
+            else if (columnName == "btnEditAction")
             {
                 if (status == "Pending")
                 {
-                    if (prescriptionCount > 0 || pharmacySaleCount > 0)
-                    {
-                        e.Value = "📝 Edit";
-                        e.CellStyle.BackColor = Color.FromArgb(0, 80, 90);
-                        e.CellStyle.ForeColor = Color.White;
-                    }
-                    else
-                    {
-                        e.Value = "🚫 No Medicines";
-                        e.CellStyle.BackColor = Color.FromArgb(20, 43, 50);
-                        e.CellStyle.ForeColor = Color.DarkGray;
-                    }
+                    bool canEdit = hasItemDetails &&
+                        (prescriptionCount > 0 || pharmacySaleCount > 0);
+                    e.Value = canEdit ? "Edit" : "Unavailable";
+                    e.CellStyle.BackColor = canEdit
+                        ? Color.FromArgb(0, 80, 90) : Color.FromArgb(20, 43, 50);
+                    e.CellStyle.ForeColor = canEdit ? Color.White : Color.DarkGray;
                 }
                 else if (status == "Paid" || status == "Partial")
                 {
-                    e.Value = "🔄 Refund";
+                    e.Value = "Refund";
                     e.CellStyle.BackColor = Color.FromArgb(28, 58, 68);
                     e.CellStyle.ForeColor = Color.FromArgb(0, 210, 190);
                 }
                 else
                 {
-                    e.Value = "👁 View";
+                    e.Value = "Locked";
                     e.CellStyle.BackColor = Color.FromArgb(30, 30, 30);
                     e.CellStyle.ForeColor = Color.DarkGray;
                 }
             }
-
-            // ===== CANCEL BUTTON =====
-            if (dgMasterBillList.Columns[e.ColumnIndex].Name == "btnCancelAction")
+            else if (columnName == "btnCancelAction")
             {
-                if (status == "Pending" && !hasServices)
-                {
-                    e.Value = "❌ Cancel";
-                    e.CellStyle.BackColor = Color.FromArgb(120, 40, 40);
-                    e.CellStyle.ForeColor = Color.White;
-                }
-                else
-                {
-                    e.Value = "🔒 Locked";
-                    e.CellStyle.BackColor = Color.FromArgb(20, 43, 50);
-                    e.CellStyle.ForeColor = Color.DarkGray;
-                }
+                bool canCancel = status == "Pending" && hasItemDetails && !hasServices;
+                e.Value = canCancel ? "Cancel" : "Locked";
+                e.CellStyle.BackColor = canCancel
+                    ? Color.FromArgb(120, 40, 40) : Color.FromArgb(20, 43, 50);
+                e.CellStyle.ForeColor = canCancel ? Color.White : Color.DarkGray;
             }
         }
 
         private void dgMasterBillList_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex < 0)
+            if (e.RowIndex < 0 || e.ColumnIndex < 0 ||
+                e.RowIndex >= dgMasterBillList.Rows.Count)
                 return;
 
-            int billID = Convert.ToInt32(dgMasterBillList.Rows[e.RowIndex].Cells["BillID"].Value);
+            string columnName = dgMasterBillList.Columns[e.ColumnIndex].Name;
+            if (columnName != "btnPayAction" &&
+                columnName != "btnEditAction" &&
+                columnName != "btnCancelAction")
+                return;
 
-            string currentStatus = dgMasterBillList.Rows[e.RowIndex].Cells["Status"].Value?.ToString();
-            string itemsTotal = dgMasterBillList.Rows[e.RowIndex].Cells["ItemsTotal"].Value?.ToString();
-
+            DataGridViewRow row = dgMasterBillList.Rows[e.RowIndex];
+            int billID = Convert.ToInt32(row.Cells["BillID"].Value);
+            string currentStatus = Convert.ToString(row.Cells["Status"].Value) ?? "";
+            bool hasItemDetails = dgMasterBillList.Columns.Contains("ItemsTotal");
+            string itemsTotal = GetBillItemsTotal(row);
             int prescriptionCount = GetPrescriptionCount(itemsTotal);
             int pharmacySaleCount = GetPharmacySaleCount(itemsTotal);
             bool hasServices = GetServiceCount(itemsTotal) > 0;
 
-            // ===== PAY / DELETE =====
-            if (dgMasterBillList.Columns[e.ColumnIndex].Name == "btnPayAction")
+            // PAY / COMPLETE / PRINT
+            if (columnName == "btnPayAction")
             {
-                if (IsEmptyBill(itemsTotal) && currentStatus == "Pending")
+                if (currentStatus == "Cancelled")
                 {
-                    if (MessageBox.Show(
-                        "This bill is empty. Do you want to delete it?",
-                        "Confirm Delete",
-                        MessageBoxButtons.YesNo,
-                        MessageBoxIcon.Question) == DialogResult.Yes)
-                    {
-                        //_DeleteBill(billID);
-                        _RefreshBillsList();
-                    }
-
+                    MessageBox.Show("This bill is cancelled.");
                     return;
                 }
 
@@ -386,12 +506,15 @@ namespace Clinic.Medical_Services.Casher
                     return;
                 }
 
-                if (currentStatus == "Cancelled")
+                if (currentStatus != "Pending" && currentStatus != "Partial")
+                    return;
+
+                if (hasItemDetails && IsEmptyBill(itemsTotal) && currentStatus == "Pending")
                 {
-                    MessageBox.Show("This bill is cancelled.",
-                        "Warning",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
+                    // No delete method is currently implemented. Never show a false success.
+                    MessageBox.Show("Delete bill is not implemented yet.",
+                        "Action Unavailable", MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
                     return;
                 }
 
@@ -399,33 +522,33 @@ namespace Clinic.Medical_Services.Casher
                 return;
             }
 
-            // ===== EDIT =====
-            if (dgMasterBillList.Columns[e.ColumnIndex].Name == "btnEditAction")
+            // EDIT / REFUND
+            if (columnName == "btnEditAction")
             {
                 if (currentStatus == "Cancelled" || currentStatus == "Refunded")
                 {
-                    MessageBox.Show("This bill is locked.",
-                        "Info",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Information);
+                    MessageBox.Show("This bill is locked.");
                     return;
                 }
 
                 if (currentStatus == "Pending")
                 {
+                    if (!hasItemDetails)
+                    {
+                        MessageBox.Show("Bill item details are not available. Editing is disabled.",
+                            "Action Unavailable", MessageBoxButtons.OK,
+                            MessageBoxIcon.Warning);
+                        return;
+                    }
+
                     if (prescriptionCount == 0 && pharmacySaleCount == 0)
                     {
-                        MessageBox.Show("No items to edit.",
-                            "Info",
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Information);
+                        MessageBox.Show("No medicine items to edit.");
                         return;
                     }
 
                     using (frmEditPendingPrescription frm = new frmEditPendingPrescription(billID))
-                    {
                         frm.ShowDialog();
-                    }
 
                     _RefreshBillsList();
                     return;
@@ -434,68 +557,55 @@ namespace Clinic.Medical_Services.Casher
                 if (currentStatus == "Paid" || currentStatus == "Partial")
                 {
                     using (frmMedicineSalesReturn frm = new frmMedicineSalesReturn(billID))
-                    {
                         frm.ShowDialog();
-                    }
 
                     _RefreshBillsList();
                 }
-
                 return;
             }
 
-            // ===== CANCEL =====
-            if (dgMasterBillList.Columns[e.ColumnIndex].Name == "btnCancelAction")
+            // CANCEL (requires actual item details)
+            if (columnName == "btnCancelAction")
             {
                 if (currentStatus != "Pending")
                 {
-                    MessageBox.Show("Only pending bills can be cancelled.",
-                        "Warning",
-                        MessageBoxButtons.OK,
+                    MessageBox.Show("Only pending bills can be cancelled.");
+                    return;
+                }
+
+                if (!hasItemDetails)
+                {
+                    MessageBox.Show(
+                        "Bill item information is not available. Cancellation is disabled until item details are loaded.",
+                        "Action Unavailable", MessageBoxButtons.OK,
                         MessageBoxIcon.Warning);
                     return;
                 }
 
                 if (hasServices)
                 {
-                    MessageBox.Show("Bills containing services cannot be cancelled.",
-                        "Warning",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
+                    MessageBox.Show("Bills containing services cannot be cancelled.");
                     return;
                 }
 
-                if (MessageBox.Show($"Cancel bill {billID}?",
-                    "Confirm",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Question) == DialogResult.Yes)
-                {
+                if (MessageBox.Show($"Cancel bill {billID}?", "Confirm",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                    return;
 
-                    bool isCancelled = clsBillingService.CancelBill(billID,clsGlobal.CurrentUser.UserID);
+                bool isCancelled = clsBillingService.CancelBill(
+                    billID, clsGlobal.CurrentUser.UserID);
 
-                    if (isCancelled)
-                    {
-                        MessageBox.Show(
-                            "The bill has been cancelled successfully.",
-                            "Success",
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Information);
+                MessageBox.Show(isCancelled
+                    ? "The bill has been cancelled successfully."
+                    : "Failed to cancel the bill.",
+                    isCancelled ? "Success" : "Error", MessageBoxButtons.OK,
+                    isCancelled ? MessageBoxIcon.Information : MessageBoxIcon.Error);
 
-                        _RefreshBillsList();
-                    }
-                    else
-                    {
-                        MessageBox.Show(
-                            "Failed to cancel the bill. Please try again or contact support.",
-                            "Error",
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Error);
-                    }
-                }
-
-                return;
+                if (isCancelled)
+                    _RefreshBillsList();
             }
         }
+
         private void btnExit_Click(object sender, EventArgs e)
         {
             this.Close();

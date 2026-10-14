@@ -26,37 +26,86 @@ namespace Clinic.Medical_Services.Casher
             lbCurrentUser.Text = clsGlobal.PersonName;
         }
 
+
         private void LoadPaymentScreenDetails(int billID)
         {
-            // 1. إنشاء كائن مالي للفاتورة وتمرير الـ BillID له فقط!
-            clsBillingService paymentSummary = new clsBillingService(billID);
+            try
+            {
+                clsBillingService paymentSummary =
+                    new clsBillingService(billID);
 
-            // 2. التحقق مما إذا تم العثور على الفاتورة بنجاح وملء بياناتها
-            if (paymentSummary.IsFound)
-            {
-                // عرض البيانات المالية مباشرة من خصائص الكائن الممتلئ
+                if (!paymentSummary.IsFound)
+                {
+                    MessageBox.Show(
+                        "Bill not found. Bill ID: " + billID,
+                        "Bill Not Found",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+
+                    btnConfirmPayment.Enabled = false;
+                    return;
+                }
+
                 txtSerachByBillID.Text = paymentSummary.BillNumber;
-                lblSubtotal.Text = paymentSummary.TotalBeforeDiscountAndTax.ToString("C");
-                lblMedicines.Text= paymentSummary.MedicinesTotal.ToString("C");
-                lblServices.Text = paymentSummary.ServicesTotal.ToString("C");
-                lblAppoinmentFees.Text= paymentSummary.AppointmentFees.ToString("C");
-                lblTax.Text = paymentSummary.TotalTax.ToString("C");
-                lblDiscount.Text = paymentSummary.TotalDiscount.ToString("C");
-                txtDiscount.Text = paymentSummary.TotalDiscount.ToString("C");
-                lblFinalTotal.Text = paymentSummary.FinalTotalIncludingAll.ToString("C");
-                lbTotalBillAmount.Text = paymentSummary.FinalTotalIncludingAll.ToString("C");
-                lblPaymentAmmount.Text = paymentSummary.PaymentAmount.ToString("C");
-                lblFinalPaymentDue.Text = paymentSummary.BalanceDue.ToString("C");
-                txtAmountToPay.Text = paymentSummary.BalanceDue.ToString("C2");
-                lbAmmountToPay.Text= paymentSummary.BalanceDue.ToString("C2");
-                // ربط الـ DataTable الجاهز والمملوء تلقائياً بالـ DataGridView
-                dgvBillDetails.DataSource = paymentSummary.BillDetailsTable;
+
+                lblSubtotal.Text =
+                    paymentSummary.TotalBeforeDiscountAndTax.ToString("N2");
+
+                lblMedicines.Text =
+                    paymentSummary.MedicinesTotal.ToString("N2");
+
+                lblServices.Text =
+                    paymentSummary.ServicesTotal.ToString("N2");
+
+                lblAppoinmentFees.Text =
+                    paymentSummary.AppointmentFees.ToString("N2");
+
+                lblTax.Text =
+                    paymentSummary.TotalTax.ToString("N2");
+
+                lblDiscount.Text =
+                    paymentSummary.TotalDiscount.ToString("N2");
+
+                txtDiscount.Text =
+                    paymentSummary.TotalDiscount.ToString("N2");
+
+                lblFinalTotal.Text =
+                    paymentSummary.FinalTotalIncludingAll.ToString("N2");
+
+                lbTotalBillAmount.Text =
+                    paymentSummary.FinalTotalIncludingAll.ToString("N2");
+
+                lblPaymentAmmount.Text =
+                    paymentSummary.PaymentAmount.ToString("N2");
+
+                lblFinalPaymentDue.Text =
+                    paymentSummary.BalanceDue.ToString("N2");
+
+                txtAmountToPay.Text =
+                    paymentSummary.BalanceDue.ToString("N2");
+
+                lbAmmountToPay.Text =
+                    paymentSummary.BalanceDue.ToString("N2");
+
+                dgvBillDetails.DataSource =
+                    paymentSummary.BillDetailsTable;
+
+                // Never allow another payment against a zero balance.
+                btnConfirmPayment.Enabled =
+                    paymentSummary.BalanceDue > 0;
             }
-            else
+            catch (Exception ex)
             {
-                MessageBox.Show("عذراً، لم يتم العثور على تفاصيل الفاتورة المطلوبة!", "خطأ", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                btnConfirmPayment.Enabled = false;
+
+                MessageBox.Show(
+                    ex.ToString(),
+                    "Unable to Load Payment Details",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
             }
         }
+
         private void btnExit_Click(object sender, EventArgs e)
         {
             this.Close();
@@ -179,35 +228,37 @@ namespace Clinic.Medical_Services.Casher
             Payment.CreatedByUserID = clsGlobal.CurrentUser.UserID;
 
             // 6. حفظ العملية والتعامل مع النتائج
-            if (Payment.Save())
+            try
             {
-                MessageBox.Show("Payment has been processed successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                // تعطيل عناصر التحكم لمنع تكرار الضغط والدفع بالخطأ
-                btnConfirmPayment.Enabled = false;
-                txtAmountReceived.Enabled = false;
-                pnlPaymentMethods.Enabled = false; // افترضنا أن الـ RadioButtons داخل Panel لتعطيلها معاً
-
-                // 7. [إجراء اختياري احترافي] طباعة الإيصال فوراً لو رغب المستخدم
-                if (MessageBox.Show("Do you want to print the payment receipt?", "Print Receipt",
-                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                if (Payment.Save())
                 {
-                    clsFormHelper.ShowForm(() => new frmIssueInvoice(_BillID));
+                    MessageBox.Show(
+                        "Payment has been processed successfully!",
+                        "Success",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
 
-                    this.Close();
+                    btnConfirmPayment.Enabled = false;
+
+                    LoadPaymentScreenDetails(_BillID);
                 }
                 else
                 {
-                    clsFormHelper.ShowForm<frmManageBills>();
-                    this.Close();
+                    MessageBox.Show(
+                        "Payment.Save() returned false. " +
+                        "Please check clsPayment.Save().",
+                        "Payment Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
                 }
-
-
-               
             }
-            else
+            catch (Exception ex)
             {
-                MessageBox.Show("An error occurred while saving the payment. Please try again.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(
+                    ex.ToString(),
+                    "Payment Database Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
             }
         }
 
