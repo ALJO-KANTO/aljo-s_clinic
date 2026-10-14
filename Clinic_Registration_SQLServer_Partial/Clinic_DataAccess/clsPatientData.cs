@@ -199,25 +199,25 @@ namespace Clinic_DataAccess
                     new MySqlConnection(clsDataAccessSettings.ConnectionString))
                 {
                     string query = @"
-    SELECT
-        p.PatientID,
-        p.PersonID,
-        per.FullName,
-        p.EmergencyContact,
-        p.MedicalHistory,
-        p.CreatedDate
-    FROM patients p
-    LEFT JOIN persons per
-        ON p.PersonID = per.PersonID
-    WHERE p.IsActive = 1
-    ORDER BY p.PersonID DESC;";
+                SELECT
+                    p.PatientID,
+                    p.PersonID,
+                    per.FullName,
+                    p.EmergencyContact,
+                    p.MedicalHistory,
+                    p.CreatedDate
+                FROM patients p
+                LEFT JOIN persons per
+                    ON p.PersonID = per.PersonID
+                ORDER BY p.PersonID DESC;";
 
                     using (MySqlCommand cmd =
                         new MySqlCommand(query, connection))
                     {
                         connection.Open();
 
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        using (MySqlDataReader reader =
+                            cmd.ExecuteReader())
                         {
                             dt.Load(reader);
                         }
@@ -235,7 +235,6 @@ namespace Clinic_DataAccess
 
             return dt;
         }
-
         public static DataRow GetPatientByID(int PatientID)
         {
             DataTable dt = new DataTable();
