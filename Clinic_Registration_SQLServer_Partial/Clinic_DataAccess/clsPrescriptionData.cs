@@ -525,10 +525,46 @@ namespace Clinic_DataAccess
                         {
                             if (reader.Read())
                             {
-                                PrescriptionID = (int)reader["PrescriptionID"];
-                                PrescriptionDate = (DateTime)reader["PrescriptionDate"];
+                                PrescriptionID = Convert.ToInt32(reader["PrescriptionID"]);
+                                PrescriptionDate = Convert.ToDateTime(reader["PrescriptionDate"]);
                                 PrescriptionNotes = reader["PrescriptionNotes"].ToStringOrEmpty();
-                                PrescriptionStatus = (byte)reader["PrescriptionStatus"];
+                                string status = Convert.ToString(reader["PrescriptionStatus"]);
+
+                                byte numericStatus;
+
+                                if (byte.TryParse(status, out numericStatus))
+                                {
+                                    PrescriptionStatus = numericStatus;
+                                }
+                                else
+                                {
+                                    switch (status?.Trim().ToLowerInvariant())
+                                    {
+                                        case "pending":
+                                            PrescriptionStatus = 1;
+                                            break;
+
+                                        case "waiting for payment":
+                                            PrescriptionStatus = 2;
+                                            break;
+
+                                        case "ready for dispensing":
+                                            PrescriptionStatus = 3;
+                                            break;
+
+                                        case "dispensed":
+                                            PrescriptionStatus = 4;
+                                            break;
+
+                                        case "partially dispensed":
+                                            PrescriptionStatus = 5;
+                                            break;
+
+                                        default:
+                                            PrescriptionStatus = 0;
+                                            break;
+                                    }
+                                }
 
                                 return true;
 
@@ -770,9 +806,12 @@ namespace Clinic_DataAccess
             using (MySqlConnection connection = new MySqlConnection(clsDataAccessSettings.ConnectionString))
             {
                 // تحقق ما إذا كانت الوصفة موجودة وحالتها "Pending" (1)
-                string query = @"SELECT TOP 1 1 
-                         FROM Prescriptions 
-                         WHERE PrescriptionID = @PrescriptionID AND PrescriptionStatus = 1";
+                string query = @"
+    SELECT 1
+    FROM Prescriptions
+    WHERE PrescriptionID = @PrescriptionID
+      AND PrescriptionStatus = '1'
+    LIMIT 1;";
 
                 using (MySqlCommand cmd = new MySqlCommand(query, connection))
                 {

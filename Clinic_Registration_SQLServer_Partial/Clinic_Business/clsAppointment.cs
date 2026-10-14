@@ -194,9 +194,15 @@ namespace Clinic_Business
             return string.Empty; // كل الشروط مستوفاة
         }
 
-        public static bool UpdateAppointmentStatus(int AppointmentID,enAppointmentStatus Status, int UserID)
+        public static bool UpdateAppointmentStatus(
+     int AppointmentID,
+     enAppointmentStatus Status,
+     int UserID)
         {
-            return clsAppointmentData.UpdateAppointmentStatus(AppointmentID, (int)Status, UserID);
+            return clsAppointmentData.UpdateAppointmentStatus(
+                AppointmentID,
+                Status.ToString(),
+                UserID);
         }
 
         public static bool RescheduleAppointment(int OldAppointmentID, DateTime NewDate, int UserID)

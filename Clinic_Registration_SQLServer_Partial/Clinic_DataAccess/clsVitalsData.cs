@@ -19,7 +19,7 @@ namespace Clinic_DataAccess
                     try
                     {
                         string query = @"INSERT INTO Vitals (VisitID, AppointmentID, BloodPressure, Temperature, Weight, Pulse, RecordedDate, CreatedByUserID)
-                                 VALUES (@VisitID, @AppointmentID, @BloodPressure, @Temperature, @Weight, @Pulse, GETDATE(), @CreatedByUserID);
+                                 VALUES (@VisitID, @AppointmentID, @BloodPressure, @Temperature, @Weight, @Pulse,NOW(), @CreatedByUserID);
                                  SELECT LAST_INSERT_ID();";
 
                         using (MySqlCommand command = new MySqlCommand(query, connection, transaction))
@@ -35,8 +35,11 @@ namespace Clinic_DataAccess
                             object result = command.ExecuteScalar();
 
                             // استدعاء تحديث حالة الموعد باستخدام نفس الـ transaction
-                            clsAppointmentData.UpdateAppointmentStatus(AppointmentID, 9, CreatedByUserID, transaction);
-
+                            clsAppointmentData.UpdateAppointmentStatus(
+                                AppointmentID,
+                                "In_Billing",
+                                CreatedByUserID,
+                                transaction);
                             if (result != null && int.TryParse(result.ToString(), out int newVitalID))
                             {
                                 VitalID = newVitalID;
@@ -82,8 +85,9 @@ namespace Clinic_DataAccess
                                 BloodPressure = reader["BloodPressure"].ToString();
                                 Temperature = (decimal)reader["Temperature"];
                                 Weight = (decimal)reader["Weight"];
-                                Pulse = (short)reader["Pulse"];
-                                RecordedDate = (DateTime)reader["RecordedDate"];
+                                Pulse = reader["Pulse"] == DBNull.Value
+                                    ? (short)0
+                                    : Convert.ToInt16(reader["Pulse"]); RecordedDate = (DateTime)reader["RecordedDate"];
                                 CreatedByUserID = (int)reader["CreatedByUserID"];
                                 IsFound = true;
                             }
@@ -116,14 +120,30 @@ namespace Clinic_DataAccess
                         {
                             if (reader.Read())
                             {
-                                VitalID = (int)reader["VitalID"];
-                                AppointmentID =(int) reader["AppointmentID"];
-                                BloodPressure = reader["BloodPressure"].ToString();
-                                Temperature = (decimal)reader["Temperature"];
-                                Weight = (decimal)reader["Weight"];
-                                Pulse = (short)reader["Pulse"];
-                                RecordedDate = (DateTime)reader["RecordedDate"];
-                                CreatedByUserID = (int)reader["CreatedByUserID"];
+                                VitalID = Convert.ToInt32(reader["VitalID"]);
+
+                                AppointmentID = Convert.ToInt32(reader["AppointmentID"]);
+
+                                BloodPressure = Convert.ToString(reader["BloodPressure"]) ?? "";
+
+                                Temperature = reader["Temperature"] == DBNull.Value
+                                    ? 0m
+                                    : Convert.ToDecimal(reader["Temperature"]);
+
+                                Weight = reader["Weight"] == DBNull.Value
+                                    ? 0m
+                                    : Convert.ToDecimal(reader["Weight"]);
+
+                                Pulse = reader["Pulse"] == DBNull.Value
+                                    ? (short)0
+                                    : Convert.ToInt16(reader["Pulse"]);
+
+                                RecordedDate = Convert.ToDateTime(reader["RecordedDate"]);
+
+                                CreatedByUserID = reader["CreatedByUserID"] == DBNull.Value
+                                    ? 0
+                                    : Convert.ToInt32(reader["CreatedByUserID"]);
+
                                 IsFound = true;
                             }
                         }

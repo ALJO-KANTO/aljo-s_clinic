@@ -43,31 +43,78 @@ namespace Clinic_DataAccess
         }
 
 
-        public static bool SaveVisitServices(int VisitID, DataTable dtServices, MySqlTransaction transaction)
+        public static bool SaveVisitServices(
+            int VisitID,
+            DataTable dtServices,
+            MySqlTransaction transaction)
         {
+            if (transaction == null || transaction.Connection == null)
+                throw new ArgumentNullException(nameof(transaction));
 
-            //DeleteVisitServices(VisitID, transaction);
-            if(!dtServices.Columns.Contains("VisitID"))
-            dtServices.Columns.Add("VisitID", typeof(int), VisitID.ToString());
+            if (dtServices == null || dtServices.Rows.Count == 0)
+                return true;
 
-            // الإدراج الجماعي
-            using (SqlBulkCopy bulkCopy = new SqlBulkCopy(transaction.Connection, SqlBulkCopyOptions.Default, transaction))
+            string query = @"
+        INSERT INTO VisitServices
+        (
+            VisitID,
+            ServiceID,
+            SavedServicePrice,
+            Quantity,
+            Discount
+        )
+        VALUES
+        (
+            @VisitID,
+            @ServiceID,
+            @SavedServicePrice,
+            @Quantity,
+            @Discount
+        );";
+
+            using (MySqlCommand cmd = new MySqlCommand(
+                query,
+                transaction.Connection,
+                transaction))
             {
-                bulkCopy.DestinationTableName = "VisitServices";
-                bulkCopy.ColumnMappings.Add("ServiceID", "ServiceID");
-                bulkCopy.ColumnMappings.Add("VisitID", "VisitID");
-                bulkCopy.ColumnMappings.Add("Quantity", "Quantity");
-                bulkCopy.ColumnMappings.Add("SavedServicePrice", "SavedServicePrice");
-                bulkCopy.ColumnMappings.Add("Discount", "Discount");
+                cmd.Parameters.Add("@VisitID", MySqlDbType.Int32);
+                cmd.Parameters.Add("@ServiceID", MySqlDbType.Int32);
+                cmd.Parameters.Add("@SavedServicePrice", MySqlDbType.Decimal);
+                cmd.Parameters.Add("@Quantity", MySqlDbType.Decimal);
+                cmd.Parameters.Add("@Discount", MySqlDbType.Decimal);
 
-                bulkCopy.WriteToServer(dtServices);
+                foreach (DataRow row in dtServices.Rows)
+                {
+                    if (row.RowState == DataRowState.Deleted)
+                        continue;
+
+                    cmd.Parameters["@VisitID"].Value = VisitID;
+
+                    cmd.Parameters["@ServiceID"].Value =
+                        Convert.ToInt32(row["ServiceID"]);
+
+                    cmd.Parameters["@SavedServicePrice"].Value =
+                        Convert.ToDecimal(row["SavedServicePrice"]);
+
+                    cmd.Parameters["@Quantity"].Value =
+                        Convert.ToDecimal(row["Quantity"]);
+
+                    cmd.Parameters["@Discount"].Value =
+                        row["Discount"] == DBNull.Value
+                            ? 0m
+                            : Convert.ToDecimal(row["Discount"]);
+
+                    cmd.ExecuteNonQuery();
+                }
             }
-            clsBillingServiceData.UpdatePaymentStatus(VisitID,1, transaction);
+
+            clsBillingServiceData.UpdatePaymentStatus(
+                VisitID,
+                1,
+                transaction);
+
             return true;
-
-
         }
-
         public static bool DeleteVisitServices(int VisitID, MySqlTransaction transaction)
         {
             using (MySqlCommand cmdDelete = new MySqlCommand("DELETE FROM VisitServices WHERE VisitID = @VisitID", transaction.Connection, transaction))

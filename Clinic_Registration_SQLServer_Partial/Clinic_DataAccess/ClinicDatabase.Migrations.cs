@@ -80,7 +80,25 @@ namespace Clinic_DataAccess
                     TestPrice DECIMAL(18,2) NOT NULL DEFAULT 0,
                     IsActive TINYINT(1) NOT NULL DEFAULT 1
                 ) ENGINE=InnoDB;"
-        }
+        },
+        new DatabaseMigration
+{
+    Version = "20261013_002",
+    Description = "Create visit services table",
+    Sql = @"
+        CREATE TABLE IF NOT EXISTS visitservices
+        (
+            VisitServiceID INT AUTO_INCREMENT PRIMARY KEY,
+            VisitID INT NOT NULL,
+            ServiceID INT NOT NULL,
+            SavedServicePrice DECIMAL(18,2) NOT NULL DEFAULT 0,
+            Quantity DECIMAL(18,3) NOT NULL DEFAULT 1,
+            Discount DECIMAL(18,2) NOT NULL DEFAULT 0,
+
+            INDEX IX_VisitServices_VisitID (VisitID),
+            INDEX IX_VisitServices_ServiceID (ServiceID)
+        ) ENGINE=InnoDB;"
+}
       };
 
                 // STEP 4: Apply pending migrations

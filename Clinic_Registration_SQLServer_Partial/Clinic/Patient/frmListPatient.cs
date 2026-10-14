@@ -33,14 +33,6 @@ namespace Clinic.Patient
 
             if (_dtAllPatients == null || _dtAllPatients.Columns.Count == 0)
             {
-                MessageBox.Show(
-                    "Patient data could not be loaded.\n\n" +
-                    "Check clsPatient.GetAllPatients() and " +
-                    "clsPatientData.GetAllPatients().",
-                    "Patient Loading Error",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-
                 return;
             }
 
@@ -187,17 +179,6 @@ namespace Clinic.Patient
             {
                 if (!_dtAllPatients.Columns.Contains(FilterColumn))
                 {
-                    MessageBox.Show(
-                        "Column not found: " + FilterColumn +
-                        "\n\nAvailable columns:\n" +
-                        string.Join(", ",
-                            _dtAllPatients.Columns
-                                .Cast<DataColumn>()
-                                .Select(c => c.ColumnName)),
-                        "Patient List Error",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
-
                     return;
                 }
                 // حماية وتطهير النص المدخل باستخدام Replace لمنع مشاكل الـ (') وتأمين البحث في الحقول النصية ومنها الدول
@@ -215,7 +196,7 @@ namespace Clinic.Patient
             }
         }
 
-      
+
 
 
         private void editToolStripMenuItem_Click(object sender, EventArgs e)

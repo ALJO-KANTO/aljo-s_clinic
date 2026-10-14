@@ -241,31 +241,7 @@ namespace Clinic_DataAccess
             return IsFound;
         }
 
-        public static bool UpdateAppointmentStatus(int AppointmentID, short NewStatus,int UserID, MySqlTransaction transaction)
-        {
-            string query = @"UPDATE Appointments 
-                                    SET AppointmentStatus = @NewStatus, 
-                                        LastModifiedDate = GETDATE(),
-                                        CheckInTime = CASE 
-                                            WHEN @NewStatus = 2 AND CheckInTime IS NULL THEN GETDATE() 
-                                            ELSE CheckInTime 
-                                        END,
-                                        LastModifiedByUserID = @UserID
-                                    WHERE AppointmentID = @AppointmentID;";
-
-            using (MySqlCommand command = new MySqlCommand(query, transaction.Connection, transaction))
-            {
-                command.Parameters.AddWithValue("@AppointmentID", AppointmentID);
-                command.Parameters.AddWithValue("@NewStatus", NewStatus);
-                command.Parameters.AddWithValue("@UserID", UserID);
-
-                // تنفيذ الأمر
-                int rowsAffected = command.ExecuteNonQuery();
-
-                return (rowsAffected > 0);
-            }
-        }
-
+       
         public static bool IsDoctorBusy(int DoctorID, DateTime AppointmentDate)
         {
             try
@@ -423,43 +399,65 @@ namespace Clinic_DataAccess
             }
 
         }
-        public static bool UpdateAppointmentStatus(int AppointmentID, int StatusID, int UserID)
+        public static bool UpdateAppointmentStatus(
+      int AppointmentID,
+      string Status,
+      int UserID)
         {
             try
             {
-
-                using (MySqlConnection conn = new MySqlConnection(clsDataAccessSettings.ConnectionString))
+                using (MySqlConnection conn =
+                    new MySqlConnection(clsDataAccessSettings.ConnectionString))
                 {
                     string query = @"
-                               UPDATE Appointments 
-                                SET AppointmentStatus = @StatusID,
-                                    ExaminationStartTime = CASE 
-                                        WHEN @StatusID = 3 AND ExaminationStartTime IS NULL THEN GETDATE() 
-                                        ELSE ExaminationStartTime 
-                                    END,
-                                    LastModifiedDate = GETDATE(),
-                                    LastModifiedByUserID = @UserID
-                                WHERE AppointmentID = @AppointmentID";
+                UPDATE appointments
+                SET AppointmentStatus = @Status
+                WHERE AppointmentID = @AppointmentID";
+
                     using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@AppointmentID", AppointmentID);
-                        cmd.Parameters.AddWithValue("@UserID", UserID);
-                        cmd.Parameters.AddWithValue("@StatusID", StatusID);
-
+                        cmd.Parameters.AddWithValue("@Status", Status);
 
                         conn.Open();
-                        int rowsAffected = cmd.ExecuteNonQuery();
-                        return (rowsAffected > 0);
+
+                        return cmd.ExecuteNonQuery() > 0;
                     }
                 }
             }
             catch (MySqlException ex)
             {
-                clsGlobalLogger.LogMySqlException(ex, clsGlobalLogger.LogLevel.Error, UserID);
+                clsGlobalLogger.LogMySqlException(
+                    ex, clsGlobalLogger.LogLevel.Error);
+
                 return false;
             }
         }
+        public static bool UpdateAppointmentStatus(
+    int AppointmentID,
+    string Status,
+    int UserID,
+    MySqlTransaction transaction)
+        {
+            if (transaction == null)
+                throw new ArgumentNullException(nameof(transaction));
 
+            string query = @"
+        UPDATE appointments
+        SET AppointmentStatus = @Status
+        WHERE AppointmentID = @AppointmentID;";
+
+            using (MySqlCommand command = new MySqlCommand(
+                query,
+                transaction.Connection,
+                transaction))
+            {
+                command.Parameters.AddWithValue("@AppointmentID", AppointmentID);
+                command.Parameters.AddWithValue("@Status", Status);
+
+                return command.ExecuteNonQuery() > 0;
+            }
+        }
         public static DataTable GetWaitingPatients(int DoctorID)
         {
             DataTable dt = new DataTable();

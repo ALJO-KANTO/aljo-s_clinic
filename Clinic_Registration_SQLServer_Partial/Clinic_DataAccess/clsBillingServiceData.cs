@@ -60,8 +60,12 @@ namespace Clinic_DataAccess
                         }
 
                         // 5. تحديث حالة الموعد
-                        clsAppointmentData.UpdateAppointmentStatus(AppointmentID, 2, UserID, transaction);
-
+                        if (!clsAppointmentData.UpdateAppointmentStatus(
+                            AppointmentID, "InQueue", UserID, transaction))
+                        {
+                            throw new InvalidOperationException(
+                                "Unable to update appointment status.");
+                        }
                         transaction.Commit();
                         return true;
                     }
