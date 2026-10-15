@@ -181,7 +181,7 @@ namespace Clinic
             //
             // ClinicDatabase.ApplyMigrations(builder.ConnectionString);
         }
-        private void createCompanyIfNot()
+        private void createCompanyIfNotOld()
         {
             string server = txtServerName.Text.Trim();
             string db = "clinic_management";
@@ -458,8 +458,8 @@ namespace Clinic
 							(2, 'Doctor'),
 							(3, 'Nurse'),
 							(4, 'Receptionist'),
-							(5, 'Staff');
-							(6, 'Pharmacist');
+							(5, 'Staff'),
+							(6, 'Pharmacist'),
 							(7, 'Cashier');
 
 						-- Dumping structure for table clinic_management.specializations

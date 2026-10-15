@@ -1,4 +1,5 @@
-﻿using MySql.Data.MySqlClient;
+﻿using Clinic_DataAccess;
+using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -23,7 +24,6 @@ namespace Clinic
         public frmSplashScreen()
         {
             InitializeComponent();
-            Task.Run(() => ProceedWithInitialization());
         }
 
         private void frmSplashScreen_Load(object sender, EventArgs e)
@@ -54,8 +54,106 @@ namespace Clinic
                 gunaProgressBar.Value = progressValue;
             }
         }
-
         private void ProceedWithInitialization()
+        {
+            try
+            {
+                SafeSetStatus("Checking database connection...");
+
+                string cc = Environment.GetEnvironmentVariable(
+                    "clinic_connection",
+                    EnvironmentVariableTarget.User
+                );
+
+                // No saved connection
+                if (string.IsNullOrWhiteSpace(cc))
+                {
+                    NavigationCode = 1; // frmConfig
+                    return;
+                }
+
+                // Decrypt connection string
+                string connectionString = CryptoHelper.Decrypt(cc);
+
+                // Check MySQL connection
+                if (!IsValidConnection(connectionString))
+                {
+                    NavigationCode = 1; // frmConfig
+                    return;
+                }
+
+                // Check and apply pending migrations
+                SafeSetStatus("Checking database migrations...");
+
+                ClinicDatabase.ApplyMigrations();
+
+                // Everything completed successfully
+                NavigationCode = 2; // frmLogin
+
+                SafeSetStatus("Initialization completed.");
+            }
+            catch (Exception ex)
+            {
+                // Connection or migration failed
+                NavigationCode = 1;
+
+                System.Diagnostics.Debug.WriteLine(
+                    "Startup initialization failed: " + ex
+                );
+
+                SafeSetStatus("Database initialization failed.");
+
+                // Show error on UI thread
+                try
+                {
+                    if (this.IsHandleCreated && !this.IsDisposed)
+                    {
+                        this.BeginInvoke((MethodInvoker)(() =>
+                        {
+                            MessageBox.Show(
+                                "Database initialization failed:\n\n" +
+                                ex.Message +
+                                "\n\nPlease check your database configuration.",
+                                "Database Error",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error
+                            );
+                        }));
+                    }
+                }
+                catch (InvalidOperationException)
+                {
+                    // Form is closing.
+                }
+            }
+            finally
+            {
+                initDone = true;
+                TryClose();
+            }
+        }
+        private static bool IsValidConnection(string connectionString)
+        {
+            if (string.IsNullOrWhiteSpace(connectionString))
+                return false;
+
+            try
+            {
+                using (MySqlConnection conn =
+                    ClinicDatabase.GetConnection())
+                {
+                    conn.Open();
+
+                    return conn.State ==
+                        System.Data.ConnectionState.Open;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        private void ProceedWithInitializationOld()
         {
             SafeSetStatus("Connecting to database...");
             string cc = Environment.GetEnvironmentVariable("clinic_connection", EnvironmentVariableTarget.User);
@@ -75,7 +173,7 @@ namespace Clinic
             initDone = true;
             TryClose();
         }
-        static bool IsValidConnection(string connectionString)
+        static bool IsValidConnectionOld(string connectionString)
         {
             if (string.IsNullOrWhiteSpace(connectionString)) return false;
 
@@ -128,6 +226,11 @@ namespace Clinic
                     // Form was disposed — safe to ignore
                 }
             }
+        }
+
+        private void frmSplashScreen_Shown(object sender, EventArgs e)
+        {
+            Task.Run(() => ProceedWithInitialization());
         }
     }
 }

@@ -104,6 +104,7 @@ namespace Clinic
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "frmSplashScreen";
             this.Load += new System.EventHandler(this.frmSplashScreen_Load);
+            this.Shown += new System.EventHandler(this.frmSplashScreen_Shown);
             this.panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.panel2.ResumeLayout(false);
