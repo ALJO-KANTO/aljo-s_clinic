@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,6 +29,19 @@ namespace Clinic
             { "Doctors", "الأطباء" },
             { "Settings", "الإعدادات" },
             { "Sign Out", "تسجيل الخروج" },
+            { "Visits Dashboard", "لوحة تحكم الزيارات" },
+            { "Diagnosis Notes", "ملاحظات التشخيص" },
+            { "Schedule Appointment", "جدولة موعد" },
+            { "Appointment Queue", "قائمة الانتظار للمواعيد" },
+            { "Patient Check-in", "تسجيل دخول المريض" },
+            { "All Prescriptions", "جميع الوصفات الطبية" },
+            { "In-Clinic Doctor Prescription", "وصفة الطبيب داخل العيادة" },
+            { "Add New Drug", "إضافة دواء جديد" },
+            { "Direct Medicine Dispensing", "صرف الدواء مباشرة" },
+            { "Manage Bills", "إدارة الفواتير" },
+            { "Process Payments", "معالجة المدفوعات" },
+            { "Issue Invoice", "إصدار فاتورة" },
+            { "Check in Appointment", "تسجيل دخول الموعد" },
 
             { "Welcome Back", "مرحباً بعودتك" },
             { "Admin", "مدير النظام" },
@@ -38,10 +52,15 @@ namespace Clinic
             { "Pharmacist", "صيدلي" },
 
             { "Doctor Role Dashboard", "لوحة تحكم الطبيب" },
+            {"✚   Doctor Role Dashboard", "✚   لوحة تحكم الطبيب" },
             { "Cashier Role Dashboard", "لوحة تحكم أمين الصندوق" },
+            {"$   Cashier Role Dashboard", "$   لوحة تحكم أمين الصندوق" },
             { "Pharmacist Role Dashboard", "لوحة تحكم الصيدلي" },
+            {"✚   Pharmacist Role Dashboard", "✚   لوحة تحكم الصيدلي" },
             { "Receptionist Role Dashboard", "لوحة تحكم موظف الاستقبال" },
+            {"♙   Receptionist Role Dashboard", "♙   لوحة تحكم موظف الاستقبال" },
             { "Nurse Role Dashboard", "لوحة تحكم الممرض" },
+            {"✚   Nurse Role Dashboard", "✚   لوحة تحكم الممرض" },
 
             { "Nurse Station", "محطة التمريض" },
             { "Doctor Station", "محطة الطبيب" },
@@ -70,6 +89,10 @@ namespace Clinic
             { "Search patients...", "البحث عن المرضى..." },
             { "My Account", "حسابي" },
             { "Account", "الحساب" },
+            {"⚙  Account", "⚙  الحساب" },
+            { "Profile", "الملف الشخصي" },
+            { "Change Password", "تغيير كلمة المرور" },
+            { "Logout", "تسجيل الخروج" },
             { "Clinic Management", "إدارة العيادة" },
             { "Clinic Management System", "نظام إدارة العيادة" },
 

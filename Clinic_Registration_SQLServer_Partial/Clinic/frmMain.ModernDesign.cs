@@ -98,7 +98,6 @@ namespace Clinic
             statusStrip1.Visible = false;
 
             Text = "Clinic Management System";
-            Tag = "Clinic Management System";
             WindowState = FormWindowState.Maximized;
             BackColor = canvasColor;
             MinimumSize = new Size(1100, 720);
@@ -116,7 +115,7 @@ namespace Clinic
             Button account = new Button
             {
                 Text = "⚙  Account",
-                Tag = Text,
+                Tag = "⚙  Account",
                 FlatStyle = FlatStyle.Flat,
                 ForeColor = Color.White,
                 BackColor = Color.FromArgb(6, 108, 128),
@@ -433,7 +432,7 @@ namespace Clinic
             Label heading = TextLabel(symbol + "   " + title, 14, ink, true);
             heading.Dock = DockStyle.Top; heading.Height = 61;
             heading.Padding = new Padding(17, 5, 0, 0);
-            heading.Tag = title;
+            heading.Tag = heading.Text;
             card.Controls.Add(heading);
 
             int buttonCount = labels.Length;
@@ -456,7 +455,7 @@ namespace Clinic
                 Button button = new Button
                 {
                     Text = labels[i],
-                    Tag = Text,
+                    Tag = labels[i],
                     Dock = DockStyle.Fill,
                     Margin = new Padding(3),
                     FlatStyle = FlatStyle.Flat,
