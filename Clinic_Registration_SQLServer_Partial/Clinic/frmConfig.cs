@@ -51,9 +51,9 @@ namespace Clinic
 			Environment.SetEnvironmentVariable("clinic_connection", CryptoHelper.Encrypt(connStr), EnvironmentVariableTarget.User);
 			MessageBox.Show("Server connection saved. Please restart...", "Saved");
 
-			createCompanyIfNot();
+			//createCompanyIfNot();
 
-			//MigrateDatabaseIfNotExists();
+			MigrateDatabaseIfNotExists();
 		}
 
 		private void MigrateDatabaseIfNotExists()

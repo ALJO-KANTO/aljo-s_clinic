@@ -13,24 +13,7 @@ namespace Clinic
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            try
-            {
-                ClinicDatabase.ApplyMigrations();
-
-                MessageBox.Show(
-                    "Database migrations completed successfully.");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    ex.ToString(),
-                    "Migration Error",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-
-                return;
-            }
-
+            
             int navigate = 0;
 
             // Show splash screen first
@@ -38,23 +21,6 @@ namespace Clinic
             {
                 splash.ShowDialog();
                 navigate = splash.NavigationCode;
-            }
-
-            // Apply database migrations before loading application data
-            try
-            {
-                ClinicDatabase.ApplyMigrations();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    "Database migration failed.\n\n" +
-                    ex.ToString(),
-                    "Database Error",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-
-                return;
             }
 
             if (navigate == 1)
