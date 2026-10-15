@@ -44,6 +44,7 @@ namespace Clinic
             {
                 BuildModernDashboardDesign();
                 AddTranslateButton();
+                ChangeDashboardLanguage();
             }
         }
 
