@@ -44,9 +44,30 @@ namespace Clinic_DataAccess
                                 AppointmentDate =
                                     Convert.ToDateTime(reader["AppointmentDate"]);
 
-                                CreatedDate =
-                                    Convert.ToDateTime(reader["CreatedDate"]);
+                                int createdDateIndex = -1;
 
+                                for (int i = 0; i < reader.FieldCount; i++)
+                                {
+                                    if (string.Equals(
+                                        reader.GetName(i),
+                                        "CreatedDate",
+                                        StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        createdDateIndex = i;
+                                        break;
+                                    }
+                                }
+
+                                if (createdDateIndex >= 0 &&
+                                    !reader.IsDBNull(createdDateIndex))
+                                {
+                                    CreatedDate =
+                                        Convert.ToDateTime(reader.GetValue(createdDateIndex));
+                                }
+                                else
+                                {
+                                    CreatedDate = AppointmentDate;
+                                }
                                 return true;
                             }
                         }
@@ -63,7 +84,20 @@ namespace Clinic_DataAccess
 
         private static byte StatusFromDatabase(string status)
         {
-        clsAppointmentStatusMapDummy:
+            if (string.IsNullOrWhiteSpace(status))
+                throw new InvalidOperationException(
+                    "Appointment status cannot be empty.");
+
+            status = status.Trim();
+
+            // Support existing numeric statuses: 1 to 9
+            if (byte.TryParse(status, out byte numericStatus))
+            {
+                if (numericStatus >= 1 && numericStatus <= 9)
+                    return numericStatus;
+            }
+
+            // Support text statuses
             switch (status)
             {
                 case "Scheduled": return 1;
@@ -81,7 +115,6 @@ namespace Clinic_DataAccess
                         "Unknown appointment status: " + status);
             }
         }
-
         private static string StatusToDatabase(byte status)
         {
             switch (status)
@@ -147,8 +180,9 @@ namespace Clinic_DataAccess
                         command.Parameters.AddWithValue("@PatientID", PatientID);
                         command.Parameters.AddWithValue("@DoctorID", DoctorID);
                         command.Parameters.AddWithValue("@CreatedByUserID", CreatedByUserID);
-                        command.Parameters.AddWithValue("@AppointmentStatus", AppointmentStatus);
-                        command.Parameters.AddWithValue("@AppointmentTypeID", AppointmentTypeID);
+                        command.Parameters.AddWithValue(
+                            "@AppointmentStatus",
+                            StatusToDatabase(AppointmentStatus)); command.Parameters.AddWithValue("@AppointmentTypeID", AppointmentTypeID);
                         command.Parameters.AddWithValue("@AppointmentFees", AppointmentFees);
                         command.Parameters.AddWithValue("@AppointmentDate", AppointmentDate);
 
@@ -190,8 +224,9 @@ namespace Clinic_DataAccess
                         command.Parameters.AddWithValue("@PatientID", PatientID);
                         command.Parameters.AddWithValue("@DoctorID", DoctorID);
                         command.Parameters.AddWithValue("@CreatedByUserID", CreatedByUserID);
-                        command.Parameters.AddWithValue("@AppointmentStatus", AppointmentStatus);
-                        command.Parameters.AddWithValue("@AppointmentTypeID", AppointmentTypeID);
+                        command.Parameters.AddWithValue(
+                            "@AppointmentStatus",
+                            StatusToDatabase(AppointmentStatus)); command.Parameters.AddWithValue("@AppointmentTypeID", AppointmentTypeID);
                         command.Parameters.AddWithValue("@AppointmentFees", AppointmentFees);
                         command.Parameters.AddWithValue("@AppointmentDate", AppointmentDate);
 

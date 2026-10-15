@@ -342,7 +342,37 @@ SET AppointmentStatus = 'In_Billing'        WHERE AppointmentID = @AppointmentID
             }
             return rowsAffected > 0;
         }
+        public static DataTable GetAllMedicalRecords()
+        {
+            DataTable dt = new DataTable();
 
+            string query = @"
+        SELECT
+            VisitID,
+            PatientID,
+            AppointmentID,
+            DoctorID,
+            VisitDate,
+            VisitStatus,
+            Diagnosis,
+            VisitNotes
+        FROM visits
+        ORDER BY VisitDate DESC;";
+
+            using (MySqlConnection conn =
+                new MySqlConnection(clsDataAccessSettings.ConnectionString))
+            using (MySqlCommand cmd = new MySqlCommand(query, conn))
+            {
+                conn.Open();
+
+                using (MySqlDataReader reader = cmd.ExecuteReader())
+                {
+                    dt.Load(reader);
+                }
+            }
+
+            return dt;
+        }
         public static DataTable GetAllVisits()
         {
             DataTable dt = new DataTable();

@@ -271,6 +271,57 @@ new DatabaseMigration
                 AND DW.DayID = D.DayID
           );"
 },
+new DatabaseMigration
+{
+    Version = "20261015_008",
+    Description = "Fix appointment status text in registry",
+    Sql = @"
+        CREATE OR REPLACE VIEW View_AppointmentsDetails AS
+        SELECT
+            A.AppointmentID,
+            A.PatientID,
+            PE.FullName AS PatientName,
+            A.DoctorID,
+            DPE.FullName AS DoctorName,
+            A.AppointmentDate,
+
+            A.AppointmentStatus,
+
+            CASE CAST(A.AppointmentStatus AS CHAR)
+                WHEN '1' THEN 'Scheduled'
+                WHEN '2' THEN 'InQueue'
+                WHEN '3' THEN 'Progress'
+                WHEN '4' THEN 'Postponed'
+                WHEN '5' THEN 'Completed'
+                WHEN '6' THEN 'Cancelled'
+                WHEN '7' THEN 'Waiting_For_Vitals'
+                WHEN '8' THEN 'Ready_For_Doctor'
+                WHEN '9' THEN 'In_Billing'
+                ELSE CAST(A.AppointmentStatus AS CHAR)
+            END AS AppointmentStatusText,
+
+            A.AppointmentTypeID,
+            AT.AppointmentTypeName AS TypeName,
+            A.AppointmentFees,
+            A.CreatedByUserID
+
+        FROM appointments A
+
+        LEFT JOIN patients P
+            ON A.PatientID = P.PatientID
+
+        LEFT JOIN persons PE
+            ON P.PersonID = PE.PersonID
+
+        LEFT JOIN doctors D
+            ON A.DoctorID = D.DoctorID
+
+        LEFT JOIN persons DPE
+            ON D.PersonID = DPE.PersonID
+
+        LEFT JOIN appointmenttypes AT
+            ON A.AppointmentTypeID = AT.AppointmentTypeID;"
+},
       };
 
                 // STEP 4: Apply pending migrations
