@@ -21,9 +21,26 @@ namespace Clinic_DataAccess
                     try
                     {
                         // 1. إنشاء سجل الزيارة (Visit)
-                        string queryVisit = @"INSERT INTO Visits (PatientID, AppointmentID, DoctorID, VisitDate, VisitStatus, CreatedByUserID)
-                                         VALUES (@PatientID, @AppointmentID, @DoctorID, GETDATE(), 1, @UserID);
-                                         SELECT LAST_INSERT_ID();";
+                        string queryVisit = @"
+    INSERT INTO visits
+    (
+        PatientID,
+        AppointmentID,
+        DoctorID,
+        VisitDate,
+        VisitStatus,
+        CreatedByUserID
+    )
+    VALUES
+    (
+        @PatientID,
+        @AppointmentID,
+        @DoctorID,
+        NOW(),
+        1,
+        @UserID
+    );
+    SELECT LAST_INSERT_ID();";
 
                         MySqlCommand cmdVisit = new MySqlCommand(queryVisit, connection, transaction);
                         cmdVisit.Parameters.AddWithValue("@PatientID", PatientID);
@@ -33,9 +50,23 @@ namespace Clinic_DataAccess
 
                         int VisitID = Convert.ToInt32(cmdVisit.ExecuteScalar());
 
-                        string queryBill = @"INSERT INTO Bills (VisitID, PaymentStatus, CreatedByUserID, BillDate) 
-                             VALUES (@VisitID, 2, @UserID, GETDATE()); 
-                             SELECT LAST_INSERT_ID();";
+                        string queryBill = @"
+    INSERT INTO Bills
+    (
+        VisitID,
+        PaymentStatus,
+        CreatedByUserID,
+        BillDate
+    )
+    VALUES
+    (
+        @VisitID,
+        2,
+        @UserID,
+        NOW()
+    );
+
+    SELECT LAST_INSERT_ID();";
                         int BillID = -1;
                         using (MySqlCommand cmdBill = new MySqlCommand(queryBill, connection, transaction))
                         {
@@ -47,8 +78,23 @@ namespace Clinic_DataAccess
                         }
 
                         // 4. تسجيل الدفعة (هنا يتم استخدام PaymentMethod)
-                        string queryPay = @"INSERT INTO Payments (BillID, PaymentAmount, PaymentDate, PaymentMethod, CreatedByUserID) 
-                            VALUES (@BillID, @Amount, GETDATE(), @Method, @UserID)";
+                        string queryPay = @"
+    INSERT INTO Payments
+    (
+        BillID,
+        PaymentAmount,
+        PaymentDate,
+        PaymentMethod,
+        CreatedByUserID
+    )
+    VALUES
+    (
+        @BillID,
+        @Amount,
+        NOW(),
+        @Method,
+        @UserID
+    );";
 
                         using (MySqlCommand cmdPay = new MySqlCommand(queryPay, connection, transaction))
                         {
@@ -79,13 +125,29 @@ namespace Clinic_DataAccess
             }
         }
 
-        public static bool UpdateBillNumber(int BillID, MySqlTransaction transaction)
+        public static bool UpdateBillNumber(
+      int BillID,
+      MySqlTransaction transaction)
         {
-            string queryUpdateBillNumber = @"UPDATE Bills SET BillNumber = 'INV-' + CAST(YEAR(GETDATE()) AS VARCHAR) + '-' + RIGHT('0000' + CAST(@BillID AS VARCHAR), 4) 
-                                                 WHERE BillID = @BillID";
-            MySqlCommand cmdUpdate = new MySqlCommand(queryUpdateBillNumber, transaction.Connection, transaction);
-            cmdUpdate.Parameters.AddWithValue("@BillID", BillID);
-            return cmdUpdate.ExecuteNonQuery() > 0;
+            string query = @"
+        UPDATE Bills
+        SET BillNumber = CONCAT(
+            'INV-',
+            YEAR(NOW()),
+            '-',
+            LPAD(@BillID, 4, '0')
+        )
+        WHERE BillID = @BillID;";
+
+            using (MySqlCommand cmd = new MySqlCommand(
+                query,
+                transaction.Connection,
+                transaction))
+            {
+                cmd.Parameters.AddWithValue("@BillID", BillID);
+
+                return cmd.ExecuteNonQuery() > 0;
+            }
         }
 
         public static bool UpdatePaymentStatus(int VisitID, byte PaymentStatus, MySqlTransaction transaction)

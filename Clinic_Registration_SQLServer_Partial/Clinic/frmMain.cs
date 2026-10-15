@@ -31,7 +31,8 @@ namespace Clinic
             InitializeComponent();
 
             _frmLogin = frmLogin;
-
+            string language = Properties.Settings.Default.ApplicationLanguage ?? "en";
+            isArabic = language.Equals("ar", StringComparison.OrdinalIgnoreCase);
             // Force the List Prescription click event to be connected
             listPrescriptionToolStripMenuItem.Click -=
                 listPrescriptionToolStripMenuItem_Click;
@@ -503,6 +504,8 @@ namespace Clinic
         private void ChangeDashboardLanguage()
         {
             isArabic = !isArabic;
+            Properties.Settings.Default.ApplicationLanguage=isArabic ? "ar" : "en";
+            Properties.Settings.Default.Save();
 
             btnTranslate.Text = isArabic
                 ? "English"
