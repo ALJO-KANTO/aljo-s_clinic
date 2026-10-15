@@ -12,101 +12,175 @@ namespace Clinic
             InitializeComponent();
         }
 
-		private void btnSave_Click(object sender, EventArgs e)
-		{
-			if (string.IsNullOrEmpty(txtServerName.Text.Trim()))
-			{
-				MessageBox.Show("Enter server / host name");
-				return;
-			}
+        private void frmConfig_Load(object sender, EventArgs e)
+        {
+            string con = Environment.GetEnvironmentVariable("clinic_connection", EnvironmentVariableTarget.User);
+            string connStr = string.IsNullOrEmpty(con) ? "" : CryptoHelper.Decrypt(con);
 
-			if (string.IsNullOrEmpty(txtDataBaseName.Text.Trim()))
-			{
-				MessageBox.Show("Enter database name");
-				return;
-			}
+            // If the connection string exists, set it to the text box
+            if (!string.IsNullOrEmpty(connStr))
+            {
+                var parameters = connStr.Split(';');
 
-			if (string.IsNullOrEmpty(txtUserName.Text.Trim()))
-			{
-				MessageBox.Show("Enter user name");
-				return;
-			}
-			//if (string.IsNullOrEmpty(txtPassword.Text.Trim()))
-			//{
-			//    MessageBox.Show("Enter password");
-			//    return;
-			//}
-			string server = txtServerName.Text.Trim();
-			string db = txtDataBaseName.Text.Trim();
-			string user = txtUserName.Text.Trim();
-			string pass = txtPassword.Text.Trim();
+                foreach (var parameter in parameters)
+                {
+                    var keyValue = parameter.Split('=');
 
-			string connStr = $"Server={server};Database={db};Uid={user};";
-			if (!string.IsNullOrEmpty(pass))
-			{
-				connStr += $"Pwd={pass};";
-			}
-			connStr += "Max Pool Size=1000;charset=utf8mb4;";
+                    if (keyValue.Length == 2)
+                    {
+                        string key = keyValue[0].Trim();
+                        string value = keyValue[1].Trim();
 
-			Environment.SetEnvironmentVariable("clinic_connection", CryptoHelper.Encrypt(connStr), EnvironmentVariableTarget.User);
-			MessageBox.Show("Server connection saved. Please restart...", "Saved");
+                        switch (key.ToLower())
+                        {
+                            case "server":
+                                txtServerName.Text = value;
+                                break;
+                            case "database":
+                                txtDataBaseName.Text = value;
+                                break;
+                            case "uid":
+                                txtUserName.Text = value;
+                                break;
+                            case "pwd":
+                                txtPassword.Text = value;
+                                break;
+                            case "max pool size":
+                                // You might want to add logic for max pool size, or ignore it
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("No connection string found. Please set it first.", "Info");
+            }
+        }
+        private void btnSave_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtServerName.Text))
+            {
+                MessageBox.Show("Enter server / host name");
+                return;
+            }
 
-			//createCompanyIfNot();
+            if (string.IsNullOrWhiteSpace(txtDataBaseName.Text))
+            {
+                MessageBox.Show("Enter database name");
+                return;
+            }
 
-			MigrateDatabaseIfNotExists();
-		}
+            if (string.IsNullOrWhiteSpace(txtUserName.Text))
+            {
+                MessageBox.Show("Enter user name");
+                return;
+            }
 
-		private void MigrateDatabaseIfNotExists()
-		{
-			string server = txtServerName.Text.Trim();
-            string db = "clinic_management";
+            string server = txtServerName.Text.Trim();
+            string db = ClinicDatabase.DatabaseName;
             string user = txtUserName.Text.Trim();
-            string pass = txtPassword.Text.Trim();
-
-            string serverOnlyConnStr = $"Server={server};Uid={user};Pwd={pass};Max Pool Size=1000;";
+            string pass = txtPassword.Text;
 
             try
             {
-
-                using (var conn = new MySqlConnection(serverOnlyConnStr))
+                var builder = new MySqlConnectionStringBuilder
                 {
-                    conn.Open();
-                    using (var cmd = new MySqlCommand("CREATE DATABASE IF NOT EXISTS clinic_management CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;", conn))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-                }
+                    Server = server,
+                    Database = db,
+                    UserID = user,
+                    Password = pass,
+                    CharacterSet = "utf8mb4",
+                    MaximumPoolSize = 100
+                };
 
-                // STEP 1: Connect to MySQL
-                using (var connection = ClinicDatabase.GetConnection())
-                {
-                    connection.Open();
+                string connStr = builder.ConnectionString;
 
-                    System.Diagnostics.Debug.WriteLine(
-                        "Connected to MySQL: " +
-                        connection.DataSource + " / " +
-                        connection.Database);
-                }
+                // STEP 1: Create database if not exists
+                MigrateDatabaseIfNotExists();
 
+                // STEP 2: Save connection
+                Environment.SetEnvironmentVariable(
+                    "clinic_connection",
+                    CryptoHelper.Encrypt(connStr),
+                    EnvironmentVariableTarget.User
+                );
 
+                // STEP 3: Apply migrations
                 ClinicDatabase.ApplyMigrations();
 
-                System.Diagnostics.Debug.WriteLine(
-                    "Database migrations completed successfully.");
+                MessageBox.Show(
+                    "Database configured successfully.\nPlease restart the application.",
+                    "Success",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information
+                );
             }
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    "Database initialization failed:\n\n" +
-                    ex.ToString(),
+                    "Database configuration failed:\n\n" + ex.Message,
                     "Database Error",
                     MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-
-                return;
+                    MessageBoxIcon.Error
+                );
             }
         }
+        private void MigrateDatabaseIfNotExists()
+        {
+            string server = txtServerName.Text.Trim();
+            string db = txtDataBaseName.Text.Trim();
+            string user = txtUserName.Text.Trim();
+            string pass = txtPassword.Text;
 
+            // Connect without specifying a database.
+            var builder = new MySqlConnectionStringBuilder
+            {
+                Server = server,
+                UserID = user,
+                Password = pass
+            };
+
+            using (var conn = new MySqlConnection(builder.ConnectionString))
+            {
+                conn.Open();
+
+                // Safely quote the database identifier.
+                string safeDbName = db.Replace("`", "``");
+
+                string sql =
+                    $"CREATE DATABASE IF NOT EXISTS `{safeDbName}` " +
+                    "CHARACTER SET utf8mb4 " +
+                    "COLLATE utf8mb4_unicode_ci;";
+
+                using (var cmd = new MySqlCommand(sql, conn))
+                {
+                    cmd.ExecuteNonQuery();
+                }
+            }
+
+            // Use the database selected in frmConfig.
+            builder.Database = db;
+
+            using (var connection = new MySqlConnection(builder.ConnectionString))
+            {
+                connection.Open();
+
+                System.Diagnostics.Debug.WriteLine(
+                    "Connected to MySQL: " +
+                    connection.DataSource + " / " +
+                    connection.Database
+                );
+            }
+
+            // Migration implementation is our next step.
+            // Do not enable this until ClinicDatabase.ApplyMigrations()
+            // accepts or otherwise uses this selected connection.
+            //
+            // ClinicDatabase.ApplyMigrations(builder.ConnectionString);
+        }
         private void createCompanyIfNot()
         {
             string server = txtServerName.Text.Trim();
@@ -1056,54 +1130,6 @@ namespace Clinic
             catch (Exception ex)
             {
                 MessageBox.Show($"Connection failed:\n{ex.Message}", "Error");
-            }
-        }
-
-        private void frmConfig_Load(object sender, EventArgs e)
-        {
-            string con = Environment.GetEnvironmentVariable("clinic_connection", EnvironmentVariableTarget.User);
-            string connStr = string.IsNullOrEmpty(con) ? "" : CryptoHelper.Decrypt(con);
-
-            // If the connection string exists, set it to the text box
-            if (!string.IsNullOrEmpty(connStr))
-            {
-                var parameters = connStr.Split(';');
-
-                foreach (var parameter in parameters)
-                {
-                    var keyValue = parameter.Split('=');
-
-                    if (keyValue.Length == 2)
-                    {
-                        string key = keyValue[0].Trim();
-                        string value = keyValue[1].Trim();
-                        
-                        switch (key.ToLower())
-                        {
-                            case "server":
-                                txtServerName.Text = value;
-                                break;
-                            case "database":
-                                txtDataBaseName.Text = value;
-                                break;
-                            case "uid":
-                                txtUserName.Text = value;
-                                break;
-                            case "pwd":
-                                txtPassword.Text = value;
-                                break;
-                            case "max pool size":
-                                // You might want to add logic for max pool size, or ignore it
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                }
-            }
-            else
-            {
-                MessageBox.Show("No connection string found. Please set it first.", "Info");
             }
         }
     }
