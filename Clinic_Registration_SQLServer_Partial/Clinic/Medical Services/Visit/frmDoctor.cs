@@ -226,11 +226,18 @@ namespace Clinic.Medical_Services.Visit
             clsVital vital = clsVital.FindByVisitID(_VisitID);
             if (vital == null)
             {
-                clsAppointment.UpdateAppointmentStatus(_AppointmentID, clsAppointment.enAppointmentStatus.Waiting_For_Vitals, clsGlobal.CurrentUser.UserID);
-                _RefreshQueueData();
+                if (_Mode == enMode.AddNew)
+                {
+                    clsAppointment.UpdateAppointmentStatus(
+                        _AppointmentID,
+                        clsAppointment.enAppointmentStatus.Waiting_For_Vitals,
+                        clsGlobal.CurrentUser.UserID);
+
+                    _RefreshQueueData();
+                }
+
                 return;
             }
-
             lbPluse.Text = vital.Pulse.ToString() + "  bpm";
             lblTemp.Text = vital.Temperature.ToString() + " °C";
             lbBP.Text = vital.BloodPressure.ToString() + " mmHg";

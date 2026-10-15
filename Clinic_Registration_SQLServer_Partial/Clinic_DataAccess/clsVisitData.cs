@@ -276,9 +276,10 @@ SET AppointmentStatus = 'In_Billing'        WHERE AppointmentID = @AppointmentID
                 WHERE
                     (@DoctorPersonID = 0
                      OR DoctorPersonID = @DoctorPersonID)
-                   AND StatusText IN
+                  AND StatusText IN
 (
-    'Scheduled',
+    'InQueue',
+    'Waiting_For_Vitals',
     'Ready_For_Doctor',
     'Progress',
     'InProgress',
