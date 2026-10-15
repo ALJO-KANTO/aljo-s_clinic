@@ -2,6 +2,7 @@ using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Clinic
 {
@@ -25,6 +26,7 @@ namespace Clinic
             return new Label
             {
                 Text = text,
+                Tag = text,
                 AutoSize = false,
                 ForeColor = color,
                 Font = new Font("Segoe UI", size, bold ? FontStyle.Bold : FontStyle.Regular),
@@ -66,6 +68,7 @@ namespace Clinic
             Button b = new Button
             {
                 Text = "   " + symbol + "    " + caption,
+                Tag = caption,
                 TextAlign = ContentAlignment.MiddleLeft,
                 FlatStyle = FlatStyle.Flat,
                 ForeColor = Color.White,
@@ -95,6 +98,7 @@ namespace Clinic
             statusStrip1.Visible = false;
 
             Text = "Clinic Management System";
+            Tag = "Clinic Management System";
             WindowState = FormWindowState.Maximized;
             BackColor = canvasColor;
             MinimumSize = new Size(1100, 720);
@@ -106,12 +110,13 @@ namespace Clinic
             modernRoot.Controls.Add(modernHeader);
             Label brand = TextLabel("✚  CLINIC\n     MANAGEMENT SYSTEM", 15, Color.White, true);
             Place(modernHeader, brand, 30, 12, 290, 62);
-            modernUser = TextLabel("●  Admin User\n     Administrator", 11, Color.White, true);
+            modernUser = TextLabel("", 11, Color.White, true);
             modernUser.Anchor = AnchorStyles.Right | AnchorStyles.Top;
             Place(modernHeader, modernUser, 1130, 15, 235, 60);
             Button account = new Button
             {
                 Text = "⚙  Account",
+                Tag = Text,
                 FlatStyle = FlatStyle.Flat,
                 ForeColor = Color.White,
                 BackColor = Color.FromArgb(6, 108, 128),
@@ -158,26 +163,49 @@ namespace Clinic
             };
             modernSidebar.Controls.Add(menu);
             menu.Controls.Add(MakeNav("⌂", "Dashboard", () => modernDashboard.AutoScrollPosition = new Point(0, 0), true));
-            AddMenuHeading(menu, "Main");
-            menu.Controls.Add(MakeNav("♙", "Patients", () => PatientsToolStripMenuItem_Click(this, EventArgs.Empty)));
-            menu.Controls.Add(MakeNav("▦", "Appointments", () => appointmentsToolStripMenuItem_Click(this, EventArgs.Empty)));
-            menu.Controls.Add(MakeNav("✚", "Visits", () => listVisitToolStripMenuItem_Click(this, EventArgs.Empty)));
-            menu.Controls.Add(MakeNav("▤", "Medical Records", () => doctorToolStripMenuItem2_Click(this, EventArgs.Empty)));
-            AddMenuHeading(menu, "Clinic Services");
-            menu.Controls.Add(MakeNav(
-                "▣",
-                "Billing & Payments",
-                () => OpenManageBills()
-            )); menu.Controls.Add(MakeNav("▤", "Invoices", null));
-            menu.Controls.Add(MakeNav("✚", "Prescriptions",
-    () => listPrescriptionToolStripMenuItem_Click(this, EventArgs.Empty)));
-            menu.Controls.Add(MakeNav("◈", "Inventory / Medicines", null));
-            menu.Controls.Add(MakeNav("⚗", "Laboratory", null));
-            menu.Controls.Add(MakeNav("▥", "Reports", null));
-            AddMenuHeading(menu, "Administration");
-            menu.Controls.Add(MakeNav("♙", "Users", () => UsersToolStripMenuItem_Click(this, EventArgs.Empty)));
-            menu.Controls.Add(MakeNav("⚑", "Doctors", () => DoctorsStripMenuItem1_Click(this, EventArgs.Empty)));
-            menu.Controls.Add(MakeNav("⚙", "Settings", () => manageServicesToolStripMenuItem_Click(this, EventArgs.Empty)));
+            if (CanAccessMenu(clsGlobal.UserRole.Admin, clsGlobal.UserRole.Doctor, clsGlobal.UserRole.Nurse, clsGlobal.UserRole.Receptionist, clsGlobal.UserRole.Cashier)) 
+                AddMenuHeading(menu, "Main");
+            if (CanAccessMenu(clsGlobal.UserRole.Doctor, clsGlobal.UserRole.Nurse, clsGlobal.UserRole.Receptionist))
+            {
+                menu.Controls.Add(MakeNav("♙", "Patients", () => PatientsToolStripMenuItem_Click(this, EventArgs.Empty)));
+            }
+            if (CanAccessMenu(clsGlobal.UserRole.Doctor, clsGlobal.UserRole.Nurse, clsGlobal.UserRole.Receptionist, clsGlobal.UserRole.Cashier))
+            {
+                menu.Controls.Add(MakeNav("▦", "Appointments", () => appointmentsToolStripMenuItem_Click(this, EventArgs.Empty)));
+            }
+            if (CanAccessMenu(clsGlobal.UserRole.Doctor, clsGlobal.UserRole.Nurse))
+            {
+                menu.Controls.Add(MakeNav("✚", "Visits", () => listVisitToolStripMenuItem_Click(this, EventArgs.Empty)));
+                menu.Controls.Add(MakeNav("▤", "Medical Records", () => doctorToolStripMenuItem2_Click(this, EventArgs.Empty)));
+            }
+            if (CanAccessMenu(clsGlobal.UserRole.Admin, clsGlobal.UserRole.Doctor, clsGlobal.UserRole.Pharmacist, clsGlobal.UserRole.Cashier))
+                AddMenuHeading(menu, "Clinic Services");
+            if (CanAccessMenu(clsGlobal.UserRole.Cashier))
+            {
+                menu.Controls.Add(MakeNav("▣", "Billing & Payments", () => OpenManageBills()));
+                menu.Controls.Add(MakeNav("▤", "Invoices", null));
+            }
+            if (CanAccessMenu(clsGlobal.UserRole.Doctor, clsGlobal.UserRole.Pharmacist))
+            {
+                menu.Controls.Add(MakeNav("✚", "Prescriptions", () => listPrescriptionToolStripMenuItem_Click(this, EventArgs.Empty)));
+            }
+            if (CanAccessMenu(clsGlobal.UserRole.Pharmacist))
+                menu.Controls.Add(MakeNav("◈", "Inventory / Medicines", null));
+            if (CanAccessMenu(clsGlobal.UserRole.Doctor))
+                menu.Controls.Add(MakeNav("⚗", "Laboratory", null));
+            if (CanAccessMenu(clsGlobal.UserRole.Admin, clsGlobal.UserRole.Cashier))
+                menu.Controls.Add(MakeNav("▥", "Reports", null));
+            if (CanAccessMenu(clsGlobal.UserRole.Admin))
+                AddMenuHeading(menu, "Administration");
+            if (CanAccessMenu(clsGlobal.UserRole.Admin))
+            {
+                menu.Controls.Add(MakeNav("♙", "Users", () => UsersToolStripMenuItem_Click(this, EventArgs.Empty)));
+            }
+            if (CanAccessMenu(clsGlobal.UserRole.Admin))
+                menu.Controls.Add(MakeNav("⚑", "Doctors", () => DoctorsStripMenuItem1_Click(this, EventArgs.Empty)));
+            if (CanAccessMenu(clsGlobal.UserRole.Admin))
+                menu.Controls.Add(MakeNav("⚙", "Settings", () => manageServicesToolStripMenuItem_Click(this, EventArgs.Empty)));
+
             menu.Controls.Add(MakeNav("↪", "Sign Out", () => signOutToolStripMenuItem_Click(this, EventArgs.Empty)));
 
             modernContent = new Panel { Dock = DockStyle.Fill, BackColor = canvasColor };
@@ -202,6 +230,7 @@ namespace Clinic
         private static void AddMenuHeading(FlowLayoutPanel menu, string heading)
         {
             Label label = TextLabel(heading, 9.5f, Color.FromArgb(159, 204, 220));
+            label.Tag = heading;
             label.Width = 230; label.Height = 40;
             label.Padding = new Padding(15, 13, 0, 0);
             menu.Controls.Add(label);
@@ -211,7 +240,7 @@ namespace Clinic
         {
             Panel welcome = Rounded(Color.FromArgb(214, 237, 251));
             welcome.Height = 166; welcome.Margin = new Padding(0, 0, 0, 16);
-            modernGreeting = TextLabel("Welcome Back,\nAdmin User 👋", 25, ink, true);
+            modernGreeting = TextLabel("", 25, ink, true);
             Place(welcome, modernGreeting, 28, 18, 550, 91);
             Place(welcome, TextLabel("Here's what's happening in your clinic today.", 11,
                 Color.FromArgb(67, 111, 155)), 30, 114, 600, 35);
@@ -236,59 +265,97 @@ namespace Clinic
             AddStat(stats, 3, "♡", "Active Visits", "—", Color.FromArgb(246, 137, 22));
             modernDashboard.Controls.Add(stats);
 
+            bool isAdmin = clsGlobal.CurrentUser.RoleID == (int)clsGlobal.UserRole.Admin;
             TableLayoutPanel roleRows = new TableLayoutPanel
             {
-                ColumnCount = 2,
-                RowCount = 2,
-                Height = 428,
-                Margin = new Padding(0, 0, 0, 16)
+                ColumnCount = isAdmin ? 2 : 1,
+                RowCount = isAdmin ? 3 : 1,
+                Height = isAdmin ? 428 : 180,
+                Margin = new Padding(0, 0, 0, 16),
+                GrowStyle = TableLayoutPanelGrowStyle.AddRows
             };
-            roleRows.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
-            roleRows.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
-            roleRows.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
-            roleRows.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
-            roleRows.Controls.Add(RoleCard("✚", "Doctor Role Dashboard", Color.FromArgb(0, 121, 246),
-                new string[] { "Visits\nDashboard", "Medical\nRecords", "Find\nPatient", "Diagnosis\nNotes" },
-                new Action[] { () => listVisitToolStripMenuItem_Click(this, EventArgs.Empty),
-                    () => doctorToolStripMenuItem2_Click(this, EventArgs.Empty),
-                    () => btnFindPatient_Click(this, EventArgs.Empty),
-                    () => doctorToolStripMenuItem2_Click(this, EventArgs.Empty) }), 0, 0);
-            roleRows.Controls.Add(RoleCard(
-     "$",
-     "Cashier Role Dashboard",
-     Color.FromArgb(0, 169, 116),
-     new string[]
-     {
-        "Manage\nBills",
-        "Process\nPayments",
-        "Issue\nInvoice",
-        "Check in\nAppointment"
-     },
-     new Action[]
-     {
-        () => OpenManageBills(),
-        () => OpenManageBills(),
-        () => OpenManageBills(),
-        () => appointmentsToolStripMenuItem_Click(this, EventArgs.Empty)
-     }
- ), 1, 0);
+            //roleRows.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+            //roleRows.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+            //roleRows.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
+            //roleRows.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
 
-            roleRows.Controls.Add(RoleCard("✚", "Pharmacist Role Dashboard", Color.FromArgb(159, 37, 225),
-                new string[] { "All\nPrescriptions", "In-Clinic\nPrescriptions", "Add New\nDrug", "Direct Medicine\nDispensing" },
-                new Action[]
+            if (isAdmin)
+            {
+                roleRows.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+                roleRows.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+                for (int i = 0; i < 3; i++)
                 {
-        () => listPrescriptionToolStripMenuItem_Click(this, EventArgs.Empty),
-        null,
-        null,
-        () => prescriptionDispensingToolStripMenuItem_Click(this, EventArgs.Empty)
-                }), 0, 1);
-
-            roleRows.Controls.Add(RoleCard("♙", "Receptionist Role Dashboard", Color.FromArgb(248, 105, 35),
+                    roleRows.RowStyles.Add(new RowStyle(SizeType.Percent, 100F / 3));
+                }
+            }
+            else
+            {
+                roleRows.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+                roleRows.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
+            }
+            if (CanShowDashboard(clsGlobal.UserRole.Doctor))
+            {
+                roleRows.Controls.Add(
+                    RoleCard("✚", "Doctor Role Dashboard", Color.FromArgb(0, 121, 246),
+                            new string[] { "Visits\nDashboard", "Medical\nRecords", "Find\nPatient", "Diagnosis\nNotes" },
+                            new Action[] { () => listVisitToolStripMenuItem_Click(this, EventArgs.Empty),
+                                () => doctorToolStripMenuItem2_Click(this, EventArgs.Empty),
+                                () => btnFindPatient_Click(this, EventArgs.Empty),
+                                () => doctorToolStripMenuItem2_Click(this, EventArgs.Empty) }
+                    ), 0, 0);
+            }
+            if (CanShowDashboard(clsGlobal.UserRole.Nurse))
+            {
+                roleRows.Controls.Add(
+                    RoleCard("✚", "Nurse Role Dashboard", Color.FromArgb(15, 118, 110),
+                        new string[] {"Nurse\nStation"},
+                        new Action[] { () => nurseToolStripMenuItem1_Click(this, EventArgs.Empty)}
+                    ), 0, 2);
+            }
+            if (CanShowDashboard(clsGlobal.UserRole.Receptionist))
+            {
+                roleRows.Controls.Add(RoleCard("♙", "Receptionist Role Dashboard", Color.FromArgb(248, 105, 35),
                 new string[] { "Register\nNew Patient", "Schedule\nAppointment", "Appointment\nQueue", "Patient\nCheck-in" },
                 new Action[] { () => PatientsToolStripMenuItem_Click(this, EventArgs.Empty),
                     () => btnAddApp_Click(this, EventArgs.Empty),
                     () => appointmentsToolStripMenuItem_Click(this, EventArgs.Empty),
                     () => appointmentsToolStripMenuItem_Click(this, EventArgs.Empty) }), 1, 1);
+            }
+            if (CanShowDashboard(clsGlobal.UserRole.Pharmacist))
+            {
+                roleRows.Controls.Add(RoleCard("✚", "Pharmacist Role Dashboard", Color.FromArgb(159, 37, 225),
+                new string[] { "All\nPrescriptions", "In-Clinic\nDoctor\nPrescription", "Add New\nDrug", "Direct Medicine\nDispensing" },
+                new Action[]
+                {
+                    () => listPrescriptionToolStripMenuItem_Click(this, EventArgs.Empty),
+                    () => inClinicDoctorToolStripMenuItem_Click(this, EventArgs.Empty),
+                    () => addNewDrugToolStripMenuItem_Click(this, EventArgs.Empty),
+                    () => directMedicinenDispensingToolStripMenuItem_Click(this, EventArgs.Empty)
+                }), 0, 1);
+            }
+            if (CanShowDashboard(clsGlobal.UserRole.Cashier))
+            {
+                roleRows.Controls.Add(RoleCard(
+                     "$",
+                     "Cashier Role Dashboard",
+                     Color.FromArgb(0, 169, 116),
+                     new string[]
+                     {
+                        "Manage\nBills",
+                        "Process\nPayments",
+                        "Issue\nInvoice",
+                        "Check in\nAppointment"
+                     },
+                     new Action[]
+                     {
+                        () => OpenManageBills(),
+                        () => OpenManageBills(),
+                        () => OpenManageBills(),
+                        () => appointmentsToolStripMenuItem_Click(this, EventArgs.Empty)
+                     }
+                 ), 1, 0);
+            }
+
             modernDashboard.Controls.Add(roleRows);
 
             Panel actions = Rounded(Color.White);
@@ -296,11 +363,34 @@ namespace Clinic
             Place(actions, TextLabel("Quick Actions", 15, ink, true), 20, 8, 500, 38);
             FlowLayoutPanel quick = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 126, Padding = new Padding(10, 0, 0, 0) };
             actions.Controls.Add(quick);
-            QuickButton(quick, "Register New Patient", () => PatientsToolStripMenuItem_Click(this, EventArgs.Empty));
-            QuickButton(quick, "New Appointment", () => btnAddApp_Click(this, EventArgs.Empty));
-            QuickButton(quick, "Find Patient", () => btnFindPatient_Click(this, EventArgs.Empty));
-            QuickButton(quick, "Manage Users", () => UsersToolStripMenuItem_Click(this, EventArgs.Empty));
-            modernDashboard.Controls.Add(actions);
+            if (CanAccessMenu(clsGlobal.UserRole.Doctor, clsGlobal.UserRole.Nurse, clsGlobal.UserRole.Receptionist))
+            {
+                QuickButton(quick, "Register New Patient", () => PatientsToolStripMenuItem_Click(this, EventArgs.Empty));
+            }
+            if (CanAccessMenu(clsGlobal.UserRole.Doctor, clsGlobal.UserRole.Nurse, clsGlobal.UserRole.Receptionist, clsGlobal.UserRole.Cashier))
+            {
+                QuickButton(quick, "New Appointment", () => btnAddApp_Click(this, EventArgs.Empty));
+            }
+
+            if (CanAccessMenu(clsGlobal.UserRole.Doctor, clsGlobal.UserRole.Nurse, clsGlobal.UserRole.Receptionist))
+            {
+                QuickButton(quick, "Find Patient", () => btnFindPatient_Click(this, EventArgs.Empty));
+            }
+            if (CanAccessMenu(clsGlobal.UserRole.Admin))
+            {
+                QuickButton(quick, "Manage Users", () => UsersToolStripMenuItem_Click(this, EventArgs.Empty));
+            }
+
+
+            if (quick.Controls.Count > 0)
+            {
+                modernDashboard.Controls.Add(actions);
+            }
+            else
+            {
+                actions.Dispose();
+            }
+
             Panel footer = Rounded(Color.White); footer.Height = 64;
             modernClock = TextLabel(DateTime.Now.ToString("dddd, dd MMMM yyyy  hh:mm tt"), 12, ink, true);
             Place(footer, modernClock, 20, 12, 600, 38);
@@ -343,20 +433,30 @@ namespace Clinic
             Label heading = TextLabel(symbol + "   " + title, 14, ink, true);
             heading.Dock = DockStyle.Top; heading.Height = 61;
             heading.Padding = new Padding(17, 5, 0, 0);
+            heading.Tag = title;
             card.Controls.Add(heading);
+
+            int buttonCount = labels.Length;
             TableLayoutPanel buttons = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
-                ColumnCount = 4,
+                ColumnCount = buttonCount,
+                RowCount = 1,
                 Padding = new Padding(12, 0, 12, 12)
             };
-            for (int i = 0; i < 4; i++) buttons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
+            //for (int i = 0; i < 4; i++) 
+            //    buttons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
+
+            for (int i = 0; i < buttonCount; i++)
+                buttons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F / buttonCount));
+
             for (int i = 0; i < labels.Length; i++)
             {
                 Action action = actions[i];
                 Button button = new Button
                 {
                     Text = labels[i],
+                    Tag = Text,
                     Dock = DockStyle.Fill,
                     Margin = new Padding(3),
                     FlatStyle = FlatStyle.Flat,
@@ -381,6 +481,7 @@ namespace Clinic
             Button b = new Button
             {
                 Text = "＋  " + title,
+                Tag = title,
                 Width = 195,
                 Height = 43,
                 Margin = new Padding(6),

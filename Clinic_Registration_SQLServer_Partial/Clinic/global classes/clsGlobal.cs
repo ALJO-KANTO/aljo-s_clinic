@@ -13,7 +13,7 @@ namespace Clinic
 {
     internal static  class clsGlobal
     {
-        public enum UserRole { Admin = 1, Doctor = 2, Receptionist = 3, Nurse = 4, Cashier = 1004, Pharmacist= 1005 }
+        public enum UserRole { Admin = 1, Doctor = 2, Nurse = 3, Receptionist = 4, Staff = 5,Pharmacist= 6, Cashier = 7 }
 
         public static clsUser  CurrentUser;
 

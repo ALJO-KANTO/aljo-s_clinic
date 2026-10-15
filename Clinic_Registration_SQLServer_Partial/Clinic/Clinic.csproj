@@ -402,6 +402,7 @@
     <Compile Include="Medical Services\MangeServeces\ServecesType\frmListServicesType.Designer.cs">
       <DependentUpon>frmListServicesType.cs</DependentUpon>
     </Compile>
+    <Compile Include="TranslationClass.cs" />
     <Compile Include="User\Controls\ctrCardUserInfo.cs">
       <SubType>UserControl</SubType>
     </Compile>

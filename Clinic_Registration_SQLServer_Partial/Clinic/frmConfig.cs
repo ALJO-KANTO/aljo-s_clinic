@@ -385,6 +385,8 @@ namespace Clinic
 							(3, 'Nurse'),
 							(4, 'Receptionist'),
 							(5, 'Staff');
+							(6, 'Pharmacist');
+							(7, 'Cashier');
 
 						-- Dumping structure for table clinic_management.specializations
 						CREATE TABLE IF NOT EXISTS `specializations` (
