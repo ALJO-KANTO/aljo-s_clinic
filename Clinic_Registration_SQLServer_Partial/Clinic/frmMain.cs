@@ -133,6 +133,8 @@ namespace Clinic
 
             btnTranslate.Click += (s, e) =>
             {
+                Properties.Settings.Default.ApplicationLanguage = isArabic ? "ar" : "en";
+                Properties.Settings.Default.Save();
                 ChangeDashboardLanguage();
                 //isArabic = !isArabic;
 
@@ -505,8 +507,7 @@ namespace Clinic
         private void ChangeDashboardLanguage()
         {
             isArabic = !isArabic;
-            Properties.Settings.Default.ApplicationLanguage=isArabic ? "ar" : "en";
-            Properties.Settings.Default.Save();
+            
 
             btnTranslate.Text = isArabic
                 ? "English"
