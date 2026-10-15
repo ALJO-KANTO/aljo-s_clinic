@@ -14,68 +14,64 @@ namespace Clinic_DataAccess
         public static DataTable GetAllAppintmentType()
         {
             DataTable dt = new DataTable();
-            try
+
+            string query = @"
+        SELECT
+            AppointmentTypeID,
+            AppointmentTypeName AS TypeName,
+            CAST(0 AS DECIMAL(12,2)) AS DefaultFees
+        FROM appointmenttypes
+        ORDER BY AppointmentTypeID;";
+
+            using (MySqlConnection conn =
+                new MySqlConnection(clsDataAccessSettings.ConnectionString))
+            using (MySqlCommand cmd = new MySqlCommand(query, conn))
             {
-                using (MySqlConnection conn = new MySqlConnection(clsDataAccessSettings.ConnectionString))
+                conn.Open();
+
+                using (MySqlDataReader reader = cmd.ExecuteReader())
                 {
-                    string query = "SELECT AppointmentTypeID, TypeName, DefaultFees FROM AppointmentTypes";
-
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
-                    {
-
-                        conn.Open();
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
-                        {
-                            if (reader.HasRows)
-                                dt.Load(reader);
-                        }
-                    }
+                    dt.Load(reader);
                 }
             }
-            catch (MySqlException ex)
-            {
-                clsGlobalLogger.LogMySqlException(ex, clsGlobalLogger.LogLevel.Error, -1);
-            }
-
-
-
 
             return dt;
         }
-        public static bool GetAppointmentTypeByID(int AppointmentTypeID, ref string TypeName, ref float DefaultFees,ref int DefaultDuration,ref bool IsActive)
+        public static bool GetAppointmentTypeByID(
+            int AppointmentTypeID,
+            ref string TypeName,
+            ref float DefaultFees,
+            ref int DefaultDuration,
+            ref bool IsActive)
         {
-            bool isFound = false;
-            try
-            {
-                using (MySqlConnection conn = new MySqlConnection(clsDataAccessSettings.ConnectionString))
-                {
-                    string query = "SELECT TypeName, DefaultFees,DefaultDuration,IsActive FROM AppointmentTypes WHERE AppointmentTypeID = @AppointmentTypeID";
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@AppointmentTypeID", AppointmentTypeID);
+            string query = @"
+        SELECT AppointmentTypeName
+        FROM appointmenttypes
+        WHERE AppointmentTypeID = @AppointmentTypeID;";
 
-                        conn.Open();
-
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
-                        {
-                            if (reader.Read())
-                            {
-                                TypeName = reader["TypeName"].ToString();
-                                DefaultFees = Convert.ToSingle(reader["DefaultFees"]);
-                                DefaultDuration = reader["DefaultDuration"]==DBNull.Value?0: (int)reader["DefaultDuration"];
-                                IsActive =(Boolean) reader["IsActive"];
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-            catch (MySqlException ex)
+            using (MySqlConnection conn =
+                new MySqlConnection(clsDataAccessSettings.ConnectionString))
+            using (MySqlCommand cmd = new MySqlCommand(query, conn))
             {
-                clsGlobalLogger.LogMySqlException(ex, clsGlobalLogger.LogLevel.Error, -1);
-                isFound = false;
+                cmd.Parameters.AddWithValue(
+                    "@AppointmentTypeID", AppointmentTypeID);
+
+                conn.Open();
+
+                object result = cmd.ExecuteScalar();
+
+                if (result == null || result == DBNull.Value)
+                    return false;
+
+                TypeName = Convert.ToString(result);
+
+                // Compatibility defaults; not stored in MySQL.
+                DefaultFees = 0;
+                DefaultDuration = 0;
+                IsActive = true;
+
+                return true;
             }
-            return isFound;
         }
         public static int AddAppointmentType(string TypeName, float DefaultFees,int ?DefaultDuration,bool IsActive)
         {
@@ -150,6 +146,7 @@ namespace Clinic_DataAccess
 
             return isUpdated;
         }
+
         public static bool DeleteAppointmentType(int AppointmentTypeID)
         {
             bool isDeleted = false;

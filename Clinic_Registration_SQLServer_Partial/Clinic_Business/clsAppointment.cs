@@ -37,20 +37,17 @@ namespace Clinic_Business
         {
             get
             {
-                switch (AppointmentStatus)
+                if (!Enum.IsDefined(
+                    typeof(enAppointmentStatus),
+                    (int)AppointmentStatus))
                 {
-                    case 1:
-                        return "Scheduled";
-                    case 2:
-                        return "Completed";
-                    case 3:
-                        return "Cancelled";
-                    default:
-                        return "Unknown";
+                    return "Unknown";
                 }
+
+                return ((enAppointmentStatus)AppointmentStatus)
+                    .ToString();
             }
         }
-
         public clsAppointment()
         {
             this.AppointmentID = -1;

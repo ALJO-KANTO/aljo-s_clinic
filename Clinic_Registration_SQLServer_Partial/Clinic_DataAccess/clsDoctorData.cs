@@ -279,14 +279,23 @@ namespace Clinic_DataAccess
 
         public static string GetWorkingDays(int DoctorID)
         {
-            string query = @"SELECT STRING_AGG(DA.DayName, ', ') AS WorkingDays
-                     FROM DoctorWorkingDays DW 
-                     INNER JOIN Days DA ON DA.DayID = DW.DayID 
-                     WHERE DW.DoctorID = @DoctorID;";
+            string query = @"
+        SELECT GROUP_CONCAT(
+            DA.DayName
+            ORDER BY DA.DayID
+            SEPARATOR ', '
+        )
+        FROM doctorworkingdays DW
+        INNER JOIN days DA
+            ON DA.DayID = DW.DayID
+        WHERE DW.DoctorID = @DoctorID;";
 
-            return GetGenericString(DoctorID, query, "@DoctorID", "No Working Days Set");
+            return GetGenericString(
+                DoctorID,
+                query,
+                "@DoctorID",
+                "No Working Days Set");
         }
-
         public static float GetConsultationFees(int DoctorID)
         {
             try
@@ -647,53 +656,104 @@ namespace Clinic_DataAccess
             return dt;
         }
 
-        public static bool IsDoctorAvailable(int DoctorID, DateTime AppointmentDateTime)
+        public static bool IsDoctorAvailable(
+      int DoctorID,
+      DateTime AppointmentDateTime)
         {
             try
             {
-                using (MySqlConnection connection = new MySqlConnection(clsDataAccessSettings.ConnectionString))
+                // MySQL days table:
+                // Saturday = 1
+                // Sunday = 2
+                // Monday = 3
+                // Tuesday = 4
+                // Wednesday = 5
+                // Thursday = 6
+                // Friday = 7
+
+                int dayOfWeekCS = (int)AppointmentDateTime.DayOfWeek;
+
+                int dayID = (dayOfWeekCS == 6)
+                    ? 1
+                    : dayOfWeekCS + 2;
+
+                using (MySqlConnection connection =
+                    new MySqlConnection(
+                        clsDataAccessSettings.ConnectionString))
                 {
-                    // دمجنا الفحص: هل يعمل اليوم؟ + هل الوقت ضمن الدوام؟ + هل لديه موعد آخر؟
-                    string query = @"
-                -- 1. التأكد من يوم العمل وساعات الدوام
-                IF EXISTS (
-                    SELECT 1 FROM DoctorWorkingDays 
-                    WHERE DoctorID = @DoctorID 
-                    AND DayID = @DayID 
-                    AND @Time BETWEEN StartTime AND EndTime
-                )
-                -- 2. التأكد من عدم وجود تضارب (موعد في نفس اللحظة)
-                AND NOT EXISTS (
-                    SELECT 1 FROM Appointments 
-                    WHERE DoctorID = @DoctorID 
-                    AND AppointmentDate = @AppointmentDateTime 
-                    AND AppointmentStatus != 6
-                )
-                SELECT 1 ELSE SELECT 0;";
+                    connection.Open();
 
-                    using (MySqlCommand command = new MySqlCommand(query, connection))
+                    // STEP 1: Check doctor's working day and time
+                    string workingDayQuery = @"
+                SELECT COUNT(*)
+                FROM doctorworkingdays
+                WHERE DoctorID = @DoctorID
+                  AND DayID = @DayID
+                  AND StartTime <= @AppointmentTime
+                  AND EndTime >= @AppointmentTime;";
+
+                    bool isWorkingTime;
+
+                    using (MySqlCommand command =
+                        new MySqlCommand(workingDayQuery, connection))
                     {
-                        int dayOfWeekCS = (int)AppointmentDateTime.DayOfWeek;
-                        int dayID = (dayOfWeekCS == 6) ? 1 : (dayOfWeekCS + 2);
+                        command.Parameters.AddWithValue(
+                            "@DoctorID", DoctorID);
 
-                        command.Parameters.AddWithValue("@DoctorID", DoctorID);
-                        command.Parameters.AddWithValue("@DayID", dayID);
-                        command.Parameters.AddWithValue("@Time", AppointmentDateTime.TimeOfDay);
-                        command.Parameters.AddWithValue("@AppointmentDateTime", AppointmentDateTime);
+                        command.Parameters.AddWithValue(
+                            "@DayID", dayID);
 
-                        connection.Open();
-                        return Convert.ToBoolean(command.ExecuteScalar());
+                        command.Parameters.AddWithValue(
+                            "@AppointmentTime",
+                            AppointmentDateTime.ToString("HH:mm:ss"));
+
+                        int count = Convert.ToInt32(
+                            command.ExecuteScalar());
+
+                        isWorkingTime = count > 0;
+                    }
+
+                    if (!isWorkingTime)
+                        return false;
+
+                    // STEP 2: Check whether an appointment
+                    // already exists at the selected date and time
+                    string appointmentQuery = @"
+                SELECT COUNT(*)
+                FROM appointments
+                WHERE DoctorID = @DoctorID
+                  AND AppointmentDate = @AppointmentDateTime
+                  AND AppointmentStatus <> 'Cancelled';";
+
+                    using (MySqlCommand command =
+                        new MySqlCommand(appointmentQuery, connection))
+                    {
+                        command.Parameters.AddWithValue(
+                            "@DoctorID", DoctorID);
+
+                        command.Parameters.AddWithValue(
+                            "@AppointmentDateTime",
+                            AppointmentDateTime);
+
+                        int existingAppointments =
+                            Convert.ToInt32(command.ExecuteScalar());
+
+                        return existingAppointments == 0;
                     }
                 }
             }
             catch (MySqlException ex)
             {
-                clsGlobalLogger.LogMySqlException(ex, clsGlobalLogger.LogLevel.Error);
+                clsGlobalLogger.LogMySqlException(
+                    ex,
+                    clsGlobalLogger.LogLevel.Error);
+
+                System.Diagnostics.Debug.WriteLine(
+                    "Doctor availability error: " + ex);
+
                 return false;
             }
         }
-
-
         public static DataTable GetAllDoctorsForQueue()
         {
             DataTable dt = new DataTable();

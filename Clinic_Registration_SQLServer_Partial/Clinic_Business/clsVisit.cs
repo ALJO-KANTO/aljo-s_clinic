@@ -162,7 +162,10 @@ namespace Clinic_Business
         {
             return clsVisitData.GetPatientsWaitingForDoctors(DoctorID);
         }
-
+        public static DataTable GetAllMedicalRecords()
+        {
+            return clsVisitData.GetAllMedicalRecords();
+        }
         public static DataTable GetAllVisits()
         {
             return clsVisitData.GetAllVisits();
