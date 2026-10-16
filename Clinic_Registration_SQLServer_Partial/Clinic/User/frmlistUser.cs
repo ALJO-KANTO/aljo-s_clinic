@@ -15,7 +15,7 @@ namespace Clinic.User
     public partial class frmlistUser : Form
     {
         // سحب البيانات من طبقة الـ Business
-        private DataTable _dtAllUsers = clsUser.GetAllUsers();
+        private DataTable _dtAllUsers;
 
         public frmlistUser()
         {
@@ -27,15 +27,9 @@ namespace Clinic.User
             this.Close();
         }
 
-        private void _ResetDefault()
-        {
-            _dtAllUsers = clsUser.GetAllUsers();
-            dgvUsers.DataSource = _dtAllUsers;
-            lblRecordsCount.Text = _dtAllUsers.DefaultView.Count.ToString();
-        }
-
         private void frmlistUser_Load(object sender, EventArgs e)
         {
+            _dtAllUsers = clsUser.GetAllUsers();
             dgvUsers.DataSource = _dtAllUsers;
 
             // تعيين المفتاح الأساسي للـ DataTable لتمكين خاصية Rows.Find من العمل بنجاح
