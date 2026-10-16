@@ -9,7 +9,7 @@ namespace Clinic_DataAccess
     {
         // 1. جلب بيانات دواء واحد عبر الـ ID
         public static bool GetMedicineInfoByID(int MedicineID, ref string MedicineName, ref decimal MedicinePrice,
-                                               ref int CurrentStock, ref int ReorderLevel, ref decimal TaxRate)
+                                               ref decimal CurrentStock, ref decimal ReorderLevel, ref decimal TaxRate)
         {
             bool isFound = false;
             try
@@ -26,11 +26,11 @@ namespace Clinic_DataAccess
                             if (reader.Read())
                             {
                                 isFound = true;
-                                MedicineName = (string)reader["MedicineName"];
-                                MedicinePrice = (decimal)reader["MedicinePrice"];
-                                CurrentStock = (int)reader["CurrentStock"];
-                                ReorderLevel = (int)reader["ReorderLevel"];
-                                TaxRate = (decimal)reader["TaxRate"];
+                                MedicineName = Convert.ToString(reader["MedicineName"]);
+                                MedicinePrice = Convert.ToDecimal(reader["MedicinePrice"]);
+                                CurrentStock = Convert.ToInt32(reader["CurrentStock"]);
+                                ReorderLevel = Convert.ToInt32(reader["ReorderLevel"]);
+                                TaxRate = Convert.ToDecimal(reader["TaxRate"]);
                             }
                         }
                     }
@@ -138,7 +138,12 @@ namespace Clinic_DataAccess
 
         }
 
-        public static int AddNewMedicine(string MedicineName, decimal MedicinePrice, int CurrentStock, int ReorderLevel, decimal TaxRate)
+        public static int AddNewMedicine(
+            string MedicineName,
+            decimal MedicinePrice,
+            decimal CurrentStock,
+            decimal ReorderLevel,
+            decimal TaxRate)
         {
             int medicineID = -1;
             try
@@ -173,7 +178,13 @@ namespace Clinic_DataAccess
             return medicineID;
         }
 
-        public static bool UpdateMedicine(int MedicineID, string MedicineName, decimal MedicinePrice, int CurrentStock, int ReorderLevel, decimal TaxRate)
+        public static bool UpdateMedicine(
+            int MedicineID,
+            string MedicineName,
+            decimal MedicinePrice,
+            decimal CurrentStock,
+            decimal ReorderLevel,
+            decimal TaxRate)
         {
             int rowsAffected = 0;
             try
