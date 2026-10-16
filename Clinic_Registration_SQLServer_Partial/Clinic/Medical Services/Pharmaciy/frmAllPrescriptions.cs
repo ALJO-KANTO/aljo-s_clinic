@@ -1,5 +1,6 @@
 ﻿
 using Clinic.ControlsMain;
+using Clinic.Medical_Services.Visit;
 using Clinic_Business;
 using System;
 using System.Data;
@@ -23,8 +24,8 @@ namespace Clinic.Medical_Services.Pharmaciy
                 if (_detailsPanel.Visible) UpdatePanelPosition();
             };
             dgPrescriptionDetails.CellFormatting += dgPrescriptionDetails_CellFormatting;
-            dgPrescriptionDetails.CellContentClick += dgPrescriptionDetails_CellContentClick;
-            _detailsPanel.Visible = false;
+            dgPrescriptionDetails.CellClick +=
+                dgPrescriptionDetails_CellContentClick; _detailsPanel.Visible = false;
             _detailsPanel.BorderStyle = BorderStyle.FixedSingle; // لتراه بوضوح أثناء الاختبار
             this.Controls.Add(_detailsPanel);
 
@@ -38,53 +39,119 @@ namespace Clinic.Medical_Services.Pharmaciy
 
         private void SetupGridDesign()
         {
-
             dgPrescriptionDetails.AutoGenerateColumns = false;
             dgPrescriptionDetails.Columns.Clear();
 
-            // 1. زر التوسيع الملون بالأكوا
-            dgPrescriptionDetails.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                Name = "ExpandButton",
-                HeaderText = "",
-                Width = 45,
-                ReadOnly = true,
-                DefaultCellStyle = new DataGridViewCellStyle
+            dgPrescriptionDetails.Columns.Add(
+                new DataGridViewTextBoxColumn
                 {
-                    Alignment = DataGridViewContentAlignment.MiddleCenter,
-                    Font = new Font("Segoe UI", 12, FontStyle.Bold),
-                    ForeColor = Color.FromArgb(0, 210, 190),
-                    SelectionForeColor = Color.FromArgb(0, 210, 190)
-                }
-            });
-            // 2. ربط الأعمدة بأسماء الحقول (DataPropertyName) لكي تظهر النصوص داخل الخلايا
-            dgPrescriptionDetails.Columns.Add(new DataGridViewTextBoxColumn { Name = "PrescriptionID", HeaderText = "Prescription ID", DataPropertyName = "PrescriptionID", ReadOnly = true, Width = 180 });
-            dgPrescriptionDetails.Columns.Add(new DataGridViewTextBoxColumn { Name = "PrescriptionDate", HeaderText = "Date", DataPropertyName = "PrescriptionDate", ReadOnly = true, Width = 150 });
-            dgPrescriptionDetails.Columns.Add(new DataGridViewTextBoxColumn { Name = "PatientName", HeaderText = "Patient Name", DataPropertyName = "PatientName", ReadOnly = true, Width = 200 });
-            dgPrescriptionDetails.Columns.Add(new DataGridViewTextBoxColumn { Name = "DoctorName", HeaderText = "Doctor Name", DataPropertyName = "DoctorName", ReadOnly = true, Width = 200 });
+                    Name = "ExpandButton",
+                    HeaderText = "",
+                    Width = 45,
+                    ReadOnly = true,
+                    DefaultCellStyle = new DataGridViewCellStyle
+                    {
+                        Alignment = DataGridViewContentAlignment.MiddleCenter,
+                        Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                        ForeColor = Color.Teal
+                    }
+                });
 
-            dgPrescriptionDetails.Columns.Add(new DataGridViewTextBoxColumn { Name = "VisitID", HeaderText = "Visit ID", DataPropertyName = "VisitID", ReadOnly = true, Width = 120 });
+            dgPrescriptionDetails.Columns.Add(
+                new DataGridViewTextBoxColumn
+                {
+                    Name = "PrescriptionID",
+                    HeaderText = "Prescription ID",
+                    DataPropertyName = "PrescriptionID",
+                    ReadOnly = true,
+                    Width = 150
+                });
 
-            dgPrescriptionDetails.Columns.Add(new DataGridViewTextBoxColumn { Name = "Status", HeaderText = "Status", DataPropertyName = "Status", ReadOnly = true, Width = 150 });
-            dgPrescriptionDetails.Columns.Add(new DataGridViewTextBoxColumn { Name = "Notes", HeaderText = "Notes", DataPropertyName = "Notes", ReadOnly = true, Width = 200 });
-            DataGridViewLinkColumn actionColumn = new DataGridViewLinkColumn
-            {
-                Name = "Actions",
-                HeaderText = "Actions",
-                Text = "Edit  |  Delete",
-                UseColumnTextForLinkValue = true, // لعرض النص الثابت على كل الأسطر
-                ActiveLinkColor = Color.Blue,
-                LinkColor = Color.Brown, // لون مميز ومناسب للهوية البصرية للعيادة
-                TrackVisitedState = false,
-                Width = 148 // مساحة ثابتة وممتازة للكلمتين معاً
-            };
-            // جعل النص يتوسط الخلية تماماً بشكل أنيق
-            dgPrescriptionDetails.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dgPrescriptionDetails.Columns.Add(actionColumn);
-            //dgPrescriptionDetails.DataSource = dtMaster;
+            dgPrescriptionDetails.Columns.Add(
+                new DataGridViewTextBoxColumn
+                {
+                    Name = "PrescriptionDate",
+                    HeaderText = "Date",
+                    DataPropertyName = "PrescriptionDate",
+                    ReadOnly = true,
+                    Width = 150
+                });
 
+            dgPrescriptionDetails.Columns.Add(
+                new DataGridViewTextBoxColumn
+                {
+                    Name = "PatientName",
+                    HeaderText = "Patient Name",
+                    DataPropertyName = "PatientName",
+                    ReadOnly = true,
+                    Width = 180
+                });
+
+            dgPrescriptionDetails.Columns.Add(
+                new DataGridViewTextBoxColumn
+                {
+                    Name = "DoctorName",
+                    HeaderText = "Doctor Name",
+                    DataPropertyName = "DoctorName",
+                    ReadOnly = true,
+                    Width = 180
+                });
+
+            dgPrescriptionDetails.Columns.Add(
+                new DataGridViewTextBoxColumn
+                {
+                    Name = "VisitID",
+                    HeaderText = "Visit ID",
+                    DataPropertyName = "VisitID",
+                    ReadOnly = true,
+                    Width = 100
+                });
+
+            dgPrescriptionDetails.Columns.Add(
+                new DataGridViewTextBoxColumn
+                {
+                    Name = "Status",
+                    HeaderText = "Status",
+                    DataPropertyName = "Status",
+                    ReadOnly = true,
+                    Width = 160
+                });
+
+            dgPrescriptionDetails.Columns.Add(
+                new DataGridViewTextBoxColumn
+                {
+                    Name = "Notes",
+                    HeaderText = "Notes",
+                    DataPropertyName = "Notes",
+                    ReadOnly = true,
+                    Width = 180
+                });
+
+            dgPrescriptionDetails.Columns.Add(
+                new DataGridViewLinkColumn
+                {
+                    Name = "Edit",
+                    HeaderText = "Edit",
+                    Text = "Edit",
+                    UseColumnTextForLinkValue = true,
+                    TrackVisitedState = false,
+                    Width = 70
+                });
+
+            dgPrescriptionDetails.Columns.Add(
+                new DataGridViewLinkColumn
+                {
+                    Name = "Delete",
+                    HeaderText = "Delete",
+                    Text = "Delete",
+                    UseColumnTextForLinkValue = true,
+                    TrackVisitedState = false,
+                    Width = 80
+                });
+
+            dgPrescriptionDetails.DefaultCellStyle.Alignment =
+                DataGridViewContentAlignment.MiddleCenter;
         }
-
 
         private void LoadMasterData()
         {
@@ -101,13 +168,7 @@ namespace Clinic.Medical_Services.Pharmaciy
                     return;
                 }
 
-                MessageBox.Show(
-                    "Prescription records returned: " + dtMaster.Rows.Count +
-                    "\nColumns: " + string.Join(", ",
-                        dtMaster.Columns.Cast<DataColumn>()
-                            .Select(c => c.ColumnName)),
-                    "Prescription Data"
-                );
+              
 
                 dgPrescriptionDetails.AutoGenerateColumns = false;
                 dgPrescriptionDetails.DataSource = dtMaster;
@@ -161,33 +222,142 @@ namespace Clinic.Medical_Services.Pharmaciy
             dt.Rows.InsertAt(newRow, rowIndex + 1);
             dgPrescriptionDetails.Rows[rowIndex + 1].Height = 315;
         }
-        private void dgPrescriptionDetails_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        private void dgPrescriptionDetails_CellContentClick(
+            object sender,
+            DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex < 0 || dgPrescriptionDetails.Columns[e.ColumnIndex].Name != "ExpandButton") return;
+            if (e.RowIndex < 0 || e.ColumnIndex < 0)
+                return;
 
-            var row = dgPrescriptionDetails.Rows[e.RowIndex];
-            int prescriptionID = Convert.ToInt32(row.Cells["PrescriptionID"].Value);
+            string columnName =
+                dgPrescriptionDetails.Columns[e.ColumnIndex].Name;
 
-            if (row.Cells["ExpandButton"].Value?.ToString() == "➕")
+            DataGridViewRow row =
+                dgPrescriptionDetails.Rows[e.RowIndex];
+
+            if (!int.TryParse(
+                Convert.ToString(row.Cells["PrescriptionID"].Value),
+                out int prescriptionID))
+                return;
+
+            if (prescriptionID <= 0)
+                return;
+
+            if (columnName == "ExpandButton")
             {
+                if (_expandedRowIndex == e.RowIndex + 1)
+                {
+                    CloseAllExpandedRows();
+                    return;
+                }
+
                 CloseAllExpandedRows();
 
-                // إدراج الصف عبر الدالة التي تملأ البيانات الافتراضية
-                AddContainerRow(e.RowIndex);
+                // Find the row again because closing an expanded row
+                // may change DataGridView row positions.
+                foreach (DataGridViewRow currentRow
+                    in dgPrescriptionDetails.Rows)
+                {
+                    if (Convert.ToString(
+                        currentRow.Cells["PrescriptionID"].Value)
+                        == prescriptionID.ToString())
+                    {
+                        AddContainerRow(currentRow.Index);
 
-                row.Cells["ExpandButton"].Value = "➖";
-                _expandedRowIndex = e.RowIndex + 1;
+                        currentRow.Cells["ExpandButton"].Value = "➖";
 
-                _detailsPanel.LoadDetails(prescriptionID);
-                UpdatePanelPosition();
-                _detailsPanel.Visible = true;
+                        _expandedRowIndex = currentRow.Index + 1;
+
+                        _detailsPanel.LoadDetails(prescriptionID);
+
+                        UpdatePanelPosition();
+
+                        _detailsPanel.Visible = true;
+
+                        break;
+                    }
+                }
+
+                return;
             }
-            else
+
+            if (columnName == "Edit")
             {
+                int visitID;
+
+                if (!int.TryParse(
+                    Convert.ToString(row.Cells["VisitID"].Value),
+                    out visitID) || visitID <= 0)
+                {
+                    MessageBox.Show(
+                        "Invalid Visit ID.",
+                        "Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+
+                    return;
+                }
+
                 CloseAllExpandedRows();
+
+                using (frmDoctor frm = new frmDoctor(
+                    visitID,
+                    frmDoctor.enMode.Update))
+                {
+                    frm.ShowDialog(this);
+                }
+
+                LoadMasterData();
+                return;
+            }
+
+            if (columnName == "Delete")
+            {
+                DialogResult result = MessageBox.Show(
+                    "Are you sure you want to permanently delete prescription #" +
+                    prescriptionID + "?",
+                    "Confirm Delete",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Warning);
+
+                if (result != DialogResult.Yes)
+                    return;
+
+                try
+                {
+                    bool deleted =
+                        clsPrescription.DeletePrescription(prescriptionID);
+
+                    if (deleted)
+                    {
+                        _detailsPanel.Visible = false;
+                        _expandedRowIndex = -1;
+
+                        LoadMasterData();
+
+                        MessageBox.Show(
+                            "Prescription deleted successfully.",
+                            "Success",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Prescription not found.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(
+                        ex.Message,
+                        "Delete Failed",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                }
+
+                return;
             }
         }
-
         private void UpdatePanelPosition()
         {
             if (_expandedRowIndex == -1 || _expandedRowIndex >= dgPrescriptionDetails.Rows.Count) return;
@@ -241,20 +411,32 @@ namespace Clinic.Medical_Services.Pharmaciy
 
         private void cmbStatus_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string selectedStatus = cmbStatus.Text;
+            if (dtMaster == null || dtMaster.Columns.Count == 0)
+                return;
 
-            // 2. إذا كانت "All" نعرض كل شيء (نفرغ الفلتر)
-            if (selectedStatus == "All" || string.IsNullOrEmpty(selectedStatus))
+            string selectedStatus = cmbStatus.Text.Trim();
+
+            if (selectedStatus == "All" ||
+                string.IsNullOrWhiteSpace(selectedStatus))
             {
                 dtMaster.DefaultView.RowFilter = "";
+                return;
             }
-            else
-            {
-                // 3. فلترة الجدول حسب الحالة
-                dtMaster.DefaultView.RowFilter = $"Status = '{selectedStatus}'";
-            }
-        }
 
+            string statusColumn = "";
+
+            if (dtMaster.Columns.Contains("Status"))
+                statusColumn = "Status";
+            else if (dtMaster.Columns.Contains("PrescriptionStatus"))
+                statusColumn = "PrescriptionStatus";
+            else
+                return;
+
+            string safeStatus = selectedStatus.Replace("'", "''");
+
+            dtMaster.DefaultView.RowFilter =
+                $"[{statusColumn}] = '{safeStatus}'";
+        }
         private void lbBlaceholder_Click(object sender, EventArgs e)
         {
             txtSearch.Focus();
@@ -262,13 +444,23 @@ namespace Clinic.Medical_Services.Pharmaciy
 
         private void txtSearch_TextChanged(object sender, EventArgs e)
         {
+            lbBlaceholder.Visible =
+                string.IsNullOrEmpty(txtSearch.Text);
 
-            lbBlaceholder.Visible = string.IsNullOrEmpty(txtSearch.Text);
-            string filter = string.IsNullOrEmpty(txtSearch.Text) ? "" : $"PatientName LIKE '%{txtSearch.Text}%'";
-            dtMaster.DefaultView.RowFilter = filter;
+            if (dtMaster == null ||
+                !dtMaster.Columns.Contains("PatientName"))
+                return;
 
+            string search = txtSearch.Text.Trim()
+                .Replace("'", "''")
+                .Replace("[", "[[]")
+                .Replace("%", "[%]")
+                .Replace("*", "[*]");
 
-
+            dtMaster.DefaultView.RowFilter =
+                string.IsNullOrWhiteSpace(search)
+                ? ""
+                : $"[PatientName] LIKE '%{search}%'";
         }
     }
 }

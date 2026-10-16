@@ -20,11 +20,13 @@ namespace Clinic_Business
         public int CreatedByUserID { get; set; }
         public clsPrescription PrescriptionInfo { get; set; }
         public DataTable dtServices { get; set; }
-        public enum enVisitStatus
+        public enum enVisitStatus : byte
         {
-            Active = 1,
-            Pending_Billing = 2,
-            Completed = 3
+            InQueue = 1,
+            InProgress = 2,
+            Pending_Billing = 3,
+            Completed = 4,
+            Cancelled = 5
         }
         public clsVisit()
         {
@@ -96,25 +98,53 @@ namespace Clinic_Business
 
         private bool _AddNewVisit()
         {
-            this.PrescriptionInfo.PrescriptionID = clsVisitData.AddNewVisitData(this.VisitID, this.AppointmentID, this.Diagnosis, this.VisitNotes, this.CreatedByUserID, this.DoctorID, this.dtServices,
-                        this.PrescriptionInfo.dtMedicines, this.PrescriptionInfo.PrescriptionNotes, this.PrescriptionInfo.PrescriptionDate);
-            return (this.PrescriptionInfo.PrescriptionID != -1);
-        }
+            if (this.VisitID <= 0)
+            {
+                throw new InvalidOperationException(
+                    "No visit has been created. Please check in the appointment first.");
+            }
 
+            return _UpdateVisit();
+        }
+        public static int CheckInAppointment(
+    int appointmentID,
+    int createdByUserID)
+        {
+            return clsVisitData.CheckInAppointment(
+                appointmentID,
+                createdByUserID);
+        }
         private bool _UpdateVisit()
         {
-            int tempPrescriptionID = this.PrescriptionInfo.PrescriptionID;
-            bool isSaved = clsVisitData.UpdateExistingVisitData(this.VisitID, this.AppointmentID, this.Diagnosis, this.VisitNotes, this.CreatedByUserID, this.DoctorID, this.dtServices,
-                        this.PrescriptionInfo.dtMedicines, ref tempPrescriptionID, this.PrescriptionInfo.PrescriptionNotes, this.PrescriptionInfo.PrescriptionDate);
+            if (this.PrescriptionInfo == null)
+                throw new InvalidOperationException(
+                    "Prescription information has not been loaded.");
+
+            int tempPrescriptionID =
+                this.PrescriptionInfo.PrescriptionID;
+
+            bool isSaved = clsVisitData.UpdateExistingVisitData(
+                this.VisitID,
+                this.AppointmentID,
+                this.Diagnosis,
+                this.VisitNotes,
+                this.CreatedByUserID,
+                this.DoctorID,
+                this.dtServices,
+                this.PrescriptionInfo.dtMedicines,
+                ref tempPrescriptionID,
+                this.PrescriptionInfo.PrescriptionNotes,
+                this.PrescriptionInfo.PrescriptionDate
+            );
 
             if (isSaved)
             {
-                this.PrescriptionInfo.PrescriptionID = tempPrescriptionID;
+                this.PrescriptionInfo.PrescriptionID =
+                    tempPrescriptionID;
             }
 
             return isSaved;
         }
-
         public static bool DeleteVisit(int VisitID, int AppointmentID)
         {
             return clsVisitData.DeleteVisit(VisitID, AppointmentID);
