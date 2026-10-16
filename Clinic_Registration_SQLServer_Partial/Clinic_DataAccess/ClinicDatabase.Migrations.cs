@@ -1015,6 +1015,16 @@ namespace Clinic_DataAccess
                         },
                         new DatabaseMigration
                         {
+                            Version = "20261016_021",
+                            Description = "Add BillNumber column to Bills",
+                            Sql = @"
+                                ALTER TABLE bills
+                                ADD COLUMN BillNumber VARCHAR(30) NULL;
+                            "
+                        },
+                        //Views  
+                        new DatabaseMigration
+                        {
                             Version = "20261015_VIEW_001",
                             Description = "Initial view: view_doctorsdetails",
                             Sql = @"CREATE OR REPLACE VIEW `view_doctorsdetails` AS select `d`.`DoctorID` AS `DoctorID`,`d`.`PersonID` AS `PersonID`,`p`.`FullName` AS `FullName`,`d`.`LicenseNumber` AS `LicenseNumber`,`d`.`ConsultationFees` AS `ConsultationFees`,coalesce((select group_concat(distinct `s`.`SpecializationName` order by `s`.`SpecializationName` ASC separator ', ') from (`doctorspecialties` `ds` join `specializations` `s` on((`s`.`SpecializationID` = `ds`.`SpecializationID`))) where (`ds`.`DoctorID` = `d`.`DoctorID`)),'') AS `Specializations`,coalesce((select group_concat(`dy`.`DayName` order by `dw`.`DayID` ASC separator ', ') from (`doctorworkingdays` `dw` join `days` `dy` on((`dy`.`DayID` = `dw`.`DayID`))) where (`dw`.`DoctorID` = `d`.`DoctorID`)),'') AS `WorkingDays`,coalesce(`c`.`CountryName`,'') AS `CountryName`,`d`.`IsActive` AS `IsActive` from ((`doctors` `d` left join `persons` `p` on((`p`.`PersonID` = `d`.`PersonID`))) left join `countries` `c` on((`c`.`CountryID` = `p`.`NationalityCountryID`)));"
@@ -1302,6 +1312,26 @@ namespace Clinic_DataAccess
                             Sql = @"
                                 ALTER TABLE persons
                                 ADD COLUMN IsDeleted TINYINT(1) NOT NULL DEFAULT 0;
+                            "
+                        },
+                        //add column Diagnosis to Visits
+                        new DatabaseMigration
+                        {
+                            Version = "20261016_00014",
+                            Description = "Add Diagnosis column to visits",
+                            Sql = @"
+                                ALTER TABLE visits
+                                ADD COLUMN Diagnosis VARCHAR(500) NOT NULL DEFAULT('');
+                            "
+                        },
+                        //add col [VisitNotes] [nvarchar](max) NULL, to Visits
+                        new DatabaseMigration
+                        {
+                            Version = "20261016_00015",
+                            Description = "Add VisitNotes column to visits",
+                            Sql = @"
+                                ALTER TABLE visits
+                                ADD COLUMN VisitNotes VARCHAR(500) NOT NULL DEFAULT('');
                             "
                         },
                         new DatabaseMigration

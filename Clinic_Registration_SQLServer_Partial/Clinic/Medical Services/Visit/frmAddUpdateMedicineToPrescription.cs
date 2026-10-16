@@ -50,7 +50,9 @@ namespace Clinic.Medical_Services.Visit
         private void _ResetDefaultValues()
         {
             _FillMedicensInCheckBox();
-            cbMedicines.SelectedIndex = 1;
+            if(cbMedicines.Items.Count>0)
+                cbMedicines.SelectedIndex = 1;
+
             NUDQuantity.Value = 1;
             txtDosage.Text = "";
             txtInstructions.Text = "";
