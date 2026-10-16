@@ -12,9 +12,15 @@ namespace Clinic.Patient
 {
     public partial class frmFindPatient : Form
     {
+        bool isArabic = false;
         public frmFindPatient()
         {
             InitializeComponent();
+
+            string language = Properties.Settings.Default.ApplicationLanguage ?? "en";
+            isArabic = language.Equals("ar", StringComparison.OrdinalIgnoreCase);
+
+            TranslationHelper.TranslateForm(this,isArabic);
         }
 
       
