@@ -26,6 +26,11 @@ namespace Clinic.Medical_Services.Pharmaciy
         public frmManageDrugs()
         {
             InitializeComponent();
+            nudCurrentStock.DecimalPlaces = 3;
+            nudCurrentStock.Maximum = 99999999999.999M;
+
+            nudReorderLevel.DecimalPlaces = 3;
+            nudReorderLevel.Maximum = 99999999999.999M;
             SetupMedicineGridDesign();
             lbCurrentUser.Text = clsGlobal.CurrentUser.PersonInfo.Name;
             dgMedicines.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 14, FontStyle.Bold);
@@ -101,22 +106,35 @@ namespace Clinic.Medical_Services.Pharmaciy
                 ShowWarning("Please correct the input errors before saving.");
                 return;
             }
+
             if (Mode == enMode.AddNew)
+            {
                 _Medicine = new clsMedicine();
+            }
+
             _Medicine.MedicineName = txtMedicneName.Text;
             _Medicine.MedicinePrice = Convert.ToDecimal(txtMedicinePrice.Text);
-            _Medicine.CurrentStock = (int)nudCurrentStock.Value;
-            _Medicine.ReorderLevel = (int)nudReorderLevel.Value;
-            _Medicine.TaxRate = (decimal)nudTaxRate.Value;
+
+            _Medicine.CurrentStock = nudCurrentStock.Value;
+            _Medicine.ReorderLevel = nudReorderLevel.Value; ;
+
+            _Medicine.TaxRate = nudTaxRate.Value;
 
             if (_Medicine.Save())
             {
-                ShowSuccess("Medicine  saved successfully.");
+                ShowSuccess("Medicine saved successfully.");
+
+                Mode = enMode.AddNew;
+                _Medicine = null;
+                btnSave.Text = "Add New Drug";
+
                 _ResetFaild();
             }
-
+            else
+            {
+                ShowError("Failed to save medicine.");
+            }
         }
-
         private void btnExit_Click(object sender, EventArgs e)
         {
             this.Close();
@@ -124,19 +142,33 @@ namespace Clinic.Medical_Services.Pharmaciy
         private void _UpdateMedicine(int MedicineId)
         {
             _Medicine = clsMedicine.Find(MedicineId);
+
             if (_Medicine == null)
             {
                 ShowError("This Medicine Is Not Found ...");
                 return;
             }
+
+            // Allow decimal quantities and larger stock values.
+            nudCurrentStock.DecimalPlaces = 3;
+            nudReorderLevel.DecimalPlaces = 3;
+
+            nudCurrentStock.Maximum = 99999999999.999M;
+            nudReorderLevel.Maximum = 99999999999.999M;
+
+            // Ensure the controls can display existing values.
+            nudCurrentStock.Minimum = Math.Min(0M, _Medicine.CurrentStock);
+            nudReorderLevel.Minimum = Math.Min(0M, _Medicine.ReorderLevel);
+
             btnSave.Text = "Update Drug";
             Mode = enMode.Update;
+
             txtMedicneName.Text = _Medicine.MedicineName;
             txtMedicinePrice.Text = _Medicine.MedicinePrice.ToString();
+
             nudCurrentStock.Value = _Medicine.CurrentStock;
             nudReorderLevel.Value = _Medicine.ReorderLevel;
             nudTaxRate.Value = _Medicine.TaxRate;
-
         }
         private void dgMedicines_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
