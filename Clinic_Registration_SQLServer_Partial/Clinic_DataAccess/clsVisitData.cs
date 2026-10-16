@@ -44,7 +44,135 @@ namespace Clinic_DataAccess
                 }
             }
         }
+        public static int CheckInAppointment(
+    int appointmentID,
+    int createdByUserID)
+        {
+            using (MySqlConnection conn =
+                new MySqlConnection(clsDataAccessSettings.ConnectionString))
+            {
+                conn.Open();
 
+                using (MySqlTransaction tran = conn.BeginTransaction())
+                {
+                    try
+                    {
+                        int patientID;
+                        int doctorID;
+                        string appointmentStatus;
+
+                        using (MySqlCommand cmd = new MySqlCommand(@"
+                    SELECT PatientID, DoctorID, AppointmentStatus
+                    FROM appointments
+                    WHERE AppointmentID = @AppointmentID
+                    FOR UPDATE;",
+                            conn, tran))
+                        {
+                            cmd.Parameters.AddWithValue(
+                                "@AppointmentID", appointmentID);
+
+                            using (MySqlDataReader reader = cmd.ExecuteReader())
+                            {
+                                if (!reader.Read())
+                                    throw new InvalidOperationException(
+                                        "Appointment not found.");
+
+                                patientID = Convert.ToInt32(reader["PatientID"]);
+                                doctorID = Convert.ToInt32(reader["DoctorID"]);
+                                appointmentStatus =
+                                    Convert.ToString(reader["AppointmentStatus"]);
+                            }
+                        }
+
+                        // Prevent duplicate visits.
+                        using (MySqlCommand cmd = new MySqlCommand(@"
+                    SELECT VisitID
+                    FROM visits
+                    WHERE AppointmentID = @AppointmentID
+                    LIMIT 1;",
+                            conn, tran))
+                        {
+                            cmd.Parameters.AddWithValue(
+                                "@AppointmentID", appointmentID);
+
+                            object existingID = cmd.ExecuteScalar();
+
+                            if (existingID != null &&
+                                existingID != DBNull.Value)
+                            {
+                                throw new InvalidOperationException(
+                                    "This appointment already has a visit. Visit ID: " +
+                                    existingID);
+                            }
+                        }
+
+                        if (!string.Equals(
+                            appointmentStatus,
+                            "Scheduled",
+                            StringComparison.OrdinalIgnoreCase))
+                        {
+                            throw new InvalidOperationException(
+                                "Only scheduled appointments can be checked in. " +
+                                "Current status: " + appointmentStatus);
+                        }
+
+                        int visitID;
+
+                        using (MySqlCommand cmd = new MySqlCommand(@"
+                    INSERT INTO visits
+                    (
+                        PatientID,
+                        AppointmentID,
+                        DoctorID,
+                        VisitDate,
+                        VisitStatus,
+                        CreatedByUserID
+                    )
+                    VALUES
+                    (
+                        @PatientID,
+                        @AppointmentID,
+                        @DoctorID,
+                        NOW(),
+                        'InQueue',
+                        @CreatedByUserID
+                    );",
+                            conn, tran))
+                        {
+                            cmd.Parameters.AddWithValue("@PatientID", patientID);
+                            cmd.Parameters.AddWithValue("@AppointmentID", appointmentID);
+                            cmd.Parameters.AddWithValue("@DoctorID", doctorID);
+                            cmd.Parameters.AddWithValue(
+                                "@CreatedByUserID", createdByUserID);
+
+                            cmd.ExecuteNonQuery();
+
+                            visitID = Convert.ToInt32(cmd.LastInsertedId);
+                        }
+
+                        using (MySqlCommand cmd = new MySqlCommand(@"
+                    UPDATE appointments
+                    SET AppointmentStatus = 'InQueue'
+                    WHERE AppointmentID = @AppointmentID;",
+                            conn, tran))
+                        {
+                            cmd.Parameters.AddWithValue(
+                                "@AppointmentID", appointmentID);
+
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        tran.Commit();
+                        return visitID;
+                    }
+                    catch
+                    {
+                        tran.Rollback();
+                        throw;
+                    }
+                }
+            }
+        }
         public static bool UpdateExistingVisitData(int VisitID, int AppointmentID, string Diagnosis, string VisitNotes, int CreatedByUserID, int DoctorID, DataTable services, DataTable dtMedicines,ref int PrescriptionID, string PrescriptionNotes, DateTime PrescriptionDate)
         {
             using (MySqlConnection conn = new MySqlConnection(clsDataAccessSettings.ConnectionString))
@@ -221,16 +349,28 @@ SET AppointmentStatus = 'In_Billing'        WHERE AppointmentID = @AppointmentID
 
                             switch (status)
                             {
-                                case "Open":
+                                case "InQueue":
+                                case "Waiting_For_Vitals":
+                                case "Ready_For_Doctor":
                                     VisitStatus = 1;
                                     break;
 
-                                case "Completed":
+                                case "Progress":
+                                case "InProgress":
+                                case "In-Progress":
                                     VisitStatus = 2;
                                     break;
 
-                                case "Closed":
+                                case "Pending_Billing":
                                     VisitStatus = 3;
+                                    break;
+
+                                case "Completed":
+                                    VisitStatus = 4;
+                                    break;
+
+                                case "Cancelled":
+                                    VisitStatus = 5;
                                     break;
 
                                 default:
@@ -265,8 +405,12 @@ SET AppointmentStatus = 'In_Billing'        WHERE AppointmentID = @AppointmentID
             {
                 using (MySqlConnection connection = new MySqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    string query = "SELECT 1 FROM Visits WHERE VisitID = @VisitID AND VisitStatus = 3";
-                    using (MySqlCommand cmd = new MySqlCommand(query, connection))
+                    string query = @"
+    SELECT 1
+    FROM visits
+    WHERE VisitID = @VisitID
+      AND VisitStatus IN ('Completed', 'Closed')
+    LIMIT 1;"; using (MySqlCommand cmd = new MySqlCommand(query, connection))
                     {
                         cmd.Parameters.AddWithValue("@VisitID", VisitID);
                         connection.Open();
@@ -285,64 +429,64 @@ SET AppointmentStatus = 'In_Billing'        WHERE AppointmentID = @AppointmentID
         }
 
 
-        public static DataTable GetPatientsWaitingForDoctors(int DoctorPersonID)
-        {
-            DataTable dt = new DataTable();
-
-            try
+            public static DataTable GetPatientsWaitingForDoctors(int DoctorPersonID)
             {
-                using (MySqlConnection connection =
-                    new MySqlConnection(clsDataAccessSettings.ConnectionString))
+                DataTable dt = new DataTable();
+
+                try
                 {
-                    string query = @"
-                SELECT
-                    VisitID,
-                    AppointmentID,
-                    PatientName,
-                    CheckInTime,
-                    StatusText,
-                    IsCalled
-                FROM View_PatientsWaitingForDoctors
-                WHERE
-                    (@DoctorPersonID = 0
-                     OR DoctorPersonID = @DoctorPersonID)
-                  AND StatusText IN
-(
-    'InQueue',
-    'Waiting_For_Vitals',
-    'Ready_For_Doctor',
-    'Progress',
-    'InProgress',
-    'In-Progress'
-)
-                ORDER BY CheckInTime;";
-
-                    using (MySqlCommand cmd =
-                        new MySqlCommand(query, connection))
+                    using (MySqlConnection connection =
+                        new MySqlConnection(clsDataAccessSettings.ConnectionString))
                     {
-                        cmd.Parameters.AddWithValue(
-                            "@DoctorPersonID", DoctorPersonID);
+                        string query = @"
+                    SELECT
+                        VisitID,
+                        AppointmentID,
+                        PatientName,
+                        CheckInTime,
+                        StatusText,
+                        IsCalled
+                    FROM View_PatientsWaitingForDoctors
+                    WHERE
+                        (@DoctorPersonID = 0
+                         OR DoctorPersonID = @DoctorPersonID)
+                      AND StatusText IN
+    (
+        'InQueue',
+        'Waiting_For_Vitals',
+        'Ready_For_Doctor',
+        'Progress',
+        'InProgress',
+        'In-Progress'
+    )
+                    ORDER BY CheckInTime;";
 
-                        connection.Open();
-
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        using (MySqlCommand cmd =
+                            new MySqlCommand(query, connection))
                         {
-                            dt.Load(reader);
+                            cmd.Parameters.AddWithValue(
+                                "@DoctorPersonID", DoctorPersonID);
+
+                            connection.Open();
+
+                            using (MySqlDataReader reader = cmd.ExecuteReader())
+                            {
+                                dt.Load(reader);
+                            }
                         }
                     }
                 }
-            }
-            catch (MySqlException ex)
-            {
-                clsGlobalLogger.LogMySqlException(
-                    ex,
-                    clsGlobalLogger.LogLevel.Error);
+                catch (MySqlException ex)
+                {
+                    clsGlobalLogger.LogMySqlException(
+                        ex,
+                        clsGlobalLogger.LogLevel.Error);
 
-                throw;
-            }
+                    throw;
+                }
 
-            return dt;
-        }
+                return dt;
+            }
 
         public static bool DeleteVisit(int VisitID, int AppointmentID)
         {

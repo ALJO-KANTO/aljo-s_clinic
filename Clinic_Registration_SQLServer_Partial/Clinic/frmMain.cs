@@ -44,7 +44,7 @@ namespace Clinic
             {
                 BuildModernDashboardDesign();
                 AddTranslateButton();
-                ChangeDashboardLanguage();
+                ChangeDashboardLanguage(false);
             }
         }
 
@@ -133,14 +133,12 @@ namespace Clinic
 
             btnTranslate.Click += (s, e) =>
             {
-                Properties.Settings.Default.ApplicationLanguage = isArabic ? "ar" : "en";
-                Properties.Settings.Default.Save();
                 ChangeDashboardLanguage();
-                //isArabic = !isArabic;
 
-                //btnTranslate.Text = isArabic
-                //    ? "English"
-                //    : "🌐 Translate";
+                Properties.Settings.Default.ApplicationLanguage =
+                    isArabic ? "ar" : "en";
+
+                Properties.Settings.Default.Save();
             };
         }
 
@@ -504,10 +502,13 @@ namespace Clinic
         {
             return isArabic ? arabic : english;
         }
-        private void ChangeDashboardLanguage()
+        private void ChangeDashboardLanguage(bool toggle = true)
         {
-            isArabic = !isArabic;
-            
+            if (toggle)
+                isArabic = !isArabic;
+
+            TranslationClass.IsArabic = isArabic;
+
 
             btnTranslate.Text = isArabic
                 ? "English"
