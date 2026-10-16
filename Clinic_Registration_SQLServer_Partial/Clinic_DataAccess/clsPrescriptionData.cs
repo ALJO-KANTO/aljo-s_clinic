@@ -913,7 +913,7 @@ namespace Clinic_DataAccess
                     if (BillID == 0)
                     {
                         string insertBill = @"INSERT INTO Bills (VisitID, PaymentStatus, BillDate, CreatedByUserID) 
-                                      VALUES (@VisitID, 0, GETDATE(), @UID); 
+                                      VALUES (@VisitID, 0, NOW(), @UID); 
                                       SELECT LAST_INSERT_ID();";
 
                         using (MySqlCommand cmdBill = new MySqlCommand(insertBill, conn, transaction))
@@ -953,7 +953,7 @@ namespace Clinic_DataAccess
                                         PD.MedicineID,
                                         -T.DispensedQty,  -- الإشارة بالسالب لأنها حركة صرف (نقص في المخزن)
                                         @BillID,          -- المرجع هنا هو رقم الفاتورة التي تم ربطها
-                                        GETDATE(),
+                                        NOW(),
                                         @UserID
                                     FROM #TempDispensed T
                                     INNER JOIN PrescriptionDetails PD ON T.DetailsID = PD.PrescriptionDetailsID
