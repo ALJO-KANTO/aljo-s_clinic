@@ -223,43 +223,117 @@ namespace Clinic.Medical_Services.Visit
         private void _LoadVisitData(int visitID)
         {
             _Visit = clsVisit.Find(visitID);
+            Debug.WriteLine("========== PRESCRIPTION LOAD ==========");
+            Debug.WriteLine("Visit ID: " + visitID);
+
+            if (_Visit.PrescriptionInfo == null)
+            {
+                Debug.WriteLine("PrescriptionInfo is NULL");
+            }
+            else
+            {
+                Debug.WriteLine(
+                    "Prescription ID: " +
+                    _Visit.PrescriptionInfo.PrescriptionID);
+
+                Debug.WriteLine(
+                    "Prescription Date: " +
+                    _Visit.PrescriptionInfo.PrescriptionDate);
+
+                Debug.WriteLine(
+                    "Medicine Count: " +
+                    (_Visit.PrescriptionInfo.dtMedicines?.Rows.Count ?? 0));
+
+                if (_Visit.PrescriptionInfo.dtMedicines != null)
+                {
+                    foreach (DataRow row in _Visit.PrescriptionInfo.dtMedicines.Rows)
+                    {
+                        Debug.WriteLine(
+                            "Medicine: " + row["SavedMedicineName"] +
+                            " | Quantity: " + row["Quantity"]);
+                    }
+                }
+            }
+
+            Debug.WriteLine("=======================================");
             if (_Visit == null)
             {
                 ShowError($"Visit with ID {visitID} could not be found.");
-                this.Close();
+                Close();
                 return;
             }
 
-            // Fill basic info
             _VisitID = visitID;
             _AppointmentID = _Visit.AppointmentID;
+
             lbVisitID.Text = _VisitID.ToString();
-            txtDiagnosis.Text = _Visit.Diagnosis;
-            txtNotes.Text = _Visit.VisitNotes;
+
+            txtDiagnosis.Text = _Visit.Diagnosis ?? "";
+            txtNotes.Text = _Visit.VisitNotes ?? "";
+
             pnlAction.Visible = false;
+
             _FillPatientInfo();
             _FillVitalsInfo();
 
-            // Load detail tables
+            // Load services
+            dgvServices.DataSource = null;
             dgvServices.DataSource = _Visit.dtServices;
 
-            if (!_Visit.PrescriptionInfo.IsPrescriptionPending())
+            // Load prescription associated with this visit.
+            if (_Visit.PrescriptionInfo == null)
             {
-                pnlPrescriptionInfo.Enabled = false;
+                _Visit.PrescriptionInfo = clsPrescription.Find(visitID);
             }
 
-            lbPrescriptionID.Text = _Visit.PrescriptionInfo.PrescriptionID.ToString();
-            dtpPrescriptionDate.Value = _Visit.PrescriptionInfo.PrescriptionDate;
-            txtPrescriptionNotes.Text = _Visit.PrescriptionInfo.PrescriptionNotes;
+            if (_Visit.PrescriptionInfo == null)
+            {
+                _Visit.PrescriptionInfo = new clsPrescription();
+                _Visit.PrescriptionInfo.VisitID = visitID;
+                _Visit.PrescriptionInfo.InitializePrescriptionsTable();
+            }
+
+            if (_Visit.PrescriptionInfo.dtMedicines == null ||
+                _Visit.PrescriptionInfo.dtMedicines.Columns.Count == 0)
+            {
+                _Visit.PrescriptionInfo.InitializePrescriptionsTable();
+            }
+
+            bool canEditPrescription =
+                _Visit.PrescriptionInfo.PrescriptionID <= 0 ||
+                _Visit.PrescriptionInfo.IsPrescriptionPending();
+
+            pnlPrescriptionInfo.Enabled = canEditPrescription;
+            btnAddMedicen.Enabled = canEditPrescription;
+
+            lbPrescriptionID.Text =
+                _Visit.PrescriptionInfo.PrescriptionID > 0
+                ? _Visit.PrescriptionInfo.PrescriptionID.ToString()
+                : "New";
+
+            dtpPrescriptionDate.Value =
+                _Visit.PrescriptionInfo.PrescriptionDate;
+
+            txtPrescriptionNotes.Text =
+                _Visit.PrescriptionInfo.PrescriptionNotes ?? "";
+
+            dgvMedicines.DataSource = null;
+            dgvMedicines.AutoGenerateColumns = true;
             dgvMedicines.DataSource = _Visit.PrescriptionInfo.dtMedicines;
+
+            Debug.WriteLine(
+                "Prescription ID: " +
+                _Visit.PrescriptionInfo.PrescriptionID);
+
+            Debug.WriteLine(
+                "Medicine rows loaded: " +
+                _Visit.PrescriptionInfo.dtMedicines.Rows.Count);
 
             tpPrescriptionInfo.Enabled = true;
             tpServices.Enabled = true;
             pnlActions.Enabled = true;
             pnlWaittingList.Visible = false;
-
         }
-
         private void _FillVitalsInfo()
         {
             clsVital vital = clsVital.FindByVisitID(_VisitID);
@@ -392,28 +466,50 @@ namespace Clinic.Medical_Services.Visit
 
         private void btnAddMedicen_Click(object sender, EventArgs e)
         {
-            if (_Visit.PrescriptionInfo == null)
-                _Visit.PrescriptionInfo = new clsPrescription();
-            if (_Visit.PrescriptionInfo.dtMedicines != null && _Visit.PrescriptionInfo.dtMedicines.Columns.Count == 0)
-                _Visit.PrescriptionInfo.InitializePrescriptionsTable();
-            DataTable _dtAllMedicines = _Visit.PrescriptionInfo.dtMedicines;
-            if (_dtAllMedicines != null && _dtAllMedicines.Columns.Count == 0)
-                return;
-            using (frmAddUpdateMedicineToPrescription frm = new frmAddUpdateMedicineToPrescription(ref _dtAllMedicines))
+            if (_Visit == null)
             {
-                // 3. تصحيح صياغة الـ Delegate (DataBack)
+                ShowWarning("Please select a visit first.");
+                return;
+            }
+
+            if (_Visit.PrescriptionInfo == null)
+            {
+                _Visit.PrescriptionInfo = new clsPrescription();
+                _Visit.PrescriptionInfo.VisitID = _VisitID;
+            }
+
+            if (_Visit.PrescriptionInfo.PrescriptionID > 0 &&
+                !_Visit.PrescriptionInfo.IsPrescriptionPending())
+            {
+                ShowWarning(
+                    "This prescription has already been processed. " +
+                    "You cannot add medicines to it.");
+                return;
+            }
+
+            if (_Visit.PrescriptionInfo.dtMedicines == null ||
+                _Visit.PrescriptionInfo.dtMedicines.Columns.Count == 0)
+            {
+                _Visit.PrescriptionInfo.InitializePrescriptionsTable();
+            }
+
+            DataTable dtMedicines = _Visit.PrescriptionInfo.dtMedicines;
+
+            using (frmAddUpdateMedicineToPrescription frm =
+                new frmAddUpdateMedicineToPrescription(ref dtMedicines))
+            {
                 frm.DataBack += (senderForm) =>
                 {
-                    _Visit.PrescriptionInfo.dtMedicines = _dtAllMedicines;
+                    _Visit.PrescriptionInfo.dtMedicines = dtMedicines;
 
-                    // تحديث الـ DataSource
-                    RefreshGrid(dgvMedicines, _Visit.PrescriptionInfo.dtMedicines);
+                    RefreshGrid(
+                        dgvMedicines,
+                        _Visit.PrescriptionInfo.dtMedicines);
                 };
 
-                frm.ShowDialog();
+                frm.ShowDialog(this);
             }
         }
-
 
         private void btnFullSave_Click(object sender, EventArgs e)
         {

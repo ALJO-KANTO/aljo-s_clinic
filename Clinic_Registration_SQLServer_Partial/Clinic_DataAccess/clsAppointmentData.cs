@@ -604,40 +604,43 @@ namespace Clinic_DataAccess
         {
             DataTable dt = new DataTable();
 
-            try
+            using (MySqlConnection conn =
+                new MySqlConnection(clsDataAccessSettings.ConnectionString))
             {
+                string query = @"
+            SELECT
+                AppointmentID,
+                PatientName,
+                CallType,
+                IsCalled,
+                CheckInTime,
+                StatusText
+            FROM View_WaitingPatients
+            WHERE DoctorID = @DoctorID
+              AND StatusText IN
+              (
+                  'InQueue',
+                  'Waiting_For_Vitals',
+                  'Ready_For_Doctor'
+              )
+            ORDER BY CheckInTime ASC;";
 
-                using (MySqlConnection conn = new MySqlConnection(clsDataAccessSettings.ConnectionString))
+                using (MySqlCommand cmd =
+                    new MySqlCommand(query, conn))
                 {
-                    string query = @" SELECT AppointmentID
-                                          ,PatientName
-                                          ,CallType
-                                          ,IsCalled
-                                          ,CheckInTime
-                                          ,StatusText
-                                      FROM View_WaitingPatients
-                                      WHERE DoctorID = @DoctorID
-                                      AND AppointmentStatus IN (2, 7, 8)
-                                       ORDER BY CheckInTime ASC";
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    cmd.Parameters.AddWithValue("@DoctorID", DoctorID);
+
+                    conn.Open();
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
-                        cmd.Parameters.AddWithValue("@DoctorID", DoctorID);
-                        conn.Open();
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
-                        {
-                            if (reader.HasRows)
-                                dt.Load(reader);
-                        }
+                        dt.Load(reader);
                     }
                 }
             }
-            catch (MySqlException ex)
-            {
-                clsGlobalLogger.LogMySqlException(ex, clsGlobalLogger.LogLevel.Error);
-            }
+
             return dt;
         }
-
         public static int GetCountByStatusForDoctor(int Status, int DoctorID)
         {
             int count = 0;
