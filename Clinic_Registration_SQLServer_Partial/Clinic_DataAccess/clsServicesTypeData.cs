@@ -12,7 +12,7 @@ namespace Clinic_DataAccess
 {
     public class clsServicesTypeData
     {
-        public static int AddNewService(string ServiceName, string Description, float ServiceFees)
+        public static int AddNewService(string ServiceName, string Description, float ServicePrice)
         {
             int ServiceID = -1;
             try
@@ -20,14 +20,13 @@ namespace Clinic_DataAccess
                 using (MySqlConnection conn = new MySqlConnection(clsDataAccessSettings.ConnectionString))
                 {
                     string query = @"INSERT INTO Services 
-                    (ServiceName, Description, ServiceFees)
-                     VALUES (@ServiceName, @Description, @ServiceFees);
+                    (ServiceName, ServicePrice)
+                     VALUES (@ServiceName, @ServicePrice);
                         SELECT LAST_INSERT_ID();";
                     using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@ServiceName", ServiceName);
-                        cmd.Parameters.AddWithValue("@Description", Description.ToDBValue());
-                        cmd.Parameters.AddWithValue("@ServiceFees", ServiceFees);
+                        cmd.Parameters.AddWithValue("@ServicePrice", ServicePrice);
 
                         conn.Open();
                         object result = cmd.ExecuteScalar();
@@ -49,7 +48,7 @@ namespace Clinic_DataAccess
 
             return ServiceID;
         }
-        public static bool UpdateService(int ServiceID, string ServiceName, string Description, float ServiceFees)
+        public static bool UpdateService(int ServiceID, string ServiceName, string Description, float ServicePrice)
         {
             int rowsAffected = 0;
             try
@@ -58,15 +57,13 @@ namespace Clinic_DataAccess
                 {
                     string query = @"UPDATE Services
                         SET ServiceName = @ServiceName,
-                            Description = @Description,
-                            ServiceFees = @ServiceFees
+                            ServicePrice = @ServicePrice
                              WHERE ServiceID = @ServiceID";
                     using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@ServiceID", ServiceID);
                         cmd.Parameters.AddWithValue("@ServiceName", ServiceName);
-                        cmd.Parameters.AddWithValue("@Description", Description.ToDBValue());
-                        cmd.Parameters.AddWithValue("@ServiceFees", ServiceFees);
+                        cmd.Parameters.AddWithValue("@ServicePrice", ServicePrice);
                         conn.Open();
                         rowsAffected = cmd.ExecuteNonQuery();
                     }
@@ -107,14 +104,14 @@ namespace Clinic_DataAccess
             }
             return rowsAffected > 0;
         }
-        public static bool GetServiceByID(int ServiceID, ref string ServiceName, ref string Description, ref float ServiceFees)
+        public static bool GetServiceByID(int ServiceID, ref string ServiceName, ref string Description, ref float ServicePrice)
         {
             try
             {
                 using (MySqlConnection conn = new MySqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    string query = @"SELECT ServiceName, Description,
-                            ServiceFees FROM Services
+                    string query = @"SELECT ServiceName,'' Description,
+                            ServicePrice FROM Services
                                 WHERE ServiceID = @ServiceID";
                     using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {
@@ -126,7 +123,7 @@ namespace Clinic_DataAccess
                             {
                                 ServiceName = reader["ServiceName"].ToString();
                                 Description = reader["Description"].ToStringOrEmpty();
-                                ServiceFees = Convert.ToSingle(reader["ServiceFees"]);
+                                ServicePrice = Convert.ToSingle(reader["ServicePrice"]);
                                 return true;
                             }
                         }
@@ -150,13 +147,13 @@ namespace Clinic_DataAccess
                 using (MySqlConnection conn = new MySqlConnection(clsDataAccessSettings.ConnectionString))
                 {
                     string query = @"
-    SELECT
-        ServiceID,
-        ServiceName,
-        ServicePrice AS ServiceFees
-    FROM services
-    WHERE IsActive = 1
-    ORDER BY ServiceName;";
+                                    SELECT
+                                        ServiceID,
+                                        ServiceName,
+                                        ServicePrice AS ServiceFees
+                                    FROM services
+                                    WHERE IsActive = 1
+                                    ORDER BY ServiceName;";
                     using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {
                         conn.Open();

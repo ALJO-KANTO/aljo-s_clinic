@@ -29,15 +29,15 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle12 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle13 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle14 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle15 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle16 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle17 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle18 = new System.Windows.Forms.DataGridViewCellStyle();
             this.gpPatientInfo = new System.Windows.Forms.GroupBox();
             this.llDoctorInfo = new System.Windows.Forms.LinkLabel();
             this.llPatientInfo = new System.Windows.Forms.LinkLabel();
@@ -59,6 +59,26 @@
             this.lbVisitID = new System.Windows.Forms.Label();
             this.label16 = new System.Windows.Forms.Label();
             this.pnlVisitInfo = new System.Windows.Forms.Panel();
+            this.txtDiagnosis = new System.Windows.Forms.TextBox();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.pictureBox9 = new System.Windows.Forms.PictureBox();
+            this.lbBP = new System.Windows.Forms.Label();
+            this.label18 = new System.Windows.Forms.Label();
+            this.pictureBox10 = new System.Windows.Forms.PictureBox();
+            this.lbWeight = new System.Windows.Forms.Label();
+            this.label20 = new System.Windows.Forms.Label();
+            this.pictureBox5 = new System.Windows.Forms.PictureBox();
+            this.lblTemp = new System.Windows.Forms.Label();
+            this.label17 = new System.Windows.Forms.Label();
+            this.pictureBox14 = new System.Windows.Forms.PictureBox();
+            this.lbPluse = new System.Windows.Forms.Label();
+            this.label23 = new System.Windows.Forms.Label();
+            this.txtNotes = new System.Windows.Forms.TextBox();
+            this.btnSaveVisit = new System.Windows.Forms.Button();
+            this.label4 = new System.Windows.Forms.Label();
+            this.pictureBox7 = new System.Windows.Forms.PictureBox();
+            this.pictureBox6 = new System.Windows.Forms.PictureBox();
+            this.label12 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.label14 = new System.Windows.Forms.Label();
             this.tpServices = new System.Windows.Forms.TabPage();
@@ -113,26 +133,7 @@
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.timer2 = new System.Windows.Forms.Timer(this.components);
             this.errorProvider1 = new System.Windows.Forms.ErrorProvider(this.components);
-            this.label12 = new System.Windows.Forms.Label();
-            this.pictureBox6 = new System.Windows.Forms.PictureBox();
-            this.pictureBox7 = new System.Windows.Forms.PictureBox();
-            this.label4 = new System.Windows.Forms.Label();
-            this.btnSaveVisit = new System.Windows.Forms.Button();
-            this.txtNotes = new System.Windows.Forms.TextBox();
-            this.label23 = new System.Windows.Forms.Label();
-            this.lbPluse = new System.Windows.Forms.Label();
-            this.pictureBox14 = new System.Windows.Forms.PictureBox();
-            this.label17 = new System.Windows.Forms.Label();
-            this.lblTemp = new System.Windows.Forms.Label();
-            this.pictureBox5 = new System.Windows.Forms.PictureBox();
-            this.label20 = new System.Windows.Forms.Label();
-            this.lbWeight = new System.Windows.Forms.Label();
-            this.pictureBox10 = new System.Windows.Forms.PictureBox();
-            this.label18 = new System.Windows.Forms.Label();
-            this.lbBP = new System.Windows.Forms.Label();
-            this.pictureBox9 = new System.Windows.Forms.PictureBox();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.txtDiagnosis = new System.Windows.Forms.TextBox();
+            this.btnNewService = new System.Windows.Forms.Button();
             this.gpPatientInfo.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
@@ -142,6 +143,13 @@
             this.tpVisitInfo.SuspendLayout();
             this.panel7.SuspendLayout();
             this.pnlVisitInfo.SuspendLayout();
+            this.groupBox1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox9)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox10)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox5)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox14)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox7)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox6)).BeginInit();
             this.tpServices.SuspendLayout();
             this.pnlServicesInfo.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvServices)).BeginInit();
@@ -163,13 +171,6 @@
             this.panel2.SuspendLayout();
             this.panTitle.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox6)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox7)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox14)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox5)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox10)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox9)).BeginInit();
-            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // gpPatientInfo
@@ -194,7 +195,7 @@
             this.gpPatientInfo.Location = new System.Drawing.Point(10, 93);
             this.gpPatientInfo.Margin = new System.Windows.Forms.Padding(5);
             this.gpPatientInfo.Name = "gpPatientInfo";
-            this.gpPatientInfo.Size = new System.Drawing.Size(1515, 130);
+            this.gpPatientInfo.Size = new System.Drawing.Size(1350, 130);
             this.gpPatientInfo.TabIndex = 2;
             this.gpPatientInfo.TabStop = false;
             this.gpPatientInfo.Text = "Patient Info";
@@ -205,7 +206,7 @@
             this.llDoctorInfo.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
             this.llDoctorInfo.Location = new System.Drawing.Point(981, 82);
             this.llDoctorInfo.Name = "llDoctorInfo";
-            this.llDoctorInfo.Size = new System.Drawing.Size(121, 28);
+            this.llDoctorInfo.Size = new System.Drawing.Size(97, 21);
             this.llDoctorInfo.TabIndex = 234;
             this.llDoctorInfo.TabStop = true;
             this.llDoctorInfo.Text = "Doctor Info";
@@ -217,7 +218,7 @@
             this.llPatientInfo.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
             this.llPatientInfo.Location = new System.Drawing.Point(983, 42);
             this.llPatientInfo.Name = "llPatientInfo";
-            this.llPatientInfo.Size = new System.Drawing.Size(124, 28);
+            this.llPatientInfo.Size = new System.Drawing.Size(100, 21);
             this.llPatientInfo.TabIndex = 233;
             this.llPatientInfo.TabStop = true;
             this.llPatientInfo.Text = "Patient Info";
@@ -240,7 +241,7 @@
             this.lblDoctorID.Location = new System.Drawing.Point(862, 87);
             this.lblDoctorID.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblDoctorID.Name = "lblDoctorID";
-            this.lblDoctorID.Size = new System.Drawing.Size(53, 28);
+            this.lblDoctorID.Size = new System.Drawing.Size(43, 21);
             this.lblDoctorID.TabIndex = 231;
             this.lblDoctorID.Text = "[???]";
             // 
@@ -251,7 +252,7 @@
             this.label7.Location = new System.Drawing.Point(680, 87);
             this.label7.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(109, 28);
+            this.label7.Size = new System.Drawing.Size(87, 21);
             this.label7.TabIndex = 230;
             this.label7.Text = "Doctor ID:";
             // 
@@ -272,7 +273,7 @@
             this.lblPatientID.Location = new System.Drawing.Point(862, 42);
             this.lblPatientID.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblPatientID.Name = "lblPatientID";
-            this.lblPatientID.Size = new System.Drawing.Size(53, 28);
+            this.lblPatientID.Size = new System.Drawing.Size(43, 21);
             this.lblPatientID.TabIndex = 228;
             this.lblPatientID.Text = "[???]";
             // 
@@ -283,7 +284,7 @@
             this.label5.Location = new System.Drawing.Point(677, 42);
             this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(112, 28);
+            this.label5.Size = new System.Drawing.Size(90, 21);
             this.label5.TabIndex = 227;
             this.label5.Text = "Patient ID:";
             // 
@@ -304,7 +305,7 @@
             this.lblAppointmentID.Location = new System.Drawing.Point(427, 87);
             this.lblAppointmentID.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblAppointmentID.Name = "lblAppointmentID";
-            this.lblAppointmentID.Size = new System.Drawing.Size(53, 28);
+            this.lblAppointmentID.Size = new System.Drawing.Size(43, 21);
             this.lblAppointmentID.TabIndex = 225;
             this.lblAppointmentID.Text = "[???]";
             // 
@@ -315,7 +316,7 @@
             this.label3.Location = new System.Drawing.Point(159, 82);
             this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(169, 28);
+            this.label3.Size = new System.Drawing.Size(137, 21);
             this.label3.TabIndex = 224;
             this.label3.Text = "Apponitment ID:";
             // 
@@ -336,7 +337,7 @@
             this.lblVisitID.Location = new System.Drawing.Point(427, 42);
             this.lblVisitID.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblVisitID.Name = "lblVisitID";
-            this.lblVisitID.Size = new System.Drawing.Size(53, 28);
+            this.lblVisitID.Size = new System.Drawing.Size(43, 21);
             this.lblVisitID.TabIndex = 222;
             this.lblVisitID.Text = "[???]";
             // 
@@ -347,7 +348,7 @@
             this.label1.Location = new System.Drawing.Point(242, 42);
             this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(86, 28);
+            this.label1.Size = new System.Drawing.Size(69, 21);
             this.label1.TabIndex = 221;
             this.label1.Text = "Visit ID:";
             // 
@@ -357,10 +358,10 @@
             this.tcVisitInfo.Controls.Add(this.tpServices);
             this.tcVisitInfo.Controls.Add(this.tpPrescriptionInfo);
             this.tcVisitInfo.Dock = System.Windows.Forms.DockStyle.Right;
-            this.tcVisitInfo.Location = new System.Drawing.Point(576, 0);
+            this.tcVisitInfo.Location = new System.Drawing.Point(411, 0);
             this.tcVisitInfo.Name = "tcVisitInfo";
             this.tcVisitInfo.SelectedIndex = 0;
-            this.tcVisitInfo.Size = new System.Drawing.Size(939, 618);
+            this.tcVisitInfo.Size = new System.Drawing.Size(939, 533);
             this.tcVisitInfo.TabIndex = 1;
             // 
             // tpVisitInfo
@@ -369,11 +370,11 @@
             this.tpVisitInfo.Controls.Add(this.pnlVisitInfo);
             this.tpVisitInfo.Controls.Add(this.label6);
             this.tpVisitInfo.Controls.Add(this.label14);
-            this.tpVisitInfo.Location = new System.Drawing.Point(4, 37);
+            this.tpVisitInfo.Location = new System.Drawing.Point(4, 30);
             this.tpVisitInfo.Margin = new System.Windows.Forms.Padding(6);
             this.tpVisitInfo.Name = "tpVisitInfo";
             this.tpVisitInfo.Padding = new System.Windows.Forms.Padding(5);
-            this.tpVisitInfo.Size = new System.Drawing.Size(931, 577);
+            this.tpVisitInfo.Size = new System.Drawing.Size(931, 499);
             this.tpVisitInfo.TabIndex = 0;
             this.tpVisitInfo.Text = "VisitInfo";
             this.tpVisitInfo.UseVisualStyleBackColor = true;
@@ -398,7 +399,7 @@
             this.lbVisitID.Location = new System.Drawing.Point(195, 18);
             this.lbVisitID.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbVisitID.Name = "lbVisitID";
-            this.lbVisitID.Size = new System.Drawing.Size(97, 38);
+            this.lbVisitID.Size = new System.Drawing.Size(77, 30);
             this.lbVisitID.TabIndex = 236;
             this.lbVisitID.Text = "[? ? ? ]";
             // 
@@ -410,7 +411,7 @@
             this.label16.Location = new System.Drawing.Point(33, 10);
             this.label16.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(149, 45);
+            this.label16.Size = new System.Drawing.Size(124, 37);
             this.label16.TabIndex = 235;
             this.label16.Text = "Visit ID :";
             // 
@@ -429,8 +430,253 @@
             this.pnlVisitInfo.Location = new System.Drawing.Point(5, 5);
             this.pnlVisitInfo.Name = "pnlVisitInfo";
             this.pnlVisitInfo.Padding = new System.Windows.Forms.Padding(5);
-            this.pnlVisitInfo.Size = new System.Drawing.Size(921, 567);
+            this.pnlVisitInfo.Size = new System.Drawing.Size(921, 489);
             this.pnlVisitInfo.TabIndex = 227;
+            // 
+            // txtDiagnosis
+            // 
+            this.txtDiagnosis.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtDiagnosis.Location = new System.Drawing.Point(160, 244);
+            this.txtDiagnosis.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.txtDiagnosis.MaxLength = 50;
+            this.txtDiagnosis.Multiline = true;
+            this.txtDiagnosis.Name = "txtDiagnosis";
+            this.txtDiagnosis.Size = new System.Drawing.Size(474, 63);
+            this.txtDiagnosis.TabIndex = 252;
+            this.txtDiagnosis.Validating += new System.ComponentModel.CancelEventHandler(this.txtDiagnosis_Validating);
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(236)))), ((int)(((byte)(240)))), ((int)(((byte)(241)))));
+            this.groupBox1.Controls.Add(this.pictureBox9);
+            this.groupBox1.Controls.Add(this.lbBP);
+            this.groupBox1.Controls.Add(this.label18);
+            this.groupBox1.Controls.Add(this.pictureBox10);
+            this.groupBox1.Controls.Add(this.lbWeight);
+            this.groupBox1.Controls.Add(this.label20);
+            this.groupBox1.Controls.Add(this.pictureBox5);
+            this.groupBox1.Controls.Add(this.lblTemp);
+            this.groupBox1.Controls.Add(this.label17);
+            this.groupBox1.Controls.Add(this.pictureBox14);
+            this.groupBox1.Controls.Add(this.lbPluse);
+            this.groupBox1.Controls.Add(this.label23);
+            this.groupBox1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.groupBox1.Location = new System.Drawing.Point(17, 83);
+            this.groupBox1.Margin = new System.Windows.Forms.Padding(5);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(627, 154);
+            this.groupBox1.TabIndex = 253;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Vitals Info";
+            // 
+            // pictureBox9
+            // 
+            this.pictureBox9.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.pictureBox9.Image = global::Clinic.Properties.Resources.ID_32;
+            this.pictureBox9.Location = new System.Drawing.Point(365, 102);
+            this.pictureBox9.Name = "pictureBox9";
+            this.pictureBox9.Size = new System.Drawing.Size(31, 26);
+            this.pictureBox9.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox9.TabIndex = 232;
+            this.pictureBox9.TabStop = false;
+            // 
+            // lbBP
+            // 
+            this.lbBP.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbBP.BackColor = System.Drawing.Color.Silver;
+            this.lbBP.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
+            this.lbBP.Location = new System.Drawing.Point(475, 102);
+            this.lbBP.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lbBP.Name = "lbBP";
+            this.lbBP.Size = new System.Drawing.Size(130, 38);
+            this.lbBP.TabIndex = 231;
+            this.lbBP.Text = "[???] mmHg";
+            // 
+            // label18
+            // 
+            this.label18.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label18.AutoSize = true;
+            this.label18.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
+            this.label18.Location = new System.Drawing.Point(403, 102);
+            this.label18.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label18.Name = "label18";
+            this.label18.Size = new System.Drawing.Size(34, 21);
+            this.label18.TabIndex = 230;
+            this.label18.Text = "BP:";
+            // 
+            // pictureBox10
+            // 
+            this.pictureBox10.Image = global::Clinic.Properties.Resources.ID_32;
+            this.pictureBox10.Location = new System.Drawing.Point(16, 102);
+            this.pictureBox10.Name = "pictureBox10";
+            this.pictureBox10.Size = new System.Drawing.Size(31, 26);
+            this.pictureBox10.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox10.TabIndex = 229;
+            this.pictureBox10.TabStop = false;
+            // 
+            // lbWeight
+            // 
+            this.lbWeight.BackColor = System.Drawing.Color.Silver;
+            this.lbWeight.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
+            this.lbWeight.Location = new System.Drawing.Point(148, 100);
+            this.lbWeight.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lbWeight.Name = "lbWeight";
+            this.lbWeight.Size = new System.Drawing.Size(130, 38);
+            this.lbWeight.TabIndex = 228;
+            this.lbWeight.Text = "[???] kg";
+            // 
+            // label20
+            // 
+            this.label20.AutoSize = true;
+            this.label20.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
+            this.label20.Location = new System.Drawing.Point(54, 102);
+            this.label20.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label20.Name = "label20";
+            this.label20.Size = new System.Drawing.Size(70, 21);
+            this.label20.TabIndex = 227;
+            this.label20.Text = "Weight:";
+            // 
+            // pictureBox5
+            // 
+            this.pictureBox5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.pictureBox5.Image = global::Clinic.Properties.Resources.ID_32;
+            this.pictureBox5.Location = new System.Drawing.Point(365, 44);
+            this.pictureBox5.Name = "pictureBox5";
+            this.pictureBox5.Size = new System.Drawing.Size(31, 26);
+            this.pictureBox5.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox5.TabIndex = 226;
+            this.pictureBox5.TabStop = false;
+            // 
+            // lblTemp
+            // 
+            this.lblTemp.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblTemp.BackColor = System.Drawing.Color.Silver;
+            this.lblTemp.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
+            this.lblTemp.Location = new System.Drawing.Point(475, 44);
+            this.lblTemp.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lblTemp.Name = "lblTemp";
+            this.lblTemp.Size = new System.Drawing.Size(130, 38);
+            this.lblTemp.TabIndex = 225;
+            this.lblTemp.Text = "[???] °C";
+            // 
+            // label17
+            // 
+            this.label17.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label17.AutoSize = true;
+            this.label17.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
+            this.label17.Location = new System.Drawing.Point(403, 44);
+            this.label17.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(56, 21);
+            this.label17.TabIndex = 224;
+            this.label17.Text = "Temp:";
+            // 
+            // pictureBox14
+            // 
+            this.pictureBox14.Image = global::Clinic.Properties.Resources.ID_32;
+            this.pictureBox14.Location = new System.Drawing.Point(16, 44);
+            this.pictureBox14.Name = "pictureBox14";
+            this.pictureBox14.Size = new System.Drawing.Size(31, 26);
+            this.pictureBox14.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox14.TabIndex = 223;
+            this.pictureBox14.TabStop = false;
+            // 
+            // lbPluse
+            // 
+            this.lbPluse.BackColor = System.Drawing.Color.Silver;
+            this.lbPluse.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
+            this.lbPluse.Location = new System.Drawing.Point(148, 42);
+            this.lbPluse.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lbPluse.Name = "lbPluse";
+            this.lbPluse.Size = new System.Drawing.Size(130, 38);
+            this.lbPluse.TabIndex = 222;
+            this.lbPluse.Text = "[???] bpm";
+            // 
+            // label23
+            // 
+            this.label23.AutoSize = true;
+            this.label23.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
+            this.label23.Location = new System.Drawing.Point(54, 44);
+            this.label23.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label23.Name = "label23";
+            this.label23.Size = new System.Drawing.Size(55, 21);
+            this.label23.TabIndex = 221;
+            this.label23.Text = "Pluse:";
+            // 
+            // txtNotes
+            // 
+            this.txtNotes.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtNotes.Location = new System.Drawing.Point(93, 344);
+            this.txtNotes.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.txtNotes.MaxLength = 50;
+            this.txtNotes.Multiline = true;
+            this.txtNotes.Name = "txtNotes";
+            this.txtNotes.Size = new System.Drawing.Size(628, 72);
+            this.txtNotes.TabIndex = 251;
+            // 
+            // btnSaveVisit
+            // 
+            this.btnSaveVisit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnSaveVisit.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(188)))), ((int)(((byte)(156)))));
+            this.btnSaveVisit.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnSaveVisit.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnSaveVisit.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(236)))), ((int)(((byte)(240)))), ((int)(((byte)(241)))));
+            this.btnSaveVisit.Image = global::Clinic.Properties.Resources.Next_32;
+            this.btnSaveVisit.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.btnSaveVisit.Location = new System.Drawing.Point(698, 426);
+            this.btnSaveVisit.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.btnSaveVisit.Name = "btnSaveVisit";
+            this.btnSaveVisit.Size = new System.Drawing.Size(195, 48);
+            this.btnSaveVisit.TabIndex = 250;
+            this.btnSaveVisit.Text = " Next";
+            this.btnSaveVisit.UseVisualStyleBackColor = false;
+            this.btnSaveVisit.Click += new System.EventHandler(this.btnSaveVisit_Click);
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
+            this.label4.Location = new System.Drawing.Point(18, 311);
+            this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(59, 21);
+            this.label4.TabIndex = 249;
+            this.label4.Text = "Notes:";
+            // 
+            // pictureBox7
+            // 
+            this.pictureBox7.Image = global::Clinic.Properties.Resources.Notes_32;
+            this.pictureBox7.Location = new System.Drawing.Point(98, 313);
+            this.pictureBox7.Name = "pictureBox7";
+            this.pictureBox7.Size = new System.Drawing.Size(31, 26);
+            this.pictureBox7.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox7.TabIndex = 246;
+            this.pictureBox7.TabStop = false;
+            // 
+            // pictureBox6
+            // 
+            this.pictureBox6.Image = global::Clinic.Properties.Resources.Diagnosis_32;
+            this.pictureBox6.Location = new System.Drawing.Point(122, 253);
+            this.pictureBox6.Name = "pictureBox6";
+            this.pictureBox6.Size = new System.Drawing.Size(31, 26);
+            this.pictureBox6.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox6.TabIndex = 245;
+            this.pictureBox6.TabStop = false;
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
+            this.label12.Location = new System.Drawing.Point(9, 254);
+            this.label12.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(89, 21);
+            this.label12.TabIndex = 244;
+            this.label12.Text = "Diagnosis:";
             // 
             // label6
             // 
@@ -439,7 +685,7 @@
             this.label6.Location = new System.Drawing.Point(499, 356);
             this.label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(73, 28);
+            this.label6.Size = new System.Drawing.Size(59, 21);
             this.label6.TabIndex = 225;
             this.label6.Text = "Notes:";
             // 
@@ -450,7 +696,7 @@
             this.label14.Location = new System.Drawing.Point(-68, 208);
             this.label14.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(68, 25);
+            this.label14.Size = new System.Drawing.Size(56, 20);
             this.label14.TabIndex = 219;
             this.label14.Text = "Notes";
             // 
@@ -458,10 +704,10 @@
             // 
             this.tpServices.Controls.Add(this.pnlServicesInfo);
             this.tpServices.Controls.Add(this.panel5);
-            this.tpServices.Location = new System.Drawing.Point(4, 37);
+            this.tpServices.Location = new System.Drawing.Point(4, 30);
             this.tpServices.Name = "tpServices";
             this.tpServices.Padding = new System.Windows.Forms.Padding(3);
-            this.tpServices.Size = new System.Drawing.Size(930, 577);
+            this.tpServices.Size = new System.Drawing.Size(931, 499);
             this.tpServices.TabIndex = 1;
             this.tpServices.Text = "Services";
             this.tpServices.UseVisualStyleBackColor = true;
@@ -469,6 +715,7 @@
             // pnlServicesInfo
             // 
             this.pnlServicesInfo.BackColor = System.Drawing.Color.White;
+            this.pnlServicesInfo.Controls.Add(this.btnNewService);
             this.pnlServicesInfo.Controls.Add(this.dgvServices);
             this.pnlServicesInfo.Controls.Add(this.pictureBox11);
             this.pnlServicesInfo.Controls.Add(this.txtDiscount);
@@ -482,7 +729,7 @@
             this.pnlServicesInfo.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlServicesInfo.Location = new System.Drawing.Point(3, 69);
             this.pnlServicesInfo.Name = "pnlServicesInfo";
-            this.pnlServicesInfo.Size = new System.Drawing.Size(924, 505);
+            this.pnlServicesInfo.Size = new System.Drawing.Size(925, 427);
             this.pnlServicesInfo.TabIndex = 245;
             // 
             // dgvServices
@@ -490,19 +737,19 @@
             this.dgvServices.AllowUserToAddRows = false;
             this.dgvServices.AllowUserToDeleteRows = false;
             this.dgvServices.AllowUserToResizeRows = false;
-            dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(249)))), ((int)(((byte)(249)))));
-            this.dgvServices.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle10.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(249)))), ((int)(((byte)(249)))));
+            this.dgvServices.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle10;
             this.dgvServices.BackgroundColor = System.Drawing.Color.White;
             this.dgvServices.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dgvServices.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvServices.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle11.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle11.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
+            dataGridViewCellStyle11.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle11.ForeColor = System.Drawing.Color.White;
+            dataGridViewCellStyle11.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
+            dataGridViewCellStyle11.SelectionForeColor = System.Drawing.Color.White;
+            dataGridViewCellStyle11.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvServices.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle11;
             this.dgvServices.ColumnHeadersHeight = 70;
             this.dgvServices.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.dgvServices.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
@@ -515,12 +762,12 @@
             this.dgvServices.ReadOnly = true;
             this.dgvServices.RowHeadersVisible = false;
             this.dgvServices.RowHeadersWidth = 51;
-            dataGridViewCellStyle3.BackColor = System.Drawing.Color.White;
-            dataGridViewCellStyle3.Font = new System.Drawing.Font("Segoe UI", 11F);
-            dataGridViewCellStyle3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(55)))), ((int)(((byte)(71)))), ((int)(((byte)(79)))));
-            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(242)))), ((int)(((byte)(241)))));
-            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(77)))), ((int)(((byte)(64)))));
-            this.dgvServices.RowsDefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle12.BackColor = System.Drawing.Color.White;
+            dataGridViewCellStyle12.Font = new System.Drawing.Font("Segoe UI", 11F);
+            dataGridViewCellStyle12.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(55)))), ((int)(((byte)(71)))), ((int)(((byte)(79)))));
+            dataGridViewCellStyle12.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(242)))), ((int)(((byte)(241)))));
+            dataGridViewCellStyle12.SelectionForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(77)))), ((int)(((byte)(64)))));
+            this.dgvServices.RowsDefaultCellStyle = dataGridViewCellStyle12;
             this.dgvServices.RowTemplate.DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             this.dgvServices.RowTemplate.Height = 45;
             this.dgvServices.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
@@ -546,7 +793,7 @@
             this.txtDiscount.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
             this.txtDiscount.MaxLength = 50;
             this.txtDiscount.Name = "txtDiscount";
-            this.txtDiscount.Size = new System.Drawing.Size(155, 34);
+            this.txtDiscount.Size = new System.Drawing.Size(155, 29);
             this.txtDiscount.TabIndex = 253;
             this.txtDiscount.Text = "0.00";
             this.txtDiscount.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtDiscount_KeyPress);
@@ -559,7 +806,7 @@
             this.label8.Location = new System.Drawing.Point(451, 101);
             this.label8.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(177, 25);
+            this.label8.Size = new System.Drawing.Size(147, 20);
             this.label8.TabIndex = 252;
             this.label8.Text = "DiscountAmount:";
             // 
@@ -587,7 +834,7 @@
             this.lbQuality.Location = new System.Drawing.Point(584, 40);
             this.lbQuality.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbQuality.Name = "lbQuality";
-            this.lbQuality.Size = new System.Drawing.Size(93, 25);
+            this.lbQuality.Size = new System.Drawing.Size(74, 20);
             this.lbQuality.TabIndex = 248;
             this.lbQuality.Text = "Quality :";
             // 
@@ -598,7 +845,7 @@
             this.lbServeces.Location = new System.Drawing.Point(50, 40);
             this.lbServeces.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbServeces.Name = "lbServeces";
-            this.lbServeces.Size = new System.Drawing.Size(109, 25);
+            this.lbServeces.Size = new System.Drawing.Size(87, 20);
             this.lbServeces.TabIndex = 247;
             this.lbServeces.Text = "Services :";
             // 
@@ -611,7 +858,7 @@
             0,
             0});
             this.nudQuality.Name = "nudQuality";
-            this.nudQuality.Size = new System.Drawing.Size(125, 34);
+            this.nudQuality.Size = new System.Drawing.Size(125, 29);
             this.nudQuality.TabIndex = 246;
             this.nudQuality.Value = new decimal(new int[] {
             1,
@@ -624,7 +871,7 @@
             this.cmbServices.FormattingEnabled = true;
             this.cmbServices.Location = new System.Drawing.Point(176, 34);
             this.cmbServices.Name = "cmbServices";
-            this.cmbServices.Size = new System.Drawing.Size(309, 36);
+            this.cmbServices.Size = new System.Drawing.Size(309, 29);
             this.cmbServices.TabIndex = 245;
             // 
             // btnAddService
@@ -653,7 +900,7 @@
             this.panel5.Location = new System.Drawing.Point(3, 3);
             this.panel5.Margin = new System.Windows.Forms.Padding(5);
             this.panel5.Name = "panel5";
-            this.panel5.Size = new System.Drawing.Size(924, 66);
+            this.panel5.Size = new System.Drawing.Size(925, 66);
             this.panel5.TabIndex = 242;
             // 
             // label21
@@ -664,7 +911,7 @@
             this.label21.Location = new System.Drawing.Point(6, 11);
             this.label21.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label21.Name = "label21";
-            this.label21.Size = new System.Drawing.Size(338, 45);
+            this.label21.Size = new System.Drawing.Size(280, 37);
             this.label21.TabIndex = 235;
             this.label21.Text = "Services & Procedures";
             // 
@@ -672,10 +919,10 @@
             // 
             this.tpPrescriptionInfo.Controls.Add(this.pnlPrescriptionInfo);
             this.tpPrescriptionInfo.Controls.Add(this.panel6);
-            this.tpPrescriptionInfo.Location = new System.Drawing.Point(4, 37);
+            this.tpPrescriptionInfo.Location = new System.Drawing.Point(4, 30);
             this.tpPrescriptionInfo.Name = "tpPrescriptionInfo";
             this.tpPrescriptionInfo.Padding = new System.Windows.Forms.Padding(3);
-            this.tpPrescriptionInfo.Size = new System.Drawing.Size(930, 577);
+            this.tpPrescriptionInfo.Size = new System.Drawing.Size(931, 499);
             this.tpPrescriptionInfo.TabIndex = 2;
             this.tpPrescriptionInfo.Text = "Prescription Info";
             this.tpPrescriptionInfo.UseVisualStyleBackColor = true;
@@ -694,7 +941,7 @@
             this.pnlPrescriptionInfo.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlPrescriptionInfo.Location = new System.Drawing.Point(3, 69);
             this.pnlPrescriptionInfo.Name = "pnlPrescriptionInfo";
-            this.pnlPrescriptionInfo.Size = new System.Drawing.Size(924, 505);
+            this.pnlPrescriptionInfo.Size = new System.Drawing.Size(925, 427);
             this.pnlPrescriptionInfo.TabIndex = 238;
             // 
             // dgvMedicines
@@ -702,19 +949,19 @@
             this.dgvMedicines.AllowUserToAddRows = false;
             this.dgvMedicines.AllowUserToDeleteRows = false;
             this.dgvMedicines.AllowUserToResizeRows = false;
-            dataGridViewCellStyle4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(249)))), ((int)(((byte)(249)))));
-            this.dgvMedicines.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle13.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(249)))), ((int)(((byte)(249)))));
+            this.dgvMedicines.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle13;
             this.dgvMedicines.BackgroundColor = System.Drawing.Color.White;
             this.dgvMedicines.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dgvMedicines.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
-            dataGridViewCellStyle5.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle5.ForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
-            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvMedicines.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
+            dataGridViewCellStyle14.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle14.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
+            dataGridViewCellStyle14.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle14.ForeColor = System.Drawing.Color.White;
+            dataGridViewCellStyle14.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
+            dataGridViewCellStyle14.SelectionForeColor = System.Drawing.Color.White;
+            dataGridViewCellStyle14.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvMedicines.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle14;
             this.dgvMedicines.ColumnHeadersHeight = 70;
             this.dgvMedicines.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.dgvMedicines.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
@@ -727,12 +974,12 @@
             this.dgvMedicines.ReadOnly = true;
             this.dgvMedicines.RowHeadersVisible = false;
             this.dgvMedicines.RowHeadersWidth = 51;
-            dataGridViewCellStyle6.BackColor = System.Drawing.Color.White;
-            dataGridViewCellStyle6.Font = new System.Drawing.Font("Segoe UI", 11F);
-            dataGridViewCellStyle6.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(55)))), ((int)(((byte)(71)))), ((int)(((byte)(79)))));
-            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(242)))), ((int)(((byte)(241)))));
-            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(77)))), ((int)(((byte)(64)))));
-            this.dgvMedicines.RowsDefaultCellStyle = dataGridViewCellStyle6;
+            dataGridViewCellStyle15.BackColor = System.Drawing.Color.White;
+            dataGridViewCellStyle15.Font = new System.Drawing.Font("Segoe UI", 11F);
+            dataGridViewCellStyle15.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(55)))), ((int)(((byte)(71)))), ((int)(((byte)(79)))));
+            dataGridViewCellStyle15.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(242)))), ((int)(((byte)(241)))));
+            dataGridViewCellStyle15.SelectionForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(77)))), ((int)(((byte)(64)))));
+            this.dgvMedicines.RowsDefaultCellStyle = dataGridViewCellStyle15;
             this.dgvMedicines.RowTemplate.DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             this.dgvMedicines.RowTemplate.Height = 45;
             this.dgvMedicines.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
@@ -776,7 +1023,7 @@
             this.label15.Location = new System.Drawing.Point(97, 375);
             this.label15.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(195, 25);
+            this.label15.Size = new System.Drawing.Size(161, 20);
             this.label15.TabIndex = 249;
             this.label15.Text = "Prescription Notes:";
             // 
@@ -786,7 +1033,7 @@
             this.dtpPrescriptionDate.Location = new System.Drawing.Point(561, 25);
             this.dtpPrescriptionDate.MinDate = new System.DateTime(1900, 1, 1, 0, 0, 0, 0);
             this.dtpPrescriptionDate.Name = "dtpPrescriptionDate";
-            this.dtpPrescriptionDate.Size = new System.Drawing.Size(335, 34);
+            this.dtpPrescriptionDate.Size = new System.Drawing.Size(335, 29);
             this.dtpPrescriptionDate.TabIndex = 246;
             this.dtpPrescriptionDate.Value = new System.DateTime(2000, 12, 31, 0, 0, 0, 0);
             // 
@@ -797,7 +1044,7 @@
             this.lbPrescriptionDate.Location = new System.Drawing.Point(336, 34);
             this.lbPrescriptionDate.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbPrescriptionDate.Name = "lbPrescriptionDate";
-            this.lbPrescriptionDate.Size = new System.Drawing.Size(184, 25);
+            this.lbPrescriptionDate.Size = new System.Drawing.Size(153, 20);
             this.lbPrescriptionDate.TabIndex = 247;
             this.lbPrescriptionDate.Text = "Prescription Date:";
             // 
@@ -830,7 +1077,7 @@
             this.panel6.Location = new System.Drawing.Point(3, 3);
             this.panel6.Margin = new System.Windows.Forms.Padding(5);
             this.panel6.Name = "panel6";
-            this.panel6.Size = new System.Drawing.Size(924, 66);
+            this.panel6.Size = new System.Drawing.Size(925, 66);
             this.panel6.TabIndex = 237;
             // 
             // lbPrescriptionID
@@ -841,7 +1088,7 @@
             this.lbPrescriptionID.Location = new System.Drawing.Point(316, 20);
             this.lbPrescriptionID.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbPrescriptionID.Name = "lbPrescriptionID";
-            this.lbPrescriptionID.Size = new System.Drawing.Size(97, 38);
+            this.lbPrescriptionID.Size = new System.Drawing.Size(77, 30);
             this.lbPrescriptionID.TabIndex = 236;
             this.lbPrescriptionID.Text = "[? ? ? ]";
             // 
@@ -853,7 +1100,7 @@
             this.label11.Location = new System.Drawing.Point(9, 12);
             this.label11.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(267, 45);
+            this.label11.Size = new System.Drawing.Size(223, 37);
             this.label11.TabIndex = 235;
             this.label11.Text = "Prescription ID :";
             // 
@@ -950,7 +1197,7 @@
             this.panel3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel3.Location = new System.Drawing.Point(10, 223);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(1515, 618);
+            this.panel3.Size = new System.Drawing.Size(1350, 533);
             this.panel3.TabIndex = 4;
             // 
             // pnlActions
@@ -984,7 +1231,7 @@
             this.pnlWaittingList.Location = new System.Drawing.Point(0, 0);
             this.pnlWaittingList.Name = "pnlWaittingList";
             this.pnlWaittingList.Padding = new System.Windows.Forms.Padding(5);
-            this.pnlWaittingList.Size = new System.Drawing.Size(575, 618);
+            this.pnlWaittingList.Size = new System.Drawing.Size(575, 533);
             this.pnlWaittingList.TabIndex = 227;
             // 
             // dgvDoctorQueue
@@ -992,20 +1239,20 @@
             this.dgvDoctorQueue.AllowUserToAddRows = false;
             this.dgvDoctorQueue.AllowUserToDeleteRows = false;
             this.dgvDoctorQueue.AllowUserToResizeRows = false;
-            dataGridViewCellStyle7.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(249)))), ((int)(((byte)(249)))));
-            this.dgvDoctorQueue.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle7;
+            dataGridViewCellStyle16.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(249)))), ((int)(((byte)(249)))));
+            this.dgvDoctorQueue.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle16;
             this.dgvDoctorQueue.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgvDoctorQueue.BackgroundColor = System.Drawing.Color.White;
             this.dgvDoctorQueue.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dgvDoctorQueue.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle8.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
-            dataGridViewCellStyle8.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle8.ForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle8.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
-            dataGridViewCellStyle8.SelectionForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvDoctorQueue.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle8;
+            dataGridViewCellStyle17.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle17.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
+            dataGridViewCellStyle17.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle17.ForeColor = System.Drawing.Color.White;
+            dataGridViewCellStyle17.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
+            dataGridViewCellStyle17.SelectionForeColor = System.Drawing.Color.White;
+            dataGridViewCellStyle17.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvDoctorQueue.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle17;
             this.dgvDoctorQueue.ColumnHeadersHeight = 70;
             this.dgvDoctorQueue.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.dgvDoctorQueue.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -1019,16 +1266,16 @@
             this.dgvDoctorQueue.ReadOnly = true;
             this.dgvDoctorQueue.RowHeadersVisible = false;
             this.dgvDoctorQueue.RowHeadersWidth = 51;
-            dataGridViewCellStyle9.BackColor = System.Drawing.Color.White;
-            dataGridViewCellStyle9.Font = new System.Drawing.Font("Segoe UI", 11F);
-            dataGridViewCellStyle9.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(55)))), ((int)(((byte)(71)))), ((int)(((byte)(79)))));
-            dataGridViewCellStyle9.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(242)))), ((int)(((byte)(241)))));
-            dataGridViewCellStyle9.SelectionForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(77)))), ((int)(((byte)(64)))));
-            this.dgvDoctorQueue.RowsDefaultCellStyle = dataGridViewCellStyle9;
+            dataGridViewCellStyle18.BackColor = System.Drawing.Color.White;
+            dataGridViewCellStyle18.Font = new System.Drawing.Font("Segoe UI", 11F);
+            dataGridViewCellStyle18.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(55)))), ((int)(((byte)(71)))), ((int)(((byte)(79)))));
+            dataGridViewCellStyle18.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(242)))), ((int)(((byte)(241)))));
+            dataGridViewCellStyle18.SelectionForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(77)))), ((int)(((byte)(64)))));
+            this.dgvDoctorQueue.RowsDefaultCellStyle = dataGridViewCellStyle18;
             this.dgvDoctorQueue.RowTemplate.DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             this.dgvDoctorQueue.RowTemplate.Height = 45;
             this.dgvDoctorQueue.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvDoctorQueue.Size = new System.Drawing.Size(565, 506);
+            this.dgvDoctorQueue.Size = new System.Drawing.Size(565, 421);
             this.dgvDoctorQueue.TabIndex = 259;
             this.dgvDoctorQueue.TabStop = false;
             // 
@@ -1038,7 +1285,7 @@
             this.panel1.Controls.Add(this.lblRecordsCount);
             this.panel1.Controls.Add(this.label22);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel1.Location = new System.Drawing.Point(5, 577);
+            this.panel1.Location = new System.Drawing.Point(5, 492);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(565, 36);
             this.panel1.TabIndex = 244;
@@ -1050,7 +1297,7 @@
             this.lblRecordsCount.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(34)))), ((int)(((byte)(197)))), ((int)(((byte)(94)))));
             this.lblRecordsCount.Location = new System.Drawing.Point(113, 0);
             this.lblRecordsCount.Name = "lblRecordsCount";
-            this.lblRecordsCount.Size = new System.Drawing.Size(28, 25);
+            this.lblRecordsCount.Size = new System.Drawing.Size(23, 20);
             this.lblRecordsCount.TabIndex = 247;
             this.lblRecordsCount.Text = "??";
             // 
@@ -1061,7 +1308,7 @@
             this.label22.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(107)))), ((int)(((byte)(114)))), ((int)(((byte)(128)))));
             this.label22.Location = new System.Drawing.Point(3, 0);
             this.label22.Name = "label22";
-            this.label22.Size = new System.Drawing.Size(104, 25);
+            this.label22.Size = new System.Drawing.Size(82, 20);
             this.label22.TabIndex = 246;
             this.label22.Text = "# Records:";
             // 
@@ -1100,7 +1347,7 @@
             this.label2.Location = new System.Drawing.Point(13, 12);
             this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(217, 45);
+            this.label2.Size = new System.Drawing.Size(181, 37);
             this.label2.TabIndex = 235;
             this.label2.Text = "Waitting List";
             // 
@@ -1115,7 +1362,7 @@
             this.panTitle.Location = new System.Drawing.Point(10, 10);
             this.panTitle.Margin = new System.Windows.Forms.Padding(10, 5, 5, 5);
             this.panTitle.Name = "panTitle";
-            this.panTitle.Size = new System.Drawing.Size(1515, 83);
+            this.panTitle.Size = new System.Drawing.Size(1350, 83);
             this.panTitle.TabIndex = 237;
             // 
             // lbDate
@@ -1126,7 +1373,7 @@
             this.lbDate.Location = new System.Drawing.Point(23, 21);
             this.lbDate.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbDate.Name = "lbDate";
-            this.lbDate.Size = new System.Drawing.Size(162, 41);
+            this.lbDate.Size = new System.Drawing.Size(130, 32);
             this.lbDate.TabIndex = 256;
             this.lbDate.Text = "Date Time";
             // 
@@ -1156,7 +1403,7 @@
             this.label24.Location = new System.Drawing.Point(869, 24);
             this.label24.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label24.Name = "label24";
-            this.label24.Size = new System.Drawing.Size(437, 41);
+            this.label24.Size = new System.Drawing.Size(347, 32);
             this.label24.TabIndex = 238;
             this.label24.Text = "Modern Clinic - Doctor Station";
             // 
@@ -1168,7 +1415,7 @@
             this.lblTitle.Location = new System.Drawing.Point(489, 24);
             this.lblTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblTitle.Name = "lblTitle";
-            this.lblTitle.Size = new System.Drawing.Size(211, 41);
+            this.lblTitle.Size = new System.Drawing.Size(167, 32);
             this.lblTitle.TabIndex = 236;
             this.lblTitle.Text = "Add New Visit";
             // 
@@ -1185,267 +1432,34 @@
             // 
             this.errorProvider1.ContainerControl = this;
             // 
-            // label12
+            // btnNewService
             // 
-            this.label12.AutoSize = true;
-            this.label12.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
-            this.label12.Location = new System.Drawing.Point(9, 254);
-            this.label12.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(109, 28);
-            this.label12.TabIndex = 244;
-            this.label12.Text = "Diagnosis:";
-            // 
-            // pictureBox6
-            // 
-            this.pictureBox6.Image = global::Clinic.Properties.Resources.Diagnosis_32;
-            this.pictureBox6.Location = new System.Drawing.Point(122, 253);
-            this.pictureBox6.Name = "pictureBox6";
-            this.pictureBox6.Size = new System.Drawing.Size(31, 26);
-            this.pictureBox6.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBox6.TabIndex = 245;
-            this.pictureBox6.TabStop = false;
-            // 
-            // pictureBox7
-            // 
-            this.pictureBox7.Image = global::Clinic.Properties.Resources.Notes_32;
-            this.pictureBox7.Location = new System.Drawing.Point(98, 313);
-            this.pictureBox7.Name = "pictureBox7";
-            this.pictureBox7.Size = new System.Drawing.Size(31, 26);
-            this.pictureBox7.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBox7.TabIndex = 246;
-            this.pictureBox7.TabStop = false;
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
-            this.label4.Location = new System.Drawing.Point(18, 311);
-            this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(73, 28);
-            this.label4.TabIndex = 249;
-            this.label4.Text = "Notes:";
-            // 
-            // btnSaveVisit
-            // 
-            this.btnSaveVisit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnSaveVisit.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(188)))), ((int)(((byte)(156)))));
-            this.btnSaveVisit.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.btnSaveVisit.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnSaveVisit.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(236)))), ((int)(((byte)(240)))), ((int)(((byte)(241)))));
-            this.btnSaveVisit.Image = global::Clinic.Properties.Resources.Next_32;
-            this.btnSaveVisit.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.btnSaveVisit.Location = new System.Drawing.Point(698, 426);
-            this.btnSaveVisit.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.btnSaveVisit.Name = "btnSaveVisit";
-            this.btnSaveVisit.Size = new System.Drawing.Size(195, 48);
-            this.btnSaveVisit.TabIndex = 250;
-            this.btnSaveVisit.Text = " Next";
-            this.btnSaveVisit.UseVisualStyleBackColor = false;
-            this.btnSaveVisit.Click += new System.EventHandler(this.btnSaveVisit_Click);
-            // 
-            // txtNotes
-            // 
-            this.txtNotes.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtNotes.Location = new System.Drawing.Point(93, 344);
-            this.txtNotes.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.txtNotes.MaxLength = 50;
-            this.txtNotes.Multiline = true;
-            this.txtNotes.Name = "txtNotes";
-            this.txtNotes.Size = new System.Drawing.Size(628, 72);
-            this.txtNotes.TabIndex = 251;
-            // 
-            // label23
-            // 
-            this.label23.AutoSize = true;
-            this.label23.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
-            this.label23.Location = new System.Drawing.Point(54, 44);
-            this.label23.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label23.Name = "label23";
-            this.label23.Size = new System.Drawing.Size(67, 28);
-            this.label23.TabIndex = 221;
-            this.label23.Text = "Pluse:";
-            // 
-            // lbPluse
-            // 
-            this.lbPluse.BackColor = System.Drawing.Color.Silver;
-            this.lbPluse.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
-            this.lbPluse.Location = new System.Drawing.Point(148, 42);
-            this.lbPluse.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lbPluse.Name = "lbPluse";
-            this.lbPluse.Size = new System.Drawing.Size(130, 38);
-            this.lbPluse.TabIndex = 222;
-            this.lbPluse.Text = "[???] bpm";
-            // 
-            // pictureBox14
-            // 
-            this.pictureBox14.Image = global::Clinic.Properties.Resources.ID_32;
-            this.pictureBox14.Location = new System.Drawing.Point(16, 44);
-            this.pictureBox14.Name = "pictureBox14";
-            this.pictureBox14.Size = new System.Drawing.Size(31, 26);
-            this.pictureBox14.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBox14.TabIndex = 223;
-            this.pictureBox14.TabStop = false;
-            // 
-            // label17
-            // 
-            this.label17.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.label17.AutoSize = true;
-            this.label17.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
-            this.label17.Location = new System.Drawing.Point(403, 44);
-            this.label17.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(68, 28);
-            this.label17.TabIndex = 224;
-            this.label17.Text = "Temp:";
-            // 
-            // lblTemp
-            // 
-            this.lblTemp.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblTemp.BackColor = System.Drawing.Color.Silver;
-            this.lblTemp.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
-            this.lblTemp.Location = new System.Drawing.Point(475, 44);
-            this.lblTemp.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblTemp.Name = "lblTemp";
-            this.lblTemp.Size = new System.Drawing.Size(130, 38);
-            this.lblTemp.TabIndex = 225;
-            this.lblTemp.Text = "[???] °C";
-            // 
-            // pictureBox5
-            // 
-            this.pictureBox5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.pictureBox5.Image = global::Clinic.Properties.Resources.ID_32;
-            this.pictureBox5.Location = new System.Drawing.Point(365, 44);
-            this.pictureBox5.Name = "pictureBox5";
-            this.pictureBox5.Size = new System.Drawing.Size(31, 26);
-            this.pictureBox5.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBox5.TabIndex = 226;
-            this.pictureBox5.TabStop = false;
-            // 
-            // label20
-            // 
-            this.label20.AutoSize = true;
-            this.label20.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
-            this.label20.Location = new System.Drawing.Point(54, 102);
-            this.label20.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label20.Name = "label20";
-            this.label20.Size = new System.Drawing.Size(85, 28);
-            this.label20.TabIndex = 227;
-            this.label20.Text = "Weight:";
-            // 
-            // lbWeight
-            // 
-            this.lbWeight.BackColor = System.Drawing.Color.Silver;
-            this.lbWeight.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
-            this.lbWeight.Location = new System.Drawing.Point(148, 100);
-            this.lbWeight.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lbWeight.Name = "lbWeight";
-            this.lbWeight.Size = new System.Drawing.Size(130, 38);
-            this.lbWeight.TabIndex = 228;
-            this.lbWeight.Text = "[???] kg";
-            // 
-            // pictureBox10
-            // 
-            this.pictureBox10.Image = global::Clinic.Properties.Resources.ID_32;
-            this.pictureBox10.Location = new System.Drawing.Point(16, 102);
-            this.pictureBox10.Name = "pictureBox10";
-            this.pictureBox10.Size = new System.Drawing.Size(31, 26);
-            this.pictureBox10.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBox10.TabIndex = 229;
-            this.pictureBox10.TabStop = false;
-            // 
-            // label18
-            // 
-            this.label18.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.label18.AutoSize = true;
-            this.label18.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
-            this.label18.Location = new System.Drawing.Point(403, 102);
-            this.label18.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(42, 28);
-            this.label18.TabIndex = 230;
-            this.label18.Text = "BP:";
-            // 
-            // lbBP
-            // 
-            this.lbBP.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lbBP.BackColor = System.Drawing.Color.Silver;
-            this.lbBP.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
-            this.lbBP.Location = new System.Drawing.Point(475, 102);
-            this.lbBP.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lbBP.Name = "lbBP";
-            this.lbBP.Size = new System.Drawing.Size(130, 38);
-            this.lbBP.TabIndex = 231;
-            this.lbBP.Text = "[???] mmHg";
-            // 
-            // pictureBox9
-            // 
-            this.pictureBox9.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.pictureBox9.Image = global::Clinic.Properties.Resources.ID_32;
-            this.pictureBox9.Location = new System.Drawing.Point(365, 102);
-            this.pictureBox9.Name = "pictureBox9";
-            this.pictureBox9.Size = new System.Drawing.Size(31, 26);
-            this.pictureBox9.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBox9.TabIndex = 232;
-            this.pictureBox9.TabStop = false;
-            // 
-            // groupBox1
-            // 
-            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(236)))), ((int)(((byte)(240)))), ((int)(((byte)(241)))));
-            this.groupBox1.Controls.Add(this.pictureBox9);
-            this.groupBox1.Controls.Add(this.lbBP);
-            this.groupBox1.Controls.Add(this.label18);
-            this.groupBox1.Controls.Add(this.pictureBox10);
-            this.groupBox1.Controls.Add(this.lbWeight);
-            this.groupBox1.Controls.Add(this.label20);
-            this.groupBox1.Controls.Add(this.pictureBox5);
-            this.groupBox1.Controls.Add(this.lblTemp);
-            this.groupBox1.Controls.Add(this.label17);
-            this.groupBox1.Controls.Add(this.pictureBox14);
-            this.groupBox1.Controls.Add(this.lbPluse);
-            this.groupBox1.Controls.Add(this.label23);
-            this.groupBox1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.groupBox1.Location = new System.Drawing.Point(17, 83);
-            this.groupBox1.Margin = new System.Windows.Forms.Padding(5);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(627, 154);
-            this.groupBox1.TabIndex = 253;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Vitals Info";
-            // 
-            // txtDiagnosis
-            // 
-            this.txtDiagnosis.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtDiagnosis.Location = new System.Drawing.Point(160, 244);
-            this.txtDiagnosis.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.txtDiagnosis.MaxLength = 50;
-            this.txtDiagnosis.Multiline = true;
-            this.txtDiagnosis.Name = "txtDiagnosis";
-            this.txtDiagnosis.Size = new System.Drawing.Size(474, 63);
-            this.txtDiagnosis.TabIndex = 252;
-            this.txtDiagnosis.Validating += new System.ComponentModel.CancelEventHandler(this.txtDiagnosis_Validating);
+            this.btnNewService.BackColor = System.Drawing.Color.PeachPuff;
+            this.btnNewService.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnNewService.Location = new System.Drawing.Point(491, 34);
+            this.btnNewService.Name = "btnNewService";
+            this.btnNewService.Size = new System.Drawing.Size(31, 31);
+            this.btnNewService.TabIndex = 259;
+            this.btnNewService.Text = "+";
+            this.btnNewService.UseVisualStyleBackColor = false;
+            this.btnNewService.Click += new System.EventHandler(this.btnNewService_Click);
             // 
             // frmDoctor
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 28F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 21F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
             this.AutoSize = true;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(246)))), ((int)(((byte)(248)))));
             this.CancelButton = this.btnClose;
-            this.ClientSize = new System.Drawing.Size(1535, 851);
+            this.ClientSize = new System.Drawing.Size(1370, 766);
             this.Controls.Add(this.panel3);
             this.Controls.Add(this.gpPatientInfo);
             this.Controls.Add(this.panTitle);
             this.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Margin = new System.Windows.Forms.Padding(5);
-            this.MinimumSize = new System.Drawing.Size(1024, 768);
+            this.MinimumSize = new System.Drawing.Size(1024, 766);
             this.Name = "frmDoctor";
             this.Padding = new System.Windows.Forms.Padding(10);
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
@@ -1466,6 +1480,14 @@
             this.panel7.PerformLayout();
             this.pnlVisitInfo.ResumeLayout(false);
             this.pnlVisitInfo.PerformLayout();
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox9)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox10)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox5)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox14)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox7)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox6)).EndInit();
             this.tpServices.ResumeLayout(false);
             this.pnlServicesInfo.ResumeLayout(false);
             this.pnlServicesInfo.PerformLayout();
@@ -1494,14 +1516,6 @@
             this.panTitle.ResumeLayout(false);
             this.panTitle.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox6)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox7)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox14)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox5)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox10)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox9)).EndInit();
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -1603,5 +1617,6 @@
         private System.Windows.Forms.PictureBox pictureBox7;
         private System.Windows.Forms.PictureBox pictureBox6;
         private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.Button btnNewService;
     }
 }

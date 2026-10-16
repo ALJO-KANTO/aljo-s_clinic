@@ -86,7 +86,7 @@ namespace Clinic_DataAccess
                         connection.Open();
                         using (MySqlDataReader reader = command.ExecuteReader())
                         {
-                            if (reader.HasRows) dt.Load(reader);
+                            dt.Load(reader);
                         }
                     }
                 }

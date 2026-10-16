@@ -2,6 +2,7 @@
 using Clinic.ControlsMain;
 using Clinic.Doctor;
 using Clinic.Patient;
+using Clinic.Serveces.ServecesType;
 using Clinic_Business;
 using System;
 using System.ComponentModel;
@@ -34,9 +35,7 @@ namespace Clinic.Medical_Services.Visit
         public enum enMode { AddNew = 1, Update = 2, ShowVisit = 3 }
 
         #region Constructor
-        public frmDoctor(
-     int visitID = -1,
-     enMode mode = enMode.AddNew)
+        public frmDoctor(int visitID = -1, enMode mode = enMode.AddNew)
         {
             InitializeComponent();
 
@@ -1143,8 +1142,12 @@ namespace Clinic.Medical_Services.Visit
         }
 
 
+
         #endregion
 
-
+        private void btnNewService_Click(object sender, EventArgs e)
+        {
+            new frmAddUpdateServices().ShowDialog();
+        }
     }
 }
