@@ -55,7 +55,6 @@ namespace Clinic.Medical_Services.Visit
             this.label3 = new System.Windows.Forms.Label();
             this.txtDiscount = new System.Windows.Forms.TextBox();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
-
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.NUDQuantity)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox7)).BeginInit();
@@ -66,7 +65,6 @@ namespace Clinic.Medical_Services.Visit
             ((System.ComponentModel.ISupportInitialize)(this.nudFrequency)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.SuspendLayout();
-
             // 
             // cbMedicines
             // 
@@ -76,10 +74,9 @@ namespace Clinic.Medical_Services.Visit
             this.cbMedicines.FormattingEnabled = true;
             this.cbMedicines.Location = new System.Drawing.Point(189, 94);
             this.cbMedicines.Name = "cbMedicines";
-            this.cbMedicines.Size = new System.Drawing.Size(217, 36);
+            this.cbMedicines.Size = new System.Drawing.Size(217, 29);
             this.cbMedicines.TabIndex = 167;
             this.cbMedicines.SelectedIndexChanged += new System.EventHandler(this.cbMedicines_SelectedIndexChanged);
-
             // 
             // label1
             // 
@@ -89,23 +86,21 @@ namespace Clinic.Medical_Services.Visit
             this.label1.Location = new System.Drawing.Point(12, 105);
             this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(168, 25);
+            this.label1.Size = new System.Drawing.Size(135, 21);
             this.label1.TabIndex = 165;
             this.label1.Text = "Medicine Name:";
-
             // 
             // lblMedicinePrice
             // 
             this.lblMedicinePrice.AutoSize = true;
             this.lblMedicinePrice.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblMedicinePrice.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(86)))), ((int)(((byte)(36))))); // لون برتقالي مميز للسعر
+            this.lblMedicinePrice.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(86)))), ((int)(((byte)(36)))));
             this.lblMedicinePrice.Location = new System.Drawing.Point(608, 94);
             this.lblMedicinePrice.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblMedicinePrice.Name = "lblMedicinePrice";
-            this.lblMedicinePrice.Size = new System.Drawing.Size(62, 25);
+            this.lblMedicinePrice.Size = new System.Drawing.Size(43, 21);
             this.lblMedicinePrice.TabIndex = 178;
             this.lblMedicinePrice.Text = "[???]";
-
             // 
             // label10
             // 
@@ -115,10 +110,9 @@ namespace Clinic.Medical_Services.Visit
             this.label10.Location = new System.Drawing.Point(438, 94);
             this.label10.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(161, 25);
+            this.label10.Size = new System.Drawing.Size(127, 21);
             this.label10.TabIndex = 177;
             this.label10.Text = "Medicine Price:";
-
             // 
             // label15
             // 
@@ -128,10 +122,9 @@ namespace Clinic.Medical_Services.Visit
             this.label15.Location = new System.Drawing.Point(12, 175);
             this.label15.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(100, 25);
+            this.label15.Size = new System.Drawing.Size(81, 21);
             this.label15.TabIndex = 180;
             this.label15.Text = "Quantity:";
-
             // 
             // txtDosage
             // 
@@ -143,7 +136,6 @@ namespace Clinic.Medical_Services.Visit
             this.txtDosage.Size = new System.Drawing.Size(494, 84);
             this.txtDosage.TabIndex = 215;
             this.txtDosage.Validating += new System.ComponentModel.CancelEventHandler(this.txtDosage_Validating);
-
             // 
             // label12
             // 
@@ -153,10 +145,9 @@ namespace Clinic.Medical_Services.Visit
             this.label12.Location = new System.Drawing.Point(12, 311);
             this.label12.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(93, 25);
+            this.label12.Size = new System.Drawing.Size(71, 21);
             this.label12.TabIndex = 213;
             this.label12.Text = "Dosage:";
-
             // 
             // txtInstructions
             // 
@@ -167,7 +158,6 @@ namespace Clinic.Medical_Services.Visit
             this.txtInstructions.Name = "txtInstructions";
             this.txtInstructions.Size = new System.Drawing.Size(494, 129);
             this.txtInstructions.TabIndex = 218;
-
             // 
             // label14
             // 
@@ -177,10 +167,9 @@ namespace Clinic.Medical_Services.Visit
             this.label14.Location = new System.Drawing.Point(12, 464);
             this.label14.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(130, 25);
+            this.label14.Size = new System.Drawing.Size(104, 21);
             this.label14.TabIndex = 216;
             this.label14.Text = "Instructions:";
-
             // 
             // lblTitle
             // 
@@ -191,23 +180,28 @@ namespace Clinic.Medical_Services.Visit
             this.lblTitle.Size = new System.Drawing.Size(565, 44);
             this.lblTitle.TabIndex = 219;
             this.lblTitle.Text = "Add New Medicine in Prescription";
-            this.lblTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter; // تم حل المشكلة هنا
-
+            this.lblTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // errorProvider1
             // 
             this.errorProvider1.ContainerControl = this;
-
             // 
             // NUDQuantity
             // 
             this.NUDQuantity.Location = new System.Drawing.Point(189, 175);
-            this.NUDQuantity.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            this.NUDQuantity.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             this.NUDQuantity.Name = "NUDQuantity";
-            this.NUDQuantity.Size = new System.Drawing.Size(82, 34);
+            this.NUDQuantity.Size = new System.Drawing.Size(82, 29);
             this.NUDQuantity.TabIndex = 222;
-            this.NUDQuantity.Value = new decimal(new int[] { 1, 0, 0, 0 });
-
+            this.NUDQuantity.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             // 
             // btnSave
             // 
@@ -215,7 +209,7 @@ namespace Clinic.Medical_Services.Visit
             this.btnSave.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnSave.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(50)))), ((int)(((byte)(80)))));
             this.btnSave.Image = global::Clinic.Properties.Resources.Save_32;
-            this.btnSave.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft; // تم حل المشكلة هنا
+            this.btnSave.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnSave.Location = new System.Drawing.Point(529, 643);
             this.btnSave.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
             this.btnSave.Name = "btnSave";
@@ -224,7 +218,6 @@ namespace Clinic.Medical_Services.Visit
             this.btnSave.Text = "Save";
             this.btnSave.UseVisualStyleBackColor = true;
             this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
-
             // 
             // btnClose
             // 
@@ -233,7 +226,7 @@ namespace Clinic.Medical_Services.Visit
             this.btnClose.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnClose.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(50)))), ((int)(((byte)(80)))));
             this.btnClose.Image = global::Clinic.Properties.Resources.Close_32;
-            this.btnClose.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft; // تم حل المشكلة هنا
+            this.btnClose.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnClose.Location = new System.Drawing.Point(390, 643);
             this.btnClose.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
             this.btnClose.Name = "btnClose";
@@ -242,7 +235,6 @@ namespace Clinic.Medical_Services.Visit
             this.btnClose.Text = "Close";
             this.btnClose.UseVisualStyleBackColor = true;
             this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
-
             // 
             // pictureBox7
             // 
@@ -253,7 +245,6 @@ namespace Clinic.Medical_Services.Visit
             this.pictureBox7.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox7.TabIndex = 217;
             this.pictureBox7.TabStop = false;
-
             // 
             // pictureBox1
             // 
@@ -264,7 +255,6 @@ namespace Clinic.Medical_Services.Visit
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox1.TabIndex = 214;
             this.pictureBox1.TabStop = false;
-
             // 
             // pictureBox6
             // 
@@ -275,7 +265,6 @@ namespace Clinic.Medical_Services.Visit
             this.pictureBox6.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox6.TabIndex = 181;
             this.pictureBox6.TabStop = false;
-
             // 
             // pictureBox9
             // 
@@ -286,7 +275,6 @@ namespace Clinic.Medical_Services.Visit
             this.pictureBox9.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox9.TabIndex = 179;
             this.pictureBox9.TabStop = false;
-
             // 
             // pictureBox3
             // 
@@ -297,17 +285,23 @@ namespace Clinic.Medical_Services.Visit
             this.pictureBox3.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox3.TabIndex = 166;
             this.pictureBox3.TabStop = false;
-
             // 
             // nudFrequency
             // 
             this.nudFrequency.Location = new System.Drawing.Point(482, 175);
-            this.nudFrequency.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            this.nudFrequency.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             this.nudFrequency.Name = "nudFrequency";
-            this.nudFrequency.Size = new System.Drawing.Size(82, 34);
+            this.nudFrequency.Size = new System.Drawing.Size(82, 29);
             this.nudFrequency.TabIndex = 225;
-            this.nudFrequency.Value = new decimal(new int[] { 1, 0, 0, 0 });
-
+            this.nudFrequency.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             // 
             // label2
             // 
@@ -317,10 +311,9 @@ namespace Clinic.Medical_Services.Visit
             this.label2.Location = new System.Drawing.Point(328, 180);
             this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(121, 25);
+            this.label2.Size = new System.Drawing.Size(93, 21);
             this.label2.TabIndex = 224;
             this.label2.Text = "Frequency:";
-
             // 
             // label3
             // 
@@ -330,10 +323,9 @@ namespace Clinic.Medical_Services.Visit
             this.label3.Location = new System.Drawing.Point(157, 258);
             this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(177, 25);
+            this.label3.Size = new System.Drawing.Size(148, 21);
             this.label3.TabIndex = 226;
             this.label3.Text = "Discount Amount:";
-
             // 
             // txtDiscount
             // 
@@ -341,12 +333,11 @@ namespace Clinic.Medical_Services.Visit
             this.txtDiscount.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
             this.txtDiscount.MaxLength = 50;
             this.txtDiscount.Name = "txtDiscount";
-            this.txtDiscount.Size = new System.Drawing.Size(155, 34);
+            this.txtDiscount.Size = new System.Drawing.Size(155, 29);
             this.txtDiscount.TabIndex = 227;
             this.txtDiscount.Text = "0.00";
             this.txtDiscount.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtDiscount_KeyPress);
             this.txtDiscount.Leave += new System.EventHandler(this.txtDiscount_Leave);
-
             // 
             // pictureBox2
             // 
@@ -358,14 +349,13 @@ namespace Clinic.Medical_Services.Visit
             this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox2.TabIndex = 249;
             this.pictureBox2.TabStop = false;
-
             // 
             // frmAddUpdateMedicineToPrescription
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 28F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 21F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoValidate = System.Windows.Forms.AutoValidate.EnableAllowFocusChange;
-            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(244)))), ((int)(((byte)(248))))); // خلفية ناعمة ومريحة للعين (Soft Soft Grey/Blue)
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(244)))), ((int)(((byte)(248)))));
             this.ClientSize = new System.Drawing.Size(695, 700);
             this.Controls.Add(this.pictureBox2);
             this.Controls.Add(this.txtDiscount);
@@ -397,7 +387,6 @@ namespace Clinic.Medical_Services.Visit
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Add / Update Prescription Medicine";
             this.Load += new System.EventHandler(this.frmAddUpdateMedicineToPrescription_Load);
-
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.NUDQuantity)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox7)).EndInit();
@@ -409,6 +398,7 @@ namespace Clinic.Medical_Services.Visit
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
+
         }
 
         #endregion
