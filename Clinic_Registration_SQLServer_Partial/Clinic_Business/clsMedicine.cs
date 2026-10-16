@@ -12,22 +12,32 @@ namespace Clinic_Business
         public int MedicineID { get; set; }
         public string MedicineName { get; set; }
         public decimal MedicinePrice { get; set; }
-        public int CurrentStock { get; set; }
-        public int ReorderLevel { get; set; }
+
+        // Changed from int to decimal
+        public decimal CurrentStock { get; set; }
+        public decimal ReorderLevel { get; set; }
+
         public decimal TaxRate { get; set; }
 
         public clsMedicine()
         {
-            this.MedicineID = -1;
-            this.MedicineName = "";
-            this.MedicinePrice = 0;
-            this.CurrentStock = 0;
-            this.ReorderLevel = 0;
-            this.TaxRate = 15.00M; // القيمة الافتراضية للضريبة
+            MedicineID = -1;
+            MedicineName = "";
+            MedicinePrice = 0;
+            CurrentStock = 0;
+            ReorderLevel = 0;
+            TaxRate = 15.00M;
+
             Mode = enMode.AddNew;
         }
 
-        private clsMedicine(int MedicineID, string MedicineName, decimal MedicinePrice, int CurrentStock, int ReorderLevel, decimal TaxRate)
+        private clsMedicine(
+            int MedicineID,
+            string MedicineName,
+            decimal MedicinePrice,
+            decimal CurrentStock,
+            decimal ReorderLevel,
+            decimal TaxRate)
         {
             this.MedicineID = MedicineID;
             this.MedicineName = MedicineName;
@@ -35,42 +45,76 @@ namespace Clinic_Business
             this.CurrentStock = CurrentStock;
             this.ReorderLevel = ReorderLevel;
             this.TaxRate = TaxRate;
+
             Mode = enMode.Update;
         }
 
         private bool _AddNewMedicine()
         {
-            this.MedicineID = clsMedicineData.AddNewMedicine(this.MedicineName, this.MedicinePrice, this.CurrentStock, this.ReorderLevel, this.TaxRate);
-            return (this.MedicineID != -1);
+            MedicineID = clsMedicineData.AddNewMedicine(
+                MedicineName,
+                MedicinePrice,
+                CurrentStock,
+                ReorderLevel,
+                TaxRate);
+
+            return MedicineID != -1;
         }
 
         private bool _UpdateMedicine()
         {
-            return clsMedicineData.UpdateMedicine(this.MedicineID, this.MedicineName, this.MedicinePrice, this.CurrentStock, this.ReorderLevel, this.TaxRate);
+            return clsMedicineData.UpdateMedicine(
+                MedicineID,
+                MedicineName,
+                MedicinePrice,
+                CurrentStock,
+                ReorderLevel,
+                TaxRate);
         }
 
         public static bool DeleteMedicine(int MedicineID)
         {
             return clsMedicineData.DeleteMedicine(MedicineID);
         }
+
         public static clsMedicine Find(int MedicineID)
         {
             string MedicineName = "";
             decimal MedicinePrice = 0;
-            int CurrentStock = 0;
-            int ReorderLevel = 0;
+
+            // Changed from int to decimal
+            decimal CurrentStock = 0;
+            decimal ReorderLevel = 0;
+
             decimal TaxRate = 0;
 
-            if (clsMedicineData.GetMedicineInfoByID(MedicineID, ref MedicineName, ref MedicinePrice, ref CurrentStock, ref ReorderLevel, ref TaxRate))
+            if (clsMedicineData.GetMedicineInfoByID(
+                MedicineID,
+                ref MedicineName,
+                ref MedicinePrice,
+                ref CurrentStock,
+                ref ReorderLevel,
+                ref TaxRate))
             {
-                return new clsMedicine(MedicineID, MedicineName, MedicinePrice, CurrentStock, ReorderLevel, TaxRate);
+                return new clsMedicine(
+                    MedicineID,
+                    MedicineName,
+                    MedicinePrice,
+                    CurrentStock,
+                    ReorderLevel,
+                    TaxRate);
             }
+
             return null;
         }
 
-        public static bool IsMedicineAvailable(int medicineId, int requestedQuantity)
+        public static bool IsMedicineAvailable(
+            int medicineId,
+            int requestedQuantity)
         {
-            return clsMedicineData.IsMedicineAvailable(medicineId, requestedQuantity);
+            return clsMedicineData.IsMedicineAvailable(
+                medicineId,
+                requestedQuantity);
         }
 
         public static DataTable GetAllMedicines()
@@ -83,16 +127,20 @@ namespace Clinic_Business
             switch (Mode)
             {
                 case enMode.AddNew:
+
                     if (_AddNewMedicine())
                     {
                         Mode = enMode.Update;
                         return true;
                     }
+
                     return false;
 
                 case enMode.Update:
+
                     return _UpdateMedicine();
             }
+
             return false;
         }
     }

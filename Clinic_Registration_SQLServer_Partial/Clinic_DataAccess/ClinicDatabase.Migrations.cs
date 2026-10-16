@@ -1015,6 +1015,16 @@ namespace Clinic_DataAccess
                         },
                         new DatabaseMigration
                         {
+                            Version = "20261016_021",
+                            Description = "Add BillNumber column to Bills",
+                            Sql = @"
+                                ALTER TABLE bills
+                                ADD COLUMN BillNumber VARCHAR(30) NULL;
+                            "
+                        },
+                        //Views  
+                        new DatabaseMigration
+                        {
                             Version = "20261015_VIEW_001",
                             Description = "Initial view: view_doctorsdetails",
                             Sql = @"CREATE OR REPLACE VIEW `view_doctorsdetails` AS select `d`.`DoctorID` AS `DoctorID`,`d`.`PersonID` AS `PersonID`,`p`.`FullName` AS `FullName`,`d`.`LicenseNumber` AS `LicenseNumber`,`d`.`ConsultationFees` AS `ConsultationFees`,coalesce((select group_concat(distinct `s`.`SpecializationName` order by `s`.`SpecializationName` ASC separator ', ') from (`doctorspecialties` `ds` join `specializations` `s` on((`s`.`SpecializationID` = `ds`.`SpecializationID`))) where (`ds`.`DoctorID` = `d`.`DoctorID`)),'') AS `Specializations`,coalesce((select group_concat(`dy`.`DayName` order by `dw`.`DayID` ASC separator ', ') from (`doctorworkingdays` `dw` join `days` `dy` on((`dy`.`DayID` = `dw`.`DayID`))) where (`dw`.`DoctorID` = `d`.`DoctorID`)),'') AS `WorkingDays`,coalesce(`c`.`CountryName`,'') AS `CountryName`,`d`.`IsActive` AS `IsActive` from ((`doctors` `d` left join `persons` `p` on((`p`.`PersonID` = `d`.`PersonID`))) left join `countries` `c` on((`c`.`CountryID` = `p`.`NationalityCountryID`)));"
@@ -1293,6 +1303,551 @@ namespace Clinic_DataAccess
                                 ALTER TABLE appointments
                                 ADD COLUMN LastModifiedDate DATETIME NULL,
                                 ADD COLUMN LastModifiedByUserID INT NULL;
+                            "
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261016_014",
+                            Description = "Add IsDeleted column to persons",
+                            Sql = @"
+                                ALTER TABLE persons
+                                ADD COLUMN IsDeleted TINYINT(1) NOT NULL DEFAULT 0;
+                            "
+                        },
+                        //add column Diagnosis to Visits
+                        new DatabaseMigration
+                        {
+                            Version = "20261016_00014",
+                            Description = "Add Diagnosis column to visits",
+                            Sql = @"
+                                ALTER TABLE visits
+                                ADD COLUMN Diagnosis VARCHAR(500) NOT NULL DEFAULT('');
+                            "
+                        },
+                        //add col [VisitNotes] [nvarchar](max) NULL, to Visits
+                        new DatabaseMigration
+                        {
+                            Version = "20261016_00015",
+                            Description = "Add VisitNotes column to visits",
+                            Sql = @"
+                                ALTER TABLE visits
+                                ADD COLUMN VisitNotes VARCHAR(500) NOT NULL DEFAULT('');
+                            "
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261016_019",
+                            Description = "Add waiting queue columns to appointments",
+                            Sql = @"
+                                ALTER TABLE appointments
+                                ADD COLUMN CallType INT NOT NULL DEFAULT 0,
+                                ADD COLUMN IsCalled TINYINT(1) NOT NULL DEFAULT 0,
+                                ADD COLUMN CheckInTime DATETIME NULL;
+                            "
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261016_010",
+                            Description = "Create View_UserDetails",
+                            Sql = @"
+                                CREATE OR REPLACE VIEW View_UserDetails AS
+                                SELECT
+                                    U.UserID,
+                                    P.PersonID,
+                                    P.FullName,
+                                    U.UserName,
+                                    R.RoleName,
+                                    U.IsActive
+                                FROM users U
+                                INNER JOIN persons P
+                                    ON U.PersonID = P.PersonID
+                                INNER JOIN roles R
+                                    ON U.RoleID = R.RoleID
+                                WHERE P.IsDeleted = 0;
+                            "
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261016_011",
+                            Description = "Create View_PrescriptionDetails",
+                            Sql = @"
+                                CREATE OR REPLACE VIEW View_PrescriptionDetails AS
+                                SELECT
+                                    P.PrescriptionID,
+
+                                    DATE_FORMAT(
+                                        P.PrescriptionDate,
+                                        '%Y-%m-%d'
+                                    ) AS PrescriptionDate,
+
+                                    CASE
+                                        WHEN P.PrescriptionType = 2
+                                            THEN 'Pharmacy Sale'
+                                        ELSE COALESCE(
+                                            PP.FullName,
+                                            'Unknown Patient'
+                                        )
+                                    END AS PatientName,
+
+                                    CASE
+                                        WHEN P.PrescriptionType = 2
+                                            THEN 'Pharmacy System'
+                                        ELSE COALESCE(
+                                            PD.FullName,
+                                            'Unknown Doctor'
+                                        )
+                                    END AS DoctorName,
+
+                                    P.VisitID,
+
+                                    CASE P.PrescriptionStatus
+                                        WHEN 1 THEN 'Pending'
+                                        WHEN 2 THEN 'Waiting For Payment'
+                                        WHEN 3 THEN 'Ready For Dispensing'
+                                        WHEN 4 THEN 'Dispensed'
+                                        WHEN 5 THEN 'Partially Dispensed'
+                                        WHEN 6 THEN 'Cancelled'
+                                        ELSE 'Unknown'
+                                    END AS Status,
+
+                                    P.PrescriptionNotes AS Notes
+
+                                FROM prescriptions P
+
+                                LEFT JOIN visits V
+                                    ON P.VisitID = V.VisitID
+
+                                LEFT JOIN patients Pat
+                                    ON V.PatientID = Pat.PatientID
+
+                                LEFT JOIN persons PP
+                                    ON Pat.PersonID = PP.PersonID
+
+                                LEFT JOIN doctors D
+                                    ON V.DoctorID = D.DoctorID
+
+                                LEFT JOIN persons PD
+                                    ON D.PersonID = PD.PersonID;
+                            "
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261016_012",
+                            Description = "Create View_PatientsDetails",
+                            Sql = @"
+                                CREATE OR REPLACE VIEW View_PatientsDetails AS
+                                SELECT
+                                    Pat.PatientID,
+                                    P.PersonID,
+                                    P.FullName,
+                                    Pat.MedicalHistory,
+                                    Pat.CreatedDate,
+                                    C.CountryName,
+                                    B.BloodTypeName,
+                                    Pat.EmergencyContact
+                                FROM persons P
+                                INNER JOIN patients Pat
+                                    ON P.PersonID = Pat.PersonID
+                                INNER JOIN countries C
+                                    ON P.NationalityCountryID = C.CountryID
+                                INNER JOIN bloodtypes B
+                                    ON Pat.BloodTypeID = B.BloodTypeID
+                                WHERE P.IsDeleted = 0;
+                            "
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261016_013",
+                            Description = "Create View_PersonDetails",
+                            Sql = @"
+                                CREATE OR REPLACE VIEW View_PersonDetails AS
+                                SELECT
+                                    P.PersonID,
+                                    P.FullName,
+                                    P.DateOfBirth,
+
+                                    CASE P.Gender
+                                        WHEN 0 THEN 'Male'
+                                        ELSE 'Female'
+                                    END AS GenderCaption,
+
+                                    P.PhoneNumber,
+                                    C.CountryName,
+                                    P.Address,
+                                    P.Email
+
+                                FROM persons P
+
+                                INNER JOIN countries C
+                                    ON P.NationalityCountryID = C.CountryID
+                                WHERE P.IsDeleted = 0;
+                            "
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261016_015",
+                            Description = "Create View_PersonTrashDetails",
+                            Sql = @"
+                                CREATE OR REPLACE VIEW View_PersonTrashDetails AS
+                                SELECT
+                                    P.PersonID,
+                                    P.FullName,
+                                    P.DateOfBirth,
+
+                                    CASE P.Gender
+                                        WHEN 0 THEN 'Male'
+                                        ELSE 'Female'
+                                    END AS GenderCaption,
+
+                                    P.PhoneNumber,
+                                    C.CountryName,
+                                    P.Address,
+                                    P.Email
+
+                                FROM persons P
+
+                                INNER JOIN countries C
+                                    ON P.NationalityCountryID = C.CountryID
+
+                                WHERE P.IsDeleted = 1;
+                            "
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261016_016",
+                            Description = "Create View_BillSummaries",
+                            Sql = @"
+                                CREATE OR REPLACE VIEW View_BillSummaries AS
+                                SELECT
+                                    CONCAT(
+                                        'INV-',
+                                        YEAR(B.BillDate),
+                                        '-',
+                                        LPAD(B.BillID, 4, '0')
+                                    ) AS BillNumber,
+
+                                    B.BillID,
+
+                                    COALESCE(P.FullName, 'Pharmacy Sale') AS PatientName,
+
+                                    CASE
+                                        WHEN B.VisitID IS NULL THEN
+                                            CONCAT(
+                                                COALESCE(M.PrescriptionCount, 0),
+                                                ' Pharmacy Sale'
+                                            )
+                                        ELSE
+                                            CONCAT(
+                                                COALESCE(S.ServiceCount, 0),
+                                                ' Servs, ',
+                                                COALESCE(M.PrescriptionCount, 0),
+                                                ' Presc'
+                                            )
+                                    END AS ItemsTotal,
+
+                                    COALESCE(A.AppointmentFees, 0) AS AppointmentFees,
+
+                                    COALESCE(M.TotalMedicinesOnly, 0) AS MedicinesTotal,
+
+                                    COALESCE(S.TotalServicesOnly, 0) AS ServicesTotal,
+
+                                    (
+                                        COALESCE(S.ServiceDiscount, 0)
+                                        + COALESCE(M.MedsDiscount, 0)
+                                    ) AS TotalDiscount,
+
+                                    COALESCE(M.TotalTax, 0) AS TotalTax,
+
+                                    (
+                                        COALESCE(A.AppointmentFees, 0)
+                                        + COALESCE(M.TotalMedicinesNet, 0)
+                                        + COALESCE(S.TotalServicesNet, 0)
+                                    ) AS Subtotal,
+
+                                    COALESCE(Pay.TotalPaid, 0) AS PaymentAmount,
+
+                                    (
+                                        COALESCE(A.AppointmentFees, 0)
+                                        + COALESCE(M.TotalMedicinesNet, 0)
+                                        + COALESCE(S.TotalServicesNet, 0)
+                                        - COALESCE(Pay.TotalPaid, 0)
+                                    ) AS BalanceDue
+
+                                FROM bills B
+
+                                LEFT JOIN visits V
+                                    ON B.VisitID = V.VisitID
+
+                                LEFT JOIN appointments A
+                                    ON V.AppointmentID = A.AppointmentID
+
+                                LEFT JOIN patients PA
+                                    ON V.PatientID = PA.PatientID
+
+                                LEFT JOIN persons P
+                                    ON PA.PersonID = P.PersonID
+
+                                LEFT JOIN
+                                (
+                                    SELECT
+                                        BillID,
+                                        SUM(PaymentAmount) AS TotalPaid
+                                    FROM payments
+                                    GROUP BY BillID
+                                ) Pay
+                                    ON B.BillID = Pay.BillID
+
+                                LEFT JOIN
+                                (
+                                    SELECT
+                                        VisitID,
+
+                                        COUNT(*) AS ServiceCount,
+
+                                        SUM(
+                                            SavedServicePrice * Quantity
+                                        ) AS TotalServicesOnly,
+
+                                        SUM(
+                                            Discount * Quantity
+                                        ) AS ServiceDiscount,
+
+                                        SUM(
+                                            (SavedServicePrice * Quantity)
+                                            - (Discount * Quantity)
+                                        ) AS TotalServicesNet
+
+                                    FROM visitservices
+                                    GROUP BY VisitID
+                                ) S
+                                    ON B.VisitID = S.VisitID
+
+                                LEFT JOIN
+                                (
+                                    SELECT
+                                        PR.VisitID,
+
+                                        COUNT(DISTINCT PR.PrescriptionID)
+                                            AS PrescriptionCount,
+
+                                        COALESCE(
+                                            SUM(
+                                                PD.SavedMedicinePrice
+                                                * PD.Quantity
+                                            ), 0
+                                        ) AS TotalMedicinesOnly,
+
+                                        COALESCE(
+                                            SUM(
+                                                PD.DiscountAmount
+                                                * PD.Quantity
+                                            ), 0
+                                        ) AS MedsDiscount,
+
+                                        CAST(
+                                            ROUND(
+                                                COALESCE(
+                                                    SUM(
+                                                        CASE
+                                                            WHEN PD.Quantity > 0 THEN
+                                                                (
+                                                                    (
+                                                                        PD.SavedMedicinePrice
+                                                                        * PD.Quantity
+                                                                    )
+                                                                    -
+                                                                    (
+                                                                        PD.DiscountAmount
+                                                                        * PD.Quantity
+                                                                    )
+                                                                )
+                                                                *
+                                                                (
+                                                                    COALESCE(MED.TaxRate, 0)
+                                                                    / 100.0
+                                                                )
+                                                            ELSE 0
+                                                        END
+                                                    ), 0
+                                                ),
+                                                2
+                                            ) AS DECIMAL(18,2)
+                                        ) AS TotalTax,
+
+                                        COALESCE(
+                                            SUM(
+                                                CASE
+                                                    WHEN PD.Quantity > 0 THEN
+                                                        (
+                                                            (
+                                                                PD.SavedMedicinePrice
+                                                                * PD.Quantity
+                                                            )
+                                                            -
+                                                            (
+                                                                PD.DiscountAmount
+                                                                * PD.Quantity
+                                                            )
+                                                        )
+                                                        *
+                                                        (
+                                                            1 +
+                                                            (
+                                                                COALESCE(MED.TaxRate, 0)
+                                                                / 100.0
+                                                            )
+                                                        )
+                                                    ELSE 0
+                                                END
+                                            ), 0
+                                        ) AS TotalMedicinesNet
+
+                                    FROM prescriptions PR
+
+                                    LEFT JOIN prescriptiondetails PD
+                                        ON PR.PrescriptionID = PD.PrescriptionID
+
+                                    LEFT JOIN medicines MED
+                                        ON PD.MedicineID = MED.MedicineID
+
+                                    GROUP BY PR.VisitID
+                                ) M
+                                    ON B.VisitID = M.VisitID;
+                            "
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261016_017",
+                            Description = "Create View_BillItems",
+                            Sql = @"
+                                CREATE OR REPLACE VIEW View_BillItems AS
+
+                                -- 1. Medicine Items
+                                SELECT
+                                    B.BillID,
+                                    'Medicine' AS ItemType,
+                                    PD.SavedMedicineName AS ItemName,
+                                    PD.Quantity AS Quantity,
+                                    PD.SavedMedicinePrice AS Price,
+                                    (
+                                        PD.SavedMedicinePrice * PD.Quantity
+                                    ) AS Total
+
+                                FROM prescriptiondetails PD
+
+                                INNER JOIN prescriptions PR
+                                    ON PD.PrescriptionID = PR.PrescriptionID
+
+                                INNER JOIN bills B
+                                    ON PR.VisitID = B.VisitID
+
+                                UNION ALL
+
+                                -- 2. Service Items
+                                SELECT
+                                    B.BillID,
+                                    'Service' AS ItemType,
+                                    S.ServiceName AS ItemName,
+                                    VS.Quantity AS Quantity,
+                                    VS.SavedServicePrice AS Price,
+                                    (
+                                        VS.SavedServicePrice * VS.Quantity
+                                    ) AS Total
+
+                                FROM visitservices VS
+
+                                INNER JOIN services S
+                                    ON VS.ServiceID = S.ServiceID
+
+                                INNER JOIN bills B
+                                    ON VS.VisitID = B.VisitID
+
+                                UNION ALL
+
+                                -- 3. Appointment Fees
+                                SELECT
+                                    B.BillID,
+                                    'Appointment' AS ItemType,
+                                    'Appointment Fees' AS ItemName,
+                                    1 AS Quantity,
+                                    A.AppointmentFees AS Price,
+                                    A.AppointmentFees AS Total
+
+                                FROM appointments A
+
+                                INNER JOIN visits V
+                                    ON A.AppointmentID = V.AppointmentID
+
+                                INNER JOIN bills B
+                                    ON V.VisitID = B.VisitID
+
+                                WHERE A.AppointmentFees > 0;
+                            "
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261016_018",
+                            Description = "Create View_PatientsWaitingForVitals",
+                            Sql = @"
+                                CREATE OR REPLACE VIEW View_PatientsWaitingForVitals AS
+                                SELECT
+                                    V.VisitID,
+                                    A.AppointmentID,
+                                    P.FullName AS PatientName,
+                                    A.CheckInTime,
+
+                                    CASE A.AppointmentStatus
+                                        WHEN 2 THEN 'In-Queue'
+                                        WHEN 7 THEN 'Waiting_For_Vitals'
+                                        ELSE 'Unknown'
+                                    END AS StatusText,
+
+                                    A.IsCalled
+
+                                FROM appointments A
+
+                                INNER JOIN visits V
+                                    ON A.AppointmentID = V.AppointmentID
+
+                                INNER JOIN patients PT
+                                    ON A.PatientID = PT.PatientID
+
+                                INNER JOIN persons P
+                                    ON PT.PersonID = P.PersonID;
+                            "
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261016_019",
+                            Description = "Create View_WaitingPatients",
+                            Sql = @"
+                                CREATE OR REPLACE VIEW View_WaitingPatients AS
+                                SELECT
+                                    A.AppointmentID,
+                                    Pe.FullName AS PatientName,
+                                    A.CallType,
+                                    A.IsCalled,
+                                    A.CheckInTime,
+                                    A.AppointmentStatus,
+                                    D.DoctorID,
+
+                                    CASE A.AppointmentStatus
+                                        WHEN 2 THEN 'In-Queue'
+                                        WHEN 7 THEN 'Waiting_For_Vitals'
+                                        WHEN 8 THEN 'Ready_For_Doctor'
+                                        ELSE 'Unknown'
+                                    END AS StatusText
+
+                                FROM appointments A
+
+                                INNER JOIN patients P
+                                    ON A.PatientID = P.PatientID
+
+                                INNER JOIN persons Pe
+                                    ON P.PersonID = Pe.PersonID
+
+                                INNER JOIN doctors D
+                                    ON A.DoctorID = D.DoctorID;
                             "
                         },
                   };
