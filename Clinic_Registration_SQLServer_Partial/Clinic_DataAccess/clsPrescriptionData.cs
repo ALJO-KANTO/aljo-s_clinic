@@ -10,6 +10,82 @@ namespace Clinic_DataAccess
 {
     public class clsPrescriptionData
     {
+
+        public static bool UpdatePrescription(
+            int PrescriptionID,
+            int VisitID,
+            string Notes,
+            DateTime Date,
+            DataTable dtMedicines,
+            MySqlTransaction transaction)
+        {
+            if (transaction == null || transaction.Connection == null)
+                throw new ArgumentNullException(nameof(transaction));
+
+            MySqlConnection connection = transaction.Connection;
+
+            string status;
+
+            // Check the current prescription status.
+            using (MySqlCommand cmd = new MySqlCommand(@"
+        SELECT PrescriptionStatus
+        FROM prescriptions
+        WHERE PrescriptionID = @PrescriptionID
+          AND VisitID = @VisitID
+        FOR UPDATE;",
+                connection, transaction))
+            {
+                cmd.Parameters.AddWithValue("@PrescriptionID", PrescriptionID);
+                cmd.Parameters.AddWithValue("@VisitID", VisitID);
+
+                object result = cmd.ExecuteScalar();
+
+                if (result == null || result == DBNull.Value)
+                    throw new InvalidOperationException(
+                        "Prescription not found for this visit.");
+
+                status = Convert.ToString(result).Trim();
+            }
+
+            if (!string.Equals(status, "Pending",
+                StringComparison.OrdinalIgnoreCase) && status != "1")
+            {
+                throw new InvalidOperationException(
+                    "Only pending prescriptions can be edited. " +
+                    "Current status: " + status);
+            }
+
+            // Prevent modification of prescription details
+            // referenced by existing pharmacy returns.
+            using (MySqlCommand cmd = new MySqlCommand(@"
+        SELECT COUNT(*)
+        FROM prescriptiondetails pd
+        INNER JOIN salesreturndetails srd
+            ON srd.PrescriptionDetailsID = pd.PrescriptionDetailID
+        WHERE pd.PrescriptionID = @PrescriptionID;",
+                connection, transaction))
+            {
+                cmd.Parameters.AddWithValue("@PrescriptionID", PrescriptionID);
+
+                if (Convert.ToInt32(cmd.ExecuteScalar()) > 0)
+                    throw new InvalidOperationException(
+                        "This prescription has pharmacy return transactions. " +
+                        "Its medicine details cannot be modified.");
+            }
+
+            if (dtMedicines == null || dtMedicines.Rows.Count == 0)
+                throw new InvalidOperationException(
+                    "A prescription must contain at least one medicine.");
+
+            // Medicine synchronization is intentionally blocked
+            // until stable PrescriptionDetailID-based updates
+            // and pharmacy reference checks are implemented.
+            throw new InvalidOperationException(
+                "Medicine editing is not yet enabled. " +
+                "The transaction has been rolled back to protect " +
+                "existing prescription and pharmacy records.");
+        }
+
         public static int SavePrescription(int? VisitID, string Notes, DateTime Date, DataTable dtMedicines, byte PrescriptionStatus, byte Prescriptiontype)
         {
             using (MySqlConnection connection = new MySqlConnection(clsDataAccessSettings.ConnectionString))
@@ -68,71 +144,127 @@ namespace Clinic_DataAccess
                 }
             }
         }
-
-        public static bool UpdatePrescription(int PrescriptionID, int? VisitID, string Notes, DateTime Date, byte PrescriptionStatus, DataTable dtMedicines)
+        public static bool HasPharmacyTransactions(int prescriptionID)
         {
-            using (MySqlConnection connection = new MySqlConnection(clsDataAccessSettings.ConnectionString))
+            using (MySqlConnection connection =
+                new MySqlConnection(clsDataAccessSettings.ConnectionString))
             {
                 connection.Open();
-                using (MySqlTransaction transaction = connection.BeginTransaction())
+
+                string query = @"
+            SELECT EXISTS (
+                SELECT 1
+                FROM prescriptiondetails pd
+                INNER JOIN salesreturndetails srd
+                    ON srd.PrescriptionDetailsID = pd.PrescriptionDetailID
+                WHERE pd.PrescriptionID = @PrescriptionID
+            );";
+
+                using (MySqlCommand cmd =
+                    new MySqlCommand(query, connection))
+                {
+                    cmd.Parameters.AddWithValue(
+                        "@PrescriptionID", prescriptionID);
+
+                    return Convert.ToInt32(cmd.ExecuteScalar()) == 1;
+                }
+            }
+        }
+        public static bool DeletePrescription(int prescriptionID)
+        {
+            using (MySqlConnection connection = ClinicDatabase.GetConnection())
+            {
+                connection.Open();
+
+                using (MySqlTransaction transaction =
+                    connection.BeginTransaction())
                 {
                     try
                     {
-                        string queryMaster = @"UPDATE Prescriptions 
-                                       SET PrescriptionDate = @Date, 
-                                           PrescriptionNotes = @Notes ,
-                                            PrescriptionStatus=@PrescriptionStatus
-                                       WHERE PrescriptionID = @PrescriptionID";
-
-                        using (MySqlCommand cmdMaster = new MySqlCommand(queryMaster, connection, transaction))
+                        using (MySqlCommand cmd = new MySqlCommand(
+                            @"DELETE FROM prescriptiondetails
+                      WHERE PrescriptionID = @PrescriptionID;",
+                            connection, transaction))
                         {
-                            cmdMaster.Parameters.AddWithValue("@PrescriptionID", PrescriptionID);
-                            cmdMaster.Parameters.AddWithValue("@Date", Date);
-                            cmdMaster.Parameters.AddWithValue("@Notes", Notes.ToDBValue());
-                            cmdMaster.Parameters.AddWithValue("@PrescriptionStatus", PrescriptionStatus);
+                            cmd.Parameters.AddWithValue(
+                                "@PrescriptionID", prescriptionID);
 
-                            cmdMaster.ExecuteNonQuery();
+                            cmd.ExecuteNonQuery();
                         }
 
-                        // 2. حذف التفاصيل القديمة (عن طريق الـ PrescriptionID)
-                        string queryDeleteDetails = "DELETE FROM PrescriptionDetails WHERE PrescriptionID = @PrescriptionID";
-                        using (MySqlCommand cmdDelete = new MySqlCommand(queryDeleteDetails, connection, transaction))
+                        int affectedRows;
+
+                        using (MySqlCommand cmd = new MySqlCommand(
+                            @"DELETE FROM prescriptions
+                      WHERE PrescriptionID = @PrescriptionID;",
+                            connection, transaction))
                         {
-                            cmdDelete.Parameters.AddWithValue("@PrescriptionID", PrescriptionID);
-                            cmdDelete.ExecuteNonQuery();
+                            cmd.Parameters.AddWithValue(
+                                "@PrescriptionID", prescriptionID);
+
+                            affectedRows = cmd.ExecuteNonQuery();
                         }
 
-
-                        if (!dtMedicines.Columns.Contains("PrescriptionID"))
-                            dtMedicines.Columns.Add("PrescriptionID", typeof(int), PrescriptionID.ToString());
-
-                        using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, transaction))
+                        if (affectedRows == 0)
                         {
-                            bulkCopy.DestinationTableName = "PrescriptionDetails";
-
-                            bulkCopy.ColumnMappings.Add("PrescriptionID", "PrescriptionID");
-                            bulkCopy.ColumnMappings.Add("MedicineID", "MedicineID");
-                            bulkCopy.ColumnMappings.Add("Quantity", "Quantity");
-                            bulkCopy.ColumnMappings.Add("Dosage", "Dosage");
-                            bulkCopy.ColumnMappings.Add("Instructions", "Instructions");
-                            bulkCopy.ColumnMappings.Add("SavedMedicineName", "SavedMedicineName");
-                            bulkCopy.ColumnMappings.Add("SavedMedicinePrice", "SavedMedicinePrice");
-                            bulkCopy.ColumnMappings.Add("Frequency", "Frequency");
-                            bulkCopy.ColumnMappings.Add("DiscountAmount", "DiscountAmount");
-                            bulkCopy.WriteToServer(dtMedicines);
+                            transaction.Rollback();
+                            return false;
                         }
-
 
                         transaction.Commit();
                         return true;
                     }
-                    catch (MySqlException ex)
+                    catch
                     {
                         transaction.Rollback();
+                        throw;
+                    }
+                }
+            }
+        }
 
-                        clsGlobalLogger.LogMySqlException(ex, clsGlobalLogger.LogLevel.Error);
-                        return false;
+        public static bool UpdatePrescription(
+      int PrescriptionID,
+      int? VisitID,
+      string Notes,
+      DateTime Date,
+      byte PrescriptionStatus,
+      DataTable dtMedicines)
+        {
+            if (!VisitID.HasValue || VisitID.Value <= 0)
+                return false;
 
+            using (MySqlConnection connection =
+                ClinicDatabase.GetConnection())
+            {
+                connection.Open();
+
+                using (MySqlTransaction transaction =
+                    connection.BeginTransaction())
+                {
+                    try
+                    {
+                        bool result = UpdatePrescription(
+                            PrescriptionID,
+                            VisitID.Value,
+                            Notes,
+                            Date,
+                            dtMedicines,
+                            transaction);
+
+                        if (!result)
+                        {
+                            transaction.Rollback();
+                            return false;
+                        }
+
+                        transaction.Commit();
+                        return true;
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        throw;
                     }
                 }
             }
@@ -175,52 +307,6 @@ namespace Clinic_DataAccess
             return prescriptionID;
         }
 
-        public static bool UpdatePrescription(int PrescriptionID, int VisitID, string Notes, DateTime Date, DataTable dtMedicines, MySqlTransaction transaction)
-        {
-            if (!IsPrescriptionPending(PrescriptionID))
-                return false;
-            string queryMaster = @"UPDATE Prescriptions
-                            SET PrescriptionDate = @Date,
-                            PrescriptionNotes = @Notes
-                           WHERE PrescriptionID = @PrescriptionID";
-
-
-            using (MySqlCommand cmdMaster = new MySqlCommand(queryMaster, transaction.Connection, transaction))
-            {
-                cmdMaster.Parameters.AddWithValue("@PrescriptionID", PrescriptionID);
-                cmdMaster.Parameters.AddWithValue("@Date", Date);
-                cmdMaster.Parameters.AddWithValue("@Notes", Notes.ToDBValue());
-                cmdMaster.ExecuteNonQuery();
-            }
-
-            // حذف التفاصيل القديمة
-            using (MySqlCommand cmdDelete = new MySqlCommand("DELETE FROM PrescriptionDetails WHERE PrescriptionID = @PrescriptionID", transaction.Connection, transaction))
-            {
-                cmdDelete.Parameters.AddWithValue("@PrescriptionID", PrescriptionID);
-                cmdDelete.ExecuteNonQuery();
-            }
-
-            if (!dtMedicines.Columns.Contains("PrescriptionID"))
-                dtMedicines.Columns.Add("PrescriptionID", typeof(int), PrescriptionID.ToString());
-
-            using (SqlBulkCopy bulkCopy = new SqlBulkCopy(transaction.Connection, SqlBulkCopyOptions.Default, transaction))
-            {
-                bulkCopy.DestinationTableName = "PrescriptionDetails";
-
-                bulkCopy.ColumnMappings.Add("PrescriptionID", "PrescriptionID");
-                bulkCopy.ColumnMappings.Add("MedicineID", "MedicineID");
-                bulkCopy.ColumnMappings.Add("Quantity", "Quantity");
-                bulkCopy.ColumnMappings.Add("Dosage", "Dosage");
-                bulkCopy.ColumnMappings.Add("Instructions", "Instructions");
-                bulkCopy.ColumnMappings.Add("SavedMedicineName", "SavedMedicineName");
-                bulkCopy.ColumnMappings.Add("SavedMedicinePrice", "SavedMedicinePrice");
-                bulkCopy.ColumnMappings.Add("Frequency", "Frequency");
-                bulkCopy.ColumnMappings.Add("DiscountAmount", "DiscountAmount");
-                bulkCopy.WriteToServer(dtMedicines);
-            }
-
-            return true;
-        }
 
         public static bool DeletePrescription(int PrescriptionID, MySqlTransaction transaction)
         {
@@ -246,21 +332,25 @@ namespace Clinic_DataAccess
             {
                 using (MySqlConnection connection = new MySqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    string query = @"SELECT
-                                    PPD.MedicineID, 
-                                    PPD.SavedMedicineName, 
-                                    PPD.Dosage, 
-                                    PPD.Instructions,
-                                    PPD.SavedMedicinePrice, 
-                                    PPD.Quantity,
-                                    PPD.Frequency,
-                                    PPD.DiscountAmount,
-                                    M.TaxRate
-                                FROM PrescriptionS PP
-                                INNER JOIN PrescriptionDetails PPD ON 
-                                 PP.PrescriptionID = PPD.PrescriptionID
-                                  INNER JOIN Medicines M ON PPD.SavedMedicineName=M.MedicineName
-                                WHERE PP.VisitID = @VisitID;";
+                    string query = @"
+    SELECT
+        PPD.PrescriptionDetailID,
+        PPD.PrescriptionID,
+        PPD.MedicineID,
+        PPD.SavedMedicineName,
+        PPD.Dosage,
+        PPD.Instructions,
+        PPD.SavedMedicinePrice,
+        PPD.Quantity,
+        PPD.Frequency,
+        PPD.DiscountAmount,
+        M.TaxRate
+    FROM prescriptions PP
+    INNER JOIN prescriptiondetails PPD
+        ON PP.PrescriptionID = PPD.PrescriptionID
+    LEFT JOIN medicines M
+        ON PPD.MedicineID = M.MedicineID
+    WHERE PP.VisitID = @VisitID;";
 
 
                     using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -440,31 +530,71 @@ namespace Clinic_DataAccess
         public static DataTable GetAllPrescriptionRecords()
         {
             DataTable dt = new DataTable();
-            try
+
+            string query = @"
+        SELECT
+            P.PrescriptionID,
+            P.PrescriptionDate,
+
+            COALESCE(PP.FullName, 'Unknown Patient')
+                AS PatientName,
+
+            COALESCE(DP.FullName, 'Unknown Doctor')
+                AS DoctorName,
+
+            P.VisitID,
+
+            CASE TRIM(P.PrescriptionStatus)
+                WHEN '1' THEN 'Pending'
+                WHEN '2' THEN 'Waiting For Payment'
+                WHEN '3' THEN 'Ready For Dispensing'
+                WHEN '4' THEN 'Dispensed'
+                WHEN '5' THEN 'Partially Dispensed'
+                WHEN '6' THEN 'Cancelled'
+                ELSE COALESCE(P.PrescriptionStatus, 'Unknown')
+            END AS Status,
+
+            COALESCE(P.PrescriptionNotes, '') AS Notes
+
+        FROM prescriptions P
+
+        LEFT JOIN visits V
+            ON P.VisitID = V.VisitID
+
+        LEFT JOIN patients Pat
+            ON V.PatientID = Pat.PatientID
+
+        LEFT JOIN persons PP
+            ON Pat.PersonID = PP.PersonID
+
+        LEFT JOIN doctors D
+            ON V.DoctorID = D.DoctorID
+
+        LEFT JOIN persons DP
+            ON D.PersonID = DP.PersonID
+
+        ORDER BY P.PrescriptionDate DESC,
+                 P.PrescriptionID DESC;";
+
+            using (MySqlConnection connection =
+                new MySqlConnection(
+                    clsDataAccessSettings.ConnectionString))
             {
-                using (MySqlConnection connection = new MySqlConnection(clsDataAccessSettings.ConnectionString))
+                using (MySqlCommand command =
+                    new MySqlCommand(query, connection))
                 {
-                    string query = @"SELECT * FROM View_PrescriptionDetails;";
+                    connection.Open();
 
-
-                    using (MySqlCommand command = new MySqlCommand(query, connection))
+                    using (MySqlDataReader reader =
+                        command.ExecuteReader())
                     {
-                        connection.Open();
-                        using (MySqlDataReader reader = command.ExecuteReader())
-                        {
-                            if (reader.HasRows) dt.Load(reader);
-                        }
+                        dt.Load(reader);
                     }
                 }
-            }
-            catch (MySqlException ex)
-            {
-                clsGlobalLogger.LogMySqlException(ex, clsGlobalLogger.LogLevel.Error);
             }
 
             return dt;
         }
-
         public static DataTable GetPrescriptionItemsRaw(int PrescriptionID)
         {
             DataTable dt = new DataTable();
@@ -855,31 +985,24 @@ namespace Clinic_DataAccess
 
         public static bool IsPrescriptionPending(int prescriptionID)
         {
-            using (MySqlConnection connection = new MySqlConnection(clsDataAccessSettings.ConnectionString))
+            using (MySqlConnection connection =
+                ClinicDatabase.GetConnection())
             {
-                // تحقق ما إذا كانت الوصفة موجودة وحالتها "Pending" (1)
-                string query = @"
-    SELECT 1
-    FROM Prescriptions
-    WHERE PrescriptionID = @PrescriptionID
-      AND PrescriptionStatus = '1'
-    LIMIT 1;";
+                const string query = @"
+            SELECT COUNT(*)
+            FROM prescriptions
+            WHERE PrescriptionID = @PrescriptionID
+              AND PrescriptionStatus IN ('1', 'Pending');";
 
-                using (MySqlCommand cmd = new MySqlCommand(query, connection))
+                using (MySqlCommand cmd =
+                    new MySqlCommand(query, connection))
                 {
-                    cmd.Parameters.AddWithValue("@PrescriptionID", prescriptionID);
+                    cmd.Parameters.AddWithValue(
+                        "@PrescriptionID", prescriptionID);
 
-                    try
-                    {
-                        connection.Open();
-                        object result = cmd.ExecuteScalar();
-                        return (result != null); // ستعيد true إذا كانت الحالة 1
-                    }
-                    catch (MySqlException ex)
-                    {
-                        clsGlobalLogger.LogMySqlException(ex, clsGlobalLogger.LogLevel.Error);
-                        return false;
-                    }
+                    connection.Open();
+
+                    return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
                 }
             }
         }

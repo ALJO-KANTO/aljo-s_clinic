@@ -105,7 +105,25 @@ namespace Clinic_Business
         }
         private bool _UpdatePrescription()
         {
-            return clsPrescriptionData.UpdatePrescription(PrescriptionID, VisitID, PrescriptionNotes, PrescriptionDate, PrescriptionStatus, dtMedicines);
+            if (PrescriptionID <= 0)
+                return false;
+
+            if (!VisitID.HasValue || VisitID.Value <= 0)
+                return false;
+
+            if (!IsPrescriptionPending())
+            {
+                throw new InvalidOperationException(
+                    "Only pending prescriptions can be edited.");
+            }
+
+            return clsPrescriptionData.UpdatePrescription(
+                PrescriptionID,
+                VisitID,
+                PrescriptionNotes,
+                PrescriptionDate,
+                PrescriptionStatus,
+                dtMedicines);
         }
 
         public static clsPrescription Find(int VisitID)
@@ -127,7 +145,10 @@ namespace Clinic_Business
         {
             return clsPrescriptionData.GetAllActivePrescriptions();
         }
-
+        public static bool DeletePrescription(int prescriptionID)
+        {
+            return clsPrescriptionData.DeletePrescription(prescriptionID);
+        }
         public static DataTable GetAllPrescriptionDetails()
         {
             return clsPrescriptionData.GetAllPrescriptionDetails();

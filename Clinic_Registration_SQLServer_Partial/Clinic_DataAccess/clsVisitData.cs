@@ -73,13 +73,43 @@ namespace Clinic_DataAccess
                             clsVisitServicesData.SaveVisitServices(VisitID, services, tran);
 
                         // 3. تحديث الوصفة
+                        // 3. Update prescription safely.
                         if (dtMedicines == null || dtMedicines.Rows.Count == 0)
-                            clsPrescriptionData.DeletePrescription(PrescriptionID, tran);
-                        else
+                        {
                             if (PrescriptionID > 0)
-                                clsPrescriptionData.UpdatePrescription(PrescriptionID, VisitID, PrescriptionNotes, PrescriptionDate, dtMedicines, tran);
-                            else
-                                PrescriptionID = clsPrescriptionData.SavePrescription(VisitID, PrescriptionNotes, PrescriptionDate, dtMedicines, 1, tran);
+                            {
+                                throw new InvalidOperationException(
+                                    "The existing prescription has no medicine rows. " +
+                                    "Automatic deletion is blocked to protect pharmacy transactions.");
+                            }
+
+                            // No existing prescription and no medicines.
+                            // Nothing needs to be saved.
+                        }
+                        else if (PrescriptionID > 0)
+                        {
+                            if (!clsPrescriptionData.UpdatePrescription(
+    PrescriptionID,
+    VisitID,
+    PrescriptionNotes,
+    PrescriptionDate,
+    dtMedicines,
+    tran))
+                            {
+                                throw new InvalidOperationException(
+                                    "Prescription update failed.");
+                            }
+                        }
+                        else
+                        {
+                            PrescriptionID = clsPrescriptionData.SavePrescription(
+                                VisitID,
+                                PrescriptionNotes,
+                                PrescriptionDate,
+                                dtMedicines,
+                                1,
+                                tran);
+                        }
                         tran.Commit();
                         return true;
                     }
