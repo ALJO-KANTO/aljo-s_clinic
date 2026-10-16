@@ -34,7 +34,9 @@ namespace Clinic.Medical_Services.Visit
         public enum enMode { AddNew = 1, Update = 2, ShowVisit = 3 }
 
         #region Constructor
-        public frmDoctor(int visitID = -1, enMode mode = enMode.AddNew)
+        public frmDoctor(
+     int visitID = -1,
+     enMode mode = enMode.AddNew)
         {
             InitializeComponent();
 
@@ -149,11 +151,48 @@ namespace Clinic.Medical_Services.Visit
         private void _LoadUpdateMode()
         {
             lblTitle.Text = "Update Visit Info";
+
+            if (_VisitID <= 0)
+            {
+                ShowError("Invalid Visit ID.");
+                Close();
+                return;
+            }
+
             _LoadVisitData(_VisitID);
+
+            if (_Visit == null)
+                return;
+
             tcVisitInfo.Dock = DockStyle.Fill;
+            pnlWaittingList.Visible = false;
 
+            pnlVisitInfo.Enabled = true;
+            pnlServicesInfo.Enabled = true;
+            tpServices.Enabled = true;
+            tpPrescriptionInfo.Enabled = true;
+
+            bool canEditPrescription =
+                _Visit.PrescriptionInfo != null &&
+                _Visit.PrescriptionInfo.IsPrescriptionPending();
+
+            pnlPrescriptionInfo.Enabled = canEditPrescription;
+            btnAddMedicen.Enabled = canEditPrescription;
+
+            btnFullSave.Enabled = true;
+            btnFullSave.Visible = true;
+
+            if (!canEditPrescription)
+            {
+                MessageBox.Show(
+                    "This prescription has already been sent to the pharmacy " +
+                    "or completed.\n\n" +
+                    "You can view it, but medicine changes require an authorized amendment.",
+                    "Prescription Read-Only",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
         }
-
         private void _LoadShowMode()
         {
             lblTitle.Text = "Visit Details";
@@ -385,6 +424,7 @@ namespace Clinic.Medical_Services.Visit
             }
 
             int patientId, doctorId, appointmentId;
+
             if (_Visit == null ||
                 !int.TryParse(lblPatientID.Text, out patientId) ||
                 !int.TryParse(lblDoctorID.Text, out doctorId) ||
@@ -394,76 +434,104 @@ namespace Clinic.Medical_Services.Visit
                 return;
             }
 
-            if (_Visit.PrescriptionInfo == null)
-                _Visit.PrescriptionInfo = new clsPrescription();
+            bool isUpdate = _Mode == enMode.Update;
+
+            bool canEditPrescription = !isUpdate ||
+                (_Visit.PrescriptionInfo != null &&
+                 _Visit.PrescriptionInfo.IsPrescriptionPending());
+
+            if (!isUpdate && !canEditPrescription)
+            {
+                ShowWarning(
+                    "This prescription is already processed or sent to pharmacy. " +
+                    "Prescription changes are not permitted. " +
+                    "The visit can only be saved if its save method preserves " +
+                    "the existing prescription.");
+            }
 
             _Visit.PatientID = patientId;
             _Visit.DoctorID = doctorId;
             _Visit.Diagnosis = txtDiagnosis.Text.Trim();
             _Visit.VisitNotes = txtNotes.Text.Trim();
-            _Visit.VisitDate = DateTime.Now;
             _Visit.AppointmentID = appointmentId;
-            _Visit.CreatedByUserID = clsGlobal.CurrentUser.UserID;
-            _Visit.PrescriptionInfo.PrescriptionDate = dtpPrescriptionDate.Value;
-            _Visit.PrescriptionInfo.VisitID = _VisitID;
-            _Visit.PrescriptionInfo.PrescriptionNotes = txtPrescriptionNotes.Text;
-            _Visit.PrescriptionInfo.Prescriptiontype =
-                (byte)clsPrescription.enPrescriptionType.DoctorPrescription;
+
+            // Preserve original visit date and creator on update.
+            if (!isUpdate)
+            {
+                _Visit.VisitDate = DateTime.Now;
+                _Visit.CreatedByUserID = clsGlobal.CurrentUser.UserID;
+            }
+
+            if (canEditPrescription)
+            {
+                if (_Visit.PrescriptionInfo == null)
+                    _Visit.PrescriptionInfo = new clsPrescription();
+
+                _Visit.PrescriptionInfo.PrescriptionDate =
+                    dtpPrescriptionDate.Value;
+
+                _Visit.PrescriptionInfo.VisitID = _Visit.VisitID;
+
+                _Visit.PrescriptionInfo.PrescriptionNotes =
+                    txtPrescriptionNotes.Text;
+
+                _Visit.PrescriptionInfo.Prescriptiontype =
+                    (byte)clsPrescription.enPrescriptionType.DoctorPrescription;
+            }
 
             try
             {
                 Debug.WriteLine("========== VISIT SAVE DEBUG ==========");
-
-                Debug.WriteLine("Visit ID: " + _VisitID);
+                Debug.WriteLine("Visit ID: " + _Visit.VisitID);
+                Debug.WriteLine("Update Mode: " + isUpdate);
+                Debug.WriteLine("Can Edit Prescription: " + canEditPrescription);
 
                 Debug.WriteLine("Services Count: " +
                     (_Visit.dtServices?.Rows.Count ?? 0));
 
-                if (_Visit.dtServices != null)
-                {
-                    foreach (DataRow row in _Visit.dtServices.Rows)
-                    {
-                        if (row.RowState == DataRowState.Deleted)
-                            continue;
-
-                        Debug.WriteLine(
-                            "ServiceID: " + row["ServiceID"] +
-                            ", Quantity: " + row["Quantity"]);
-                    }
-                }
-
                 Debug.WriteLine("Medicines Count: " +
-                    (_Visit.PrescriptionInfo.dtMedicines?.Rows.Count ?? 0));
-
-                if (_Visit.PrescriptionInfo.dtMedicines != null)
-                {
-                    foreach (DataRow row in _Visit.PrescriptionInfo.dtMedicines.Rows)
-                    {
-                        if (row.RowState == DataRowState.Deleted)
-                            continue;
-
-                        Debug.WriteLine(
-                            "MedicineID: " + row["MedicineID"] +
-                            ", Quantity: " + row["Quantity"]);
-                    }
-                }
+                    (_Visit.PrescriptionInfo?.dtMedicines?.Rows.Count ?? 0));
 
                 Debug.WriteLine("======================================");
-                if (!_Visit.Save())
+
+                // IMPORTANT:
+                // clsVisit.Save() must not delete, recreate, or overwrite
+                // a non-pending prescription during a visit update.
+                if (isUpdate && !canEditPrescription)
                 {
-                    ShowError("An error occurred while saving the visit data. Your entries have been kept.");
+                    ShowWarning(
+                        "This visit contains a pharmacy-processed prescription. " +
+                        "Saving is temporarily blocked until clsVisit.Save() " +
+                        "is verified to preserve the existing prescription.");
                     return;
                 }
 
-                lbPrescriptionID.Text = _Visit.PrescriptionInfo.PrescriptionID.ToString();
+                if (!_Visit.Save())
+                {
+                    ShowError(
+                        "An error occurred while saving the visit data. " +
+                        "Your entries have been kept.");
+                    return;
+                }
+
+                if (_Visit.PrescriptionInfo != null)
+                {
+                    lbPrescriptionID.Text =
+                        _Visit.PrescriptionInfo.PrescriptionID.ToString();
+                }
+
                 ShowSuccess("Visit details saved successfully.");
-                if (_Mode == enMode.Update) return;
+
+                if (isUpdate)
+                    return;
+
                 _ResetForm();
                 _CallNextPatientInQueue();
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
+
                 ShowError("Unable to save visit: " + ex.Message);
             }
         }

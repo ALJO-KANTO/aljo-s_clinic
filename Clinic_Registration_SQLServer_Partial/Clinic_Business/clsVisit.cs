@@ -103,18 +103,35 @@ namespace Clinic_Business
 
         private bool _UpdateVisit()
         {
-            int tempPrescriptionID = this.PrescriptionInfo.PrescriptionID;
-            bool isSaved = clsVisitData.UpdateExistingVisitData(this.VisitID, this.AppointmentID, this.Diagnosis, this.VisitNotes, this.CreatedByUserID, this.DoctorID, this.dtServices,
-                        this.PrescriptionInfo.dtMedicines, ref tempPrescriptionID, this.PrescriptionInfo.PrescriptionNotes, this.PrescriptionInfo.PrescriptionDate);
+            if (this.PrescriptionInfo == null)
+                throw new InvalidOperationException(
+                    "Prescription information has not been loaded.");
+
+            int tempPrescriptionID =
+                this.PrescriptionInfo.PrescriptionID;
+
+            bool isSaved = clsVisitData.UpdateExistingVisitData(
+                this.VisitID,
+                this.AppointmentID,
+                this.Diagnosis,
+                this.VisitNotes,
+                this.CreatedByUserID,
+                this.DoctorID,
+                this.dtServices,
+                this.PrescriptionInfo.dtMedicines,
+                ref tempPrescriptionID,
+                this.PrescriptionInfo.PrescriptionNotes,
+                this.PrescriptionInfo.PrescriptionDate
+            );
 
             if (isSaved)
             {
-                this.PrescriptionInfo.PrescriptionID = tempPrescriptionID;
+                this.PrescriptionInfo.PrescriptionID =
+                    tempPrescriptionID;
             }
 
             return isSaved;
         }
-
         public static bool DeleteVisit(int VisitID, int AppointmentID)
         {
             return clsVisitData.DeleteVisit(VisitID, AppointmentID);
