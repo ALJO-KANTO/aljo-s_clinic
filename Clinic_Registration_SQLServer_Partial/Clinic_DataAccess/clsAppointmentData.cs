@@ -741,7 +741,7 @@ namespace Clinic_DataAccess
                     object result = cmdInsert.ExecuteScalar();
 
                     // 2. إلغاء الموعد القديم
-                    string updateQuery = @"UPDATE Appointments SET AppointmentStatus = 6, LastModifiedDate = GETDATE(), 
+                    string updateQuery = @"UPDATE Appointments SET AppointmentStatus = 6, LastModifiedDate = NOW(), 
                                  LastModifiedByUserID = @UserID WHERE AppointmentID = @OldAppointmentID";
 
                     MySqlCommand cmdUpdate = new MySqlCommand(updateQuery, connection, transaction);

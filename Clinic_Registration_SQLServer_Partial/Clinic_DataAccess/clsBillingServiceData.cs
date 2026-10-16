@@ -316,7 +316,7 @@ namespace Clinic_DataAccess
                         PD.MedicineID,
                         PD.DispensedQuantity,
                         @BillID,
-                        GETDATE(),
+                        NOW(),
                         @UserID
                     FROM PrescriptionDetails PD
                     INNER JOIN Prescriptions P ON P.PrescriptionID = PD.PrescriptionID
@@ -612,7 +612,7 @@ namespace Clinic_DataAccess
                                         PD.MedicineID,
                                         +T.DispensedQty,  
                                         @BillID,          -- المرجع هنا هو رقم الفاتورة التي تم ربطها
-                                        GETDATE(),
+                                        NOW(),
                                         @UserID
                                     FROM #TempDispensed T
                                     INNER JOIN PrescriptionDetails PD ON T.DetailsID = PD.PrescriptionDetailsID
