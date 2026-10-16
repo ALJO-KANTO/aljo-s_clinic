@@ -189,9 +189,25 @@ namespace Clinic
                 menu.Controls.Add(MakeNav("✚", "Prescriptions", () => listPrescriptionToolStripMenuItem_Click(this, EventArgs.Empty)));
             }
             if (CanAccessMenu(clsGlobal.UserRole.Pharmacist))
-                menu.Controls.Add(MakeNav("◈", "Inventory / Medicines", null));
+            {
+                menu.Controls.Add(
+                    MakeNav("◈", "Inventory / Medicines",
+                        () => addNewDrugToolStripMenuItem_Click(this, EventArgs.Empty))
+                );
+            }
             if (CanAccessMenu(clsGlobal.UserRole.Doctor))
-                menu.Controls.Add(MakeNav("⚗", "Laboratory", null));
+            {
+                menu.Controls.Add(
+                    MakeNav("⚗", "Laboratory", () =>
+                    {
+                        MessageBox.Show(
+                            "Laboratory module is not implemented yet.",
+                            "Laboratory",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Information);
+                    })
+                );
+            }
             if (CanAccessMenu(clsGlobal.UserRole.Admin, clsGlobal.UserRole.Cashier))
                 menu.Controls.Add(MakeNav("▥", "Reports", null));
             if (CanAccessMenu(clsGlobal.UserRole.Admin))
