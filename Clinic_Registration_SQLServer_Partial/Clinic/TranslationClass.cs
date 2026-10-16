@@ -104,8 +104,6 @@ namespace Clinic
 
 { "Filter By", "تصفية حسب" },
 
-{ "Patient ID", "رقم المريض" },
-{ "Person ID", "رقم الشخص" },
 { "Full Name", "الاسم الكامل" },
 { "Emergency Contact", "جهة اتصال الطوارئ" },
 { "Medical History", "التاريخ الطبي" },
@@ -133,6 +131,37 @@ namespace Clinic
 { "✕  Delete Patient", "حذف المريض" },
 { "⌕   Search & Filter", "البحث والتصفية" },
 { "☷   Patients List", "قائمة المرضى" },
+// Patient information card
+{ "Patient Medical Information", "المعلومات الطبية للمريض" },
+{ "Blood Type:", "فصيلة الدم:" },
+{ "Medical History:", "التاريخ الطبي:" },
+{ "Emer. Cont:", "جهة اتصال الطوارئ:" },
+{ "Reg. Date:", "تاريخ التسجيل:" },
+{ "Created By:", "تم الإنشاء بواسطة:" },
+
+// Person information card
+{ "Person Information", "معلومات الشخص" },
+{ "Name:", "الاسم:" },
+{ "Gender:", "الجنس:" },
+{ "Date Of Birth:", "تاريخ الميلاد:" },
+{ "Phone:", "الهاتف:" },
+{ "Email:", "البريد الإلكتروني:" },
+{ "Country:", "الدولة:" },
+{ "Address:", "العنوان:" },
+{ "Male", "ذكر" },
+{ "Female", "أنثى" },
+{ "Edit Person Info", "تعديل معلومات الشخص" },
+{ "Patient Details", "بيانات المريض" },
+{ "No Person with National No. = ", "لا يوجد شخص بالرقم الوطني: " },
+{ "Could not find this image: = ", "تعذر العثور على هذه الصورة: " },
+// Person information
+{ "Person ID", "رقم الشخص" },
+{ "Person ID:", "رقم الشخص:" },
+
+// Patient information
+{ "Patient ID", "رقم المريض" },
+{ "Patient ID:", "رقم المريض:" },
+
 
 
 
