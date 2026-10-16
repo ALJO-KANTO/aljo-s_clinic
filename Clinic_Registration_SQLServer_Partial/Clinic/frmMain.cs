@@ -3,6 +3,8 @@ using Clinic.Appointment.AppointmentsType;
 using Clinic.Doctor;
 using Clinic.Login;
 using Clinic.Medical_Services.Appointment;
+using Clinic.Medical_Services.Casher;
+using Clinic.Medical_Services.Laboratory;
 using Clinic.Medical_Services.Pharmaciy;
 using Clinic.Medical_Services.Visit;
 using Clinic.Medical_Services.Vital;
@@ -18,7 +20,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Clinic.Medical_Services.Casher;
 namespace Clinic
 {
     public partial class frmMain : Form
@@ -47,7 +48,21 @@ namespace Clinic
                 ChangeDashboardLanguage(false);
             }
         }
-
+        private void OpenLaboratory()
+        {
+            OpenIfAuthorized(
+                () =>
+                {
+                    using (frmLaboratory frm = new frmLaboratory())
+                    {
+                        frm.ShowDialog(this);
+                    }
+                },
+                clsGlobal.UserRole.Admin,
+                clsGlobal.UserRole.Doctor,
+                clsGlobal.UserRole.Nurse
+            );
+        }
         private void OpenManageBills()
         {
             if (!CanAccessMenu(clsGlobal.UserRole.Cashier))

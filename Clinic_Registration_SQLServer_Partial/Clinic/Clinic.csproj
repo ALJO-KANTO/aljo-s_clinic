@@ -133,6 +133,13 @@
       <DependentUpon>frmSplashScreen.cs</DependentUpon>
     </Compile>
     <Compile Include="global classes\clsFormHelper.cs" />
+    <Compile Include="LaboratoryModule\frmLabDialogs.cs" />
+    <Compile Include="LaboratoryModule\frmLaboratory.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LaboratoryModule\frmLaboratory.Designer.cs">
+      <DependentUpon>frmLaboratory.cs</DependentUpon>
+    </Compile>
     <Compile Include="Login\frmRegister.cs">
       <SubType>Form</SubType>
     </Compile>

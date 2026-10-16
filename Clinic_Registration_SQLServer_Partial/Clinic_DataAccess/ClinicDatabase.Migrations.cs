@@ -547,6 +547,38 @@ namespace Clinic_DataAccess
                             ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
                         },
                         new DatabaseMigration
+{
+    Version = "20261016_LAB_001",
+    Description = "Create laboratory requests table",
+    Sql = @"
+        CREATE TABLE IF NOT EXISTS labrequests
+        (
+            LabRequestID INT NOT NULL AUTO_INCREMENT,
+            VisitID INT NOT NULL,
+            TestID INT NOT NULL,
+            RequestedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            Status VARCHAR(30) NOT NULL DEFAULT 'Ordered',
+            ResultValue TEXT NULL,
+            ResultNotes TEXT NULL,
+            ResultedAt DATETIME NULL,
+
+            PRIMARY KEY (LabRequestID),
+
+            INDEX IX_LabRequests_Visit (VisitID),
+            INDEX IX_LabRequests_Test (TestID),
+            INDEX IX_LabRequests_Status (Status),
+
+            CONSTRAINT FK_LabRequests_Visit
+                FOREIGN KEY (VisitID)
+                REFERENCES visits(VisitID),
+
+            CONSTRAINT FK_LabRequests_Test
+                FOREIGN KEY (TestID)
+                REFERENCES laboratorytests(TestID)
+
+        ) ENGINE=InnoDB;"
+},
+                        new DatabaseMigration
                         {
                             Version = "20261015_SEED_001",
                             Description = "Initial reference data: appointmenttypes",

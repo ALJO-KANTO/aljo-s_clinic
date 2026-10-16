@@ -200,11 +200,7 @@ namespace Clinic
                 menu.Controls.Add(
                     MakeNav("⚗", "Laboratory", () =>
                     {
-                        MessageBox.Show(
-                            "Laboratory module is not implemented yet.",
-                            "Laboratory",
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Information);
+                        OpenLaboratory();
                     })
                 );
             }
