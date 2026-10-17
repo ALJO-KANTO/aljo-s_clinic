@@ -9,7 +9,7 @@ namespace Clinic_DataAccess
 {
     public class clsVisitData
     {
-        public static int AddNewVisitData(int VisitID, int AppointmentID, string Diagnosis, string VisitNotes, int CreatedByUserID,int DoctorID, DataTable services, DataTable dtMedicines, string PrescriptionNotes, DateTime PrescriptionDate)
+        public static int AddNewVisitData(int VisitID, int AppointmentID, string Diagnosis, string VisitNotes, int CreatedByUserID, int DoctorID, DataTable services, DataTable dtMedicines, string PrescriptionNotes, DateTime PrescriptionDate)
         {
             int PrescriptionID = 0;
             using (MySqlConnection conn = new MySqlConnection(clsDataAccessSettings.ConnectionString))
@@ -30,7 +30,7 @@ namespace Clinic_DataAccess
 
                         // 3. حفظ الوصفة الجديدة
                         if (dtMedicines != null && dtMedicines.Rows.Count > 0)
-                          PrescriptionID=  clsPrescriptionData.SavePrescription(VisitID, PrescriptionNotes, PrescriptionDate, dtMedicines, 1, tran);
+                            PrescriptionID = clsPrescriptionData.SavePrescription(VisitID, PrescriptionNotes, PrescriptionDate, dtMedicines, 1, tran);
 
                         tran.Commit();
                         return PrescriptionID;
@@ -44,9 +44,7 @@ namespace Clinic_DataAccess
                 }
             }
         }
-        public static int CheckInAppointment(
-    int appointmentID,
-    int createdByUserID)
+        public static int CheckInAppointment(int appointmentID, int createdByUserID)
         {
             using (MySqlConnection conn =
                 new MySqlConnection(clsDataAccessSettings.ConnectionString))
@@ -62,10 +60,10 @@ namespace Clinic_DataAccess
                         string appointmentStatus;
 
                         using (MySqlCommand cmd = new MySqlCommand(@"
-                    SELECT PatientID, DoctorID, AppointmentStatus
-                    FROM appointments
-                    WHERE AppointmentID = @AppointmentID
-                    FOR UPDATE;",
+                            SELECT PatientID, DoctorID, AppointmentStatus
+                            FROM appointments
+                            WHERE AppointmentID = @AppointmentID
+                            FOR UPDATE;",
                             conn, tran))
                         {
                             cmd.Parameters.AddWithValue(
@@ -86,10 +84,10 @@ namespace Clinic_DataAccess
 
                         // Prevent duplicate visits.
                         using (MySqlCommand cmd = new MySqlCommand(@"
-                    SELECT VisitID
-                    FROM visits
-                    WHERE AppointmentID = @AppointmentID
-                    LIMIT 1;",
+                            SELECT VisitID
+                            FROM visits
+                            WHERE AppointmentID = @AppointmentID
+                            LIMIT 1;",
                             conn, tran))
                         {
                             cmd.Parameters.AddWithValue(
@@ -119,24 +117,24 @@ namespace Clinic_DataAccess
                         int visitID;
 
                         using (MySqlCommand cmd = new MySqlCommand(@"
-                    INSERT INTO visits
-                    (
-                        PatientID,
-                        AppointmentID,
-                        DoctorID,
-                        VisitDate,
-                        VisitStatus,
-                        CreatedByUserID
-                    )
-                    VALUES
-                    (
-                        @PatientID,
-                        @AppointmentID,
-                        @DoctorID,
-                        NOW(),
-                        'InQueue',
-                        @CreatedByUserID
-                    );",
+                                INSERT INTO visits
+                                (
+                                    PatientID,
+                                    AppointmentID,
+                                    DoctorID,
+                                    VisitDate,
+                                    VisitStatus,
+                                    CreatedByUserID
+                                )
+                                VALUES
+                                (
+                                    @PatientID,
+                                    @AppointmentID,
+                                    @DoctorID,
+                                    NOW(),
+                                    'InQueue',
+                                    @CreatedByUserID
+                                );",
                             conn, tran))
                         {
                             cmd.Parameters.AddWithValue("@PatientID", patientID);
@@ -151,9 +149,9 @@ namespace Clinic_DataAccess
                         }
 
                         using (MySqlCommand cmd = new MySqlCommand(@"
-                    UPDATE appointments
-                    SET AppointmentStatus = 'InQueue'
-                    WHERE AppointmentID = @AppointmentID;",
+                                UPDATE appointments
+                                SET AppointmentStatus = 'InQueue'
+                                WHERE AppointmentID = @AppointmentID;",
                             conn, tran))
                         {
                             cmd.Parameters.AddWithValue(
@@ -173,7 +171,7 @@ namespace Clinic_DataAccess
                 }
             }
         }
-        public static bool UpdateExistingVisitData(int VisitID, int AppointmentID, string Diagnosis, string VisitNotes, int CreatedByUserID, int DoctorID, DataTable services, DataTable dtMedicines,ref int PrescriptionID, string PrescriptionNotes, DateTime PrescriptionDate)
+        public static bool UpdateExistingVisitData(int VisitID, int AppointmentID, string Diagnosis, string VisitNotes, int CreatedByUserID, int DoctorID, DataTable services, DataTable dtMedicines, ref int PrescriptionID, string PrescriptionNotes, DateTime PrescriptionDate)
         {
             using (MySqlConnection conn = new MySqlConnection(clsDataAccessSettings.ConnectionString))
             {
@@ -217,12 +215,12 @@ namespace Clinic_DataAccess
                         else if (PrescriptionID > 0)
                         {
                             if (!clsPrescriptionData.UpdatePrescription(
-    PrescriptionID,
-    VisitID,
-    PrescriptionNotes,
-    PrescriptionDate,
-    dtMedicines,
-    tran))
+                            PrescriptionID,
+                            VisitID,
+                            PrescriptionNotes,
+                            PrescriptionDate,
+                            dtMedicines,
+                            tran))
                             {
                                 throw new InvalidOperationException(
                                     "Prescription update failed.");
@@ -277,13 +275,13 @@ namespace Clinic_DataAccess
 
             // Update visit details and move the visit to billing.
             string query = @"
-    UPDATE visits
-    SET
-        Diagnosis = @Diagnosis,
-        VisitNotes = @VisitNotes,
-        DoctorID = @DoctorID,
-        VisitStatus = 'Pending_Billing'
-    WHERE VisitID = @VisitID;";
+            UPDATE visits
+            SET
+                Diagnosis = @Diagnosis,
+                VisitNotes = @VisitNotes,
+                DoctorID = @DoctorID,
+                VisitStatus = 'Pending_Billing'
+            WHERE VisitID = @VisitID;";
 
             using (MySqlCommand cmd =
      new MySqlCommand(query, connection, transaction))
@@ -300,9 +298,8 @@ namespace Clinic_DataAccess
             }
 
             // Move appointment to billing.
-            string queryAppointment = @"
-        UPDATE appointments
-SET AppointmentStatus = 'In_Billing'        WHERE AppointmentID = @AppointmentID;";
+            string queryAppointment = @"UPDATE appointments
+            SET AppointmentStatus = 'In_Billing'        WHERE AppointmentID = @AppointmentID;";
 
             using (MySqlCommand cmd =
                 new MySqlCommand(queryAppointment, connection, transaction))
@@ -389,16 +386,17 @@ SET AppointmentStatus = 'In_Billing'        WHERE AppointmentID = @AppointmentID
                         }
                     }
                 }
-                catch (MySqlException ex) { 
-                    clsGlobalLogger.LogMySqlException(ex,clsGlobalLogger.LogLevel.Error);
+                catch (MySqlException ex)
+                {
+                    clsGlobalLogger.LogMySqlException(ex, clsGlobalLogger.LogLevel.Error);
                     IsFound = false;
                 }
             }
             return IsFound;
         }
 
-        
-       
+
+
         public static bool IsVisitClosed(int VisitID)
         {
             try
@@ -406,16 +404,17 @@ SET AppointmentStatus = 'In_Billing'        WHERE AppointmentID = @AppointmentID
                 using (MySqlConnection connection = new MySqlConnection(clsDataAccessSettings.ConnectionString))
                 {
                     string query = @"
-    SELECT 1
-    FROM visits
-    WHERE VisitID = @VisitID
-      AND VisitStatus IN ('Completed', 'Closed')
-    LIMIT 1;"; using (MySqlCommand cmd = new MySqlCommand(query, connection))
+                    SELECT 1
+                    FROM visits
+                    WHERE VisitID = @VisitID
+                      AND VisitStatus IN ('Completed', 'Closed')
+                    LIMIT 1;"; 
+                    using (MySqlCommand cmd = new MySqlCommand(query, connection))
                     {
                         cmd.Parameters.AddWithValue("@VisitID", VisitID);
                         connection.Open();
                         object result = cmd.ExecuteScalar();
-                        return result != null; 
+                        return result != null;
                     }
                 }
             }
@@ -425,20 +424,20 @@ SET AppointmentStatus = 'In_Billing'        WHERE AppointmentID = @AppointmentID
                 return false;
             }
 
-           
+
         }
 
 
-            public static DataTable GetPatientsWaitingForDoctors(int DoctorPersonID)
-            {
-                DataTable dt = new DataTable();
+        public static DataTable GetPatientsWaitingForDoctors(int DoctorPersonID)
+        {
+            DataTable dt = new DataTable();
 
-                try
+            try
+            {
+                using (MySqlConnection connection =
+                    new MySqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    using (MySqlConnection connection =
-                        new MySqlConnection(clsDataAccessSettings.ConnectionString))
-                    {
-                        string query = @"
+                    string query = @"
                     SELECT
                         VisitID,
                         AppointmentID,
@@ -451,42 +450,42 @@ SET AppointmentStatus = 'In_Billing'        WHERE AppointmentID = @AppointmentID
                         (@DoctorPersonID = 0
                          OR DoctorPersonID = @DoctorPersonID)
                       AND StatusText IN
-    (
-        'InQueue',
-        'Waiting_For_Vitals',
-        'Ready_For_Doctor',
-        'Progress',
-        'InProgress',
-        'In-Progress'
-    )
+                    (
+                        'InQueue',
+                        'Waiting_For_Vitals',
+                        'Ready_For_Doctor',
+                        'Progress',
+                        'InProgress',
+                        'In-Progress'
+                    )
                     ORDER BY CheckInTime;";
 
-                        using (MySqlCommand cmd =
-                            new MySqlCommand(query, connection))
+                    using (MySqlCommand cmd =
+                        new MySqlCommand(query, connection))
+                    {
+                        cmd.Parameters.AddWithValue(
+                            "@DoctorPersonID", DoctorPersonID);
+
+                        connection.Open();
+
+                        using (MySqlDataReader reader = cmd.ExecuteReader())
                         {
-                            cmd.Parameters.AddWithValue(
-                                "@DoctorPersonID", DoctorPersonID);
-
-                            connection.Open();
-
-                            using (MySqlDataReader reader = cmd.ExecuteReader())
-                            {
-                                dt.Load(reader);
-                            }
+                            dt.Load(reader);
                         }
                     }
                 }
-                catch (MySqlException ex)
-                {
-                    clsGlobalLogger.LogMySqlException(
-                        ex,
-                        clsGlobalLogger.LogLevel.Error);
-
-                    throw;
-                }
-
-                return dt;
             }
+            catch (MySqlException ex)
+            {
+                clsGlobalLogger.LogMySqlException(
+                    ex,
+                    clsGlobalLogger.LogLevel.Error);
+
+                throw;
+            }
+
+            return dt;
+        }
 
         public static bool DeleteVisit(int VisitID, int AppointmentID)
         {
@@ -522,17 +521,17 @@ SET AppointmentStatus = 'In_Billing'        WHERE AppointmentID = @AppointmentID
             DataTable dt = new DataTable();
 
             string query = @"
-        SELECT
-            VisitID,
-            PatientID,
-            AppointmentID,
-            DoctorID,
-            VisitDate,
-            VisitStatus,
-            Diagnosis,
-            VisitNotes
-        FROM visits
-        ORDER BY VisitDate DESC;";
+                    SELECT
+                        VisitID,
+                        PatientID,
+                        AppointmentID,
+                        DoctorID,
+                        VisitDate,
+                        VisitStatus,
+                        Diagnosis,
+                        VisitNotes
+                    FROM visits
+                    ORDER BY VisitDate DESC;";
 
             using (MySqlConnection conn =
                 new MySqlConnection(clsDataAccessSettings.ConnectionString))
@@ -553,9 +552,9 @@ SET AppointmentStatus = 'In_Billing'        WHERE AppointmentID = @AppointmentID
             DataTable dt = new DataTable();
 
             string query = @"
-        SELECT *
-        FROM View_VisitDetails
-        ORDER BY VisitDate DESC;";
+                    SELECT *
+                    FROM View_VisitDetails
+                    ORDER BY VisitDate DESC;";
 
             try
             {

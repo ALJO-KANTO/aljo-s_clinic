@@ -986,7 +986,6 @@ namespace Clinic.Medical_Services.Visit
 
             lblRecordsCount.Text =
                 (dtQueue?.Rows.Count ?? 0).ToString();
-
         }
         private void _ResetForm()
         {

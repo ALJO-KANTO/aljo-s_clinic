@@ -192,9 +192,9 @@ namespace Clinic_Business
         }
 
         public static bool UpdateAppointmentStatus(
-     int AppointmentID,
-     enAppointmentStatus Status,
-     int UserID)
+         int AppointmentID,
+         enAppointmentStatus Status,
+         int UserID)
         {
             return clsAppointmentData.UpdateAppointmentStatus(
                 AppointmentID,
