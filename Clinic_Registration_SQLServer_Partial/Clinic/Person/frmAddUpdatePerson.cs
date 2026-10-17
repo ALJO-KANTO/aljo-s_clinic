@@ -40,6 +40,37 @@ namespace Clinic.Person
             _Mode = enMode.Update;
         }
 
+        // Translate visible text only. Do not change control positions or form layout.
+        private string Tr(string englishText)
+        {
+            return TranslationClass.Translate(englishText, TranslationClass.IsArabic);
+        }
+
+        private void ApplyPersonFormTranslation()
+        {
+            lblTitle.Text = Tr(_Mode == enMode.AddNew
+                ? "Add New Person"
+                : "Update Person");
+
+            this.Text = Tr("Add / Edit Person Info.");
+
+            label22.Text = Tr("Person ID:");
+            label1.Text = Tr("Full Name:");
+            label3.Text = Tr("Date Of Birth:");
+            label5.Text = Tr("Gender:");
+            label6.Text = Tr("Email:");
+            label4.Text = Tr("Phone:");
+            label15.Text = Tr("Country:");
+            label12.Text = Tr("Address:");
+
+            rbMale.Text = Tr("Male");
+            rbFemale.Text = Tr("Female");
+            llSetImage.Text = Tr("Set Image");
+            llRemoveImage.Text = Tr("Remove");
+            btnSave.Text = "   " + Tr("Save");
+            btnClose.Text = "   " + Tr("Close");
+        }
+
         private void txtFirstName_KeyPress(object sender, KeyPressEventArgs e)
         {
             e.Handled = char.IsDigit(e.KeyChar);
@@ -63,7 +94,7 @@ namespace Clinic.Person
             if (_Person == null)
             {
 
-                MessageBox.Show("No Person with ID = " + _PersonID, "Person Not Found", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                MessageBox.Show(Tr("No Person with ID = ") + _PersonID, Tr("Person Not Found"), MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 this.Close();
                 return;
             }
@@ -102,15 +133,15 @@ namespace Clinic.Person
 
             if (_Mode == enMode.AddNew)
             {
-                lblTitle.Text = "Add New Person";
+                lblTitle.Text = Tr("Add New Person");
 
                 _Person = new clsPerson();
             }
             else
             {
-                lblTitle.Text = "Update Person";
+                lblTitle.Text = Tr("Update Person");
             }
-            this.Text = lblTitle.Text;
+            this.Text = Tr("Add / Edit Person Info.");
 
             //set default image for the person.
             if (rbMale.Checked)
@@ -122,7 +153,7 @@ namespace Clinic.Person
             llRemoveImage.Visible = (pbPersonImage.ImageLocation != null);
 
 
-            lblPersonID.Text = "N/A";
+            lblPersonID.Text = Tr("N/A");
             txtFullName.Text = string.Empty;
 
             dtpDateOfBirth.Value = DateTime.Now;
@@ -134,12 +165,59 @@ namespace Clinic.Person
 
 
         }
+        private bool _layoutMirrored = false;
+
+        private void MirrorFormLayout()
+        {
+            if (_layoutMirrored || !TranslationClass.IsArabic)
+                return;
+
+            _layoutMirrored = true;
+            MirrorControls(this);
+        }
+
+        private void MirrorControls(Control parent)
+        {
+            parent.SuspendLayout();
+
+            foreach (Control control in parent.Controls)
+            {
+                // Mirror the control's horizontal position within its parent.
+                if (control.Dock == DockStyle.None)
+                    control.Left = parent.ClientSize.Width - control.Left - control.Width;
+
+                // Swap left/right docking so docked controls mirror as well.
+                if (control.Dock == DockStyle.Left)
+                    control.Dock = DockStyle.Right;
+                else if (control.Dock == DockStyle.Right)
+                    control.Dock = DockStyle.Left;
+
+                // Swap left/right anchoring while preserving top/bottom anchoring.
+                AnchorStyles anchor = control.Anchor;
+                bool left = (anchor & AnchorStyles.Left) == AnchorStyles.Left;
+                bool right = (anchor & AnchorStyles.Right) == AnchorStyles.Right;
+                anchor &= ~(AnchorStyles.Left | AnchorStyles.Right);
+                if (left)
+                    anchor |= AnchorStyles.Right;
+                if (right)
+                    anchor |= AnchorStyles.Left;
+                control.Anchor = anchor;
+
+                if (control.HasChildren)
+                    MirrorControls(control);
+            }
+
+            parent.ResumeLayout(true);
+        }
+
         private void frmAddUpdatePerson_Load(object sender, EventArgs e)
         {
             _ResetDefualtValues();
             if (_Mode == enMode.Update)
                 _Loadata();
 
+            ApplyPersonFormTranslation();
+            MirrorFormLayout();
         }
 
         private void ValidateTextBox(object sender, CancelEventArgs e)
@@ -150,7 +228,7 @@ namespace Clinic.Person
                 if (string.IsNullOrWhiteSpace(textBox.Text))
                 {
                     e.Cancel = true;
-                    errorProvider1.SetError(textBox, "This field is required.");
+                    errorProvider1.SetError(textBox, Tr("This field is required."));
                 }
                 else
                 {
@@ -174,7 +252,7 @@ namespace Clinic.Person
             if (!clsValidatoin.ValidateEmail(txtEmail.Text))
             {
                 e.Cancel = true;
-                errorProvider1.SetError(txtEmail, "Invalid Email Address Format!");
+                errorProvider1.SetError(txtEmail, Tr("Invalid Email Address Format!"));
             }
             else
             {
@@ -198,7 +276,7 @@ namespace Clinic.Person
 
         private void llSetImage_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            openFileDialog1.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp;*.gif";
+            openFileDialog1.Filter = Tr("Image Files") + "|*.jpg;*.jpeg;*.png;*.bmp;*.gif";
             openFileDialog1.FilterIndex = 1;
             openFileDialog1.RestoreDirectory = true;
 
@@ -261,7 +339,7 @@ namespace Clinic.Person
                     }
                     else
                     {
-                        MessageBox.Show("Error Copying Image File", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show(Tr("Error Copying Image File"), Tr("Error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return false;
                     }
                 }
@@ -274,15 +352,15 @@ namespace Clinic.Person
             if (!this.ValidateChildren())
             {
                 //Here we dont continue becuase the form is not valid
-                MessageBox.Show("Some fileds are not valide!, put the mouse over the red icon(s) to see the erro", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(Tr("Some fields are not valid. Move the mouse over the red icon(s) to see the error."), Tr("Validation Error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
 
             }
 
             if (!this.ValidateChildren())
             {
-                MessageBox.Show("Some fields are not valid!, put the mouse over the red icon(s) to see the error",
-                    "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(Tr("Some fields are not valid. Move the mouse over the red icon(s) to see the error."),
+                    Tr("Validation Error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -310,16 +388,16 @@ namespace Clinic.Person
                 lblPersonID.Text = _Person.PersonID.ToString();
                 //change form mode to update.
                 _Mode = enMode.Update;
-                lblTitle.Text = "Update Person";
+                lblTitle.Text = Tr("Update Person");
 
-                MessageBox.Show("Data Saved Successfully.", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(Tr("Data Saved Successfully."), Tr("Saved"), MessageBoxButtons.OK, MessageBoxIcon.Information);
 
 
                 // Trigger the event to send data back to the caller form.
                 DataBack?.Invoke(this, _Person.PersonID);
             }
             else
-                MessageBox.Show("Error: Data Is not Saved Successfully.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(Tr("Error: Data Is not Saved Successfully."), Tr("Error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
 
 
         }
