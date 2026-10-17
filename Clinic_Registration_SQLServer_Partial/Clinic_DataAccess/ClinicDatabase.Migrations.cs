@@ -1882,6 +1882,40 @@ namespace Clinic_DataAccess
                                     ON A.DoctorID = D.DoctorID;
                             "
                         },
+                        new DatabaseMigration
+                        {
+                            Version = "20261017_XRAY_001",
+                            Description = "Create radiology test catalog",
+                            Sql = @"CREATE TABLE IF NOT EXISTS xraytests (
+                                XRayTestID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                                TestName VARCHAR(200) NOT NULL,
+                                Description TEXT NULL,
+                                Price DECIMAL(12,2) NOT NULL DEFAULT 0,
+                                IsActive TINYINT(1) NOT NULL DEFAULT 1
+                            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261017_XRAY_002",
+                            Description = "Create radiology requests with stored image paths",
+                            Sql = @"CREATE TABLE IF NOT EXISTS xrayrequests (
+                                XRayRequestID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                                VisitID INT NOT NULL,
+                                XRayTestID INT NOT NULL,
+                                RequestedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                Status VARCHAR(30) NOT NULL DEFAULT 'Ordered',
+                                ClinicalNotes TEXT NULL,
+                                Findings TEXT NULL,
+                                Impression TEXT NULL,
+                                ImagePath VARCHAR(1000) NULL,
+                                ResultedAt DATETIME NULL,
+                                INDEX IX_XRayRequests_Visit (VisitID),
+                                INDEX IX_XRayRequests_Test (XRayTestID),
+                                INDEX IX_XRayRequests_Status (Status),
+                                CONSTRAINT FK_XRayRequests_Visit FOREIGN KEY (VisitID) REFERENCES visits(VisitID),
+                                CONSTRAINT FK_XRayRequests_Test FOREIGN KEY (XRayTestID) REFERENCES xraytests(XRayTestID)
+                            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"
+                        },
                   };
 
                 // STEP 4: Apply pending migrations

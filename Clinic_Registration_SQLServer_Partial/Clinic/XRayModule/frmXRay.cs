@@ -17,12 +17,31 @@ namespace Clinic.Medical_Services.Radiology
         private ComboBox cmbStatus;
         private DateTimePicker dtFrom, dtTo;
         private CheckBox chkDates;
+        private readonly System.Collections.Generic.Dictionary<string, Image> icons =
+            new System.Collections.Generic.Dictionary<string, Image>();
+        private readonly System.Collections.Generic.Dictionary<int, Image> thumbnails =
+            new System.Collections.Generic.Dictionary<int, Image>();
+        private static readonly Color Navy = Color.FromArgb(29, 53, 84);
 
         public frmXRay()
         {
             InitializeComponent();
+            LoadIcons();
             BuildUi();
             Load += frmXRay_Load;
+        }
+
+        private void LoadIcons()
+        {
+            string folder = Path.Combine(Application.StartupPath, "RadiologyAssets");
+            foreach (string key in new[] { "lungs", "requests", "pending", "progress", "completed" })
+            {
+                string path = Path.Combine(folder, key + ".png");
+                if (File.Exists(path))
+                {
+                    try { icons[key] = LoadUnlockedImage(path); } catch { }
+                }
+            }
         }
 
         private Button MakeButton(string text, Color color, int width = 155)
@@ -56,7 +75,7 @@ namespace Clinic.Medical_Services.Radiology
             body.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
             Controls.Add(body);
 
-            var header = new Panel { Dock = DockStyle.Fill, BackColor = Teal, Padding = new Padding(24, 10, 15, 8) };
+            var header = new Panel { Dock = DockStyle.Fill, BackColor = Color.FromArgb(0, 121, 132), Padding = new Padding(24, 10, 15, 8) };
             var close = MakeButton("✕ Close", Color.FromArgb(198, 45, 58), 110);
             close.Dock = DockStyle.Right;
             close.Click += (s, e) => Close();
@@ -90,6 +109,7 @@ namespace Clinic.Medical_Services.Radiology
             };
             for (int i = 0; i < 5; i++) cards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
             string[] captions = { "Active X-Ray Tests", "Total Requests", "Pending", "In Progress", "Completed" };
+            string[] iconKeys = { "lungs", "requests", "pending", "progress", "completed" };
             for (int i = 0; i < 5; i++)
             {
                 var panel = new Panel
@@ -113,6 +133,20 @@ namespace Clinic.Medical_Services.Radiology
                     ForeColor = Teal,
                     Font = new Font("Segoe UI", 22, FontStyle.Bold)
                 };
+                if (icons.ContainsKey(iconKeys[i]))
+                {
+                    var iconBox = new PictureBox
+                    {
+                        Image = icons[iconKeys[i]],
+                        SizeMode = PictureBoxSizeMode.Zoom,
+                        Width = 40,
+                        Height = 42,
+                        Dock = DockStyle.Right,
+                        Margin = new Padding(0, 12, 4, 0)
+                    };
+                    panel.Controls.Add(iconBox);
+                    iconBox.BringToFront();
+                }
                 panel.Controls.Add(value);
                 panel.Controls.Add(label);
                 statValues[i] = value;
@@ -132,11 +166,8 @@ namespace Clinic.Medical_Services.Radiology
             var testsButton = MakeButton("Manage X-Ray Tests", Color.FromArgb(23, 112, 155), 190);
             var resultButton = MakeButton("Enter Result", Color.FromArgb(102, 81, 169), 150);
             var viewButton = MakeButton("View Image", Color.FromArgb(74, 96, 109), 145);
-            var editButton = MakeButton("Edit Request", Color.FromArgb(65, 110, 170), 145);
-            var deleteButton = MakeButton("Cancel Request", Color.FromArgb(180, 55, 55), 150);
             var refreshButton = MakeButton("Refresh", Color.FromArgb(74, 96, 109), 105);
-            actions.Controls.AddRange(new Control[] { newButton, testsButton, resultButton, viewButton,
-                editButton, deleteButton, refreshButton });
+            actions.Controls.AddRange(new Control[] { newButton, testsButton, resultButton, viewButton, refreshButton });
             body.Controls.Add(actions, 0, 2);
 
             var filters = new FlowLayoutPanel
@@ -183,12 +214,13 @@ namespace Clinic.Medical_Services.Radiology
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
                 EnableHeadersVisualStyles = false
             };
-            dgvRequests.RowTemplate.Height = 38;
+            dgvRequests.RowTemplate.Height = 52;
             dgvRequests.ColumnHeadersHeight = 43;
-            dgvRequests.ColumnHeadersDefaultCellStyle.BackColor = Teal;
+            dgvRequests.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(0, 128, 139);
             dgvRequests.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
             dgvRequests.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
-            dgvRequests.DefaultCellStyle.SelectionBackColor = Color.FromArgb(0, 150, 136);
+            dgvRequests.DefaultCellStyle.SelectionBackColor = Color.FromArgb(213, 246, 246);
+            dgvRequests.DefaultCellStyle.SelectionForeColor = Navy;
             dgvRequests.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(239, 248, 248);
             gridPanel.Controls.Add(dgvRequests);
             body.Controls.Add(gridPanel, 0, 4);
@@ -197,15 +229,14 @@ namespace Clinic.Medical_Services.Radiology
             testsButton.Click += (s, e) => { using (var f = new frmXRayTests()) f.ShowDialog(this); ReloadData(); };
             resultButton.Click += (s, e) => OpenResult();
             viewButton.Click += (s, e) => ViewImage();
-            editButton.Click += (s, e) => EditRequest();
-            deleteButton.Click += (s, e) => CancelRequest();
             refreshButton.Click += (s, e) => ReloadData();
             txtSearch.TextChanged += (s, e) => ReloadData();
             cmbStatus.SelectedIndexChanged += (s, e) => ReloadData();
             chkDates.CheckedChanged += (s, e) => ReloadData();
             dtFrom.ValueChanged += (s, e) => { if (chkDates.Checked) ReloadData(); };
             dtTo.ValueChanged += (s, e) => { if (chkDates.Checked) ReloadData(); };
-            dgvRequests.CellDoubleClick += (s, e) => { if (e.RowIndex >= 0) ViewImage(); };
+            dgvRequests.CellContentClick += DgvRequests_CellContentClick;
+            dgvRequests.CellDoubleClick += (s, e) => { if (e.RowIndex >= 0 && e.ColumnIndex >= 0 && dgvRequests.Columns[e.ColumnIndex].Name == "Image") ViewImage(); };
         }
 
         private void frmXRay_Load(object sender, EventArgs e)
@@ -225,15 +256,78 @@ namespace Clinic.Medical_Services.Radiology
                     string[] keys = { "TotalTests", "TotalRequests", "Pending", "InProgress", "Completed" };
                     for (int i = 0; i < keys.Length; i++) statValues[i].Text = Convert.ToString(stats.Rows[0][keys[i]]);
                 }
-                dgvRequests.DataSource = ClinicDatabase.GetXRayRequests(txtSearch.Text, cmbStatus.Text,
+                foreach (var image in thumbnails.Values) image.Dispose();
+                thumbnails.Clear();
+                dgvRequests.Columns.Clear();
+                dgvRequests.AutoGenerateColumns = true;
+                DataTable data = ClinicDatabase.GetXRayRequests(txtSearch.Text, cmbStatus.Text,
                     chkDates.Checked ? (DateTime?)dtFrom.Value.Date : null,
                     chkDates.Checked ? (DateTime?)dtTo.Value.Date : null);
+                dgvRequests.DataSource = data;
                 foreach (string hidden in new[] { "XRayTestID", "ClinicalNotes", "Findings", "Impression", "ResultedAt", "ImagePath" })
                     if (dgvRequests.Columns.Contains(hidden)) dgvRequests.Columns[hidden].Visible = false;
                 if (dgvRequests.Columns.Contains("RequestedAt"))
                     dgvRequests.Columns["RequestedAt"].DefaultCellStyle.Format = "dd MMM yyyy HH:mm";
+
+                var imageColumn = new DataGridViewImageColumn
+                {
+                    Name = "Image",
+                    HeaderText = "Image",
+                    ImageLayout = DataGridViewImageCellLayout.Zoom,
+                    Width = 95,
+                    MinimumWidth = 85,
+                    AutoSizeMode = DataGridViewAutoSizeColumnMode.None,
+                    DefaultCellStyle = { NullValue = null }
+                };
+                dgvRequests.Columns.Add(imageColumn);
+                AddActionColumn("ViewAction", "View", "👁");
+                AddActionColumn("EditAction", "Edit", "✎");
+                AddActionColumn("DeleteAction", "Delete", "✕");
+                if (dgvRequests.Columns.Contains("XRayRequestID"))
+                    dgvRequests.Columns["XRayRequestID"].DisplayIndex = 0;
+                foreach (DataGridViewRow gridRow in dgvRequests.Rows)
+                {
+                    if (gridRow.IsNewRow) continue;
+                    int id = Convert.ToInt32(gridRow.Cells["XRayRequestID"].Value);
+                    string path = data.Columns.Contains("ImagePath") ?
+                        Convert.ToString(gridRow.Cells["ImagePath"].Value) : "";
+                    if (!string.IsNullOrWhiteSpace(path) && File.Exists(path))
+                    {
+                        try
+                        {
+                            thumbnails[id] = LoadUnlockedImage(path);
+                            gridRow.Cells["Image"].Value = thumbnails[id];
+                        }
+                        catch { gridRow.Cells["Image"].Value = null; }
+                    }
+                }
             }
             catch (Exception ex) { MessageBox.Show(ex.Message, "Load X-Ray", MessageBoxButtons.OK, MessageBoxIcon.Error); }
+        }
+
+        private void AddActionColumn(string name, string title, string label)
+        {
+            var col = new DataGridViewButtonColumn
+            {
+                Name = name,
+                HeaderText = title,
+                Text = label,
+                UseColumnTextForButtonValue = true,
+                Width = 56,
+                MinimumWidth = 52,
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.None,
+                FlatStyle = FlatStyle.Flat
+            };
+            dgvRequests.Columns.Add(col);
+        }
+
+        private void DgvRequests_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
+            string column = dgvRequests.Columns[e.ColumnIndex].Name;
+            if (column == "ViewAction") ViewImage();
+            else if (column == "EditAction") EditRequest();
+            else if (column == "DeleteAction") CancelRequest();
         }
 
         private int SelectedId()
@@ -292,6 +386,13 @@ namespace Clinic.Medical_Services.Radiology
             })
             { f.Controls.Add(pb); f.ShowDialog(this); pb.Image.Dispose(); }
         }
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            foreach (var image in thumbnails.Values) image.Dispose();
+            foreach (var image in icons.Values) image.Dispose();
+            base.OnFormClosed(e);
+        }
+
         internal static Image LoadUnlockedImage(string path)
         {
             using (var stream = File.OpenRead(path))
