@@ -162,6 +162,24 @@ namespace Clinic
 { "Patient ID", "رقم المريض" },
 { "Patient ID:", "رقم المريض:" },
 
+{ "Add New Person", "إضافة شخص جديد" },
+{ "Update Person", "تحديث بيانات الشخص" },
+{ "Full Name:", "الاسم الكامل:" },
+{ "Set Image", "تعيين الصورة" },
+{ "Remove", "إزالة" },
+{ "Save", "حفظ" },
+{ "Person Not Found", "لم يتم العثور على الشخص" },
+{ "No Person with ID = ", "لا يوجد شخص بالرقم: " },
+{ "This field is required.", "هذا الحقل مطلوب." },
+{ "Invalid Email Address Format!", "تنسيق البريد الإلكتروني غير صحيح!" },
+{ "Image Files", "ملفات الصور" },
+{ "Error Copying Image File", "حدث خطأ أثناء نسخ ملف الصورة" },
+{ "Validation Error", "خطأ في التحقق من صحة البيانات" },
+{ "Some fields are not valid. Move the mouse over the red icon(s) to see the error.", "بعض الحقول غير صحيحة. مرر مؤشر الفأرة فوق العلامات الحمراء لعرض الخطأ." },
+{ "Data Saved Successfully.", "تم حفظ البيانات بنجاح." },
+{ "Saved", "تم الحفظ" },
+{ "Error: Data Is not Saved Successfully.", "خطأ: لم يتم حفظ البيانات بنجاح." },
+
 
 
 
