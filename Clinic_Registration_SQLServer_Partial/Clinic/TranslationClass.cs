@@ -179,8 +179,22 @@ namespace Clinic
 { "Data Saved Successfully.", "تم حفظ البيانات بنجاح." },
 { "Saved", "تم الحفظ" },
 { "Error: Data Is not Saved Successfully.", "خطأ: لم يتم حفظ البيانات بنجاح." },
+{ "Personal Info", "المعلومات الشخصية" },
+{ "Patient Info", "بيانات المريض" },
+{ "Next", "التالي" },
+{ "Selection Required", "الاختيار مطلوب" },
+{ "Please select a valid person first before moving to patient medical info.", "يرجى اختيار شخص صالح قبل الانتقال إلى المعلومات الطبية للمريض." },
+{ "Filter", "تصفية" },
+{ "Find By Person ID:", "البحث برقم الشخص:" },
+{ "Person ID : ", "رقم الشخص:" },
+{ "Find", "بحث" },
+{ "Some fileds are not valide!, put the mouse over the red icon(s) to see the erro", "بعض الحقول غير صحيحة! مرر مؤشر الفأرة فوق العلامات الحمراء لعرض الخطأ." },
+{ "Selected Person already has a patient record, choose another one.",
+  "الشخص المحدد لديه سجل مريض بالفعل، يرجى اختيار شخص آخر." },
 
+{ "Select another Person", "اختر شخصًا آخر" },
 
+{ "Please Select a Person", "يرجى اختيار شخص" },
 
 
 
