@@ -542,9 +542,9 @@ namespace Clinic_DataAccess
             }
         }
         public static bool UpdateAppointmentStatus(
-      int AppointmentID,
-      string Status,
-      int UserID)
+          int AppointmentID,
+          string Status,
+          int UserID)
         {
             try
             {
@@ -552,9 +552,9 @@ namespace Clinic_DataAccess
                     new MySqlConnection(clsDataAccessSettings.ConnectionString))
                 {
                     string query = @"
-                UPDATE appointments
-                SET AppointmentStatus = @Status
-                WHERE AppointmentID = @AppointmentID";
+                    UPDATE appointments
+                    SET AppointmentStatus = @Status
+                    WHERE AppointmentID = @AppointmentID";
 
                     using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {

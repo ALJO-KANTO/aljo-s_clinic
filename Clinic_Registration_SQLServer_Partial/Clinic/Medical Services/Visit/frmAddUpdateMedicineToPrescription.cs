@@ -188,6 +188,7 @@ namespace Clinic.Medical_Services.Visit
                 // إنشاء صف جديد
                 DataRow newRow = _dtMedicines.NewRow();
                 newRow["MedicineID"] = selectedMedicineID;
+                newRow["PrescriptionID"] = _dtMedicines.Rows.Count > 0 ? _dtMedicines.Rows[0]["PrescriptionID"].ToString() : "0";
                 newRow["SavedMedicineName"] = cbMedicines.Text;
                 newRow["Quantity"] = requestedQuantity;
                 newRow["Frequency"] = nudFrequency.Value;
@@ -212,6 +213,7 @@ namespace Clinic.Medical_Services.Visit
 
                 // تحديث الصف الحالي
                 _Row["MedicineID"] = selectedMedicineID;
+                _Row["PrescriptionID"] = _dtMedicines.Rows.Count > 0 ? _dtMedicines.Rows[0]["PrescriptionID"].ToString() : "0";
                 _Row["SavedMedicineName"] = cbMedicines.Text;
                 _Row["Quantity"] = requestedQuantity;
                 _Row["Frequency"] = nudFrequency.Value; 

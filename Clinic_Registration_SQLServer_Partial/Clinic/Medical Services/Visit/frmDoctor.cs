@@ -756,6 +756,9 @@ namespace Clinic.Medical_Services.Visit
 
             lblRecordsCount.Text =
                 (dtQueue?.Rows.Count ?? 0).ToString();
+
+            // Apply today's date immediately
+            MdFilterQueue();
         }
         private void _ResetForm()
         {
