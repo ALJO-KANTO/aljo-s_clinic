@@ -32,6 +32,31 @@ namespace Clinic.Patient
             _Mode = enMode.Update;
         }
 
+        private string Tr(string text)
+        {
+            return TranslationClass.Translate(text, TranslationClass.IsArabic);
+        }
+
+        private void ApplyArabicTranslation()
+        {
+            bool isArabic = TranslationClass.IsArabic;
+
+            this.Text = Tr(this.Text);
+            lblTitle.Text = Tr(lblTitle.Text);
+            tpPersonalInfo.Text = Tr("Personal Info");
+            tpPatientInfo.Text = Tr("Patient Info");
+
+            label6.Text = Tr("Blood Type:");
+            label15.Text = Tr("Emergency Contact:");
+            label7.Text = Tr("Medical History:");
+            label8.Text = Tr("Patient ID:");
+
+            btnPersonInfoNext.Text = isArabic ? Tr("Next") : "Next   ";
+            btnSave.Text = isArabic ? Tr("Save") : "   Save";
+            btnClose.Text = isArabic ? Tr("Close") : "   Close";
+
+        }
+
         private void _FillBloodTypesInComboBox()
         {
             DataTable dt = clsBloodType.GetAllBloodTypes(); // تأكد من اسم الكلاس والدالة في طبقة البزنس لديك
@@ -49,7 +74,7 @@ namespace Clinic.Patient
             _Patient = clsPatient.FindPatientByID(_PatientID);
             if (_Patient == null)
             {
-                MessageBox.Show("No Patient with ID = " + _PatientID, "Patient Not Found", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                MessageBox.Show(Tr("No Patient with ID = ") + _PatientID, Tr("Patient Not Found"), MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 this.Close();
                 return;
             }
@@ -97,6 +122,8 @@ namespace Clinic.Patient
             _ResetDefaultValues();
             if (_Mode == enMode.Update)
                 _LoadData();
+
+            ApplyArabicTranslation();
         }
 
         private void btnPersonInfoNext_Click(object sender, EventArgs e)
@@ -111,7 +138,7 @@ namespace Clinic.Patient
 
             if (ctrlPersonCardWithFilter1.PersonID == -1)
             {
-                MessageBox.Show("Please Select a Person", "Select a Person", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(Tr("Please Select a Person"), Tr("Select a Person"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                 ctrlPersonCardWithFilter1.FocuseTextBox();
                 return;
             }
@@ -119,7 +146,7 @@ namespace Clinic.Patient
             // فحص تكرار المريض (Anti-Duplication Check)
             if (clsPatient.IsPatientExistForPersonID(ctrlPersonCardWithFilter1.PersonID))
             {
-                MessageBox.Show("Selected Person already has a patient record, choose another one.", "Select another Person", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(Tr("Selected Person already has a patient record, choose another one."), Tr("Select another Person"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                 ctrlPersonCardWithFilter1.FocuseTextBox();
             }
             else
@@ -140,7 +167,7 @@ namespace Clinic.Patient
             if (string.IsNullOrEmpty(txtEmergencyContact.Text.Trim()))
             {
                 e.Cancel = true;
-                errorProvider1.SetError(txtEmergencyContact, "Emergency contact number cannot be blank!");
+                errorProvider1.SetError(txtEmergencyContact, Tr("Emergency contact number cannot be blank!"));
             }
             else
             {
@@ -161,15 +188,15 @@ namespace Clinic.Patient
         {
             if (!this.ValidateChildren())
             {
-                MessageBox.Show("Some fields are not valid!, put the mouse over the red icon(s) to see the error",
-                    "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(Tr("Some fields are not valid!, put the mouse over the red icon(s) to see the error"),
+                    Tr("Validation Error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
             // تحسين أمني: الحماية من قراءة قيمة فارغة null من الـ ComboBox
             if (cbBloodType.SelectedValue == null)
             {
-                MessageBox.Show("Please select a valid blood type.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(Tr("Please select a valid blood type."), Tr("Error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -178,7 +205,7 @@ namespace Clinic.Patient
             _Patient.MedicalHistory = string.IsNullOrEmpty(txtMedicalHistory.Text.Trim()) ? null : txtMedicalHistory.Text.Trim();
             _Patient.BloodTypeID = (int)cbBloodType.SelectedValue;
 
-            _Patient.CreatedByUserID = clsGlobal.CurrentUser.UserID; 
+            _Patient.CreatedByUserID = clsGlobal.CurrentUser.UserID;
             if (_Patient.SavePatient())
             {
                 lblPatientID.Text = _Patient.PatientID.ToString();
@@ -187,15 +214,15 @@ namespace Clinic.Patient
                 _Mode = enMode.Update;
                 ctrlPersonCardWithFilter1.FilterEnabled = false;
 
-                lblTitle.Text = "Update Patient Info";
-                this.Text = "Update Patient Info";
+                lblTitle.Text = Tr("Update Patient Info");
+                this.Text = Tr("Update Patient Info");
 
                 DataBack?.Invoke(this, _Patient.PatientID);
-                MessageBox.Show("Data Saved Successfully.", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(Tr("Data Saved Successfully."), Tr("Saved"), MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
             {
-                MessageBox.Show("Error: Data Is not Saved Successfully.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(Tr("Error: Data Is not Saved Successfully."), Tr("Error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -207,7 +234,7 @@ namespace Clinic.Patient
                 if (ctrlPersonCardWithFilter1.PersonID == -1 || clsPatient.IsPatientExistForPersonID(ctrlPersonCardWithFilter1.PersonID))
                 {
                     e.Cancel = true; // إلغاء الانتقال القسري
-                    MessageBox.Show("Please select a valid person first before moving to patient medical info.", "Selection Required", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show(Tr("Please select a valid person first before moving to patient medical info."), Tr("Selection Required"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
         }
@@ -221,5 +248,6 @@ namespace Clinic.Patient
         {
             this.Close();
         }
+
     }
 }
