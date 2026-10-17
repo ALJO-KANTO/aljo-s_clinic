@@ -261,5 +261,9 @@ namespace Clinic.Medical_Services.Visit
                 txtDiscount.Text = "0.00";
             }
         }
+        private void btnNewMedicine_Click(object sender, EventArgs e)
+        {
+            //new 
+        }
     }
 }

@@ -80,8 +80,7 @@ namespace Clinic
             }
 
             string server = txtServerName.Text.Trim();
-            string db = ClinicDatabase.DatabaseName;
-            string user = txtUserName.Text.Trim();
+            string db = txtDataBaseName.Text.Trim(); string user = txtUserName.Text.Trim();
             string pass = txtPassword.Text;
 
             try
@@ -110,7 +109,7 @@ namespace Clinic
 
                 // STEP 3: Apply migrations
                 ClinicDatabase.ApplyMigrations();
-
+                ClinicDatabase.EnsureLaboratoryTables();
                 MessageBox.Show(
                     "Database configured successfully.\nPlease restart the application.",
                     "Success",
