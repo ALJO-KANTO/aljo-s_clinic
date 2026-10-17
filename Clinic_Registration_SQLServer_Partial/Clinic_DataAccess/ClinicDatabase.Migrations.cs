@@ -1915,10 +1915,39 @@ namespace Clinic_DataAccess
                         Debug.WriteLine(
                             "Executing migration: " + migration.Version);
 
-                        using (MySqlCommand command =
-                            new MySqlCommand(migration.Sql, connection))
+                        bool shouldExecute = true;
+
+                        // BillNumber may already exist in older databases.
+                        if (migration.Version == "20261016_021")
                         {
-                            command.ExecuteNonQuery();
+                            using (MySqlCommand checkCommand = new MySqlCommand(@"
+            SELECT COUNT(*)
+            FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'bills'
+              AND COLUMN_NAME = 'BillNumber';",
+                                connection))
+                            {
+                                long columnCount =
+                                    Convert.ToInt64(checkCommand.ExecuteScalar());
+
+                                if (columnCount > 0)
+                                {
+                                    shouldExecute = false;
+
+                                    Debug.WriteLine(
+                                        "BillNumber already exists. Skipping ALTER TABLE.");
+                                }
+                            }
+                        }
+
+                        if (shouldExecute)
+                        {
+                            using (MySqlCommand command =
+                                new MySqlCommand(migration.Sql, connection))
+                            {
+                                command.ExecuteNonQuery();
+                            }
                         }
                     }
                     catch (MySqlException ex)
