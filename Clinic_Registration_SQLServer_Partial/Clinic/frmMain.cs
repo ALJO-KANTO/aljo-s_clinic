@@ -20,6 +20,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Clinic.Medical_Services.Radiology;
 namespace Clinic
 {
     public partial class frmMain : Form
@@ -32,21 +33,88 @@ namespace Clinic
             InitializeComponent();
 
             _frmLogin = frmLogin;
-            string language = Properties.Settings.Default.ApplicationLanguage ?? "en";
-            isArabic = language.Equals("ar", StringComparison.OrdinalIgnoreCase);
-            // Force the List Prescription click event to be connected
+
+            string language =
+                Properties.Settings.Default.ApplicationLanguage ?? "en";
+
+            isArabic = language.Equals(
+                "ar",
+                StringComparison.OrdinalIgnoreCase);
+
             listPrescriptionToolStripMenuItem.Click -=
                 listPrescriptionToolStripMenuItem_Click;
 
             listPrescriptionToolStripMenuItem.Click +=
                 listPrescriptionToolStripMenuItem_Click;
 
+            AddXRayMenu();
+
             if (LicenseManager.UsageMode != LicenseUsageMode.Designtime)
             {
                 BuildModernDashboardDesign();
+                AddXRayDashboardButton();
                 AddTranslateButton();
                 ChangeDashboardLanguage(false);
             }
+        }
+        private void AddXRayDashboardButton()
+        {
+            if (modernDashboard == null)
+                return;
+
+            Button btnXRay = new Button
+            {
+                Name = "btnXRay",
+                Text = "X-Ray / Radiology",
+                Tag = "X-Ray / Radiology",
+                Width = 190,
+                Height = 48,
+                BackColor = Color.FromArgb(0, 121, 107),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
+
+            btnXRay.FlatAppearance.BorderSize = 0;
+            btnXRay.Click += (s, e) => OpenXRay();
+
+            modernDashboard.Controls.Add(btnXRay);
+            btnXRay.BringToFront();
+        }
+        private ToolStripMenuItem xrayToolStripMenuItem;
+
+        private void AddXRayMenu()
+        {
+            if (xrayToolStripMenuItem != null)
+                return;
+
+            xrayToolStripMenuItem = new ToolStripMenuItem
+            {
+                Name = "xrayToolStripMenuItem",
+                Text = "X-Ray / Radiology",
+                Tag = "X-Ray / Radiology"
+            };
+
+            xrayToolStripMenuItem.Click += (s, e) => OpenXRay();
+
+            servicesToolStripMenuItem.DropDownItems.Add(
+                xrayToolStripMenuItem);
+        }
+        private void OpenXRay()
+        {
+            OpenIfAuthorized(
+                () =>
+                {
+                    using (frmXRay frm = new frmXRay())
+                    {
+                        frm.ShowDialog(this);
+                    }
+                },
+                clsGlobal.UserRole.Admin,
+                clsGlobal.UserRole.Doctor,
+                clsGlobal.UserRole.Nurse
+            );
         }
         private void OpenLaboratory()
         {

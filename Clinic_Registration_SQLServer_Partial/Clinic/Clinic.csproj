@@ -441,6 +441,13 @@
     <Compile Include="User\frmUserInfo.Designer.cs">
       <DependentUpon>frmUserInfo.cs</DependentUpon>
     </Compile>
+    <Compile Include="XRayModule\frmXRay.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="XRayModule\frmXRay.Designer.cs">
+      <DependentUpon>frmXRay.cs</DependentUpon>
+    </Compile>
+    <Compile Include="XRayModule\frmXRayDialogs.cs" />
     <EmbeddedResource Include="ControlsMain\ucAdminStation.resx">
       <DependentUpon>ucAdminStation.cs</DependentUpon>
     </EmbeddedResource>
