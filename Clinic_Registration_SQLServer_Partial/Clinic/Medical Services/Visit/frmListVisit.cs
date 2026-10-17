@@ -18,7 +18,7 @@ namespace Clinic.Medical_Services.Visit
 {
     public partial class frmListVisits : Form
     {
-       
+
 
         static DataTable _dtAllVisits;
         DataTable _dtVists;
@@ -26,6 +26,196 @@ namespace Clinic.Medical_Services.Visit
         public frmListVisits()
         {
             InitializeComponent();
+
+            // Reduce repaint flicker without changing the existing form controls or behavior.
+            this.DoubleBuffered = true;
+
+            // Apply the selected layout direction before the form is first displayed.
+            bool isArabic = TranslationClass.IsArabic;
+            this.RightToLeft = isArabic ? RightToLeft.Yes : RightToLeft.No;
+            this.RightToLeftLayout = isArabic;
+
+            // Keep only the filter row and section heading physically mirrored.
+            this.Resize += (sender, e) => ApplyArabicFilterAndHeadingLayout();
+        }
+
+        private string Tr(string text)
+        {
+            return TranslationClass.Translate(text, TranslationClass.IsArabic);
+        }
+
+        private void ApplyVisitFormTranslation()
+        {
+            bool isArabic = TranslationClass.IsArabic;
+
+            // RTL direction is set in the constructor before the form is displayed.
+            // Translate controls here without repeatedly changing the form layout.
+            ApplyTranslationToControls(this.Controls, isArabic);
+
+            TranslateComboItems(cbFilterBy);
+
+            if (dgvVisit.Columns.Count > 0)
+            {
+                TranslateColumnHeader("VisitID", "Visit ID", isArabic);
+                TranslateColumnHeader("AppointmentID", "App.ID", isArabic);
+                TranslateColumnHeader("PatientName", "Patient Name", isArabic);
+                TranslateColumnHeader("DoctorName", "Doctor Name", isArabic);
+                TranslateColumnHeader("VisitDate", "Visit Date", isArabic);
+                TranslateColumnHeader("Diagnosis", "Diagnosis", isArabic);
+                TranslateColumnHeader("StatusText", "Status", isArabic);
+                TranslateColumnHeader("CreatedByUserID", "C.UserID", isArabic);
+
+                dgvVisit.RightToLeft = isArabic ? RightToLeft.Yes : RightToLeft.No;
+                dgvVisit.ColumnHeadersDefaultCellStyle.Alignment = isArabic
+                    ? DataGridViewContentAlignment.MiddleRight
+                    : DataGridViewContentAlignment.MiddleLeft;
+                dgvVisit.DefaultCellStyle.Alignment = isArabic
+                    ? DataGridViewContentAlignment.MiddleRight
+                    : DataGridViewContentAlignment.MiddleLeft;
+            }
+
+            // Explicitly translate and mirror the footer Close button.
+            if (btnClose != null)
+            {
+                btnClose.Text = isArabic ? Tr("Close") : "   Close";
+                btnClose.RightToLeft = isArabic ? RightToLeft.Yes : RightToLeft.No;
+                btnClose.ImageAlign = isArabic
+                    ? ContentAlignment.MiddleRight
+                    : ContentAlignment.MiddleLeft;
+            }
+
+            Control footer = btnClose == null ? null : btnClose.Parent;
+            if (footer != null)
+                footer.RightToLeft = isArabic ? RightToLeft.Yes : RightToLeft.No;
+
+            ApplyFooterMirroring();
+            ApplyArabicFilterAndHeadingLayout();
+        }
+
+        private void ApplyArabicFilterAndHeadingLayout()
+        {
+            bool isArabic = TranslationClass.IsArabic;
+
+            // Filter row: keep its existing layout in English; mirror it to the
+            // right side when Arabic is selected.
+            if (panelFilterCard != null && label1 != null && cbFilterBy != null)
+            {
+                if (isArabic)
+                {
+                    int rightMargin = 20;
+                    label1.Left = panelFilterCard.ClientSize.Width - label1.Width - rightMargin;
+                    cbFilterBy.Left = label1.Left - cbFilterBy.Width - 8;
+
+                    if (txtFilterValue != null)
+                        txtFilterValue.Left = cbFilterBy.Left - txtFilterValue.Width - 8;
+
+                    label1.TextAlign = ContentAlignment.MiddleRight;
+                }
+                else
+                {
+                    label1.Left = 15;
+                    cbFilterBy.Left = 87;
+                    if (txtFilterValue != null)
+                        txtFilterValue.Left = 287;
+                    label1.TextAlign = ContentAlignment.MiddleLeft;
+                }
+            }
+
+            // Move only the section heading to the opposite side in Arabic.
+            if (panelGridHeader != null && lblGridTitle != null)
+            {
+                if (isArabic)
+                {
+                    lblGridTitle.Left = panelGridHeader.ClientSize.Width - lblGridTitle.Width - 15;
+                    lblGridTitle.TextAlign = ContentAlignment.MiddleRight;
+                }
+                else
+                {
+                    lblGridTitle.Left = 15;
+                    lblGridTitle.TextAlign = ContentAlignment.MiddleLeft;
+                }
+            }
+        }
+
+        private void TranslateComboItems(ComboBox comboBox)
+        {
+            if (comboBox == null)
+                return;
+
+            int selectedIndex = comboBox.SelectedIndex;
+            var translatedItems = new List<string>();
+
+            foreach (object item in comboBox.Items)
+            {
+                string itemText = item == null ? string.Empty : item.ToString();
+                translatedItems.Add(string.IsNullOrEmpty(itemText) ? itemText : Tr(itemText));
+            }
+
+            comboBox.Items.Clear();
+            foreach (string itemText in translatedItems)
+                comboBox.Items.Add(itemText);
+
+            if (selectedIndex >= 0 && selectedIndex < comboBox.Items.Count)
+                comboBox.SelectedIndex = selectedIndex;
+        }
+
+        private void ApplyFooterMirroring()
+        {
+            if (btnClose == null || lblRecordsCount == null || btnClose.Parent == null)
+                return;
+
+            Control footer = btnClose.Parent;
+            bool isArabic = TranslationClass.IsArabic;
+            int margin = 25;
+            int gap = 5;
+
+            // Find the static record-count label without depending on a designer name.
+            Label recordsLabel = footer.Controls
+                .OfType<Label>()
+                .FirstOrDefault(label => label != lblRecordsCount &&
+                    (label.Text.Contains("Records") || label.Text.Contains("السجلات")));
+
+            if (isArabic)
+            {
+                btnClose.Left = margin;
+                if (recordsLabel != null)
+                    recordsLabel.Left = footer.ClientSize.Width - recordsLabel.Width - margin;
+                lblRecordsCount.Left = recordsLabel != null
+                    ? recordsLabel.Left - lblRecordsCount.Width - gap
+                    : footer.ClientSize.Width - lblRecordsCount.Width - margin;
+            }
+            else
+            {
+                btnClose.Left = footer.ClientSize.Width - btnClose.Width - margin;
+                if (recordsLabel != null)
+                    recordsLabel.Left = margin;
+                lblRecordsCount.Left = recordsLabel != null
+                    ? recordsLabel.Right + gap
+                    : margin;
+            }
+        }
+
+        private void ApplyTranslationToControls(Control.ControlCollection controls, bool isArabic)
+        {
+            foreach (Control control in controls)
+            {
+                // ComboBox items are handled separately so their visible text can be
+                // translated while the existing filtering code remains functional.
+                if (!(control is ComboBox) && !string.IsNullOrWhiteSpace(control.Text))
+                    control.Text = TranslationClass.Translate(control.Text, isArabic);
+
+                control.RightToLeft = isArabic ? RightToLeft.Yes : RightToLeft.No;
+
+                if (control.HasChildren)
+                    ApplyTranslationToControls(control.Controls, isArabic);
+            }
+        }
+
+        private void TranslateColumnHeader(string columnName, string englishText, bool isArabic)
+        {
+            if (dgvVisit.Columns.Contains(columnName))
+                dgvVisit.Columns[columnName].HeaderText =
+                    TranslationClass.Translate(englishText, isArabic);
         }
 
         private void _RefreshVisitList()
@@ -99,7 +289,7 @@ namespace Clinic.Medical_Services.Visit
 
         private void frmListVisits_Load(object sender, EventArgs e)
         {
-            if (clsGlobal.CurrentUser.RoleID== 3 )
+            if (clsGlobal.CurrentUser.RoleID == 3)
             {
                 editToolStripMenuItem.Enabled = false;
                 deleteToolStripMenuItem.Enabled = false;
@@ -136,11 +326,37 @@ namespace Clinic.Medical_Services.Visit
                 dgvVisit.Columns["CreatedByUserID"].HeaderText = "C.UserID";
                 dgvVisit.Columns["CreatedByUserID"].Width = 90;
             }
+
+            ApplyVisitFormTranslation();
+            dgvVisit.CellFormatting -= dgvVisit_CellFormatting;
+            dgvVisit.CellFormatting += dgvVisit_CellFormatting;
+        }
+
+        private void dgvVisit_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (!TranslationClass.IsArabic || e.Value == null || e.Value == DBNull.Value)
+                return;
+
+            string columnName = dgvVisit.Columns[e.ColumnIndex].Name;
+            string value = e.Value.ToString();
+
+            if (columnName == "StatusText")
+            {
+                if (value == "Open") e.Value = Tr("Open");
+                else if (value == "Completed") e.Value = Tr("Completed");
+                else if (value == "Closed") e.Value = Tr("Closed");
+                else if (value == "Cancelled") e.Value = Tr("Cancelled");
+                e.FormattingApplied = true;
+            }
         }
 
         private void cbFilterBy_SelectedIndexChanged(object sender, EventArgs e)
         {
-            txtFilterValue.Visible = (cbFilterBy.Text != "None");
+            string selectedFilter = cbFilterBy.Text;
+            if (TranslationClass.IsArabic && selectedFilter == Tr("None"))
+                selectedFilter = "None";
+
+            txtFilterValue.Visible = (selectedFilter != "None");
 
             if (txtFilterValue.Visible)
             {
@@ -158,7 +374,19 @@ namespace Clinic.Medical_Services.Visit
 
             string filterColumn = "";
 
-            switch (cbFilterBy.Text)
+            string selectedFilter = cbFilterBy.Text;
+            if (TranslationClass.IsArabic)
+            {
+                if (selectedFilter == Tr("None")) selectedFilter = "None";
+                else if (selectedFilter == Tr("Visit ID")) selectedFilter = "Visit ID";
+                else if (selectedFilter == Tr("Appointment ID")) selectedFilter = "Appointment ID";
+                else if (selectedFilter == Tr("Patient Name")) selectedFilter = "Patient Name";
+                else if (selectedFilter == Tr("Doctor Name")) selectedFilter = "Doctor Name";
+                else if (selectedFilter == Tr("Diagnosis")) selectedFilter = "Diagnosis";
+                else if (selectedFilter == Tr("CreatedByUserID")) selectedFilter = "CreatedByUserID";
+            }
+
+            switch (selectedFilter)
             {
                 case "Visit ID":
                     filterColumn = "VisitID";
@@ -189,7 +417,7 @@ namespace Clinic.Medical_Services.Visit
 
             if (string.IsNullOrWhiteSpace(searchText) ||
                 string.IsNullOrWhiteSpace(filterColumn) ||
-                cbFilterBy.Text == "None")
+                selectedFilter == "None")
             {
                 _dtVists.DefaultView.RowFilter = "";
                 lblRecordsCount.Text =
@@ -241,7 +469,15 @@ namespace Clinic.Medical_Services.Visit
 
         private void txtFilterValue_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (cbFilterBy.Text == "Appointment ID" || cbFilterBy.Text == "Visit ID" || cbFilterBy.Text == "CreatedByUserID")
+            string selectedFilter = cbFilterBy.Text;
+            if (TranslationClass.IsArabic)
+            {
+                if (selectedFilter == Tr("Appointment ID")) selectedFilter = "Appointment ID";
+                else if (selectedFilter == Tr("Visit ID")) selectedFilter = "Visit ID";
+                else if (selectedFilter == Tr("CreatedByUserID")) selectedFilter = "CreatedByUserID";
+            }
+
+            if (selectedFilter == "Appointment ID" || selectedFilter == "Visit ID" || selectedFilter == "CreatedByUserID")
             {
                 e.Handled = !char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar);
             }
@@ -257,13 +493,13 @@ namespace Clinic.Medical_Services.Visit
         private void editToolStripMenuItem_Click(object sender, EventArgs e)
         {
             int VisitID = (int)dgvVisit.CurrentRow.Cells["VisitID"].Value;
-            if(clsVisit.IsVisitClosed(VisitID))
+            if (clsVisit.IsVisitClosed(VisitID))
             {
                 MessageBox.Show("This visit is already closed and cannot be modified.",
                      "Operation Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-            frmDoctor frm = new frmDoctor(VisitID,frmDoctor.enMode.Update);
+            frmDoctor frm = new frmDoctor(VisitID, frmDoctor.enMode.Update);
             frm.ShowDialog();
             frmListVisits_Load(null, null);
         }
@@ -306,7 +542,7 @@ namespace Clinic.Medical_Services.Visit
 
         private void ShowVisitDetailstoolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            frmDoctor frm = new frmDoctor((int)dgvVisit.CurrentRow.Cells[0].Value,frmDoctor.enMode.ShowVisit);
+            frmDoctor frm = new frmDoctor((int)dgvVisit.CurrentRow.Cells[0].Value, frmDoctor.enMode.ShowVisit);
             frm.ShowDialog();
         }
 

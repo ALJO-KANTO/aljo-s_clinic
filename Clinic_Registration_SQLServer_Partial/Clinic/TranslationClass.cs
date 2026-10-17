@@ -229,7 +229,13 @@ namespace Clinic
 { "Check In", "تسجيل الدخول" },
 { "View Visit", "عرض الزيارة" },
 { "Consultation", "استشارة" },
-{ "Follow-up", "متابعة" },
+{ "Follow-up", "متابعة" },//manage visits
+{ "Manage Visits", "إدارة الزيارات" },
+{ "Visit ID", "رقم الزيارة" },
+{ "App.ID", "رقم الموعد" },
+{ "Visit Date", "تاريخ الزيارة" },
+{ "Diagnosis", "التشخيص" },
+{ "Open", "مفتوح" },
 
 
 
