@@ -29,6 +29,156 @@ namespace Clinic.Medical_Services.Appointment
             checkInMenu.Click += checkINToolStripMenuItem_Click;
 
             cmsAppointmentRecption.Items.Add(checkInMenu);
+
+            dgvAppointments.CellFormatting += dgvAppointments_CellFormatting;
+
+            // Apply localization and mirroring before the form is displayed.
+            ApplyLocalizationAndMirroring();
+            panelFooterBar.Resize += panelFooterBar_Resize;
+        }
+
+        private string Tr(string text)
+        {
+            return TranslationClass.Translate(text, TranslationClass.IsArabic);
+        }
+
+        private string GetEnglishText(string text)
+        {
+            string[] englishTexts =
+            {
+                "None", "Status", "Appointment ID", "Created By UserID",
+                "Patient Name", "Doctor Name", "AppointmentType", "All",
+                "Scheduled", "Cancelled", "Completed", "Postponed", "In Queue",
+                "Check In", "View Visit", "Consultation", "Follow-up"
+            };
+
+            foreach (string english in englishTexts)
+            {
+                if (text == Tr(english))
+                    return english;
+            }
+
+            return text;
+        }
+
+        private void TranslateComboItems(ComboBox comboBox)
+        {
+            if (comboBox == null || comboBox.DataSource != null)
+                return;
+
+            int selectedIndex = comboBox.SelectedIndex;
+            List<string> translatedItems = new List<string>();
+
+            foreach (object item in comboBox.Items)
+            {
+                string itemText = item == null ? string.Empty : item.ToString();
+                translatedItems.Add(string.IsNullOrEmpty(itemText)
+                    ? itemText
+                    : Tr(GetEnglishText(itemText)));
+            }
+
+            comboBox.Items.Clear();
+            foreach (string itemText in translatedItems)
+                comboBox.Items.Add(itemText);
+
+            if (selectedIndex >= 0 && selectedIndex < comboBox.Items.Count)
+                comboBox.SelectedIndex = selectedIndex;
+        }
+
+        private void TranslateToolStripItems(ToolStripItemCollection items)
+        {
+            foreach (ToolStripItem item in items)
+            {
+                if (!string.IsNullOrEmpty(item.Text))
+                    item.Text = Tr(item.Text);
+
+                if (item is ToolStripDropDownItem dropDownItem)
+                    TranslateToolStripItems(dropDownItem.DropDownItems);
+            }
+        }
+
+        private void ApplyLocalizationAndMirroring()
+        {
+            bool isArabic = TranslationClass.IsArabic;
+
+            this.RightToLeft = isArabic ? RightToLeft.Yes : RightToLeft.No;
+            this.RightToLeftLayout = isArabic;
+
+            ApplyLocalizationToControls(this.Controls, isArabic);
+
+            // Explicitly localize and mirror the footer Close button.
+            btnClose.Text = isArabic ? Tr("Close") : "   Close";
+            btnClose.RightToLeft = isArabic ? RightToLeft.Yes : RightToLeft.No;
+            btnClose.ImageAlign = isArabic
+                ? System.Drawing.ContentAlignment.MiddleRight
+                : System.Drawing.ContentAlignment.MiddleLeft;
+            panelFooterBar.RightToLeft = isArabic ? RightToLeft.Yes : RightToLeft.No;
+            ApplyFooterMirroring();
+
+            TranslateComboItems(cbFilterBy);
+            TranslateComboItems(cbStatus);
+
+            TranslateToolStripItems(cmsAppointmentRecption.Items);
+            TranslateToolStripItems(cmsAppointmentCasher.Items);
+
+            dgvAppointments.RightToLeft = isArabic ? RightToLeft.Yes : RightToLeft.No;
+            dgvAppointments.ColumnHeadersDefaultCellStyle.Alignment =
+                isArabic ? DataGridViewContentAlignment.MiddleRight : DataGridViewContentAlignment.MiddleLeft;
+            dgvAppointments.DefaultCellStyle.Alignment =
+                isArabic ? DataGridViewContentAlignment.MiddleRight : DataGridViewContentAlignment.MiddleLeft;
+        }
+
+        private void panelFooterBar_Resize(object sender, EventArgs e)
+        {
+            ApplyFooterMirroring();
+        }
+
+        private void ApplyFooterMirroring()
+        {
+            if (panelFooterBar == null || btnClose == null ||
+                label2 == null || lblRecordsCount == null)
+                return;
+
+            bool isArabic = TranslationClass.IsArabic;
+            int margin = 25;
+            int gap = 5;
+
+            if (isArabic)
+            {
+                btnClose.Left = margin;
+                label2.Left = panelFooterBar.ClientSize.Width - label2.Width - margin;
+                lblRecordsCount.Left = label2.Left - lblRecordsCount.Width - gap;
+            }
+            else
+            {
+                btnClose.Left = panelFooterBar.ClientSize.Width - btnClose.Width - margin;
+                label2.Left = margin;
+                lblRecordsCount.Left = label2.Right + gap;
+            }
+        }
+
+        private void ApplyLocalizationToControls(Control.ControlCollection controls, bool isArabic)
+        {
+            foreach (Control control in controls)
+            {
+                if (!string.IsNullOrEmpty(control.Text))
+                    control.Text = Tr(control.Text);
+
+                control.RightToLeft = isArabic ? RightToLeft.Yes : RightToLeft.No;
+
+                if (control.HasChildren)
+                    ApplyLocalizationToControls(control.Controls, isArabic);
+            }
+        }
+
+        private void dgvAppointments_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (!TranslationClass.IsArabic || e.Value == null || e.Value == DBNull.Value)
+                return;
+
+            string columnName = dgvAppointments.Columns[e.ColumnIndex].Name;
+            if (columnName == "AppointmentStatusText" || columnName == "TypeName")
+                e.Value = Tr(e.Value.ToString());
         }
 
         private void btnAddAppointment_Click(object sender, EventArgs e)
@@ -63,6 +213,7 @@ namespace Clinic.Medical_Services.Appointment
 
             dgvAppointments.DataSource = _dtAppointmets;
 
+            ApplyLocalizationAndMirroring();
             cbFilterBy.SelectedIndex = 0;
             if (_dtAppointmets.Rows.Count == 0)
                 return;
@@ -70,36 +221,36 @@ namespace Clinic.Medical_Services.Appointment
             _dtAppointmets.Columns["AppointmentStatusText"].ReadOnly = false;
             lblRecordsCount.Text = _dtAppointmets.Rows.Count.ToString();
 
-            dgvAppointments.Columns["AppointmentID"].HeaderText = "Appointment ID";
+            dgvAppointments.Columns["AppointmentID"].HeaderText = Tr("Appointment ID");
             dgvAppointments.Columns["AppointmentID"].Width = 150;
 
-            dgvAppointments.Columns["PatientName"].HeaderText = "Patient Name";
+            dgvAppointments.Columns["PatientName"].HeaderText = Tr("Patient Name");
             dgvAppointments.Columns["PatientName"].Width = 150;
 
-            dgvAppointments.Columns["DoctorName"].HeaderText = "Doctor Name";
+            dgvAppointments.Columns["DoctorName"].HeaderText = Tr("Doctor Name");
             dgvAppointments.Columns["DoctorName"].Width = 150;
 
-            dgvAppointments.Columns["TypeName"].HeaderText = "AppointmentType";
+            dgvAppointments.Columns["TypeName"].HeaderText = Tr("AppointmentType");
             dgvAppointments.Columns["TypeName"].Width = 150;
 
-            dgvAppointments.Columns["AppointmentFees"].HeaderText = "Fees";
+            dgvAppointments.Columns["AppointmentFees"].HeaderText = Tr("Fees");
             dgvAppointments.Columns["AppointmentFees"].Width = 100;
 
-            dgvAppointments.Columns["AppointmentDate"].HeaderText = "Date";
+            dgvAppointments.Columns["AppointmentDate"].HeaderText = Tr("Date");
             dgvAppointments.Columns["AppointmentDate"].Width = 150;
 
-            dgvAppointments.Columns["AppointmentStatusText"].HeaderText = "Status";
+            dgvAppointments.Columns["AppointmentStatusText"].HeaderText = Tr("Status");
             dgvAppointments.Columns["AppointmentStatusText"].Width = 100;
 
-            dgvAppointments.Columns["CreatedByUserID"].HeaderText = "C.UserID";
+            dgvAppointments.Columns["CreatedByUserID"].HeaderText = Tr("C.UserID");
             dgvAppointments.Columns["CreatedByUserID"].Width = 90;
 
         }
 
         private void cbFilterBy_SelectedIndexChanged(object sender, EventArgs e)
         {
-            bool IsNone = cbFilterBy.Text == "None";
-            bool IsStatus = cbFilterBy.Text == "Status";
+            bool IsNone = GetEnglishText(cbFilterBy.Text) == "None";
+            bool IsStatus = GetEnglishText(cbFilterBy.Text) == "Status";
 
             txtFilterValue.Visible = !IsNone && !IsStatus;
             cbStatus.Visible = IsStatus;
@@ -124,7 +275,7 @@ namespace Clinic.Medical_Services.Appointment
 
         private void txtFilterValue_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (cbFilterBy.Text == "Appointment ID" || cbFilterBy.Text == "Created By UserID")
+            if (GetEnglishText(cbFilterBy.Text) == "Appointment ID" || GetEnglishText(cbFilterBy.Text) == "Created By UserID")
             {
                 e.Handled = !char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar);
 
@@ -139,7 +290,7 @@ namespace Clinic.Medical_Services.Appointment
             }
             else
             {
-                _dtAppointmets.DefaultView.RowFilter = $"AppointmentStatusText='{cbStatus.Text}'";
+                _dtAppointmets.DefaultView.RowFilter = $"AppointmentStatusText='{GetEnglishText(cbStatus.Text)}'";
             }
             lblRecordsCount.Text = _dtAppointmets.Rows.Count.ToString();
         }
@@ -149,7 +300,7 @@ namespace Clinic.Medical_Services.Appointment
             if (_dtAppointmets == null)
                 return;
 
-            string filterColumn = _GetFilterColumnName(cbFilterBy.Text);
+            string filterColumn = _GetFilterColumnName(GetEnglishText(cbFilterBy.Text));
             string searchText = txtFilterValue.Text.Trim();
 
             if (string.IsNullOrWhiteSpace(searchText) ||
@@ -231,16 +382,16 @@ namespace Clinic.Medical_Services.Appointment
 
             int AppointmentID = (int)dgvAppointments.CurrentRow.Cells["AppointmentID"].Value;
 
-            if (MessageBox.Show("Are you sure you want to delete Appoinment [" + AppointmentID + "]?", "Confirm Delete", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK)
+            if (MessageBox.Show(Tr("Are you sure you want to delete Appoinment [") + AppointmentID + "]?", Tr("Confirm Delete"), MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK)
             {
                 if (clsAppointment.DeleteAppointment(AppointmentID))
                 {
-                    MessageBox.Show("Appoinment Deleted Successfully.", "Successful", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show(Tr("Appoinment Deleted Successfully."), Tr("Successful"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                     _DataBackToDelete(AppointmentID);
                 }
                 else
                 {
-                    MessageBox.Show("Appoinment was not deleted because it has data linked to it in the system.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(Tr("Appoinment was not deleted because it has data linked to it in the system."), Tr("Error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
@@ -290,8 +441,8 @@ namespace Clinic.Medical_Services.Appointment
 
             int currentAppointmentID = (int)dgvAppointments.CurrentRow.Cells[0].Value;
 
-            string message = $"Are you sure you want to {actionName}?";
-            string title = "Confirm Action";
+            string message = Tr("Are you sure you want to ") + Tr(actionName) + "?";
+            string title = Tr("Confirm Action");
 
             if (MessageBox.Show(message, title, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
@@ -305,13 +456,13 @@ namespace Clinic.Medical_Services.Appointment
                         clsAppointment.RefreshQueueForDoctor(doctorID);
 
                     }
-                    MessageBox.Show($"✅ The operation was completed successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show($"✅ The operation was completed successfully.", Tr("Success"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                     _DataBackToUpdate(this, currentAppointmentID);
                 }
 
                 else
                 {
-                    MessageBox.Show($"❌ An error occurred while updating the status.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show($"❌ An error occurred while updating the status.", Tr("Error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
@@ -384,9 +535,9 @@ namespace Clinic.Medical_Services.Appointment
                 if (result != DialogResult.OK)
                 {
                     MessageBox.Show(
-                        "Check-in dialog did not return OK.\n" +
+                        Tr("Check-in dialog did not return OK.\n") +
                         "Dialog result: " + result,
-                        "Check-in Debug",
+                        Tr("Check-in Debug"),
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Warning);
 
@@ -405,8 +556,8 @@ namespace Clinic.Medical_Services.Appointment
                     if (appointment == null)
                     {
                         MessageBox.Show(
-                            "Appointment not found.",
-                            "Check-in Error",
+                            Tr("Appointment not found."),
+                            Tr("Check-in Error"),
                             MessageBoxButtons.OK,
                             MessageBoxIcon.Error);
 
@@ -421,11 +572,11 @@ namespace Clinic.Medical_Services.Appointment
                     if (!success)
                     {
                         MessageBox.Show(
-                            "CheckInPatient returned FALSE.\n\n" +
+                            Tr("CheckInPatient returned FALSE.\n\n") +
                             "Appointment ID: " + appointmentID +
-                            "\nPayment Method: " + paymentMethod +
-                            "\n\nCheck the billing service logic.",
-                            "Check-in Failed",
+                            Tr("\nPayment Method: ") + paymentMethod +
+                            Tr("\n\nCheck the billing service logic."),
+                            Tr("Check-in Failed"),
                             MessageBoxButtons.OK,
                             MessageBoxIcon.Error);
 
@@ -436,8 +587,8 @@ namespace Clinic.Medical_Services.Appointment
                         appointment.DoctorID);
 
                     MessageBox.Show(
-                        "Patient checked in successfully.",
-                        "Success",
+                        Tr("Patient checked in successfully."),
+                        Tr("Success"),
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Information);
 
@@ -447,7 +598,7 @@ namespace Clinic.Medical_Services.Appointment
                 {
                     MessageBox.Show(
                         ex.ToString(),
-                        "Check-in Error",
+                        Tr("Check-in Error"),
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
                 }
@@ -490,9 +641,9 @@ namespace Clinic.Medical_Services.Appointment
             if (matchingVisits.Length == 0)
             {
                 MessageBox.Show(
-                    "No visit found for Appointment ID: " + appointmentID +
-                    "\n\nPlease check in the patient first.",
-                    "Visit Not Found",
+                    Tr("No visit found for Appointment ID: ") + appointmentID +
+                    Tr("\n\nPlease check in the patient first."),
+                    Tr("Visit Not Found"),
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
 
