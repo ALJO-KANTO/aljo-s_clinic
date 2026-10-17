@@ -8,8 +8,6 @@
             if (disposing && components != null) components.Dispose();
             base.Dispose(disposing);
         }
-        // Keep designer initialization simple. Complex dynamic layout is built in frmXRay.cs
-        // so the Visual Studio WinForms designer can open without parsing custom loops.
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
