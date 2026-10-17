@@ -1063,6 +1063,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Medical Services\Pharmaciy\Controls\" />
+    <Folder Include="RadiologyAssets\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Neon Blue Group Users Icon.png" />

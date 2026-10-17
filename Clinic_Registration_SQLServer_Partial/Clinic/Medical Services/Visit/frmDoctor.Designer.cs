@@ -1292,25 +1292,25 @@
             // 
             // lblRecordsCount
             // 
-            this.lblRecordsCount.AutoSize = true;
-            this.lblRecordsCount.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
-            this.lblRecordsCount.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(34)))), ((int)(((byte)(197)))), ((int)(((byte)(94)))));
-            this.lblRecordsCount.Location = new System.Drawing.Point(113, 0);
-            this.lblRecordsCount.Name = "lblRecordsCount";
-            this.lblRecordsCount.Size = new System.Drawing.Size(23, 20);
-            this.lblRecordsCount.TabIndex = 247;
-            this.lblRecordsCount.Text = "??";
+            //this.lblRecordsCount.AutoSize = true;
+            //this.lblRecordsCount.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
+            //this.lblRecordsCount.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(34)))), ((int)(((byte)(197)))), ((int)(((byte)(94)))));
+            //this.lblRecordsCount.Location = new System.Drawing.Point(113, 0);
+            //this.lblRecordsCount.Name = "lblRecordsCount";
+            //this.lblRecordsCount.Size = new System.Drawing.Size(23, 20);
+            //this.lblRecordsCount.TabIndex = 247;
+            //this.lblRecordsCount.Text = "??";
             // 
             // label22
             // 
-            this.label22.AutoSize = true;
-            this.label22.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
-            this.label22.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(107)))), ((int)(((byte)(114)))), ((int)(((byte)(128)))));
-            this.label22.Location = new System.Drawing.Point(3, 0);
-            this.label22.Name = "label22";
-            this.label22.Size = new System.Drawing.Size(82, 20);
-            this.label22.TabIndex = 246;
-            this.label22.Text = "# Records:";
+            //this.label22.AutoSize = true;
+            //this.label22.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
+            //this.label22.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(107)))), ((int)(((byte)(114)))), ((int)(((byte)(128)))));
+            //this.label22.Location = new System.Drawing.Point(3, 0);
+            //this.label22.Name = "label22";
+            //this.label22.Size = new System.Drawing.Size(82, 20);
+            //this.label22.TabIndex = 246;
+            //this.label22.Text = "# Records:";
             // 
             // panel2
             // 

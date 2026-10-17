@@ -59,28 +59,53 @@ namespace Clinic
         }
         private void AddXRayDashboardButton()
         {
-            if (modernDashboard == null)
+            if (modernSidebar == null)
+                return;
+
+            FlowLayoutPanel menu = null;
+
+            foreach (Control container in modernSidebar.Controls)
+            {
+                FlowLayoutPanel flow = container as FlowLayoutPanel;
+
+                if (flow != null)
+                {
+                    menu = flow;
+                    break;
+                }
+            }
+
+            if (menu == null)
+            {
+                MessageBox.Show(
+                    "Modern sidebar menu container was not found.");
+                return;
+            }
+
+            if (menu.Controls.ContainsKey("btnXRay"))
                 return;
 
             Button btnXRay = new Button
             {
                 Name = "btnXRay",
-                Text = "X-Ray / Radiology",
+                Text = "   🩻    X-Ray / Radiology",
                 Tag = "X-Ray / Radiology",
-                Width = 190,
-                Height = 48,
-                BackColor = Color.FromArgb(0, 121, 107),
+                Height = 45,
+                Width = Math.Max(180, menu.ClientSize.Width - 10),
+                Margin = new Padding(3, 2, 3, 2),
+                BackColor = Color.FromArgb(24, 38, 60),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                Font = new Font("Segoe UI", 10F),
+                TextAlign = ContentAlignment.MiddleLeft,
                 Cursor = Cursors.Hand
             };
 
             btnXRay.FlatAppearance.BorderSize = 0;
+
             btnXRay.Click += (s, e) => OpenXRay();
 
-            modernDashboard.Controls.Add(btnXRay);
-            btnXRay.BringToFront();
+            menu.Controls.Add(btnXRay);
         }
         private ToolStripMenuItem xrayToolStripMenuItem;
 
