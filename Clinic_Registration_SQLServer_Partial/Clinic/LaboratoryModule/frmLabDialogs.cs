@@ -58,31 +58,169 @@ namespace Clinic.Medical_Services.Laboratory
         private void LoadRows() { grid.DataSource = ClinicDatabase.GetLabTests(); grid.ClearSelection(); }
     }
 
+
     public class frmLabRequest : Form
     {
-        private NumericUpDown visit;
-        private ComboBox test;
+        private ComboBox cmbPatient;
+        private ComboBox cmbVisit;
+        private ComboBox cmbTest;
+
         public frmLabRequest()
         {
-            var t = LabUi.Layout(this, "New Lab Request", 3);
-            visit = new NumericUpDown { Minimum = 1, Maximum = int.MaxValue, Dock = DockStyle.Fill };
-            test = new ComboBox { Dock = DockStyle.Fill, DropDownStyle = ComboBoxStyle.DropDownList };
-            var save = LabUi.Button("Create Request");
-            t.Controls.Add(LabUi.Label("Visit ID"), 0, 0); t.Controls.Add(visit, 1, 0);
-            t.Controls.Add(LabUi.Label("Lab Test"), 0, 1); t.Controls.Add(test, 1, 1);
-            t.Controls.Add(save, 1, 2);
-            Load += (s, e) => {
-                DataTable dt = ClinicDatabase.GetLabTests();
-                dt.DefaultView.RowFilter = "IsActive = 1";
-                test.DataSource = dt.DefaultView; test.DisplayMember = "TestName"; test.ValueMember = "TestID";
+            var t = LabUi.Layout(this, "New Lab Request", 4);
+
+            this.Size = new Size(620, 390);
+            this.MinimumSize = this.Size;
+
+            cmbPatient = new ComboBox
+            {
+                Dock = DockStyle.Fill,
+                DropDownStyle = ComboBoxStyle.DropDownList
             };
-            save.Click += (s, e) => {
-                try {
-                    if (test.SelectedValue == null) throw new Exception("Choose an active test.");
-                    ClinicDatabase.CreateLabRequest((int)visit.Value, Convert.ToInt32(test.SelectedValue));
-                    DialogResult = DialogResult.OK;
-                } catch (Exception ex) { MessageBox.Show(ex.Message, "Cannot create request"); }
+
+            cmbVisit = new ComboBox
+            {
+                Dock = DockStyle.Fill,
+                DropDownStyle = ComboBoxStyle.DropDownList
             };
+
+            cmbTest = new ComboBox
+            {
+                Dock = DockStyle.Fill,
+                DropDownStyle = ComboBoxStyle.DropDownList
+            };
+
+            var btnSave = LabUi.Button("Create Request");
+
+            t.Controls.Add(LabUi.Label("Patient"), 0, 0);
+            t.Controls.Add(cmbPatient, 1, 0);
+
+            t.Controls.Add(LabUi.Label("Patient Visit"), 0, 1);
+            t.Controls.Add(cmbVisit, 1, 1);
+
+            t.Controls.Add(LabUi.Label("Lab Test"), 0, 2);
+            t.Controls.Add(cmbTest, 1, 2);
+
+            t.Controls.Add(btnSave, 1, 3);
+
+            this.Load += frmLabRequest_Load;
+
+            cmbPatient.SelectedIndexChanged +=
+                cmbPatient_SelectedIndexChanged;
+
+            btnSave.Click += btnSave_Click;
+        }
+
+        private void frmLabRequest_Load(
+            object sender, EventArgs e)
+        {
+            try
+            {
+                DataTable patients =
+                    ClinicDatabase.GetLabPatients();
+
+                cmbPatient.DisplayMember = "PatientName";
+                cmbPatient.ValueMember = "PatientID";
+                cmbPatient.DataSource = patients;
+
+                DataTable tests =
+                    ClinicDatabase.GetLabTests();
+
+                tests.DefaultView.RowFilter = "IsActive = 1";
+
+                cmbTest.DisplayMember = "TestName";
+                cmbTest.ValueMember = "TestID";
+                cmbTest.DataSource = tests.DefaultView;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message,
+                    "Load Lab Request",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        private void cmbPatient_SelectedIndexChanged(
+            object sender, EventArgs e)
+        {
+            if (!(cmbPatient.SelectedValue is int))
+            {
+                cmbVisit.DataSource = null;
+                return;
+            }
+
+            try
+            {
+                int patientID =
+                    Convert.ToInt32(cmbPatient.SelectedValue);
+
+                DataTable visits =
+                    ClinicDatabase.GetLabPatientVisits(patientID);
+
+                cmbVisit.DisplayMember = "VisitDisplay";
+                cmbVisit.ValueMember = "VisitID";
+                cmbVisit.DataSource = visits;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message,
+                    "Load Patient Visits",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnSave_Click(
+            object sender, EventArgs e)
+        {
+            try
+            {
+                if (!(cmbPatient.SelectedValue is int))
+                {
+                    MessageBox.Show("Please select a patient.");
+                    return;
+                }
+
+                if (!(cmbVisit.SelectedValue is int))
+                {
+                    MessageBox.Show(
+                        "This patient has no visit. Create a visit first.");
+                    return;
+                }
+
+                if (!(cmbTest.SelectedValue is int))
+                {
+                    MessageBox.Show("Please select a lab test.");
+                    return;
+                }
+
+                int visitID =
+                    Convert.ToInt32(cmbVisit.SelectedValue);
+
+                int testID =
+                    Convert.ToInt32(cmbTest.SelectedValue);
+
+                int requestID =
+                    ClinicDatabase.CreateLabRequest(visitID, testID);
+
+                MessageBox.Show(
+                    "Lab Request #" + requestID +
+                    " created successfully.",
+                    "Success",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+
+                this.DialogResult = DialogResult.OK;
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message,
+                    "Cannot Create Lab Request",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
         }
     }
 

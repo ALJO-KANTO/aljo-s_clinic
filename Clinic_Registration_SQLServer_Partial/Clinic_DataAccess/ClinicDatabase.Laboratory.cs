@@ -25,7 +25,40 @@ namespace Clinic_DataAccess
                 CONSTRAINT FK_LabRequests_Test FOREIGN KEY (TestID) REFERENCES laboratorytests(TestID)
             ) ENGINE=InnoDB;");
         }
+        public static DataTable GetLabPatients()
+        {
+            return ExecuteDataTable(@"
+        SELECT
+            p.PatientID,
+            pe.FullName AS PatientName
+        FROM patients p
+        INNER JOIN persons pe
+            ON pe.PersonID = p.PersonID
+        WHERE p.IsActive = 1
+        ORDER BY pe.FullName;");
+        }
 
+        public static DataTable GetLabPatientVisits(int patientID)
+        {
+            return ExecuteDataTable(@"
+        SELECT
+            v.VisitID,
+            CONCAT(
+                'Visit #', v.VisitID,
+                ' - ',
+                DATE_FORMAT(v.VisitDate, '%d %b %Y'),
+                ' - ',
+                COALESCE(dp.FullName, 'Unknown Doctor')
+            ) AS VisitDisplay
+        FROM visits v
+        LEFT JOIN doctors d
+            ON d.DoctorID = v.DoctorID
+        LEFT JOIN persons dp
+            ON dp.PersonID = d.PersonID
+        WHERE v.PatientID = @PatientID
+        ORDER BY v.VisitDate DESC, v.VisitID DESC;",
+                new MySqlParameter("@PatientID", patientID));
+        }
         public static DataTable GetLabTests(string search = "")
         {
             return ExecuteDataTable(@"SELECT TestID, TestName, TestPrice, IsActive
