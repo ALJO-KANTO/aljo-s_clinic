@@ -10,8 +10,7 @@ namespace Clinic.Medical_Services.Laboratory
         private Panel header, statsPanel, actionsPanel, filterPanel, gridPanel;
         private Label title, subtitle;
         private Label[] statValues;
-        private Button btnNewRequest, btnManageTests, btnEnterResult, btnRefresh;
-        private TextBox txtSearch;
+        private Button btnNewRequest, btnManageTests, btnEnterResult, btnRefresh, btnClose; private TextBox txtSearch;
         private ComboBox cmbStatus;
         private DataGridView dgvRequests;
 
@@ -70,6 +69,35 @@ namespace Clinic.Medical_Services.Laboratory
                 Font = new Font("Segoe UI", 10), Dock = DockStyle.Top, Height = 24 };
             header.Controls.Add(subtitle);
             header.Controls.Add(title);
+
+            btnClose = new Button
+            {
+                Name = "btnClose",
+                Text = "✕ Close",
+                Size = new Size(110, 38),
+                BackColor = Color.FromArgb(180, 55, 55),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                Location = new Point(header.Width - 125, 25),
+                Cursor = Cursors.Hand
+            };
+
+            btnClose.FlatAppearance.BorderSize = 0;
+
+            header.Controls.Add(btnClose);
+            btnClose.BringToFront();
+
+            header.Resize += (s, e) =>
+            {
+                btnClose.Location = new Point(
+                    header.ClientSize.Width - btnClose.Width - 15,
+                    25);
+            };
+
+            btnClose.Click += (s, e) => this.Close();
+
             body.Controls.Add(header, 0, 0);
 
             statsPanel = new Panel { Dock = DockStyle.Fill, BackColor = Light, Padding = new Padding(0, 12, 0, 10) };

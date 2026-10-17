@@ -86,6 +86,7 @@
     <Compile Include="ClinicDatabase.Laboratory.cs" />
     <Compile Include="ClinicDatabase.Migrations.cs" />
     <Compile Include="ClinicDatabase.Registration.cs" />
+    <Compile Include="ClinicDatabase.XRay.cs" />
     <Compile Include="clsAppointmentData.cs" />
     <Compile Include="clsAppointmentTypeData.cs" />
     <Compile Include="clsBillingServiceData.cs" />

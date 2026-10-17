@@ -68,20 +68,32 @@ namespace Clinic_DataAccess
 
                         // 2. Create bill
                         string queryBill = @"
-                    INSERT INTO Bills
+                 INSERT INTO Bills
                     (
                         VisitID,
                         PaymentStatus,
                         CreatedByUserID,
-                        BillDate
+                        BillDate,
+                        TotalAmount,
+                        BillNumber
                     )
-                    VALUES
-                    (
+                    SELECT 
                         @VisitID,
-                        2,
+                        2,                                      -- PaymentStatus
                         @UserID,
-                        NOW()
-                    );
+                        NOW(),
+                        COALESCE(
+                            SUM( (vs.SavedServicePrice * vs.Quantity) - IFNULL(vs.Discount, 0) ), 
+                            0
+                        ) AS TotalAmount,
+                        CONCAT('INV-', YEAR(NOW()), '-', LPAD(
+                            (SELECT IFNULL(MAX(CAST(SUBSTRING(BillNumber, 10) AS UNSIGNED)), 0) + 1 
+                             FROM Bills 
+                             WHERE BillNumber LIKE CONCAT('INV-', YEAR(NOW()), '-%')), 
+                            4, '0')
+                        ) AS BillNumber
+                    FROM visitservices vs
+                    WHERE vs.VisitID = @VisitID;
 
                     SELECT LAST_INSERT_ID();";
 
