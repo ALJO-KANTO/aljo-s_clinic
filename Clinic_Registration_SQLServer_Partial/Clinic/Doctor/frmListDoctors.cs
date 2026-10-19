@@ -18,7 +18,143 @@ namespace Clinic.Doctor
         public frmListDoctors()
         {
             InitializeComponent();
+            ApplyDoctorListTranslation();
         }
+        private void ApplyDoctorListTranslation()
+        {
+            bool isArabic = TranslationClass.IsArabic;
+
+            // Form title
+            this.Text = TranslationClass.Translate(
+                "Manage Doctors", isArabic);
+
+            this.RightToLeft =
+                isArabic ? RightToLeft.Yes : RightToLeft.No;
+
+            this.RightToLeftLayout = isArabic;
+
+            // Buttons and labels
+            TranslateDoctorControls(this);
+
+            // DataGridView headings
+            if (dgvDoctors.Columns.Contains("DoctorID"))
+                dgvDoctors.Columns["DoctorID"].HeaderText =
+                    TranslationClass.Translate("Doctor ID", isArabic);
+
+            if (dgvDoctors.Columns.Contains("PersonID"))
+                dgvDoctors.Columns["PersonID"].HeaderText =
+                    TranslationClass.Translate("Person ID", isArabic);
+
+            if (dgvDoctors.Columns.Contains("FullName"))
+                dgvDoctors.Columns["FullName"].HeaderText =
+                    TranslationClass.Translate("Full Name", isArabic);
+
+            if (dgvDoctors.Columns.Contains("LicenseNumber"))
+                dgvDoctors.Columns["LicenseNumber"].HeaderText =
+                    TranslationClass.Translate("License #", isArabic);
+
+            if (dgvDoctors.Columns.Contains("ConsultationFees"))
+                dgvDoctors.Columns["ConsultationFees"].HeaderText =
+                    TranslationClass.Translate("Fees", isArabic);
+
+            if (dgvDoctors.Columns.Contains("Specializations"))
+                dgvDoctors.Columns["Specializations"].HeaderText =
+                    TranslationClass.Translate("Specializations", isArabic);
+
+            if (dgvDoctors.Columns.Contains("WorkingDays"))
+                dgvDoctors.Columns["WorkingDays"].HeaderText =
+                    TranslationClass.Translate("Working Days", isArabic);
+
+            if (dgvDoctors.Columns.Contains("CountryName"))
+                dgvDoctors.Columns["CountryName"].HeaderText =
+                    TranslationClass.Translate("Country", isArabic);
+
+            if (dgvDoctors.Columns.Contains("IsActive"))
+                dgvDoctors.Columns["IsActive"].HeaderText =
+                    TranslationClass.Translate("Is Active", isArabic);
+
+            // Records count
+            if (lblRecordsCount != null)
+            {
+                lblRecordsCount.RightToLeft =
+                    isArabic ? RightToLeft.Yes : RightToLeft.No;
+            }
+
+            // Grid direction
+            dgvDoctors.RightToLeft =
+                isArabic ? RightToLeft.Yes : RightToLeft.No;
+
+            // Keep the internal filter values in English because
+            // your existing filtering code depends on them.
+            cbFilterBy.RightToLeft =
+                isArabic ? RightToLeft.Yes : RightToLeft.No;
+
+            cbIsActive.RightToLeft =
+                isArabic ? RightToLeft.Yes : RightToLeft.No;
+        }
+
+
+
+        private void TranslateDoctorControls(Control parent)
+        {
+            bool isArabic = TranslationClass.IsArabic;
+
+            foreach (Control control in parent.Controls)
+            {
+                // Do not translate the numeric record-count label.
+                // Its value is set by _RefreshUIState().
+                if (control != lblRecordsCount)
+                {
+                    string originalText = control.Tag as string;
+
+                    // If Tag is missing or is not a dictionary key,
+                    // try the control's current text.
+                    if (string.IsNullOrWhiteSpace(originalText) ||
+                        !TranslationClass.sidebarTranslations.ContainsKey(originalText))
+                    {
+                        originalText = control.Text;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(originalText) &&
+                        TranslationClass.sidebarTranslations.ContainsKey(originalText))
+                    {
+                        control.Tag = originalText;
+
+                        control.Text = TranslationClass.Translate(
+                            originalText, isArabic);
+                    }
+                }
+
+                if (control is Label label)
+                {
+                    label.RightToLeft = isArabic
+                        ? RightToLeft.Yes
+                        : RightToLeft.No;
+
+                    label.TextAlign = isArabic
+                        ? ContentAlignment.MiddleRight
+                        : ContentAlignment.MiddleLeft;
+                }
+                else if (control is Button button)
+                {
+                    button.RightToLeft = isArabic
+                        ? RightToLeft.Yes
+                        : RightToLeft.No;
+                }
+
+                if (control.HasChildren)
+                {
+                    TranslateDoctorControls(control);
+                }
+            }
+
+            // Translate the Close button explicitly.
+            btnClose.Text = TranslationClass.Translate("Close", isArabic);
+            btnClose.RightToLeft = isArabic
+                ? RightToLeft.Yes
+                : RightToLeft.No;
+        }
+
 
         private void btnAddDoctor_Click(object sender, EventArgs e)
         {
@@ -66,6 +202,7 @@ namespace Clinic.Doctor
         private void frmListDoctors_Load(object sender, EventArgs e)
         {
             _RefreshDoctorsList();
+            ApplyDoctorListTranslation();
         }
 
         private void cbIsActive_SelectedIndexChanged(object sender, EventArgs e)

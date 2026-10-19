@@ -317,6 +317,39 @@ namespace Clinic
 { "← View Patient Details", "عرض بيانات المريض →" },
 { "← Next", "التالي →" },
 { "Please select a visit first.", ".يرجى اختيار زيارة أولاً" },
+// Doctor List
+{ "Manage Doctors", "إدارة الأطباء" },
+{ "Doctor List", "قائمة الأطباء" },
+{ "Add New Doctor", "إضافة طبيب جديد" },
+{ "LicenseNumber", "رقم الترخيص" },
+{ "License #", "رقم الترخيص" },
+
+{ "ConsultationFees", "رسوم الاستشارة" },
+{ "Specializations", "التخصصات" },
+{ "WorkingDays", "أيام العمل" },
+{ "Working Days", "أيام العمل" },
+{ "Country", "الدولة" },
+{ "CountryName", "اسم الدولة" },
+{ "Is Active", "نشط" },
+{ "IsActive", "حالة النشاط" },
+{ "Yes", "نعم" },
+{ "No", "لا" },
+{ "Doctor Deleted Successfully.", "تم حذف الطبيب بنجاح." },
+{ "Doctor List Error", "خطأ في قائمة الأطباء" },
+{ "Doctor data could not be loaded.", "تعذر تحميل بيانات الأطباء." },
+{ "Are you sure you want to delete Doctor", "هل أنت متأكد أنك تريد حذف الطبيب" },
+{ "Doctor was not deleted because it has data linked to it in the system.", "لم يتم حذف الطبيب لوجود بيانات مرتبطة به في النظام." },
+
+{ "User ID", "رقم المستخدم" },
+{ "UserName", "اسم المستخدم" },
+{ "Role Name", "اسم الدور" },
+{ "# Records:", "عدد السجلات:" },
+
+{ "Translate", "ترجمة" },
+{ "Billing_Payments", "الفواتير والمدفوعات" },
+
+{ "X-Ray / Radiology", "الأشعة السينية / الأشعة" },
+
 
 
             {"✚  CLINIC\n     MANAGEMENT SYSTEM", "✚  نظام إدارة\n     العيادة" },

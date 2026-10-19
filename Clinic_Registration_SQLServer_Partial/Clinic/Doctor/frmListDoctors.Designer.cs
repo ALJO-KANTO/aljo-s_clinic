@@ -57,24 +57,24 @@
             // 
             // lblRecordsCount
             // 
-            this.lblRecordsCount.AutoSize = true;
-            this.lblRecordsCount.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
-            this.lblRecordsCount.Location = new System.Drawing.Point(106, 726);
-            this.lblRecordsCount.Name = "lblRecordsCount";
-            this.lblRecordsCount.Size = new System.Drawing.Size(28, 25);
-            this.lblRecordsCount.TabIndex = 98;
-            this.lblRecordsCount.Text = "??";
+            //this.lblRecordsCount.AutoSize = true;
+            //this.lblRecordsCount.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
+            //this.lblRecordsCount.Location = new System.Drawing.Point(106, 726);
+            //this.lblRecordsCount.Name = "lblRecordsCount";
+            //this.lblRecordsCount.Size = new System.Drawing.Size(28, 25);
+            //this.lblRecordsCount.TabIndex = 98;
+            //this.lblRecordsCount.Text = "??";
             // 
             // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(107)))), ((int)(((byte)(114)))), ((int)(((byte)(128)))));
-            this.label2.Location = new System.Drawing.Point(12, 726);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(110, 28);
-            this.label2.TabIndex = 97;
-            this.label2.Text = "# Records:";
+            //// 
+            //this.label2.AutoSize = true;
+            //this.label2.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            //this.label2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(107)))), ((int)(((byte)(114)))), ((int)(((byte)(128)))));
+            //this.label2.Location = new System.Drawing.Point(12, 726);
+            //this.label2.Name = "label2";
+            //this.label2.Size = new System.Drawing.Size(110, 28);
+            //this.label2.TabIndex = 97;
+            //this.label2.Text = "# Records:";
             // 
             // label1
             // 
