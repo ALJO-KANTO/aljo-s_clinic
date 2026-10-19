@@ -73,7 +73,7 @@ namespace Clinic.Medical_Services.Laboratory
             btnClose = new Button
             {
                 Name = "btnClose",
-                Text = "✕ Close",
+                Text = "Close",
                 Size = new Size(110, 38),
                 BackColor = Color.FromArgb(180, 55, 55),
                 ForeColor = Color.White,
@@ -117,7 +117,7 @@ namespace Clinic.Medical_Services.Laboratory
 
             actionsPanel = new Panel { Dock = DockStyle.Fill, BackColor = Color.White, Padding = new Padding(12, 14, 12, 10) };
             var actions = new FlowLayoutPanel { Dock = DockStyle.Fill, WrapContents = true, AutoScroll = true };
-            btnNewRequest = MakeButton("+ New Lab Request", Color.FromArgb(0, 150, 136));
+            btnNewRequest = MakeButton("New Lab Request", Color.FromArgb(0, 150, 136));
             btnManageTests = MakeButton("Manage Lab Tests", Color.FromArgb(23, 112, 155));
             btnEnterResult = MakeButton("Enter Result", Color.FromArgb(102, 81, 169));
             btnRefresh = MakeButton("Refresh", Color.FromArgb(74, 96, 109)); btnRefresh.Width = 110;

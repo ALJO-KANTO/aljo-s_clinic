@@ -19,10 +19,10 @@ namespace Clinic.Medical_Services.Pharmaciy
         public enum enMode { AddNew = 0, Update = 1 }
         public enMode Mode = enMode.AddNew;
 
-        private void ShowSuccess(string message) => MessageBox.Show(message, "✅ Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        private void ShowError(string message) => MessageBox.Show(message, "❌ Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        private void ShowWarning(string message) => MessageBox.Show(message, "⚠️ Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-        private DialogResult ConfirmAction(string message) => MessageBox.Show(message, "❓ Confirm Action", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+        private void ShowSuccess(string message) => MessageBox.Show(T(message), T("✅ Success"), MessageBoxButtons.OK, MessageBoxIcon.Information);
+        private void ShowError(string message) => MessageBox.Show(T(message), T("❌ Error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+        private void ShowWarning(string message) => MessageBox.Show(T(message), T("⚠️ Warning"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        private DialogResult ConfirmAction(string message) => MessageBox.Show(T(message), T("❓ Confirm Action"), MessageBoxButtons.YesNo, MessageBoxIcon.Question);
         public frmManageDrugs()
         {
             InitializeComponent();
@@ -34,6 +34,166 @@ namespace Clinic.Medical_Services.Pharmaciy
             SetupMedicineGridDesign();
             lbCurrentUser.Text = clsGlobal.CurrentUser.PersonInfo.Name;
             dgMedicines.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 14, FontStyle.Bold);
+            ApplyArabicProperties();
+        }
+
+        private string T(string text)
+        {
+            return TranslationClass.Translate(text, TranslationClass.IsArabic);
+        }
+
+        // Call this again when the language is changed while this form is open.
+        public void ApplyArabicProperties()
+        {
+            bool arabic = TranslationClass.IsArabic;
+            this.RightToLeft = arabic ? RightToLeft.Yes : RightToLeft.No;
+            this.RightToLeftLayout = arabic;
+            ApplyTranslationToControls(this);
+            ApplyLanguageSpecificLayout(arabic);
+            TranslateMedicineGridHeaders();
+        }
+
+        // Changes only the requested positions when Arabic is selected.
+        private void ApplyLanguageSpecificLayout(bool arabic)
+        {
+            if (arabic)
+            {
+                // Center the form heading across the title panel.
+                lblTitle.AutoSize = false;
+                lblTitle.Location = new Point(0, 10);
+                lblTitle.Size = new Size(panTitle.ClientSize.Width, 55);
+                lblTitle.TextAlign = ContentAlignment.MiddleCenter;
+                lblTitle.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+
+                // Put the username to the left of the current-user caption.
+                lbCurrentUser.AutoSize = false;
+                lbCurrentUser.Location = new Point(875, 24);
+                lbCurrentUser.Size = new Size(180, 28);
+                lbCurrentUser.TextAlign = ContentAlignment.MiddleRight;
+                lbCurrentUser.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+
+                label5.AutoSize = false;
+                label5.Location = new Point(1060, 24);
+                label5.Size = new Size(155, 28);
+                label5.TextAlign = ContentAlignment.MiddleRight;
+                label5.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+
+                // Place medicine field labels to the right of their input controls.
+                SetArabicFieldLabel(label1, 920, 28, 185, 28);
+                SetArabicFieldLabel(label2, 920, 78, 185, 28);
+                SetArabicFieldLabel(label3, 920, 128, 185, 28);
+                SetArabicFieldLabel(label4, 920, 178, 185, 28);
+                SetArabicFieldLabel(label7, 920, 230, 185, 28);
+
+                // Put the search label on the right side of the search textbox.
+                txtSearch.Location = new Point(600, 14);
+                txtSearch.RightToLeft = RightToLeft.Yes;
+                label6.AutoSize = false;
+                label6.Location = new Point(1150, 16);
+                label6.Size = new Size(130, 28);
+                label6.TextAlign = ContentAlignment.MiddleRight;
+                lbBlaceholder.Location = new Point(615, 20);
+                lbBlaceholder.RightToLeft = RightToLeft.Yes;
+
+                foreach (Control control in new Control[] { txtMedicneName, txtMedicinePrice, nudCurrentStock, nudReorderLevel, nudTaxRate })
+                    control.RightToLeft = RightToLeft.Yes;
+            }
+            else
+            {
+                // Restore the original designer positions for English.
+                lblTitle.AutoSize = true;
+                lblTitle.Location = new Point(75, 14);
+                lblTitle.Size = new Size(399, 45);
+                lblTitle.TextAlign = ContentAlignment.MiddleLeft;
+                lblTitle.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+
+                lbCurrentUser.AutoSize = true;
+                lbCurrentUser.Location = new Point(1143, 24);
+                lbCurrentUser.Size = new Size(53, 28);
+                lbCurrentUser.TextAlign = ContentAlignment.MiddleLeft;
+                lbCurrentUser.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+
+                label5.AutoSize = true;
+                label5.Location = new Point(1000, 24);
+                label5.Size = new Size(137, 28);
+                label5.TextAlign = ContentAlignment.MiddleLeft;
+                label5.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+
+                SetEnglishFieldLabel(label1, 186, 28);
+                SetEnglishFieldLabel(label2, 186, 78);
+                SetEnglishFieldLabel(label3, 186, 128);
+                SetEnglishFieldLabel(label4, 186, 178);
+                SetEnglishFieldLabel(label7, 186, 230);
+
+                txtSearch.Location = new Point(118, 14);
+                txtSearch.RightToLeft = RightToLeft.No;
+                label6.AutoSize = true;
+                label6.Location = new Point(19, 16);
+                label6.Size = new Size(83, 28);
+                label6.TextAlign = ContentAlignment.MiddleLeft;
+                lbBlaceholder.Location = new Point(135, 20);
+                lbBlaceholder.RightToLeft = RightToLeft.No;
+
+                foreach (Control control in new Control[] { txtMedicneName, txtMedicinePrice, nudCurrentStock, nudReorderLevel, nudTaxRate })
+                    control.RightToLeft = RightToLeft.No;
+            }
+        }
+
+        private void SetArabicFieldLabel(Label label, int x, int y, int width, int height)
+        {
+            label.AutoSize = false;
+            label.Location = new Point(x, y);
+            label.Size = new Size(width, height);
+            label.TextAlign = ContentAlignment.MiddleRight;
+            label.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        }
+
+        private void SetEnglishFieldLabel(Label label, int x, int y)
+        {
+            label.AutoSize = true;
+            label.Location = new Point(x, y);
+            label.TextAlign = ContentAlignment.MiddleLeft;
+            label.Anchor = AnchorStyles.None;
+        }
+
+        private void ApplyTranslationToControls(Control parent)
+        {
+            bool arabic = TranslationClass.IsArabic;
+            foreach (Control control in parent.Controls)
+            {
+                if (!string.IsNullOrWhiteSpace(control.Text))
+                    control.Text = T(control.Text);
+
+                control.RightToLeft = arabic ? RightToLeft.Yes : RightToLeft.No;
+                if (control is Label label && arabic)
+                    label.TextAlign = ContentAlignment.MiddleRight;
+
+                if (control.HasChildren)
+                    ApplyTranslationToControls(control);
+            }
+
+            dgMedicines.RightToLeft = arabic ? RightToLeft.Yes : RightToLeft.No;
+            dgMedicines.ColumnHeadersDefaultCellStyle.Alignment = arabic
+                ? DataGridViewContentAlignment.MiddleRight : DataGridViewContentAlignment.MiddleLeft;
+            dgMedicines.DefaultCellStyle.Alignment = arabic
+                ? DataGridViewContentAlignment.MiddleRight : DataGridViewContentAlignment.MiddleLeft;
+            dgMedicines.RowHeadersDefaultCellStyle.Alignment = arabic
+                ? DataGridViewContentAlignment.MiddleRight : DataGridViewContentAlignment.MiddleLeft;
+        }
+
+        private void TranslateMedicineGridHeaders()
+        {
+            foreach (DataGridViewColumn column in dgMedicines.Columns)
+            {
+                if (!string.IsNullOrWhiteSpace(column.HeaderText))
+                    column.HeaderText = T(column.HeaderText);
+            }
+            if (dgMedicines.Columns.Contains("Actions"))
+            {
+                DataGridViewLinkColumn actionsColumn = dgMedicines.Columns["Actions"] as DataGridViewLinkColumn;
+                if (actionsColumn != null)
+                    actionsColumn.Text = T("Edit  |  Delete");
+            }
         }
 
         private void SetupMedicineGridDesign()
@@ -80,13 +240,14 @@ namespace Clinic.Medical_Services.Pharmaciy
             dgMedicines.Columns.Add(actionColumn);
 
             dgMedicines.DataSource = _MedicineTable;
-           
+            TranslateMedicineGridHeaders();
         }
 
         private void _RefreshMedicinesList()
         {
             _MedicineTable = clsMedicine.GetAllMedicines();
             dgMedicines.DataSource = _MedicineTable;
+            TranslateMedicineGridHeaders();
         }
         private void _ResetFaild()
         {
@@ -126,7 +287,7 @@ namespace Clinic.Medical_Services.Pharmaciy
 
                 Mode = enMode.AddNew;
                 _Medicine = null;
-                btnSave.Text = "Add New Drug";
+                btnSave.Text = T("Add New Drug");
 
                 _ResetFaild();
             }
@@ -160,7 +321,7 @@ namespace Clinic.Medical_Services.Pharmaciy
             nudCurrentStock.Minimum = Math.Min(0M, _Medicine.CurrentStock);
             nudReorderLevel.Minimum = Math.Min(0M, _Medicine.ReorderLevel);
 
-            btnSave.Text = "Update Drug";
+            btnSave.Text = T("Update Drug");
             Mode = enMode.Update;
 
             txtMedicneName.Text = _Medicine.MedicineName;
@@ -178,8 +339,8 @@ namespace Clinic.Medical_Services.Pharmaciy
 
                 string action = dgMedicines.Rows[e.RowIndex].Cells["Actions"].Value.ToString();
 
-                DialogResult result = MessageBox.Show("Choose action: Yes for Edit, No for Delete",
-                                                     "Medicine Action", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+                DialogResult result = MessageBox.Show(T("Choose action: Yes for Edit, No for Delete"),
+                                                     T("Medicine Action"), MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
 
                 if (result == DialogResult.Yes)
                 {
@@ -190,9 +351,9 @@ namespace Clinic.Medical_Services.Pharmaciy
                     if (ConfirmAction("Are you sure you want to delete this medicine?")
                                      == DialogResult.Yes)
                     {
-                        if (clsMedicine.DeleteMedicine(medicineID)) 
+                        if (clsMedicine.DeleteMedicine(medicineID))
                         {
-                          ShowSuccess("Deleted Successfully");
+                            ShowSuccess("Deleted Successfully");
                             _RefreshMedicinesList();
                         }
                     }
@@ -235,7 +396,7 @@ namespace Clinic.Medical_Services.Pharmaciy
             if (string.IsNullOrWhiteSpace(txtMedicneName.Text))
             {
                 e.Cancel = true;
-                errorProvider1.SetError(txtMedicneName, "Medicine name cannot be blank!");
+                errorProvider1.SetError(txtMedicneName, T("Medicine name cannot be blank!"));
             }
             else
             {
@@ -249,7 +410,7 @@ namespace Clinic.Medical_Services.Pharmaciy
             if (string.IsNullOrWhiteSpace(txtMedicinePrice.Text) || !decimal.TryParse(txtMedicinePrice.Text, out price) || price <= 0)
             {
                 e.Cancel = true;
-                errorProvider1.SetError(txtMedicinePrice, "Please enter a valid price greater than 0!");
+                errorProvider1.SetError(txtMedicinePrice, T("Please enter a valid price greater than 0!"));
             }
             else
             {
