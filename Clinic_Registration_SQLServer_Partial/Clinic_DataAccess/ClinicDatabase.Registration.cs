@@ -292,5 +292,136 @@ namespace Clinic_DataAccess
                 new MySqlParameter("@Admin", adminUsername),
                 new MySqlParameter("@ID", registrationId));
         }
+
+        public static MySqlParameter[] CreateParameter(string v, object text)
+        {
+            // add parameters
+            return new MySqlParameter[]
+            {
+                new MySqlParameter(v, text)
+            };
+        }
+
+
+        public static MySqlDataReader ExecuteReader(
+            string query,
+            params MySqlParameter[] mySqlParameters)
+        {
+            MySqlConnection connection = null;
+
+            try
+            {
+                connection = GetConnection();
+
+                connection.Open();
+
+                MySqlCommand command =
+                    new MySqlCommand(query, connection);
+
+                if (mySqlParameters != null &&
+                    mySqlParameters.Length > 0)
+                {
+                    command.Parameters.AddRange(mySqlParameters);
+                }
+
+                return command.ExecuteReader(
+                    CommandBehavior.CloseConnection);
+            }
+            catch (Exception ex)
+            {
+                if (connection != null)
+                {
+                    connection.Dispose();
+                }
+
+                throw new Exception(
+                    "Error executing reader: " + ex.Message,
+                    ex);
+            }
+        }
+
+
+        public static object ExecuteScalarNew(string query, params MySqlParameter[] parameters)
+        {
+            using (MySqlConnection connection = new MySqlConnection(GetConnectionString()))
+            {
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    if (parameters != null)
+                        command.Parameters.AddRange(parameters);
+
+                    connection.Open();
+                    var result = command.ExecuteScalar();
+                    return result == DBNull.Value ? null : result;
+                }
+            }
+        }
+
+        public static object ExecuteScalarNew(MySqlConnection con, MySqlTransaction tran, string query, params MySqlParameter[] parameters)
+        {
+            // con, tran , query and parameters
+            try
+            {
+                using (MySqlCommand cmd = new MySqlCommand(query, con, tran))
+                {
+                    if (parameters != null && parameters.Length > 0)
+                    {
+                        cmd.Parameters.AddRange(parameters);
+                    }
+
+                    object result = cmd.ExecuteScalar();
+
+                    return result == DBNull.Value ? null : result;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error executing scalar query: " + ex.Message, ex);
+            }
+        }
+
+        public static MySqlParameter CreateParameterNew(string name, object value)
+        {
+            // add GetDecimalCell if value is decimal else same
+            return new MySqlParameter(name, value);
+        }
+
+       public  static int ExecuteNonQueryNew(MySqlConnection con, MySqlTransaction tran, string query, params MySqlParameter[] parameters)
+        {
+            try
+            {
+                MySqlCommand cmd = new MySqlCommand(query, con, tran);
+                if (parameters != null && parameters.Length > 0)
+                {
+                    cmd.Parameters.AddRange(parameters);
+                }
+                return cmd.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error executing non-query: " + ex.Message, ex);
+            }
+        }
+
+        public static MySqlDataReader ExecuteReaderNew(MySqlConnection con, MySqlTransaction tran, string query, params MySqlParameter[] parameters)
+        {
+            try
+            {
+                MySqlCommand cmd = new MySqlCommand(query, con, tran);
+
+                if (parameters != null && parameters.Length > 0)
+                {
+                    cmd.Parameters.AddRange(parameters);
+                }
+
+                return cmd.ExecuteReader();
+            }
+            catch (Exception ex)
+            {
+                //throw new Exception("Error executing reader: " + ex.Message, ex);
+                return null;
+            }
+        }
+
     }
 }

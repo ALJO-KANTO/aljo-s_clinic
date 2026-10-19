@@ -21,6 +21,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Clinic.Medical_Services.Radiology;
+using YamyProject;
 namespace Clinic
 {
     public partial class frmMain : Form
@@ -35,7 +36,7 @@ namespace Clinic
             _frmLogin = frmLogin;
 
             string language =
-                Properties.Settings.Default.ApplicationLanguage ?? "en";
+                Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en";
 
             isArabic = language.Equals(
                 "ar",
@@ -52,6 +53,7 @@ namespace Clinic
             if (LicenseManager.UsageMode != LicenseUsageMode.Designtime)
             {
                 BuildModernDashboardDesign();
+                BindMigratedAdminSubmenus();
                 AddXRayDashboardButton();
                 AddTranslateButton();
                 ChangeDashboardLanguage(false);
@@ -659,6 +661,15 @@ namespace Clinic
 
                 foreach (Control control in menu.Controls)
                 {
+                    // Translate expandable administrator groups and their children.
+                    Panel adminGroup = control as Panel;
+                    if (adminGroup != null &&
+                        adminGroup.Name.StartsWith("adminGroup", StringComparison.Ordinal))
+                    {
+                        TranslateAdminGroup(adminGroup);
+                        continue;
+                    }
+
                     string english = control.Tag as string;
 
                     if (string.IsNullOrEmpty(english))
@@ -707,6 +718,73 @@ namespace Clinic
                             : ContentAlignment.MiddleLeft;
                     }
                 }
+            }
+        }
+
+        private void TranslateAdminGroup(Panel group)
+        {
+            foreach (Control control in group.Controls)
+            {
+                Button header = control as Button;
+                if (header != null)
+                {
+                    string caption = header.Tag as string ?? "";
+                    string translated = TranslateAdminNav(caption);
+                    string symbol = caption == "Accounts" ? "▤" :
+                        caption == "Vendors" ? "🛒" :
+                        caption == "Inventory Doc" ? "⬡" : "♙";
+                    header.Text = "   " + symbol + "    " + translated + "  ▾";
+                    header.TextAlign = isArabic ? ContentAlignment.MiddleRight : ContentAlignment.MiddleLeft;
+                    header.RightToLeft = isArabic ? RightToLeft.Yes : RightToLeft.No;
+                }
+                FlowLayoutPanel submenu = control as FlowLayoutPanel;
+                if (submenu != null)
+                {
+                    foreach (Control item in submenu.Controls)
+                    {
+                        Button b = item as Button;
+                        if (b == null) continue;
+                        string english = b.Tag as string ?? "";
+                        b.Text = "│  ├─  " + TranslateAdminNav(english);
+                        b.TextAlign = isArabic ? ContentAlignment.MiddleRight : ContentAlignment.MiddleLeft;
+                        b.RightToLeft = isArabic ? RightToLeft.Yes : RightToLeft.No;
+                    }
+                }
+            }
+        }
+
+        private string TranslateAdminNav(string english)
+        {
+            if (!isArabic) return english;
+            switch (english)
+            {
+                case "Accounts": return "الحسابات";
+                case "Account Center": return "مركز الحسابات";
+                case "Fixed Assets": return "الأصول الثابتة";
+                case "Voucher": return "السندات";
+                case "Prepaid": return "المدفوعات المقدمة";
+                case "Petty Cash List": return "قائمة المصروفات النثرية";
+                case "Vendors": return "الموردون";
+                case "Vendor Center": return "مركز الموردين";
+                case "Purchases Center": return "مركز المشتريات";
+                case "Locations": return "المواقع";
+                case "Receipts": return "الإيصالات";
+                case "Purchase Invoice": return "فاتورة الشراء";
+                case "Payment Voucher": return "سند صرف";
+                case "Inventory Doc": return "مستندات المخزون";
+                case "Inventory Items": return "أصناف المخزون";
+                case "Add New Item": return "إضافة صنف جديد";
+                case "Inventory Center": return "مركز المخزون";
+                case "Stock": return "المخزون";
+                case "HR": return "الموارد البشرية";
+                case "Human Resource": return "إدارة الموارد البشرية";
+                case "Attendance": return "الحضور";
+                case "Salary Sheet": return "كشف الرواتب";
+                case "Leave Salary": return "راتب الإجازة";
+                case "End Of Services": return "نهاية الخدمة";
+                case "Loans": return "القروض";
+                case "Final Settlement": return "التسوية النهائية";
+                default: return TranslationClass.Translate(english, true);
             }
         }
 
@@ -891,6 +969,122 @@ namespace Clinic
                 if (control.HasChildren)
                     ApplyDashboardTextAlignment(control);
             }
+        }
+
+        public static void openChildForm(Form frm)
+        {
+            // new dialog form
+            frm.StartPosition = FormStartPosition.CenterParent;
+            frm.ShowDialog();
+        }
+
+        public static void LoadFormIntoPanel(Form frm)
+        {
+            openChildForm(frm);
+        }
+
+        // Added navigation only. Existing sidebar design and role rules remain unchanged.
+        private void BindMigratedAdminSubmenus()
+        {
+            if (modernSidebar == null ||
+                clsGlobal.CurrentUser == null ||
+                clsGlobal.CurrentUser.RoleID != (int)clsGlobal.UserRole.Admin)
+                return;
+
+            var forms = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "Account Center", "MasterChartOfAccount" },
+                { "Fixed Assets", "MasterFixedAssets" },
+                { "Voucher", "MasterJournalVoucher" },
+                { "Prepaid", "MasterAdvancePaymentVoucher" },
+                { "Petty Cash List", "MasterPettyCash" },
+                { "Vendor Center", "MasterVendor" },
+                { "Purchases Center", "" }, // No matching migrated form supplied
+                { "Locations", "frmInventoryLocations" },
+                { "Receipts", "" }, // No matching migrated form supplied
+                { "Purchase Invoice", "" }, // No matching migrated form supplied
+                { "Payment Voucher", "MasterPaymentVoucher" },
+                { "Inventory Items", "MasterInventory" },
+                { "Add New Item", "frmViewItem" },
+                { "Inventory Center", "MasterInventory" },
+                { "Stock", "MasterStockManagement" },
+                { "Human Resource", "MasterEmployee" },
+                { "Attendance", "MasterAttendanceSheet" },
+                { "Salary Sheet", "frmSalarySheet" },
+                { "Leave Salary", "frmLeaveSalary" },
+                { "End Of Services", "frmEndOfService" },
+                { "Loans", "MasterLoan" },
+                { "Final Settlement", "MasterFinalSettlement" }
+            };
+
+            foreach (Control container in modernSidebar.Controls)
+            {
+                FlowLayoutPanel menu = container as FlowLayoutPanel;
+                if (menu == null) continue;
+
+                foreach (Control control in menu.Controls)
+                {
+                    Panel group = control as Panel;
+                    if (group == null || !group.Name.StartsWith("adminGroup", StringComparison.Ordinal))
+                        continue;
+
+                    foreach (Control child in group.Controls)
+                    {
+                        FlowLayoutPanel submenu = child as FlowLayoutPanel;
+                        if (submenu == null) continue;
+
+                        foreach (Control item in submenu.Controls)
+                        {
+                            Button button = item as Button;
+                            if (button == null) continue;
+                            string caption = button.Tag as string;
+                            string formName;
+                            if (caption == null || !forms.TryGetValue(caption, out formName) ||
+                                string.IsNullOrWhiteSpace(formName)) continue;
+
+                            string target = formName;
+                            button.Click += (sender, args) => OpenMigratedAdminForm(target);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void OpenMigratedAdminForm(string className)
+        {
+            OpenIfAuthorized(() =>
+            {
+                try
+                {
+                    var matches = AppDomain.CurrentDomain.GetAssemblies()
+                        .SelectMany(assembly =>
+                        {
+                            try { return assembly.GetTypes(); }
+                            catch (System.Reflection.ReflectionTypeLoadException ex)
+                            { return ex.Types.Where(t => t != null); }
+                        })
+                        .Where(t => t != null && t.Name == className &&
+                                    typeof(Form).IsAssignableFrom(t) && !t.IsAbstract)
+                        .ToList();
+
+                    if (matches.Count != 1)
+                    {
+                        MessageBox.Show(matches.Count == 0
+                            ? "Form not found: " + className
+                            : "Multiple forms named " + className + ". Specify its namespace.",
+                            "Navigation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
+                    using (Form form = (Form)Activator.CreateInstance(matches[0]))
+                        form.ShowDialog(this);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.ToString(), "Unable to Open Form",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }, clsGlobal.UserRole.Admin);
         }
 
     }

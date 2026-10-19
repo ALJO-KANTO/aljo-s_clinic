@@ -162,7 +162,7 @@ namespace Clinic
             };
             modernSidebar.Controls.Add(menu);
             menu.Controls.Add(MakeNav("⌂", "Dashboard", () => modernDashboard.AutoScrollPosition = new Point(0, 0), true));
-            if (CanAccessMenu(clsGlobal.UserRole.Admin, clsGlobal.UserRole.Doctor, clsGlobal.UserRole.Nurse, clsGlobal.UserRole.Receptionist, clsGlobal.UserRole.Cashier)) 
+            if (CanAccessMenu(clsGlobal.UserRole.Admin, clsGlobal.UserRole.Doctor, clsGlobal.UserRole.Nurse, clsGlobal.UserRole.Receptionist, clsGlobal.UserRole.Cashier))
                 AddMenuHeading(menu, "Main");
             if (CanAccessMenu(clsGlobal.UserRole.Doctor, clsGlobal.UserRole.Nurse, clsGlobal.UserRole.Receptionist))
             {
@@ -204,6 +204,13 @@ namespace Clinic
                     })
                 );
             }
+            // ERP-style expandable groups: visible only to Administrator.
+            if (clsGlobal.CurrentUser != null &&
+                clsGlobal.CurrentUser.RoleID == (int)clsGlobal.UserRole.Admin)
+            {
+                AddAdminNavigationGroups(menu);
+            }
+
             if (CanAccessMenu(clsGlobal.UserRole.Admin, clsGlobal.UserRole.Cashier))
                 menu.Controls.Add(MakeNav("▥", "Reports", null));
             if (CanAccessMenu(clsGlobal.UserRole.Admin))
@@ -245,6 +252,137 @@ namespace Clinic
             label.Width = 230; label.Height = 40;
             label.Padding = new Padding(15, 13, 0, 0);
             menu.Controls.Add(label);
+        }
+
+        // Admin-only accordion navigation. Child pages will be connected later.
+        private Panel expandedAdminGroup;
+        private Button expandedAdminHeader;
+        private readonly Color adminNavSelected = Color.FromArgb(83, 79, 213);
+        private readonly Color adminNavBackground = Color.FromArgb(4, 37, 65);
+
+        private void AddAdminNavigationGroups(FlowLayoutPanel menu)
+        {
+            AddAdminGroup(menu, "▤", "Accounts", new string[]
+            {
+                "Account Center", "Fixed Assets", "Voucher",
+                "Prepaid", "Petty Cash List"
+            });
+
+            AddAdminGroup(menu, "🛒", "Vendors", new string[]
+            {
+                "Vendor Center", "Purchases Center", "Locations",
+                "Receipts", "Purchase Invoice", "Payment Voucher"
+            });
+
+            AddAdminGroup(menu, "⬡", "Inventory Doc", new string[]
+            {
+                "Inventory Items", "Add New Item", "Inventory Center", "Stock"
+            });
+
+            AddAdminGroup(menu, "♙", "HR", new string[]
+            {
+                "Human Resource", "Attendance", "Salary Sheet",
+                "Leave Salary", "End Of Services", "Loans",
+                "Final Settlement", "Payment Voucher"
+            });
+        }
+
+        private void AddAdminGroup(FlowLayoutPanel menu, string symbol,
+            string caption, string[] pages)
+        {
+            Panel group = new Panel
+            {
+                Name = "adminGroup" + caption.Replace(" ", ""),
+                Width = 242,
+                Height = 47,
+                Margin = new Padding(3, 2, 3, 2),
+                BackColor = adminNavBackground,
+                Tag = caption
+            };
+
+            Button header = new Button
+            {
+                Name = "btnAdmin" + caption.Replace(" ", ""),
+                Text = "   " + symbol + "    " + caption + "  ▾",
+                Tag = caption,
+                Dock = DockStyle.Top,
+                Height = 45,
+                FlatStyle = FlatStyle.Flat,
+                BackColor = adminNavBackground,
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                TextAlign = ContentAlignment.MiddleLeft,
+                Cursor = Cursors.Hand
+            };
+            header.FlatAppearance.BorderSize = 0;
+            header.FlatAppearance.MouseOverBackColor = adminNavSelected;
+
+            FlowLayoutPanel children = new FlowLayoutPanel
+            {
+                Name = "subMenu" + caption.Replace(" ", ""),
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.TopDown,
+                WrapContents = false,
+                AutoScroll = false,
+                BackColor = Color.FromArgb(10, 32, 60),
+                Padding = new Padding(15, 5, 0, 5),
+                Visible = false
+            };
+
+            foreach (string page in pages)
+            {
+                Button item = new Button
+                {
+                    Name = "btn" + caption.Replace(" ", "") + page.Replace(" ", ""),
+                    Text = "│  ├─  " + page,
+                    Tag = page,
+                    Width = 214,
+                    Height = 36,
+                    Margin = new Padding(0, 1, 0, 1),
+                    FlatStyle = FlatStyle.Flat,
+                    BackColor = Color.FromArgb(10, 32, 60),
+                    ForeColor = Color.FromArgb(223, 229, 245),
+                    Font = new Font("Segoe UI", 9F),
+                    TextAlign = ContentAlignment.MiddleLeft,
+                    Cursor = Cursors.Hand
+                };
+                item.FlatAppearance.BorderSize = 0;
+                item.FlatAppearance.MouseOverBackColor = Color.FromArgb(32, 56, 101);
+                // Navigation is bound by BindMigratedAdminSubmenus() in frmMain.cs.
+                children.Controls.Add(item);
+            }
+
+            // Dock order: child fills the area below the fixed header.
+            group.Controls.Add(children);
+            group.Controls.Add(header);
+
+            header.Click += (sender, args) =>
+            {
+                bool open = !children.Visible;
+
+                if (expandedAdminGroup != null && expandedAdminGroup != group)
+                {
+                    FlowLayoutPanel previousChildren = null;
+                    foreach (Control c in expandedAdminGroup.Controls)
+                    {
+                        previousChildren = c as FlowLayoutPanel;
+                        if (previousChildren != null) break;
+                    }
+                    if (previousChildren != null) previousChildren.Visible = false;
+                    expandedAdminGroup.Height = 47;
+                    if (expandedAdminHeader != null)
+                        expandedAdminHeader.BackColor = adminNavBackground;
+                }
+
+                children.Visible = open;
+                group.Height = open ? 47 + children.Padding.Vertical + pages.Length * 38 : 47;
+                header.BackColor = open ? adminNavSelected : adminNavBackground;
+                expandedAdminGroup = open ? group : null;
+                expandedAdminHeader = open ? header : null;
+                menu.PerformLayout();
+            };
+
+            menu.Controls.Add(group);
         }
 
         private void BuildDashboardRows()
@@ -319,8 +457,8 @@ namespace Clinic
             {
                 roleRows.Controls.Add(
                     RoleCard("✚", "Nurse Role Dashboard", Color.FromArgb(15, 118, 110),
-                        new string[] {"Nurse\nStation"},
-                        new Action[] { () => nurseToolStripMenuItem1_Click(this, EventArgs.Empty)}
+                        new string[] { "Nurse\nStation" },
+                        new Action[] { () => nurseToolStripMenuItem1_Click(this, EventArgs.Empty) }
                     ), 0, 2);
             }
             if (CanShowDashboard(clsGlobal.UserRole.Receptionist))

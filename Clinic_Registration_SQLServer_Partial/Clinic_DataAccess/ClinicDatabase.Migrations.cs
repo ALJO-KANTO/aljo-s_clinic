@@ -1099,6 +1099,110 @@ namespace Clinic_DataAccess
                                   COLLATE=utf8mb4_0900_ai_ci;
                             "
                         },
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_0024",
+                            Description = "Create Chart of Accounts Configuration table",
+                            Sql = @"
+                                CREATE TABLE IF NOT EXISTS `tbl_coa_config` (
+                                    `id` int NOT NULL AUTO_INCREMENT,
+                                    `account_id` int DEFAULT NULL,
+                                    `category` varchar(150)
+                                        CHARACTER SET utf8mb4
+                                        COLLATE utf8mb4_general_ci NOT NULL UNIQUE,
+                                    PRIMARY KEY (`id`)
+                                ) ENGINE=InnoDB
+                                  DEFAULT CHARSET=utf8mb4
+                                  COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_0025",
+                            Description = "Insert default Chart of Accounts Configuration",
+                            Sql = @"
+                                INSERT IGNORE INTO `tbl_coa_config`
+                                (`id`, `account_id`, `category`)
+                                VALUES
+                                    (1, 23, 'Sales'),
+                                    (2, 25, 'COGS'),
+                                    (3, 42, 'Default Account For Cash'),
+                                    (4, 5, 'Inventory'),
+                                    (5, 4, 'Item Damage'),
+                                    (6, 42, 'Invoice Payment Cash Method'),
+                                    (7, 13, 'Invoice Payment Credit Method'),
+                                    (8, 17, 'Vat Output'),
+                                    (9, 13, 'Vendor'),
+                                    (10, 10, 'Vat Input'),
+                                    (11, 42, 'Purchase Payment Cash Method'),
+                                    (12, 13, 'Purchase Payment Credit Method'),
+                                    (13, 3, 'Opening Balance'),
+                                    (14, 22, 'Opening Balance Equity'),
+                                    (15, 14, 'Accrued Salaries'),
+                                    (16, 16, 'Acroal Leave Salary'),
+                                    (17, 28, 'Employee Receivable'),
+                                    (18, 8, 'Prepaid Expense Debit Account'),
+                                    (19, 12, 'Fixed Asset Credit Account'),
+                                    (20, 37, 'PDC Payable'),
+                                    (21, 38, 'PDC Payable Return'),
+                                    (22, 39, 'PDC Payable Hold'),
+                                    (23, 40, 'PDC Payable Cancel'),
+                                    (24, 33, 'PDC Receivable'),
+                                    (25, 34, 'PDC Receivable Return'),
+                                    (26, 35, 'PDC Receivable Hold'),
+                                    (27, 36, 'PDC Receivable Cancel'),
+                                    (28, 3, 'Customer'),
+                                    (29, 2, 'Petty Cash Account'),
+                                    (30, 14, 'End of Service Debit'),
+                                    (31, 30, 'End of Service Credit'),
+                                    (32, 30, 'Leave Salary Debit'),
+                                    (33, 30, 'Leave Salary Credit'),
+                                    (34, 13, 'Purchase'),
+                                    (35, 13, 'PurchaseReturn'),
+                                    (36, 43, 'SalesReturn'),
+                                    (37, 1, 'Default Account For Bank'),
+                                    (38, 1, 'Salaries'),
+                                    (39, 31, 'Stock Settlement'),
+                                    (40, 44, 'Customer Advances'),
+                                    (41, 45, 'Retention'),
+                                    (42, 1, 'Deduction'),
+                                    (43, 46, 'Retention Purchase');
+                            "
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_0026",
+                            Description = "Create Company Information table",
+                            Sql = @"
+                                CREATE TABLE IF NOT EXISTS `tbl_company` (
+                                    `id` int NOT NULL AUTO_INCREMENT,
+                                    `name` varchar(200)
+                                        CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+                                    `descriptions` varchar(200)
+                                        CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+                                    `phone1` varchar(50)
+                                        CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+                                    `phone2` varchar(50)
+                                        CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+                                    `gmail` varchar(50)
+                                        CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+                                    `mobile_number` varchar(50)
+                                        CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+                                    `website` varchar(100)
+                                        CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+                                    `address` varchar(100)
+                                        CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+                                    `trn_no` varchar(100)
+                                        CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+                                    `country_id` int NOT NULL DEFAULT 0,
+                                    `logoComp` longblob,
+                                    `stampComp` longblob,
+                                    PRIMARY KEY (`id`) USING BTREE
+                                ) ENGINE=InnoDB
+                                  DEFAULT CHARSET=utf8mb4
+                                  COLLATE=utf8mb4_general_ci;
+                            "
+                        },
                         //Views  
                         new DatabaseMigration
                         {
@@ -1131,6 +1235,1589 @@ namespace Clinic_DataAccess
                                     IsActive TINYINT(1) NOT NULL DEFAULT 1
                                 ) ENGINE=InnoDB;"
                         },
+                        // Paste these entries into your existing List<DatabaseMigration>.
+                        // Generated from the supplied ERP createDataBase source.
+                        // Schema only; seed data provided separately.
+                        // Verify against a test database before production.
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_001",
+                            Description = "Create tbl_coa_level_1",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_coa_level_1` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `name` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+                                                  `code` int DEFAULT NULL,
+                                                  `category_code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_002",
+                            Description = "Create tbl_coa_level_2",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_coa_level_2` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+                                                  `code` int NOT NULL,
+                                                  `main_id` int NOT NULL,
+                                                  `SyncStatus` tinyint NOT NULL DEFAULT 0,
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_003",
+                            Description = "Create tbl_coa_level_3",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_coa_level_3` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+                                                  `code` int NOT NULL,
+                                                  `main_id` int NOT NULL,
+                                                  `SyncStatus` tinyint NOT NULL DEFAULT 0,
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_004",
+                            Description = "Create tbl_coa_level_4",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_coa_level_4` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+                                                  `code` int NOT NULL,
+                                                  `main_id` int NOT NULL,
+                                                  `debit` decimal(20,3) DEFAULT '0.000',
+                                                  `credit` decimal(20,3) DEFAULT '0.000',
+                                                  `date` datetime DEFAULT NULL,
+                                                  `SyncStatus` tinyint NOT NULL DEFAULT 0,
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_005",
+                            Description = "Create tbl_cost_center",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_cost_center` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `code` int DEFAULT NULL,
+                                                  `name` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `project_id` INT NOT NULL DEFAULT 0,
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_006",
+                            Description = "Create tbl_sub_cost_center",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_sub_cost_center` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `code` int DEFAULT NULL,
+                                                  `name` varchar(350) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `main_id` int DEFAULT NULL,
+                                                  `project_id` INT NOT NULL DEFAULT 0,
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_007",
+                            Description = "Create tbl_fixed_assets",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_fixed_assets` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `date` date DEFAULT NULL,
+                                                  `code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `name` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `brand` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `category_id` int DEFAULT NULL,
+                                                  `model` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `supplier` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `status` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `invoice_number` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `purchase_date` date DEFAULT NULL,
+                                                  `end_date` date DEFAULT NULL,
+                                                  `depreciation_life` int DEFAULT NULL,
+                                                  `purchase_price` decimal(20,6) DEFAULT NULL,
+                                                  `debit_account_id` int DEFAULT NULL,
+                                                  `credit_account_id` int DEFAULT NULL,
+                                                  `expence_account_id` int DEFAULT NULL,
+                                                  `created_by` int DEFAULT NULL,
+                                                  `created_date` date DEFAULT NULL,
+                                                  `modified_by` int DEFAULT NULL,
+                                                  `modified_date` date DEFAULT NULL,
+                                                  `state` int DEFAULT '0',
+                                                  `manufacture` int DEFAULT '0',
+                                                  `manufactureStatus` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_008",
+                            Description = "Create tbl_fixed_assets_category",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_fixed_assets_category` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `category_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+	                                              `assets_account_id` INT(10) NOT NULL DEFAULT '0',
+	                                              `depreciation_account_id` INT(10) NOT NULL DEFAULT '0',
+	                                              `expence_account_id` INT(10) NOT NULL DEFAULT '0',
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_009",
+                            Description = "Create tbl_deleted_records",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS tbl_deleted_records (
+                                                    id INT AUTO_INCREMENT PRIMARY KEY,
+                                                    table_name VARCHAR(100),
+                                                    record_data TEXT,
+                                                    deleted_by INT,
+                                                    deleted_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                                                );
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_010",
+                            Description = "Create tbl_journal_voucher_details",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_journal_voucher_details` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `date` date NOT NULL,
+                                                  `debit` decimal(20,4) NOT NULL DEFAULT '0.000',
+                                                  `credit` decimal(20,4) NOT NULL DEFAULT '0.000',
+                                                  `inv_id` int NOT NULL DEFAULT '0',
+                                                  `description` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
+                                                  `partner` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+                                                  `account_id` int NOT NULL DEFAULT '0',
+                                                  `project_id` INT NOT NULL DEFAULT 0, 
+                          `GlobalId` varchar(36) NOT NULL DEFAULT '0',
+                          `DeviceId` varchar(50) DEFAULT NULL,
+                          `LastModified` datetime DEFAULT CURRENT_TIMESTAMP,
+                          `SyncStatus` tinyint NOT NULL DEFAULT 0,
+
+                                                  PRIMARY KEY (`id`)
+
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_011",
+                            Description = "Create tbl_journal_voucher",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_journal_voucher` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `date` date DEFAULT NULL,
+                                                  `code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `debit` decimal(20,4) DEFAULT NULL,
+                                                  `credit` decimal(20,4) DEFAULT NULL,
+                                                  `created_by` int DEFAULT NULL,
+                                                  `created_date` date DEFAULT NULL,
+                                                  `modified_by` int DEFAULT NULL,
+                                                  `modified_date` date DEFAULT NULL,
+                                                  `state` int DEFAULT NULL,
+                                                  `project_id` INT NOT NULL DEFAULT 0,
+                         `GlobalId` varchar(36) NOT NULL DEFAULT '0',
+                          `DeviceId` varchar(50) DEFAULT NULL,
+                          `LastModified` datetime DEFAULT CURRENT_TIMESTAMP,
+                          `SyncStatus` tinyint NOT NULL DEFAULT 0,
+
+                                                  PRIMARY KEY (`id`) USING BTREE
+
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_012",
+                            Description = "Create tbl_check_details",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_check_details` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `date` date DEFAULT NULL,
+                                                  `check_id` int DEFAULT NULL,
+                                                  `check_no` int DEFAULT NULL,
+                                                  `check_date` date DEFAULT NULL,
+                                                  `check_type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `pvc_no` int DEFAULT NULL,
+                                                  `check_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `amount` decimal(20,6) DEFAULT NULL,
+                                                  `pass_date` date DEFAULT NULL,
+                                                  `return_date` date DEFAULT NULL,
+                                                  `hold_date` date DEFAULT NULL,
+                                                  `cancel_date` date DEFAULT NULL,
+                                                  `state` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_013",
+                            Description = "Create tbl_payment_voucher_details",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_payment_voucher_details` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `date` date DEFAULT NULL,
+                                                  `payment_id` int DEFAULT NULL,
+                                                  `hum_id` int DEFAULT NULL,
+                                                  `inv_id` int DEFAULT NULL,
+                                                  `inv_code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `total` decimal(20,6) DEFAULT NULL,
+                                                  `payment` decimal(20,6) DEFAULT NULL,
+                                                  `description` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `voucher_type` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+                                                  `cost_center_id` int DEFAULT NULL,
+                                                  `project_id` INT NOT NULL DEFAULT 0,
+                        `GlobalId` varchar(36) NOT NULL DEFAULT '0',
+                          `DeviceId` varchar(50) DEFAULT NULL,
+                          `LastModified` datetime DEFAULT CURRENT_TIMESTAMP,
+                          `SyncStatus` tinyint NOT NULL DEFAULT 0,
+
+                                                  PRIMARY KEY (`id`)
+
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_014",
+                            Description = "Create tbl_payment_voucher",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_payment_voucher` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `date` date DEFAULT NULL,
+                                                  `code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `method` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `amount` decimal(20,4) DEFAULT NULL,
+                                                  `debit_account_id` int DEFAULT NULL,
+                                                  `debit_cost_center_id` int DEFAULT NULL,
+                                                  `description` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `credit_account_id` int DEFAULT NULL,
+                                                  `credit_cost_center_id` int DEFAULT NULL,
+                                                  `bank_id` int DEFAULT NULL,
+                                                  `bank_account_id` int DEFAULT NULL,
+                                                  `book_no` int DEFAULT NULL,
+                                                  `check_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `check_no` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `check_date` date DEFAULT NULL,
+                                                  `trans_date` date DEFAULT NULL,
+                                                  `trans_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `trans_ref` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `created_by` int DEFAULT NULL,
+                                                  `created_date` date DEFAULT NULL,
+                                                  `modified_by` int DEFAULT NULL,
+                                                  `modified_date` date DEFAULT NULL,
+                                                  `state` int DEFAULT NULL,
+                                                  `project_id` INT NOT NULL DEFAULT 0,`GlobalId` varchar(36) NOT NULL DEFAULT '0',
+                          `DeviceId` varchar(50) DEFAULT NULL,
+                          `LastModified` datetime DEFAULT CURRENT_TIMESTAMP,
+                          `SyncStatus` tinyint NOT NULL DEFAULT 0,
+
+                                                  PRIMARY KEY (`id`)
+
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_015",
+                            Description = "Create tbl_advance_payment_voucher_details",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_advance_payment_voucher_details` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `payment_id` int NOT NULL DEFAULT '0',
+                                                  `name` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `bank_name` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `check_name` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `check_no` int DEFAULT NULL,
+                                                  `check_date` date DEFAULT NULL,
+                                                  `bank_account_name` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `book_no` int DEFAULT NULL,
+                                                  `trans_date` date DEFAULT NULL,
+                                                  `trans_name` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `trans_ref` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `description` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `amount` decimal(20,6) DEFAULT NULL,
+                                                  `project_id` INT NOT NULL DEFAULT 0,
+
+                            -- Sync columns (IMPORTANT)
+                            `GlobalId` VARCHAR(36) NOT NULL,
+                            `DeviceId` VARCHAR(50) DEFAULT NULL,
+                            `LastModified` DATETIME DEFAULT CURRENT_TIMESTAMP,
+                            `SyncStatus` TINYINT(1) NOT NULL DEFAULT 0,
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_016",
+                            Description = "Create tbl_advance_payment_voucher",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_advance_payment_voucher` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `date` date DEFAULT NULL,
+                                                  `pv_code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `method` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `amount` decimal(20,4) DEFAULT NULL,
+                                                  `debit_account_id` int DEFAULT NULL,
+                                                  `debit_cost_center_id` int DEFAULT NULL,
+                                                  `description` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `credit_account_id` int DEFAULT NULL,
+                                                  `credit_cost_center_id` int DEFAULT NULL,
+                                                  `created_by` int DEFAULT NULL,
+                                                  `created_date` date DEFAULT NULL,
+                                                  `modified_by` int DEFAULT NULL,
+                                                  `modified_date` date DEFAULT NULL,
+                                                  `state` int DEFAULT NULL,
+                                                  `project_id` INT NOT NULL DEFAULT 0,
+                                                  `GlobalId` varchar(36) NOT NULL DEFAULT '0',
+                                                  `DeviceId` varchar(50) DEFAULT '',
+                                                  `LastModified` datetime DEFAULT CURRENT_TIMESTAMP,
+                                                  `SyncStatus` tinyint NOT NULL DEFAULT 0,
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_017",
+                            Description = "Create tbl_petty_cash_card",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_petty_cash_card` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `name` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `account_id` int DEFAULT NULL,
+                                                  `mobile` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `whatsapp_no` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `email` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_018",
+                            Description = "Create tbl_petty_cash_submition_details",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_petty_cash_submition_details` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `petty_id` int NOT NULL DEFAULT '0',
+                                                  `date` date DEFAULT NULL,
+                                                  `account_id` int DEFAULT NULL,
+                                                  `category` int DEFAULT NULL,
+                                                  `cost_center_id` int DEFAULT NULL,
+                                                  `amount` decimal(20,6) DEFAULT NULL,
+                                                  `vat` decimal(20,6) DEFAULT NULL,
+                                                  `total` decimal(20,6) DEFAULT NULL,
+                                                  `note` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `state` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_019",
+                            Description = "Create tbl_petty_cash_submition",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_petty_cash_submition` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `date` date DEFAULT NULL,
+                                                  `code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `name` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `amount` decimal(20,6) DEFAULT NULL,
+                                                  `total_before_vat` decimal(20,6) DEFAULT NULL,
+                                                  `total_vat` decimal(20,6) DEFAULT NULL,
+                                                  `net_amount` decimal(20,6) DEFAULT NULL,
+                                                  `created_by` int DEFAULT NULL,
+                                                  `created_date` date DEFAULT NULL,
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_020",
+                            Description = "Create tbl_petty_cash_details",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS tbl_petty_cash_details(
+                                                    id int NOT NULL AUTO_INCREMENT,
+                                                    petty_cash_id INT NOT NULL,
+                                                    entry_date DATE NOT NULL,
+                                                    ref_id VARCHAR(100) NULL,
+                                                    hum_id INT NOT NULL,
+                                                    hum_name VARCHAR(300) NOT NULL DEFAULT '',
+                                                    category INT(10) NOT NULL DEFAULT '0',
+                                                    cost_center_id INT NOT NULL,
+                                                    description TEXT NULL,
+                                                    amount DECIMAL(18,2) NOT NULL DEFAULT 0,
+                                                    vatP DECIMAL(18,2) NOT NULL DEFAULT 0,
+                                                    vat int DEFAULT NULL,
+                                                    total DECIMAL(18,2) NOT NULL DEFAULT 0,
+                                                    project_id INT(10) NOT NULL DEFAULT '0',
+                                                    note TEXT NULL,
+                                                    PRIMARY KEY (`id`)
+                                                );
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_021",
+                            Description = "Create tbl_petty_cash",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS tbl_petty_cash(
+                                                    id int NOT NULL AUTO_INCREMENT,
+                                                    code VARCHAR(50) NOT NULL,
+                                                    voucher_date DATE NOT NULL,
+                                                    cash_account_id INT NOT NULL,
+                                                    employee_id INT NOT NULL,
+                                                    amount decimal(20,6) DEFAULT 0,
+                                                    vat decimal(20,6) DEFAULT 0,
+                                                    total decimal(20,6) DEFAULT 0,
+                                                    notes TEXT NULL,
+                                                    created_by INT NULL,
+                                                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                                    project_id INT NOT NULL DEFAULT '0',
+                                                    status INT NOT NULL DEFAULT '0',
+                                                    PRIMARY KEY (`id`)
+                                                );
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_023",
+                            Description = "Create tbl_petty_cash_request",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_petty_cash_request` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `request_date` date DEFAULT NULL,
+                                                  `request_ref` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `Petty_cash_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `amount` decimal(20,6) DEFAULT NULL,
+                                                  `description` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `debit_account_id` int DEFAULT NULL,
+                                                  `credit_account_id` int DEFAULT NULL,
+                                                  `approved_date` date DEFAULT NULL,
+                                                  `state` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `pay` decimal(20,6) DEFAULT NULL,
+                                                  `change` decimal(20,6) DEFAULT NULL,
+                                                  `created_by` int DEFAULT NULL,
+                                                  `created_date` date DEFAULT NULL,
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_024",
+                            Description = "Create tbl_city",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_city` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `country_id` int DEFAULT NULL,
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_025",
+                            Description = "Create tbl_salary_adjustments",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_salary_adjustments` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `code` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `name` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `adjustment_type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `description` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `amount` decimal(10,6) DEFAULT NULL,
+                                                  `date` date DEFAULT NULL,
+                                                  `ref_id` int NOT NULL DEFAULT '0',
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_026",
+                            Description = "Create tbl_attendance_salary",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_attendance_salary` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `date` date DEFAULT NULL,
+                                                  `emp_code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `absence_days` int DEFAULT NULL,
+                                                  `total_absence` decimal(20,6) DEFAULT NULL,
+                                                  `delay_minutes` decimal(20,6) DEFAULT NULL,
+                                                  `total_delay` decimal(20,6) DEFAULT NULL,
+                                                  `total_loan` decimal(20,6) DEFAULT NULL,
+                                                  `net_salary` decimal(20,6) DEFAULT NULL,
+                                                  `pay` decimal(20,6) DEFAULT NULL,
+                                                  `change` decimal(20,6) DEFAULT NULL,
+                                                  `ss_no` int DEFAULT '0',
+                                                  `created_by` int DEFAULT NULL,
+                                                  `created_date` date DEFAULT NULL,
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_027",
+                            Description = "Create tbl_attendancesheet",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_attendancesheet` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `attendance_salary_id` int NOT NULL DEFAULT '0',
+                                                  `code` int NOT NULL,
+                                                  `WorkDate` date NOT NULL,
+                                                  `TimeIn` time DEFAULT NULL,
+                                                  `TimeOut` time DEFAULT NULL,
+                                                  `DayOfWeek` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `Status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `Reference` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `Ref_Code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_028",
+                            Description = "Create tbl_end_of_service",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_end_of_service` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `date` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `code` int DEFAULT NULL,
+                                                  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `Reference` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `description` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `debit` decimal(20,6) DEFAULT 0,
+                                                  `leave_days` decimal(20,6) DEFAULT 0,
+                                                  `credit` decimal(20,6) DEFAULT 0,
+                                                  `created_by` int DEFAULT NULL,
+                                                  `created_date` date DEFAULT NULL,
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_029",
+                            Description = "Create tbl_leave_salary",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_leave_salary` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `date` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `code` int DEFAULT NULL,
+                                                  `name` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `Reference` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `description` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `debit` decimal(20,6) DEFAULT '0.000000',
+                                                  `leave_days` decimal(20,6) DEFAULT NULL,
+                                                  `credit` decimal(20,6) DEFAULT '0.000000',
+                                                  `created_by` int DEFAULT NULL,
+                                                  `created_date` date DEFAULT NULL,
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_030",
+                            Description = "Create tbl_employee",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_employee` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `code` int NOT NULL DEFAULT '0',
+                                                  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `city_id` int DEFAULT 0,
+                                                  `address` varchar(350) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `phone` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `birth_day` date DEFAULT NULL,
+                                                  `Social_Status` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `Social_Insurance_Number` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `Email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `EmergencyName` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `EmergencyAddress` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `EmergencyPhone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `Relation` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `BasicSalary` decimal(10,2) DEFAULT 0,
+                                                  `HousingAllowance` decimal(10,2) DEFAULT 0,
+                                                  `TransportationAllowance` decimal(10,2) DEFAULT 0,
+                                                  `Other` decimal(10,2) DEFAULT 0,
+                                                  `bank_id` int DEFAULT 0,
+                                                  `Iban_Number` varchar(70) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `Bank_account_Number` varchar(70) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `EmiratesIDFileNumber` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `EmiratesIDIssuingAuthority` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `EmiratesIDIssueDate` date DEFAULT NULL,
+                                                  `EmiratesIDExpiryDate` date DEFAULT NULL,
+                                                  `PassportNumber` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `CountryOfIssue` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `PassportIssueDate` date DEFAULT NULL,
+                                                  `PassportExpiryDate` date DEFAULT NULL,
+                                                  `WorkContractNumber` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `WorkContractType` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `Position_id` int DEFAULT 0,
+                                                  `Department_id` int DEFAULT 0,
+                                                  `WorkDays` int DEFAULT 0,
+                                                  `workinghours` int DEFAULT 0,
+                                                  `ContractIssueDate` date DEFAULT NULL,
+                                                  `ContractExpiryDate` date DEFAULT NULL,
+                                                  `ResidencyFileNumber` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `ResidencyIssuingAuthority` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `ResidencyIssueDate` date DEFAULT NULL,
+                                                  `ResidencyExpiryDate` date DEFAULT NULL,
+                                                  `account_id` int DEFAULT 0,
+                                                  `Accrued_Salaries_id` int DEFAULT 0,
+                                                  `Employee_Recivable_id` int DEFAULT 0,
+                                                  `Acroal_Leave_Salary_id` int DEFAULT 0,
+                                                  `Gratuit_id` int DEFAULT 0,
+                                                  `Petty_Cash_id` int DEFAULT 0,
+                                                  `active` int NOT NULL DEFAULT '0',
+                                                  `state` int NOT NULL DEFAULT '0',
+                                                  `sRole` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
+                                                  `project_id` INT NOT NULL DEFAULT 0,
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_031",
+                            Description = "Create tbl_final_settlement",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_final_settlement` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `Date` date DEFAULT NULL,
+                                                  `emp_id` int DEFAULT NULL,
+                                                  `DateCommencement` date DEFAULT NULL,
+                                                  `DateLastWork` date DEFAULT NULL,
+                                                  `TotalSalary` decimal(20,2) DEFAULT NULL,
+                                                  `OtherAdditions` decimal(20,2) DEFAULT NULL,
+                                                  `TotalAdditions` decimal(20,2) DEFAULT NULL,
+                                                  `Payments` decimal(20,2) DEFAULT NULL,
+                                                  `OtherDeductions` decimal(20,2) DEFAULT NULL,
+                                                  `TotalDeductions` decimal(20,2) DEFAULT NULL,
+                                                  `NetAccruals` decimal(20,2) DEFAULT NULL,
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_032",
+                            Description = "Create tbl_loan",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_loan` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `LoanDate` date DEFAULT NULL,
+                                                  `EmployeeID` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `EmployeeName` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `RequestAmount` decimal(20,6) DEFAULT NULL,
+                                                  `Installments` int DEFAULT NULL,
+                                                  `StartDate` date DEFAULT NULL,
+                                                  `EndDate` date DEFAULT NULL,
+                                                  `loanDates` date DEFAULT NULL,
+                                                  `Months` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `Description` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `Amount` decimal(20,6) DEFAULT NULL,
+                                                  `debit_account_id` int DEFAULT NULL,
+                                                  `credit_account_id` int DEFAULT NULL,
+                                                  `pay` decimal(20,6) DEFAULT '0.000000',
+                                                  `change` decimal(20,6) DEFAULT '0.000000',
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_033",
+                            Description = "Create tbl_damage_details",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_damage_details` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `damage_id` int NOT NULL,
+                                                  `item_id` int NOT NULL,
+                                                  `qty` decimal(20,4) NOT NULL DEFAULT '0.000',
+                                                  `cost_price` decimal(20,4) NOT NULL DEFAULT '0.000',
+                                                  `total` decimal(20,4) NOT NULL DEFAULT '0.000',
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_034",
+                            Description = "Create tbl_items",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_items` (
+	                                            `id` INT(10) NOT NULL AUTO_INCREMENT,
+	                                            `code` VARCHAR(50) NOT NULL DEFAULT '0' COLLATE 'utf8mb4_general_ci',
+	                                            `type` VARCHAR(50) NOT NULL DEFAULT '0' COLLATE 'utf8mb4_general_ci',
+	                                            `warehouse_id` INT(10) NOT NULL DEFAULT '0',
+	                                            `name` VARCHAR(500) NOT NULL DEFAULT '0' COLLATE 'utf8mb4_general_ci',
+	                                            `unit_id` INT(10) NOT NULL DEFAULT '0',
+	                                            `barcode` VARCHAR(70) NOT NULL DEFAULT '0' COLLATE 'utf8mb4_general_ci',
+	                                            `cost_price` DECIMAL(20,4) NOT NULL DEFAULT '0.000',
+	                                            `cogs_account_id` INT(10) NOT NULL DEFAULT '0',
+	                                            `vendor_id` INT(10) NOT NULL DEFAULT '0',
+	                                            `sales_price` DECIMAL(20,4) NOT NULL DEFAULT '0.000',
+	                                            `tax_code_id` INT(10) NOT NULL DEFAULT '0',
+	                                            `income_account_id` INT(10) NOT NULL DEFAULT '0',
+	                                            `asset_account_id` INT(10) NOT NULL DEFAULT '0',
+	                                            `min_amount` DECIMAL(20,4) NOT NULL DEFAULT '0.000',
+	                                            `max_amount` DECIMAL(20,4) NOT NULL DEFAULT '0.000',
+	                                            `on_hand` DECIMAL(20,4) NOT NULL DEFAULT '0.000',
+	                                            `total_value` DECIMAL(20,6) NOT NULL DEFAULT '0.000000',
+	                                            `date` DATE NOT NULL,
+	                                            `img` BLOB NULL DEFAULT NULL,
+                                                `ItemImg` LONGBLOB NULL DEFAULT NULL,
+	                                            `active` INT(10) NOT NULL DEFAULT '0',
+	                                            `method` VARCHAR(50) NOT NULL DEFAULT '0' COLLATE 'utf8mb4_general_ci',
+	                                            `state` INT(10) NOT NULL DEFAULT '0',
+	                                            `created_By` INT(10) NOT NULL DEFAULT '0',
+	                                            `created_date` DATE NOT NULL,
+	                                            `deleted_by` INT(10) NOT NULL DEFAULT '0',
+	                                            `category_id` INT(10) NULL DEFAULT NULL,
+	                                            `posItem` INT(10) NULL DEFAULT NULL,
+                                                `item_type` VARCHAR(50) NOT NULL DEFAULT '0' COLLATE 'utf8mb4_general_ci',
+                        `GlobalId` varchar(36) NOT NULL DEFAULT '0',
+                          `DeviceId` varchar(50) DEFAULT NULL,
+                          `LastModified` datetime DEFAULT CURRENT_TIMESTAMP,
+                          `SyncStatus` tinyint NOT NULL DEFAULT 0,
+	                                            PRIMARY KEY (`id`) USING BTREE
+                                            )
+                                            COLLATE='utf8mb4_general_ci' ENGINE=InnoDB ;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_035",
+                            Description = "Create tbl_item_category",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_item_category` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '0',
+                                                  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_036",
+                            Description = "Create tbl_unit",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_unit` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_037",
+                            Description = "Create tbl_warehouse",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_warehouse` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `code` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `emp_id` int DEFAULT NULL,
+                                                  `city` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `building_name` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `account_id` int DEFAULT NULL,
+                                                  `state` int DEFAULT NULL,
+                                                  `created_by` int DEFAULT NULL,
+                                                  `created_date` date DEFAULT NULL,
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_042",
+                            Description = "Create tbl_item_warehouse_transaction",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_item_warehouse_transaction` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `date` date DEFAULT NULL,
+                                                  `warehouse_from` int DEFAULT NULL,
+                                                  `warehouse_to` int DEFAULT NULL,
+                                                  `item_id` int DEFAULT NULL,
+                                                  `qty` decimal(20,6) DEFAULT NULL,
+                                                  `description` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `created_by` int DEFAULT NULL,
+                                                  `created_date` date DEFAULT NULL,
+                                                  `project_id` INT NOT NULL DEFAULT 0,
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_043",
+                            Description = "Create tbl_items_warehouse",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_items_warehouse` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `warehouse_id` int DEFAULT NULL,
+                                                  `item_id` int DEFAULT NULL,
+                                                  `qty` decimal(20,6) DEFAULT NULL,
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_044",
+                            Description = "Create tbl_item_stock_settlement_details",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_item_stock_settlement_details` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `settle_id` int DEFAULT NULL,
+                                                  `item_id` int DEFAULT NULL,
+                                                  `on_hand` decimal(20,4) DEFAULT NULL,
+                                                  `price` decimal(20,4) DEFAULT NULL,
+                                                  `new_on_hand` decimal(20,4) DEFAULT NULL,
+                                                  `qty` decimal(20,4) DEFAULT NULL,
+                                                  `minusamount` decimal(20,4) DEFAULT NULL,
+                                                  `plusamount` decimal(20,4) DEFAULT NULL,
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_045",
+                            Description = "Create tbl_item_stock_settlement",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_item_stock_settlement` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `date` date DEFAULT NULL,
+                                                  `warehouse_id` int DEFAULT NULL,
+                                                  `total_plus` decimal(20,6) DEFAULT NULL,
+                                                  `total_minus` decimal(20,6) DEFAULT NULL,
+                                                  `created_by` int DEFAULT NULL,
+                                                  `created_date` date DEFAULT NULL,
+                                                  `modified_by` int DEFAULT NULL,
+                                                  `modified_date` date DEFAULT NULL,
+                                                  `state` int DEFAULT '0',
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_046",
+                            Description = "Create tbl_item_transaction",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_item_transaction` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `date` date DEFAULT NULL,
+                                                  `type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `reference` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `item_id` int DEFAULT NULL,
+                                                  `cost_price` decimal(20,8) DEFAULT NULL,
+                                                  `qty_in` decimal(20,4) DEFAULT NULL,
+                                                  `sales_price` decimal(20,4) DEFAULT NULL,
+                                                  `qty_out` decimal(20,4) DEFAULT NULL,
+                                                  `qty_inc` decimal(20,4) DEFAULT NULL,
+                                                  `description` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `warehouse_id` INT NOT NULL DEFAULT 0,
+                                                  `project_id` INT NOT NULL DEFAULT 0,
+                        `GlobalId` varchar(36) NOT NULL DEFAULT '0',
+                          `DeviceId` varchar(50) DEFAULT NULL,
+                          `LastModified` datetime DEFAULT CURRENT_TIMESTAMP,
+                          `SyncStatus` tinyint NOT NULL DEFAULT 0,
+
+                                                  PRIMARY KEY (`id`)
+
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_047",
+                            Description = "Create tbl_stock_reconciliation",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS tbl_stock_reconciliation
+                                                (
+                                                    reconciliation_id INT AUTO_INCREMENT PRIMARY KEY,
+                                                    reconciliation_no VARCHAR(30) NOT NULL,
+                                                    reconciliation_date DATE NOT NULL,
+                                                    warehouse_id INT NOT NULL,
+                                                    project_id INT NULL,
+                                                    reconciliation_type VARCHAR(30) DEFAULT 'Periodic',
+                                                    checked_by INT NULL,
+                                                    approved_by INT NULL,
+                                                    status VARCHAR(30) DEFAULT 'Draft',
+                                                    remarks VARCHAR(500),
+                                                    created_by INT,
+                                                    created_date DATETIME DEFAULT CURRENT_TIMESTAMP
+                                                );
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_048",
+                            Description = "Create tbl_stock_reconciliation_item",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS tbl_stock_reconciliation_item
+                                                (
+                                                    id INT AUTO_INCREMENT PRIMARY KEY,
+                                                    reconciliation_id INT NOT NULL,
+                                                    item_id INT NOT NULL,
+                                                    system_qty DECIMAL(18,4) DEFAULT 0,
+                                                    physical_qty DECIMAL(18,4) DEFAULT 0,
+                                                    variance_qty DECIMAL(18,4) DEFAULT 0,
+                                                    adjustment_type VARCHAR(20),
+                                                    uom VARCHAR(30),
+                                                    unit_cost DECIMAL(18,4) DEFAULT 0,
+                                                    variance_value DECIMAL(18,4) DEFAULT 0,
+                                                    remarks VARCHAR(250)
+                                                );
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_049",
+                            Description = "Create tbl_tax",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_tax` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `value` int DEFAULT NULL,
+                                                  `description` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `state` int DEFAULT 0,
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_050",
+                            Description = "Create tbl_purchase_details",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_purchase_details` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `purchase_id` int DEFAULT NULL,
+                                                  `item_id` int DEFAULT NULL,
+                                                  `qty` decimal(20,4) DEFAULT NULL,
+                                                  `cost_price` decimal(20,4) DEFAULT NULL,
+                                                  `price` decimal(20,4) DEFAULT NULL,
+                                                  `vatp` decimal(20,4) DEFAULT '0.000',
+                                                  `vat` int DEFAULT NULL,
+                                                  `total` decimal(20,4) DEFAULT NULL,
+                                                  `discount` decimal(20,4) DEFAULT NULL,
+                                                  `cost_center_id` int DEFAULT NULL,
+                                                  `project_id` INT NOT NULL DEFAULT 0,`GlobalId` varchar(36) NOT NULL DEFAULT '0',
+                          `DeviceId` varchar(50) DEFAULT NULL,
+                          `LastModified` datetime DEFAULT CURRENT_TIMESTAMP,
+                          `SyncStatus` tinyint NOT NULL DEFAULT 0,
+                                                  PRIMARY KEY (`id`)
+
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_051",
+                            Description = "Create tbl_purchase",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_purchase` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `date` date NOT NULL,
+                                                  `vendor_id` int NOT NULL DEFAULT '0',
+                                                  `invoice_id` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
+                                                  `warehouse_id` int NOT NULL DEFAULT '0',
+                                                  `po_num` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
+                                                  `bill_to` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
+                                                  `city` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
+                                                  `sales_man` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+                                                  `ship_date` date DEFAULT NULL,
+                                                  `ship_via` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `ship_to` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
+                                                  `payment_method` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
+                                                  `account_cash_id` int NOT NULL DEFAULT '0',
+                                                  `payment_terms` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
+                                                  `payment_date` date NOT NULL,
+                                                  `total` decimal(20,4) NOT NULL DEFAULT '0.000',
+                                                  `vat` decimal(20,4) NOT NULL DEFAULT '0.000',
+                                                  `net` decimal(20,4) NOT NULL DEFAULT '0.000',
+                                                  `pay` decimal(20,4) NOT NULL DEFAULT '0.000',
+                                                  `change` decimal(20,4) NOT NULL DEFAULT '0.000',
+                                                  `retention_percentage` decimal(20,4) NOT NULL DEFAULT '0.000',
+                                                  `retention_amount` decimal(20,4) NOT NULL DEFAULT '0.000',
+                                                  `created_by` int NOT NULL DEFAULT '0',
+                                                  `created_date` date NOT NULL,
+                                                  `modified_by` int DEFAULT NULL,
+                                                  `modified_date` date DEFAULT NULL,
+                                                  `state` int NOT NULL DEFAULT '0',
+                                                  `purchase_type` VARCHAR(50) NOT NULL DEFAULT '0' COLLATE 'utf8mb4_general_ci',
+                                                  `fixed_asset_category_id` int NOT NULL DEFAULT '0',
+                                                  `project_id` INT NOT NULL DEFAULT 0,
+                                                  `description` varchar(300) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+                                                  `reference_no` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+                        `GlobalId` varchar(36) NOT NULL DEFAULT '0',
+                          `DeviceId` varchar(50) DEFAULT NULL,
+                          `LastModified` datetime DEFAULT CURRENT_TIMESTAMP,
+                          `SyncStatus` tinyint NOT NULL DEFAULT 0,
+
+                                                  PRIMARY KEY (`id`)
+
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_052",
+                            Description = "Create tbl_vendor",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_vendor` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `code` int NOT NULL DEFAULT '0',
+                                                  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `Cat_id` int DEFAULT NULL,
+                                                  `Balance` decimal(20,4) DEFAULT NULL,
+                                                  `date` date DEFAULT NULL,
+                                                  `main_phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `work_phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `mobile` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `email` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `ccemail` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `website` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `country` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `city` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `region` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `building_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `account_id` int DEFAULT NULL,
+                                                  `trn` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `facilty_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `active` int DEFAULT NULL,
+                                                  `created_by` int DEFAULT NULL,
+                                                  `created_date` date DEFAULT NULL,
+                                                  `state` int DEFAULT NULL,
+                                                  `type` VARCHAR(150) NULL DEFAULT 'Vendor' COLLATE 'utf8mb4_general_ci',
+                                                  `project_id` INT NOT NULL DEFAULT 0,
+                                                  `project_site` VARCHAR(150) DEFAULT '' COLLATE 'utf8mb4_general_ci',
+                        `GlobalId` varchar(36) NOT NULL DEFAULT '0',
+                          `DeviceId` varchar(50) DEFAULT NULL,
+                          `LastModified` datetime DEFAULT CURRENT_TIMESTAMP,
+                          `SyncStatus` tinyint NOT NULL DEFAULT 0,
+
+                                                  PRIMARY KEY (`id`)
+
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_053",
+                            Description = "Create tbl_cost_center_transaction",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_cost_center_transaction` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `type` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+                                                  `date` datetime DEFAULT NULL,
+                                                  `ref_id` int DEFAULT '0',
+                                                  `debit` decimal(20,4) DEFAULT '0.000',
+                                                  `credit` decimal(20,4) DEFAULT '0.000',
+                                                  `description` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+                                                  `cost_center_id` int DEFAULT '0',
+                                                  `project_id` INT NOT NULL DEFAULT 0,
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_054",
+                            Description = "Create tbl_transaction",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_transaction` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `date` date DEFAULT NULL,
+                                                  `account_id` int DEFAULT NULL,
+                                                  `debit` decimal(20,4) DEFAULT NULL,
+                                                  `credit` decimal(20,4) DEFAULT NULL,
+                                                  `transaction_id` INT NOT NULL DEFAULT 0,
+                                                  `hum_id` int DEFAULT '0',
+                                                  `type` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `t_type` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `description` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                                  `created_by` int DEFAULT NULL,
+                                                  `created_date` date DEFAULT NULL,
+                                                  `modified_by` int DEFAULT NULL,
+                                                  `modified_date` date DEFAULT NULL,
+                                                  `state` int DEFAULT NULL,
+                                                  `voucher_no` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+                        `GlobalId` varchar(36) NOT NULL DEFAULT '0',
+                          `DeviceId` varchar(50) DEFAULT NULL,
+                          `LastModified` datetime DEFAULT CURRENT_TIMESTAMP,
+                          `SyncStatus` tinyint NOT NULL DEFAULT 0,
+                                                  `project_id` INT NOT NULL DEFAULT 0,
+                                                  PRIMARY KEY (`id`)
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_055",
+                            Description = "Create tbl_item_card_details",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_item_card_details` (
+	                                                `id` INT(10) NOT NULL AUTO_INCREMENT,
+	                                                `itemId` INT(10) NOT NULL DEFAULT '0',
+	                                                `date` DATE NULL DEFAULT NULL,
+	                                                `wharehouse_id` INT(10) NOT NULL DEFAULT '0',
+	                                                `inv_no` VARCHAR(50) NOT NULL DEFAULT '' COLLATE 'utf8mb4_general_ci',
+	                                                `trans_no` INT(10) NOT NULL DEFAULT '0',
+	                                                `trans_type` VARCHAR(50) NOT NULL DEFAULT '' COLLATE 'utf8mb4_general_ci',
+	                                                `description` VARCHAR(500) NOT NULL DEFAULT '' COLLATE 'utf8mb4_general_ci',
+	                                                `price` DECIMAL(20,4) NOT NULL DEFAULT '0.0000',
+	                                                `qty_in` DECIMAL(20,4) NOT NULL DEFAULT '0.0000',
+	                                                `qty_out` DECIMAL(20,4) NOT NULL DEFAULT '0.0000',
+	                                                `qty_balance` DECIMAL(20,4) NOT NULL DEFAULT '0.0000',
+	                                                `debit` DECIMAL(20,4) NOT NULL DEFAULT '0.0000',
+	                                                `credit` DECIMAL(20,4) NOT NULL DEFAULT '0.0000',
+	                                                `balance` DECIMAL(20,4) NOT NULL DEFAULT '0.0000',
+	                                                `fifo_qty` DECIMAL(20,4) NOT NULL DEFAULT '0.0000',
+	                                                `fifo_cost` DECIMAL(20,4) NOT NULL DEFAULT '0.0000',
+	                                                PRIMARY KEY (`id`) USING BTREE
+                                                )
+                                                COLLATE='utf8mb4_general_ci'
+                                                ENGINE=InnoDB
+                                                ;
+                            "
+                        },
+                        // Optional reference seed migrations. Run only after schema migrations.
+                        // tbl_city has no unique (country_id,name) constraint; do not rerun under a new version.
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_SEED_001",
+                            Description = "Seed tbl_coa_level_1",
+                            Sql = @"
+                        INSERT IGNORE INTO `tbl_coa_level_1` (`id`, `name`, `code`, `category_code`) VALUES
+	                                                (1, 'Assets', 1,'ASSET'),
+	                                                (2, 'Liabilities', 2,'LIABILITY'),
+	                                                (3, 'Equity', 3,'EQUITY'),
+	                                                (4, 'Income', 4,'INCOME'),
+	                                                (5, 'Cost', 5,'COST'),
+	                                                (6, 'General & Direct Expenses', 6,'EXPENSE');
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_SEED_002",
+                            Description = "Seed tbl_coa_level_2",
+                            Sql = @"
+                        INSERT IGNORE INTO `tbl_coa_level_2` (`id`, `name`, `code`, `main_id`,`SyncStatus`) VALUES
+	                                                (1, 'Current Assets', 11, 1, 1),
+	                                                (2, 'Long-Term Assets', 12, 1, 1),
+	                                                (3, 'Current Liabilities', 21, 2, 1),
+	                                                (4, 'Long-Term Liabilities', 22, 2,1),
+	                                                (5, 'Equity & Capital', 31, 3,1),
+	                                                (6, 'Direct Income', 41, 4,1),
+	                                                (7, 'Indirect Income', 42, 4,1),
+	                                                (8, 'Cost', 51, 5,1),
+	                                                (9, 'Direct Expenses', 61, 6,1),
+	                                                (10, 'Operating Expenses', 62, 6,1),
+	                                                (11, 'Inventory Adjustments', 63, 6,1),
+	                                                (12, 'Other Income', 465, 4,1);
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_SEED_003",
+                            Description = "Seed tbl_coa_level_3",
+                            Sql = @"
+                        INSERT IGNORE INTO `tbl_coa_level_3` (`id`, `name`, `code`, `main_id`,`SyncStatus`) VALUES
+	                                                (1, 'Banks', 1101, 1,1),
+	                                                (2, 'Petty Cash', 1102, 1,1),
+	                                                (3, 'Accounts Receivable', 1103, 1,1),
+	                                                (4, 'Inventory', 1104, 1,1),
+	                                                (5, 'Prepayment', 1105, 1,1),
+	                                                (6, 'Other\'s Receivable', 1106, 1,1),
+	                                                (7, 'Related parties Receivable', 1107, 1,1),
+	                                                (8, 'Fixed Assets', 1201, 2,1),
+	                                                (9, 'Suppliers', 2101, 3,1),
+	                                                (10, 'Accrued Employee benefits Expense', 2102, 3,1),
+	                                                (11, 'Other Current Liabilities', 2103, 3,1),
+	                                                (12, 'Long-term employee benefits', 2201, 4,1),
+	                                                (13, 'Capital', 3101, 5,1),
+	                                                (14, 'Members Draw', 3102, 5,1),
+	                                                (15, 'Opening Balance Equity', 3201, 5,1),
+	                                                (16, 'Reserve', 3301, 5,1),
+	                                                (17, 'Retained earnings', 3401, 5,1),
+	                                                (18, 'Sales', 4101, 6,1),
+	                                                (19, 'Sales Return', 4102, 6,1),
+	                                                (20, 'Maintenance Income', 4201, 7,1),
+	                                                (21, 'Cost of Goods Sold', 5101, 8,1),
+	                                                (22, 'Freight Shipping Cost', 5102, 8,1),
+	                                                (23, 'Customs & Clearance', 5103, 8,1),
+	                                                (24, 'Other Cost', 5104, 8,1),
+	                                                (25, 'General Expenses', 6101, 9,1),
+                                                    (26, 'Payroll Liabilities', 2104, 3,1),
+	                                                (27, 'Employee Receivable', 1108, 1,1),
+	                                                (28, 'Short Term Investment', 1109, 1,1),
+	                                                (29, 'Other Payable', 2105, 3,1),
+	                                                (30, 'Cash & Cash Equivalents', 1110, 1,1),
+	                                                (31, 'Losses', 6201, 16,1),
+	                                                (32, 'Stock Write-offs', 6387, 17,1),
+	                                                (33, 'Stock Adjustments', 46501, 18,1),
+	                                                (34, 'Accounts Payable', 1111, 1,1),
+	                                                (35, 'Other Income', 46502, 12,1);
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_SEED_004",
+                            Description = "Seed tbl_coa_level_4",
+                            Sql = @"
+                        INSERT IGNORE INTO `tbl_coa_level_4` (`id`, `name`, `code`, `main_id`, `debit`, `credit`, `date`,`SyncStatus`) VALUES
+	                                                (1, 'Bank Account', 1101001, 1, 0.000, 0.000, NULL,1),
+	                                                (2, 'Petty Cash', 1102001, 2, 0.000, 0.000, NULL,1),
+	                                                (3, 'Accounts Receivable', 1103001, 3, 0.000, 0.000, NULL,1),
+	                                                (4, 'Raw Material Inventory', 1104001, 4, 0.000, 0.000, NULL,1),
+	                                                (5, 'Finish Goods Inventory', 1104002, 4, 0.000, 0.000, NULL,1),
+	                                                (6, 'Prepayment Government', 1105001, 5, 0.000, 0.000, NULL,1),
+	                                                (7, 'Prepayment Rent', 1105002, 5, 0.000, 0.000, NULL,1),
+	                                                (8, 'Prepayment Other\'s', 1105003, 5, 0.000, 0.000, NULL,1),
+	                                                (9, 'Deposits', 1106001, 6, 0.000, 0.000, NULL,1),
+	                                                (10, 'Taxes Paid (Input)', 1106002, 6, 0.000, 0.000, NULL,1),
+	                                                (11, 'Advance payments to employees', 1106003, 6, 0.000, 0.000, NULL,1),
+	                                                (12, 'Fixed Assets Net', 1201001, 8, 0.000, 0.000, NULL,1),
+	                                                (13, 'Suppliers (Creditors)  Net', 2101001, 9, 0.000, 0.000, NULL,1),
+	                                                (14, 'Accrued Salaries', 2102001, 10, 0.000, 0.000, NULL,1),
+	                                                (15, 'Accrued Sales commission', 2102002, 10, 0.000, 0.000, NULL,1),
+	                                                (16, 'Accrued Leave Salary', 2102003, 10, 0.000, 0.000, NULL,1),
+	                                                (17, 'Sales Tax Payable', 2103001, 11, 0.000, 0.000, NULL,1),
+	                                                (18, 'PDC CHQ', 2103002, 11, 0.000, 0.000, NULL,1),
+	                                                (19, 'Advance from Customers', 2103004, 11, 0.000, 0.000, NULL,1),
+	                                                (20, 'Gratuity Provision', 2201001, 12, 0.000, 0.000, NULL,1),
+	                                                (21, 'Capital - Opening Balance', 3101001, 13, 0.000, 0.000, NULL,1),
+	                                                (22, 'Opening Balance Equity', 3201001, 15, 0.000, 0.000, NULL,1),
+	                                                (23, 'Sales - Local', 4101001, 18, 0.000, 0.000, NULL,1),
+	                                                (24, 'Sales - GCC', 4101002, 18, 0.000, 0.000, NULL,1),
+	                                                (25, 'Materials Purchased', 5101001, 21, 0.000, 0.000, NULL,1),
+	                                                (26, 'Employee Salary Advance', 1108001, 27, 0.000, 0.000, NULL,1),
+	                                                (27, 'Employee Loans', 1108002, 27, 0.000, 0.000, NULL,1),
+	                                                (28, 'Other Employee Receivables', 1101002, 27, 0.000, 0.000, NULL,1),
+	                                                (29, 'Accrued Salary', 2102004, 10, 0.000, 0.000, NULL,1),
+	                                                (30, 'Employee Payables', 2105001, 29, 0.000, 0.000, NULL,1),
+	                                                (31, 'Stock Settlement Gain', 46501001, 35, 0.000, 0.000, NULL,1),
+	                                                (32, 'Accumulated Dep Fur', 1201002, 25, 0.000, 0.000, NULL,1),
+	                                                (33, 'PDC Receivable', 1103002, 3, 0.000, 0.000, NULL,1),
+	                                                (34, 'PDC Receivable Return', 1103003, 3, 0.000, 0.000, NULL,1),
+	                                                (35, 'PDC Receivable Hold', 1103004, 3, 0.000, 0.000, NULL,1),
+	                                                (36, 'PDC Receivable Cancel', 1103005, 3, 0.000, 0.000, NULL,1),
+	                                                (37, 'PDC Payable', 1111001, 34, 0.000, 0.000, NULL,1),
+	                                                (38, 'PDC Payable Return', 1111002, 34, 0.000, 0.000, NULL,1),
+	                                                (39, 'PDC Payable Hold', 1111003, 34, 0.000, 0.000, NULL,1),
+	                                                (40, 'PDC Payable Cancel', 1111003, 34, 0.000, 0.000, NULL,1),
+	                                                (41, 'Sales Discount', 6101004, 25, 0.000, 0.000, NULL,1),
+	                                                (42, 'Cash On Hand', 1103006, 3, 0.000, 0.000, NULL,1),
+	                                                (43, 'Sales Return', 4101003, 19, 0.000, 0.000, NULL,1),
+	                                                (44, 'Customer Advances', 2105002, 29, 0.000, 0.000, NULL,1),
+	                                                (45, 'Retention Receivable', 1103007, 3, 0.000, 0.000, NULL,1),
+	                                                (46, 'Retention Payable', 2105003, 29, 0.000, 0.000, NULL,1);
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_SEED_005",
+                            Description = "Seed tbl_city",
+                            Sql = @"
+                        INSERT INTO `tbl_city` ( `country_id`, `name`) VALUES
+                                                    (1,'Kabul'),
+                                                    (2,'Tirana'),
+                                                    (3,'Algiers'),
+                                                    (4,'Andorra la Vella'),
+                                                    (5,'Luanda'),
+                                                    (6,'Saint John''s'),
+                                                    (7,'Buenos Aires'),
+                                                    (8,'Yerevan'),
+                                                    (9,'Canberra'),
+                                                    (10,'Vienna'),
+                                                    (11,'Baku'),
+                                                    (12,'Nassau'),
+                                                    (13,'Manama'),
+                                                    (14,'Dhaka'),
+                                                    (15,'Bridgetown'),
+                                                    (16,'Minsk'),
+                                                    (17,'Brussels'),
+                                                    (18,'Belmopan'),
+                                                    (19,'Porto-Novo'),
+                                                    (20,'Thimphu'),
+                                                    (21,'Sucre'),
+                                                    (22,'Sarajevo'),
+                                                    (23,'Gaborone'),
+                                                    (24,'Brasilia'),
+                                                    (25,'Bandar Seri Begawan'),
+                                                    (26,'Sofia'),
+                                                    (27,'Ouagadougou'),
+                                                    (28,'Gitega'),
+                                                    (29,'Praia'),
+                                                    (30,'Phnom Penh'),
+                                                    (31,'Yaounde'),
+                                                    (32,'Ottawa'),
+                                                    (33,'Bangui'),
+                                                    (34,'N''Djamena'),
+                                                    (35,'Santiago'),
+                                                    (36,'Beijing'),
+                                                    (37,'Bogota'),
+                                                    (38,'Moroni'),
+                                                    (39,'Brazzaville'),
+                                                    (40,'San Jose'),
+                                                    (41,'Zagreb'),
+                                                    (42,'Havana'),
+                                                    (43,'Nicosia'),
+                                                    (44,'Prague'),
+                                                    (45,'Copenhagen'),
+                                                    (46,'Djibouti'),
+                                                    (47,'Roseau'),
+                                                    (48,'Santo Domingo'),
+                                                    (49,'Quito'),
+                                                    (50,'Cairo'),
+                                                    (51,'San Salvador'),
+                                                    (52,'Malabo'),
+                                                    (53,'Asmara'),
+                                                    (54,'Tallinn'),
+                                                    (55,'Mbabane'),
+                                                    (56,'Addis Ababa'),
+                                                    (57,'Suva'),
+                                                    (58,'Helsinki'),
+                                                    (59,'Paris'),
+                                                    (60,'Libreville'),
+                                                    (61,'Banjul'),
+                                                    (62,'Tbilisi'),
+                                                    (63,'Berlin'),
+                                                    (64,'Accra'),
+                                                    (65,'Athens'),
+                                                    (66,'St George''s'),
+                                                    (67,'Guatemala City'),
+                                                    (68,'Conakry'),
+                                                    (69,'Bissau'),
+                                                    (70,'Georgetown'),
+                                                    (71,'Port-au-Prince'),
+                                                    (72,'Tegucigalpa'),
+                                                    (73,'Budapest'),
+                                                    (74,'Reykjavik'),
+                                                    (75,'New Delhi'),
+                                                    (76,'Jakarta'),
+                                                    (77,'Tehran'),
+                                                    (78,'Baghdad'),
+                                                    (79,'Dublin'),
+                                                    (80,'Jerusalem'),
+                                                    (81,'Rome'),
+                                                    (82,'Kingston'),
+                                                    (83,'Tokyo'),
+                                                    (84,'Amman'),
+                                                    (85,'Astana'),
+                                                    (86,'Nairobi'),
+                                                    (87,'Tarawa'),
+                                                    (88,'Kuwait City'),
+                                                    (89,'Bishkek'),
+                                                    (90,'Vientiane'),
+                                                    (91,'Riga'),
+                                                    (92,'Beirut'),
+                                                    (93,'Maseru'),
+                                                    (94,'Monrovia'),
+                                                    (95,'Tripoli'),
+                                                    (96,'Vaduz'),
+                                                    (97,'Vilnius'),
+                                                    (98,'Luxembourg'),
+                                                    (99,'Antananarivo'),
+                                                    (100,'Lilongwe'),
+                                                    (101,'Kuala Lumpur'),
+                                                    (102,'Male'),
+                                                    (103,'Bamako'),
+                                                    (104,'Valletta'),
+                                                    (105,'Majuro'),
+                                                    (106,'Nouakchott'),
+                                                    (107,'Port Louis'),
+                                                    (108,'Mexico City'),
+                                                    (109,'Palikir'),
+                                                    (110,'Chișinău'),
+                                                    (111,'Monaco'),
+                                                    (112,'Ulaanbaatar'),
+                                                    (113,'Podgorica'),
+                                                    (114,'Rabat'),
+                                                    (115,'Maputo'),
+                                                    (116,'Nay Pyi Taw'),
+                                                    (117,'Windhoek'),
+                                                    (118,'Nauru'),
+                                                    (119,'Kathmandu'),
+                                                    (120,'Amsterdam'),
+                                                    (121,'Wellington'),
+                                                    (122,'Managua'),
+                                                    (123,'Niamey'),
+                                                    (124,'Abuja'),
+                                                    (125,'Pyongyang'),
+                                                    (126,'Skopje'),
+                                                    (127,'Oslo'),
+                                                    (128,'Muscat'),
+                                                    (129,'Islamabad'),
+                                                    (130,'Ngerulmud'),
+                                                    (131,'Jerusalem'),
+                                                    (132,'Panama City'),
+                                                    (133,'Port Moresby'),
+                                                    (134,'Asuncion'),
+                                                    (135,'Lima'),
+                                                    (136,'Manila'),
+                                                    (137,'Warsaw'),
+                                                    (138,'Lisbon'),
+                                                    (139,'Doha'),
+                                                    (140,'Bucharest'),
+                                                    (141,'Moscow'),
+                                                    (142,'Kigali'),
+                                                    (143,'Basseterre'),
+                                                    (144,'Castries'),
+                                                    (145,'Kingstown'),
+                                                    (146,'Apia'),
+                                                    (147,'San Marino'),
+                                                    (148,'Sao Tome'),
+                                                    (149,'Riyadh'),
+                                                    (150,'Dakar'),
+                                                    (151,'Belgrade'),
+                                                    (152,'Victoria'),
+                                                    (153,'Freetown'),
+                                                    (154,'Singapore'),
+                                                    (155,'Bratislava'),
+                                                    (156,'Ljubljana'),
+                                                    (157,'Honiara'),
+                                                    (158,'Mogadishu'),
+                                                    (159,'Pretoria'),
+                                                    (160,'Seoul'),
+                                                    (161,'Juba'),
+                                                    (162,'Madrid'),
+                                                    (163,'Sri Jayawardenapura Kotte'),
+                                                    (164,'Khartoum'),
+                                                    (165,'Paramaribo'),
+                                                    (166,'Stockholm'),
+                                                    (167,'Bern'),
+                                                    (168,'Damascus'),
+                                                    (169,'Dushanbe'),
+                                                    (170,'Dodoma'),
+                                                    (171,'Bangkok'),
+                                                    (172,'Taipei'),
+                                                    (173,'Lome'),
+                                                    (174,'Nuku''alofa'),
+                                                    (175,'Port of Spain'),
+                                                    (176,'Tunis'),
+                                                    (177,'Ankara'),
+                                                    (178,'Ashgabat'),
+                                                    (179,'Funafuti'),
+                                                    (180,'Kampala'),
+                                                    (181,'Kyiv or Kiev'),
+	                                                (182,'Abu Dhabi'),
+	                                                (182,'Dubai'),
+	                                                (182,'Sharjah'),
+	                                                (182,'Ajman'),
+	                                                (182,'Umm Al-Quwain'),
+	                                                (182,'Ras Al Khaimah'),
+	                                                (182,'Fujairah'),
+                                                    (183,'London'),
+                                                    (184,'Washington D.C.'),
+                                                    (185,'Montevideo'),
+                                                    (186,'Tashkent'),
+                                                    (187,'Port Vila'),
+                                                    (188,'Vatican City'),
+                                                    (189,'Caracas'),
+                                                    (190,'Hanoi'),
+                                                    (191,'Sana''a'),
+                                                    (192,'Lusaka'),
+                                                    (193,'Harare');
+                            "
+                        },
+
                         new DatabaseMigration
                         {
                             Version = "20261013_002",
