@@ -238,7 +238,7 @@ namespace Clinic.Medical_Services.Pharmaciy
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(540, 55);
             this.btnSave.TabIndex = 8;
-            this.btnSave.Text = "      Add New Drug";
+            this.btnSave.Text = "Add New Drug";
             this.btnSave.UseVisualStyleBackColor = false;
             this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
             // 
@@ -399,7 +399,7 @@ namespace Clinic.Medical_Services.Pharmaciy
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(83, 28);
             this.label6.TabIndex = 250;
-            this.label6.Text = "Search :";
+            this.label6.Text = "Search";
             // 
             // panel3
             // 
