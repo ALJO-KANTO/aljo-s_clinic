@@ -2,6 +2,7 @@
 using Clinic.ControlsMain;
 using Clinic.Medical_Services.Visit;
 using Clinic_Business;
+using Clinic;
 using System;
 using System.Data;
 using System.Drawing;
@@ -15,9 +16,28 @@ namespace Clinic.Medical_Services.Pharmaciy
         private ucPrescriptionItems _detailsPanel = new ucPrescriptionItems();
         private int _expandedRowIndex = -1;
         DataTable dtMaster = null;
+        private string[] _statusValues = Array.Empty<string>();
         public frmAllPrescriptions()
         {
             InitializeComponent();
+            lblTitle.TextAlign = ContentAlignment.MiddleCenter;
+            lblTitle.Anchor = AnchorStyles.Top;
+            lblTitle.Left = (this.ClientSize.Width - lblTitle.Width) / 2;
+
+this.Resize += (s, e) =>
+{
+    lblTitle.Left = (this.ClientSize.Width - lblTitle.Width) / 2;
+};
+
+            // Keep the original status values for database filtering before translating their display text.
+            _statusValues = cmbStatus.Items.Cast<object>()
+                .Select(item => Convert.ToString(item) ?? string.Empty)
+                .ToArray();
+
+            ApplyTranslations(this);
+            RightToLeft = TranslationClass.IsArabic ? RightToLeft.Yes : RightToLeft.No;
+            RightToLeftLayout = TranslationClass.IsArabic;
+
             //ThemeManager.ApplyTheme(this);
             dgPrescriptionDetails.Paint += (s, e) =>
             {
@@ -35,6 +55,37 @@ namespace Clinic.Medical_Services.Pharmaciy
             LoadMasterData();
             cmbStatus.SelectedIndex = 0;
             lbCurrentUser.Text = clsGlobal.CurrentUser.PersonInfo.Name;
+          
+        }
+
+        private static string T(string text)
+        {
+            return TranslationClass.Translate(text, TranslationClass.IsArabic);
+        }
+
+        // Translate designer-created labels, buttons, group boxes and other visible controls.
+        // ComboBox items are translated for display; _statusValues retains their original values
+        // so filtering continues to use the database's original status text.
+        private void ApplyTranslations(Control parent)
+        {
+            if (parent == null) return;
+
+            if (!(parent is DataGridView))
+                parent.Text = T(parent.Text);
+
+            if (parent is ComboBox combo)
+            {
+                for (int i = 0; i < combo.Items.Count; i++)
+                {
+                    string original = i < _statusValues.Length && combo == cmbStatus
+                        ? _statusValues[i]
+                        : Convert.ToString(combo.Items[i]) ?? string.Empty;
+                    combo.Items[i] = T(original);
+                }
+            }
+
+            foreach (Control child in parent.Controls)
+                ApplyTranslations(child);
         }
 
         private void SetupGridDesign()
@@ -61,7 +112,7 @@ namespace Clinic.Medical_Services.Pharmaciy
                 new DataGridViewTextBoxColumn
                 {
                     Name = "PrescriptionID",
-                    HeaderText = "Prescription ID",
+                    HeaderText = T("Prescription ID"),
                     DataPropertyName = "PrescriptionID",
                     ReadOnly = true,
                     Width = 150
@@ -71,7 +122,7 @@ namespace Clinic.Medical_Services.Pharmaciy
                 new DataGridViewTextBoxColumn
                 {
                     Name = "PrescriptionDate",
-                    HeaderText = "Date",
+                    HeaderText = T("Date"),
                     DataPropertyName = "PrescriptionDate",
                     ReadOnly = true,
                     Width = 150
@@ -81,7 +132,7 @@ namespace Clinic.Medical_Services.Pharmaciy
                 new DataGridViewTextBoxColumn
                 {
                     Name = "PatientName",
-                    HeaderText = "Patient Name",
+                    HeaderText = T("Patient Name"),
                     DataPropertyName = "PatientName",
                     ReadOnly = true,
                     Width = 180
@@ -91,7 +142,7 @@ namespace Clinic.Medical_Services.Pharmaciy
                 new DataGridViewTextBoxColumn
                 {
                     Name = "DoctorName",
-                    HeaderText = "Doctor Name",
+                    HeaderText = T("Doctor Name"),
                     DataPropertyName = "DoctorName",
                     ReadOnly = true,
                     Width = 180
@@ -101,7 +152,7 @@ namespace Clinic.Medical_Services.Pharmaciy
                 new DataGridViewTextBoxColumn
                 {
                     Name = "VisitID",
-                    HeaderText = "Visit ID",
+                    HeaderText = T("Visit ID"),
                     DataPropertyName = "VisitID",
                     ReadOnly = true,
                     Width = 100
@@ -111,7 +162,7 @@ namespace Clinic.Medical_Services.Pharmaciy
                 new DataGridViewTextBoxColumn
                 {
                     Name = "Status",
-                    HeaderText = "Status",
+                    HeaderText = T("Status"),
                     DataPropertyName = "Status",
                     ReadOnly = true,
                     Width = 160
@@ -121,7 +172,7 @@ namespace Clinic.Medical_Services.Pharmaciy
                 new DataGridViewTextBoxColumn
                 {
                     Name = "Notes",
-                    HeaderText = "Notes",
+                    HeaderText = T("Notes"),
                     DataPropertyName = "Notes",
                     ReadOnly = true,
                     Width = 180
@@ -131,8 +182,8 @@ namespace Clinic.Medical_Services.Pharmaciy
                 new DataGridViewLinkColumn
                 {
                     Name = "Edit",
-                    HeaderText = "Edit",
-                    Text = "Edit",
+                    HeaderText = T("Edit"),
+                    Text = T("Edit"),
                     UseColumnTextForLinkValue = true,
                     TrackVisitedState = false,
                     Width = 70
@@ -142,8 +193,8 @@ namespace Clinic.Medical_Services.Pharmaciy
                 new DataGridViewLinkColumn
                 {
                     Name = "Delete",
-                    HeaderText = "Delete",
-                    Text = "Delete",
+                    HeaderText = T("Delete"),
+                    Text = T("Delete"),
                     UseColumnTextForLinkValue = true,
                     TrackVisitedState = false,
                     Width = 80
@@ -151,6 +202,12 @@ namespace Clinic.Medical_Services.Pharmaciy
 
             dgPrescriptionDetails.DefaultCellStyle.Alignment =
                 DataGridViewContentAlignment.MiddleCenter;
+            dgPrescriptionDetails.RightToLeft = TranslationClass.IsArabic
+                ? RightToLeft.Yes
+                : RightToLeft.No;
+            dgPrescriptionDetails.ColumnHeadersDefaultCellStyle.Alignment =
+                DataGridViewContentAlignment.MiddleCenter;
+
         }
 
         private void LoadMasterData()
@@ -162,13 +219,13 @@ namespace Clinic.Medical_Services.Pharmaciy
                 if (dtMaster == null)
                 {
                     MessageBox.Show(
-                        "GetAllPrescriptionRecords returned null.",
-                        "Prescription Data"
+                        T("GetAllPrescriptionRecords returned null."),
+                        T("Prescription Data")
                     );
                     return;
                 }
 
-              
+
 
                 dgPrescriptionDetails.AutoGenerateColumns = false;
                 dgPrescriptionDetails.DataSource = dtMaster;
@@ -186,7 +243,7 @@ namespace Clinic.Medical_Services.Pharmaciy
             {
                 MessageBox.Show(
                     ex.ToString(),
-                    "Error Loading Prescriptions",
+                    T("Error Loading Prescriptions"),
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error
                 );
@@ -290,8 +347,8 @@ namespace Clinic.Medical_Services.Pharmaciy
                     out visitID) || visitID <= 0)
                 {
                     MessageBox.Show(
-                        "Invalid Visit ID.",
-                        "Error",
+                        T("Invalid Visit ID."),
+                        T("Error"),
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
 
@@ -314,9 +371,9 @@ namespace Clinic.Medical_Services.Pharmaciy
             if (columnName == "Delete")
             {
                 DialogResult result = MessageBox.Show(
-                    "Are you sure you want to permanently delete prescription #" +
+                    T("Are you sure you want to permanently delete prescription #") +
                     prescriptionID + "?",
-                    "Confirm Delete",
+                    T("Confirm Delete"),
                     MessageBoxButtons.YesNo,
                     MessageBoxIcon.Warning);
 
@@ -336,21 +393,21 @@ namespace Clinic.Medical_Services.Pharmaciy
                         LoadMasterData();
 
                         MessageBox.Show(
-                            "Prescription deleted successfully.",
-                            "Success",
+                            T("Prescription deleted successfully."),
+                            T("Success"),
                             MessageBoxButtons.OK,
                             MessageBoxIcon.Information);
                     }
                     else
                     {
-                        MessageBox.Show("Prescription not found.");
+                        MessageBox.Show(T("Prescription not found."));
                     }
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show(
                         ex.Message,
-                        "Delete Failed",
+                        T("Delete Failed"),
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
                 }
@@ -414,7 +471,10 @@ namespace Clinic.Medical_Services.Pharmaciy
             if (dtMaster == null || dtMaster.Columns.Count == 0)
                 return;
 
-            string selectedStatus = cmbStatus.Text.Trim();
+            string selectedStatus = cmbStatus.SelectedIndex >= 0 &&
+                                   cmbStatus.SelectedIndex < _statusValues.Length
+                ? _statusValues[cmbStatus.SelectedIndex].Trim()
+                : cmbStatus.Text.Trim();
 
             if (selectedStatus == "All" ||
                 string.IsNullOrWhiteSpace(selectedStatus))

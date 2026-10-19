@@ -45,7 +45,7 @@ namespace Clinic
             { "Process Payments", "معالجة المدفوعات" },
             { "Issue Invoice", "إصدار فاتورة" },
             { "Check in Appointment", "تسجيل دخول الموعد" },
-
+            { "Today", "اليوم" },
             { "Welcome Back", "مرحباً بعودتك" },
             { "Admin", "مدير النظام" },
             { "Doctor", "طبيب" },
@@ -460,6 +460,26 @@ namespace Clinic
 { "X-Ray Test", "فحص الأشعة" },
 { "Clinical Notes", "ملاحظات سريرية" },
 { "Create Request", "إنشاء الطلب" },
+{ "New", "جديد" },
+{ "Test Name", "اسم الفحص" },
+{ "Price", "السعر" },
+{ "Active", "نشط" },
+{ "Save Test", "حفظ الفحص" },
+{ "Deactivate", "إلغاء التفعيل" },
+{ "Test ID", "رقم الفحص" },
+{ "Deactivate selected test?", "هل تريد إلغاء تفعيل الفحص المحدد؟" },
+{ "Unable to load X-Ray tests", "تعذر تحميل فحوصات الأشعة" },//prescription
+{ "Prescription ID", "رقم الوصفة الطبية" },
+{ "Master Prescriptions Registry", "سجل الوصفات الطبية الرئيسي" },
+
+{ "Invalid Visit ID.", "رقم الزيارة غير صالح." },
+{ "Prescription deleted successfully.", "تم حذف الوصفة الطبية بنجاح." },
+{ "Prescription not found.", "لم يتم العثور على الوصفة الطبية." },
+{ "Delete Failed", "فشل الحذف" },
+{ "Search By Patient Name .....", ".....البحث باسم المريض" },
+{ "From:", ":من" },
+{ "To:", ":إلى" },
+{ "Filter by Status", "تصفية حسب الحالة" },
 
             {"✚  CLINIC\n     MANAGEMENT SYSTEM", "✚  نظام إدارة\n     العيادة" },
         };
