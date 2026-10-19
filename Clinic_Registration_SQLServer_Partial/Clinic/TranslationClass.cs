@@ -456,9 +456,10 @@ namespace Clinic
 { "No available image is attached to this request.", "لا توجد صورة مرفقة بهذا الطلب." },
 { "X-Ray setup", "إعداد الأشعة" },
 { "Load X-Ray", "تحميل بيانات الأشعة" },
-
-
-
+{ "Patient / Visit", "المريض / الزيارة" },
+{ "X-Ray Test", "فحص الأشعة" },
+{ "Clinical Notes", "ملاحظات سريرية" },
+{ "Create Request", "إنشاء الطلب" },
 
             {"✚  CLINIC\n     MANAGEMENT SYSTEM", "✚  نظام إدارة\n     العيادة" },
         };
