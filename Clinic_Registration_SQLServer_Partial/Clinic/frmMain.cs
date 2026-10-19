@@ -53,6 +53,7 @@ namespace Clinic
             if (LicenseManager.UsageMode != LicenseUsageMode.Designtime)
             {
                 BuildModernDashboardDesign();
+                BindMigratedAdminSubmenus();
                 AddXRayDashboardButton();
                 AddTranslateButton();
                 ChangeDashboardLanguage(false);
@@ -981,5 +982,110 @@ namespace Clinic
         {
             openChildForm(frm);
         }
+
+        // Added navigation only. Existing sidebar design and role rules remain unchanged.
+        private void BindMigratedAdminSubmenus()
+        {
+            if (modernSidebar == null ||
+                clsGlobal.CurrentUser == null ||
+                clsGlobal.CurrentUser.RoleID != (int)clsGlobal.UserRole.Admin)
+                return;
+
+            var forms = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "Account Center", "MasterChartOfAccount" },
+                { "Fixed Assets", "MasterFixedAssets" },
+                { "Voucher", "MasterJournalVoucher" },
+                { "Prepaid", "MasterAdvancePaymentVoucher" },
+                { "Petty Cash List", "MasterPettyCash" },
+                { "Vendor Center", "MasterVendor" },
+                { "Purchases Center", "" }, // No matching migrated form supplied
+                { "Locations", "frmInventoryLocations" },
+                { "Receipts", "" }, // No matching migrated form supplied
+                { "Purchase Invoice", "" }, // No matching migrated form supplied
+                { "Payment Voucher", "MasterPaymentVoucher" },
+                { "Inventory Items", "MasterInventory" },
+                { "Add New Item", "frmViewItem" },
+                { "Inventory Center", "MasterInventory" },
+                { "Stock", "MasterStockManagement" },
+                { "Human Resource", "MasterEmployee" },
+                { "Attendance", "MasterAttendanceSheet" },
+                { "Salary Sheet", "frmSalarySheet" },
+                { "Leave Salary", "frmLeaveSalary" },
+                { "End Of Services", "frmEndOfService" },
+                { "Loans", "MasterLoan" },
+                { "Final Settlement", "MasterFinalSettlement" }
+            };
+
+            foreach (Control container in modernSidebar.Controls)
+            {
+                FlowLayoutPanel menu = container as FlowLayoutPanel;
+                if (menu == null) continue;
+
+                foreach (Control control in menu.Controls)
+                {
+                    Panel group = control as Panel;
+                    if (group == null || !group.Name.StartsWith("adminGroup", StringComparison.Ordinal))
+                        continue;
+
+                    foreach (Control child in group.Controls)
+                    {
+                        FlowLayoutPanel submenu = child as FlowLayoutPanel;
+                        if (submenu == null) continue;
+
+                        foreach (Control item in submenu.Controls)
+                        {
+                            Button button = item as Button;
+                            if (button == null) continue;
+                            string caption = button.Tag as string;
+                            string formName;
+                            if (caption == null || !forms.TryGetValue(caption, out formName) ||
+                                string.IsNullOrWhiteSpace(formName)) continue;
+
+                            string target = formName;
+                            button.Click += (sender, args) => OpenMigratedAdminForm(target);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void OpenMigratedAdminForm(string className)
+        {
+            OpenIfAuthorized(() =>
+            {
+                try
+                {
+                    var matches = AppDomain.CurrentDomain.GetAssemblies()
+                        .SelectMany(assembly =>
+                        {
+                            try { return assembly.GetTypes(); }
+                            catch (System.Reflection.ReflectionTypeLoadException ex)
+                            { return ex.Types.Where(t => t != null); }
+                        })
+                        .Where(t => t != null && t.Name == className &&
+                                    typeof(Form).IsAssignableFrom(t) && !t.IsAbstract)
+                        .ToList();
+
+                    if (matches.Count != 1)
+                    {
+                        MessageBox.Show(matches.Count == 0
+                            ? "Form not found: " + className
+                            : "Multiple forms named " + className + ". Specify its namespace.",
+                            "Navigation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
+                    using (Form form = (Form)Activator.CreateInstance(matches[0]))
+                        form.ShowDialog(this);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.ToString(), "Unable to Open Form",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }, clsGlobal.UserRole.Admin);
+        }
+
     }
 }

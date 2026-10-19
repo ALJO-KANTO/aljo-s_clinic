@@ -331,7 +331,6 @@ namespace Clinic
 
             foreach (string page in pages)
             {
-                string selectedPage = page;
                 Button item = new Button
                 {
                     Name = "btn" + caption.Replace(" ", "") + page.Replace(" ", ""),
@@ -349,7 +348,7 @@ namespace Clinic
                 };
                 item.FlatAppearance.BorderSize = 0;
                 item.FlatAppearance.MouseOverBackColor = Color.FromArgb(32, 56, 101);
-                item.Click += (sender, args) => OpenFutureAdminPage(caption, selectedPage);
+                // Navigation is bound by BindMigratedAdminSubmenus() in frmMain.cs.
                 children.Controls.Add(item);
             }
 
@@ -384,20 +383,6 @@ namespace Clinic
             };
 
             menu.Controls.Add(group);
-        }
-
-        private void OpenFutureAdminPage(string module, string page)
-        {
-            if (clsGlobal.CurrentUser == null ||
-                clsGlobal.CurrentUser.RoleID != (int)clsGlobal.UserRole.Admin)
-            {
-                MessageBox.Show("Administrator access required.", "Access Denied",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            MessageBox.Show(page + " page will be added later under " + module + ".",
-                module, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void BuildDashboardRows()
