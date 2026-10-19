@@ -340,6 +340,16 @@ namespace Clinic
 { "Are you sure you want to delete Doctor", "هل أنت متأكد أنك تريد حذف الطبيب" },
 { "Doctor was not deleted because it has data linked to it in the system.", "لم يتم حذف الطبيب لوجود بيانات مرتبطة به في النظام." },
 
+{ "User ID", "رقم المستخدم" },
+{ "UserName", "اسم المستخدم" },
+{ "Role Name", "اسم الدور" },
+{ "# Records:", "عدد السجلات:" },
+
+{ "Translate", "ترجمة" },
+{ "Billing_Payments", "الفواتير والمدفوعات" },
+
+{ "X-Ray / Radiology", "الأشعة السينية / الأشعة" },
+
 
 
             {"✚  CLINIC\n     MANAGEMENT SYSTEM", "✚  نظام إدارة\n     العيادة" },
