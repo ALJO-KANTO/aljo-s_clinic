@@ -412,7 +412,7 @@ namespace Clinic
         { "Amount to Pay", "المبلغ المطلوب دفعه" },
         { "Ammount to Pay", "المبلغ المطلوب دفعه" },
         { "Amount Received", "المبلغ المستلم" },
-        
+        { "New X-Ray Request", "طلب أشعة سينية جديد" },
         { "Change", "الباقي" },
         { "Confirm Payment", "تأكيد الدفع" },
         { "Bill Not Found", "الفاتورة غير موجودة" },
@@ -430,7 +430,35 @@ namespace Clinic
         { "Change to return: ", "المبلغ المتبقي للإرجاع: " },
         { "Remaining Debt: ", "المبلغ المتبقي المستحق: " },
         { "Are you sure you want to confirm this payment?", "هل أنت متأكد من تأكيد هذا الدفع؟" },
-        
+        { "X-Ray / Radiology Management", "إدارة الأشعة" },
+{ "X-ray requests, imaging studies and patient results", "طلبات الأشعة والفحوصات ونتائج المرضى" },
+{ "Active X-Ray Tests", "فحوصات الأشعة النشطة" },
+{ "Total Requests", "إجمالي الطلبات" },
+{ "In Progress", "قيد التنفيذ" },
+{ "Manage X-Ray Tests", "إدارة فحوصات الأشعة" },
+{ "Enter Result", "إدخال النتيجة" },
+{ "View Image", "عرض الصورة" },
+{ "Refresh", "تحديث" },
+{ "VisitID", "رقم الزيارة" },
+{ "Dates", "التواريخ" },
+{ "XRayRequestID", "رقم طلب الأشعة" },
+{ "Image", "الصورة" },
+{ "View", "عرض" },
+{ "TestName", "اسم الفحص" },
+{ "RequestedAt", "تاريخ الطلب" },
+{ "Search", "بحث" },
+{ "Select a request.", "يرجى تحديد طلب." },
+{ "Only ordered requests can be edited.", "يمكن تعديل الطلبات التي تم طلبها فقط." },
+{ "Completed/cancelled reports cannot be overwritten.", "لا يمكن استبدال التقارير المكتملة أو الملغاة." },
+{ "Cancel this X-Ray request?", "هل تريد إلغاء طلب الأشعة هذا؟" },
+{ "Confirm", "تأكيد" },
+{ "Request could not be cancelled.", "تعذر إلغاء الطلب." },
+{ "No available image is attached to this request.", "لا توجد صورة مرفقة بهذا الطلب." },
+{ "X-Ray setup", "إعداد الأشعة" },
+{ "Load X-Ray", "تحميل بيانات الأشعة" },
+
+
+
 
             {"✚  CLINIC\n     MANAGEMENT SYSTEM", "✚  نظام إدارة\n     العيادة" },
         };
