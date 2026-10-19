@@ -419,7 +419,7 @@
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(203, 31);
             this.label6.TabIndex = 277;
-            this.label6.Text = "Ammount Recived";
+            this.label6.Text = "Amount Received";
             // 
             // txtAmountReceived
             // 
@@ -451,7 +451,7 @@
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(106, 31);
             this.label7.TabIndex = 279;
-            this.label7.Text = "Discoutn";
+            this.label7.Text = "Discount";
             // 
             // txtDiscount
             // 
@@ -532,7 +532,7 @@
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(120, 31);
             this.label13.TabIndex = 286;
-            this.label13.Text = "Discoutns";
+            this.label13.Text = "Discou";
             // 
             // panel7
             // 
