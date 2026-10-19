@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.Windows.Forms;
 
 namespace Clinic.Medical_Services.Visit
@@ -15,6 +18,9 @@ namespace Clinic.Medical_Services.Visit
         private Panel mdPatientCard;
         private Panel mdQueueHeader;
         private TextBox mdQueueSearch;
+        private CheckBox mdChkToday;
+        private DateTimePicker mdQueueDate;
+        private Panel mdDateFilterPanel;
         private DataGridView mdQueueSource;
         private string mdSearchText = "";
         private Label MdLabel(string text, int size = 10, bool bold = false)
@@ -202,6 +208,78 @@ namespace Clinic.Medical_Services.Visit
             mdQueueHeader.BringToFront();
             panel2.BringToFront();
             mdQueueSearch.TextChanged += (s, e) => MdFilterQueue();
+
+            // Date filter panel
+            mdDateFilterPanel = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 48,
+                BackColor = Color.White,
+                Padding = new Padding(5, 5, 5, 5)
+            };
+
+            var dateLayout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 2,
+                RowCount = 1,
+                Margin = Padding.Empty
+            };
+
+            dateLayout.ColumnStyles.Add(
+                new ColumnStyle(SizeType.Absolute, 90));
+
+            dateLayout.ColumnStyles.Add(
+                new ColumnStyle(SizeType.Percent, 100));
+
+            mdChkToday = new CheckBox
+            {
+                Text = "Today",
+                Checked = true,
+                Dock = DockStyle.Fill,
+                Font = new Font("Segoe UI", 10F),
+                ForeColor = mdText,
+                AutoSize = true
+            };
+
+            mdQueueDate = new DateTimePicker
+            {
+                Format = DateTimePickerFormat.Custom,
+                CustomFormat = "dd/MM/yyyy",
+                Value = DateTime.Today,
+                Enabled = false,
+                Dock = DockStyle.Fill,
+                Font = new Font("Segoe UI", 10F),
+                Margin = new Padding(4, 5, 4, 5)
+            };
+
+            dateLayout.Controls.Add(mdChkToday, 0, 0);
+            dateLayout.Controls.Add(mdQueueDate, 1, 0);
+
+            mdDateFilterPanel.Controls.Add(dateLayout);
+            pnlWaittingList.Controls.Add(mdDateFilterPanel);
+
+            // Display order: Search -> Date -> Waiting List
+            mdDateFilterPanel.BringToFront();
+            mdQueueHeader.BringToFront();
+            panel2.BringToFront();
+
+            // Events
+            mdChkToday.CheckedChanged += (s, e) =>
+            {
+                mdQueueDate.Enabled = !mdChkToday.Checked;
+
+                if (mdChkToday.Checked)
+                    mdQueueDate.Value = DateTime.Today;
+
+                MdFilterQueue();
+            };
+
+            mdQueueDate.ValueChanged += (s, e) =>
+            {
+                if (!mdChkToday.Checked)
+                    MdFilterQueue();
+            };
 
             // Right workspace: patient card and visit tabs
             var right = MdTable(1, 2);
@@ -764,23 +842,73 @@ namespace Clinic.Medical_Services.Visit
 
         private void MdFilterQueue()
         {
-            // Search only existing bound columns. Works for DataTable/DataView bindings.
-            if (mdQueueSearch == null) return;
-            var dv = dgvDoctorQueue.DataSource as System.Data.DataView;
-            var dt = dgvDoctorQueue.DataSource as System.Data.DataTable;
-            if (dv == null && dt != null) dv = dt.DefaultView;
-            if (dv == null) return;
-            string search = mdQueueSearch.Text.Replace("'", "''").Replace("[", "[[]")
-                .Replace("%", "[%]").Replace("*", "[*]");
-            if (string.IsNullOrWhiteSpace(search)) { dv.RowFilter = ""; return; }
-            var parts = new System.Collections.Generic.List<string>();
-            foreach (System.Data.DataColumn col in dv.Table.Columns)
+            if (mdQueueSearch == null ||
+                mdQueueDate == null ||
+                mdChkToday == null)
+                return;
+
+            DataView dv = dgvDoctorQueue.DataSource as DataView;
+
+            DataTable dt = dgvDoctorQueue.DataSource as DataTable;
+
+            if (dv == null && dt != null)
+                dv = dt.DefaultView;
+
+            if (dv == null)
+                return;
+
+            List<string> filters = new List<string>();
+
+            // Search filter
+            string search = mdQueueSearch.Text.Trim()
+                .Replace("'", "''")
+                .Replace("[", "[[]")
+                .Replace("%", "[%]")
+                .Replace("*", "[*]");
+
+            if (!string.IsNullOrWhiteSpace(search))
             {
-                if (col.DataType == typeof(string))
-                    parts.Add("CONVERT([" + col.ColumnName + "], 'System.String') LIKE '%" + search + "%'");
+                List<string> parts = new List<string>();
+
+                foreach (DataColumn col in dv.Table.Columns)
+                {
+                    if (col.DataType == typeof(string))
+                    {
+                        string columnName =
+                            "[" + col.ColumnName.Replace("]", "\\]") + "]";
+
+                        parts.Add(
+                            "CONVERT(" + columnName +
+                            ", 'System.String') LIKE '%" +
+                            search + "%'");
+                    }
+                }
+
+                if (parts.Count > 0)
+                    filters.Add("(" + string.Join(" OR ", parts) + ")");
             }
-            dv.RowFilter = parts.Count > 0 ? string.Join(" OR ", parts) : "";
+
+            // Date filter using CheckInTime
+            if (dv.Table.Columns.Contains("CheckInTime"))
+            {
+                DateTime selectedDate = mdChkToday.Checked
+                    ? DateTime.Today
+                    : mdQueueDate.Value.Date;
+
+                string fromDate = selectedDate.ToString(
+                    "MM/dd/yyyy", CultureInfo.InvariantCulture);
+
+                string toDate = selectedDate.AddDays(1).ToString(
+                    "MM/dd/yyyy", CultureInfo.InvariantCulture);
+
+                filters.Add(
+                    "([CheckInTime] >= #" + fromDate +
+                    "# AND [CheckInTime] < #" + toDate + "#)");
+            }
+
+            dv.RowFilter = string.Join(" AND ", filters);
         }
+
     }
 }
 

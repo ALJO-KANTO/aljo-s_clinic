@@ -73,16 +73,16 @@ namespace Clinic.Medical_Services.Pharmaciy
             // 
             // label5
             // 
-            this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.label5.AutoSize = true;
-            this.label5.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
-            this.label5.ForeColor = System.Drawing.Color.White;
-            this.label5.Location = new System.Drawing.Point(1001, 20);
-            this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(137, 28);
-            this.label5.TabIndex = 240;
-            this.label5.Text = "Current User:";
+            //this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            //this.label5.AutoSize = true;
+            //this.label5.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
+            //this.label5.ForeColor = System.Drawing.Color.White;
+            //this.label5.Location = new System.Drawing.Point(1001, 20);
+            //this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            //this.label5.Name = "label5";
+            //this.label5.Size = new System.Drawing.Size(137, 28);
+            //this.label5.TabIndex = 240;
+            //this.label5.Text = "Current User:";
             // 
             // pictureBox4
             // 
@@ -226,7 +226,7 @@ namespace Clinic.Medical_Services.Pharmaciy
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(144, 25);
             this.label1.TabIndex = 256;
-            this.label1.Text = "Filter by Status:";
+            this.label1.Text = "Filter by Status";
             // 
             // lbBlaceholder
             // 
@@ -262,7 +262,7 @@ namespace Clinic.Medical_Services.Pharmaciy
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(79, 25);
             this.label6.TabIndex = 253;
-            this.label6.Text = "Search :";
+            this.label6.Text = "Search";
             // 
             // dgPrescriptionDetails
             // 

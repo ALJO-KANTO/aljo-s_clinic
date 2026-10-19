@@ -43,6 +43,70 @@ namespace Clinic.Medical_Services.Visit
             _Mode = mode;
 
             ApplyModernDoctorDesign();
+            ApplyDoctorArabicMirroring();
+
+        }
+
+        private void ApplyDoctorArabicMirroring()
+        {
+            bool isArabic = TranslationClass.IsArabic;
+
+            // IMPORTANT:
+            // Do not mirror the complete form.
+            // Keep the original English layout coordinates.
+            this.RightToLeft = RightToLeft.No;
+            this.RightToLeftLayout = false;
+
+            // Apply Arabic text direction to text-based controls only.
+            ApplyArabicTextDirection(this, isArabic);
+        }
+
+        private void ApplyArabicTextDirection(Control parent, bool isArabic)
+        {
+            if (parent == null)
+                return;
+
+            foreach (Control control in parent.Controls)
+            {
+                if (control is Label ||
+                    control is LinkLabel ||
+                    control is GroupBox ||
+                    control is TabPage ||
+                    control is Button)
+                {
+                    control.RightToLeft = isArabic
+                        ? RightToLeft.Yes
+                        : RightToLeft.No;
+                }
+
+                if (control is TextBoxBase textBox)
+                {
+                    textBox.RightToLeft = isArabic
+                        ? RightToLeft.Yes
+                        : RightToLeft.No;
+                }
+
+                if (control is DataGridView grid)
+                {
+                    grid.RightToLeft = isArabic
+                        ? RightToLeft.Yes
+                        : RightToLeft.No;
+
+                    // Keep grid columns inside the available width.
+                    grid.AutoSizeColumnsMode =
+                        DataGridViewAutoSizeColumnsMode.Fill;
+
+                    grid.ColumnHeadersDefaultCellStyle.WrapMode =
+                        DataGridViewTriState.True;
+
+                    grid.AutoSizeRowsMode =
+                        DataGridViewAutoSizeRowsMode.None;
+                }
+
+                // Do not change Dock, Size, Location, Anchor or WindowState.
+                if (control.HasChildren)
+                    ApplyArabicTextDirection(control, isArabic);
+            }
         }
         #endregion
 
@@ -88,7 +152,7 @@ namespace Clinic.Medical_Services.Visit
         #region Initialization
         private void frmDoctor_Load(object sender, EventArgs e)
         {
-          
+
             if (!CheckAuth()) return;
 
             _SetupUI();
@@ -105,6 +169,172 @@ namespace Clinic.Medical_Services.Visit
                 _LoadUpdateMode();
             else
                 _LoadShowMode();
+
+            // Apply translations after mode-specific labels and grid columns are initialized.
+            ApplyDoctorTranslations();
+
+
+        }
+
+
+
+
+        private void TranslateDoctorControls(Control parent, System.Collections.Generic.Dictionary<string, string> translations)
+        {
+            if (parent == null)
+                return;
+
+            foreach (Control control in parent.Controls)
+            {
+                if (!string.IsNullOrWhiteSpace(control.Text))
+                {
+                    string translated;
+                    string originalText = control.Text.Trim();
+
+                    // The queue's record label may include a leading colon/spacing.
+                    if (originalText.IndexOf("Records #", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        control.Text = "عدد السجلات:";
+                    }
+                    // First try the complete caption, including any arrow.
+                    else if (translations.TryGetValue(originalText, out translated))
+                    {
+                        control.Text = translated;
+                    }
+                    else
+                    {
+                        // Also support captions whose arrow differs from the dictionary key.
+                        string cleanedText = originalText
+                            .Replace("→", "")
+                            .Replace("➜", "")
+                            .Replace("➔", "")
+                            .Replace("←", "")
+                            .Trim();
+
+                        if (translations.TryGetValue(cleanedText, out translated))
+                        {
+                            // Keep the arrow direction appropriate for Arabic layout.
+                            bool hasLeadingArrow = originalText.StartsWith("→") ||
+                                                    originalText.StartsWith("➜") ||
+                                                    originalText.StartsWith("➔");
+                            control.Text = hasLeadingArrow
+                                ? translated + " ←"
+                                : translated;
+                        }
+                        else if (string.Equals(cleanedText, "View Doctor Details", StringComparison.OrdinalIgnoreCase))
+                        {
+                            control.Text = "عرض بيانات الطبيب";
+                        }
+                        else if (string.Equals(cleanedText, "View Patient Details", StringComparison.OrdinalIgnoreCase))
+                        {
+                            control.Text = "عرض بيانات المريض";
+                        }
+                        else if (string.Equals(cleanedText, "Next", StringComparison.OrdinalIgnoreCase))
+                        {
+                            control.Text = "التالي";
+                        }
+                    }
+                }
+
+                if (control.HasChildren)
+                    TranslateDoctorControls(control, translations);
+            }
+        }
+
+        private void TranslateDoctorGrid(DataGridView grid, System.Collections.Generic.Dictionary<string, string> translations)
+        {
+            if (grid == null)
+                return;
+
+            foreach (DataGridViewColumn column in grid.Columns)
+            {
+                string translated;
+                if (translations.TryGetValue(column.HeaderText ?? string.Empty, out translated))
+                    column.HeaderText = translated;
+            }
+
+            bool isArabic = TranslationClass.IsArabic;
+            grid.RightToLeft = isArabic ? RightToLeft.Yes : RightToLeft.No;
+            grid.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+
+            foreach (DataGridViewColumn column in grid.Columns)
+            {
+                column.DefaultCellStyle.Alignment = isArabic
+                    ? DataGridViewContentAlignment.MiddleRight
+                    : DataGridViewContentAlignment.MiddleLeft;
+            }
+        }
+
+        private void ApplyDoctorTranslations()
+        {
+            bool isArabic = TranslationClass.IsArabic;
+            ApplyDoctorArabicMirroring();
+
+            if (!isArabic)
+                return;
+
+            // Use a form-local copy so translations here do not change other forms.
+            var translations = new System.Collections.Generic.Dictionary<string, string>(
+                TranslationClass.sidebarTranslations);
+
+            translations["Add Medicine +"] = "إضافة دواء +";
+            translations["Add Medicen +"] = "إضافة دواء +";
+            translations["Add Service +"] = "إضافة خدمة +";
+            translations["Add Service"] = "إضافة خدمة";
+            translations["New +"] = "جديد +";
+            translations["New"] = "جديد";
+            translations["Service"] = "الخدمة";
+            translations["Blood Test"] = "فحص الدم";
+            translations["Prescription Date"] = "تاريخ الوصفة الطبية";
+            translations["Prescription Notes"] = "ملاحظات الوصفة الطبية";
+            translations["Records #"] = "عدد السجلات";
+            translations[":Records #"] = "عدد السجلات:";
+            translations[":Records # "] = "عدد السجلات:";
+            translations["Records #:"] = "عدد السجلات:";
+
+            TranslateDoctorControls(this, translations);
+            TranslateDoctorGrid(dgvDoctorQueue, translations);
+            TranslateDoctorGrid(dgvServices, translations);
+            TranslateDoctorGrid(dgvMedicines, translations);
+
+            // Explicitly translate only the controls marked in the screenshot.
+            btnAddService.Text = "إضافة خدمة +";
+            btnNewService.Text = "جديد +";
+            lbServeces.Text = "الخدمة";
+            btnAddMedicen.Text = "إضافة دواء +";
+
+            // Translate the dropdown display only; keep ServiceName unchanged for saving.
+            DataTable serviceTable = cmbServices.DataSource as DataTable;
+            if (serviceTable != null)
+            {
+                const string arabicDisplayColumn = "ServiceNameArabic";
+                if (!serviceTable.Columns.Contains(arabicDisplayColumn))
+                    serviceTable.Columns.Add(arabicDisplayColumn, typeof(string));
+
+                foreach (DataRow row in serviceTable.Rows)
+                {
+                    string serviceName = Convert.ToString(row["ServiceName"]);
+                    string translatedName;
+                    row[arabicDisplayColumn] =
+                        translations.TryGetValue(serviceName == null ? string.Empty : serviceName.Trim(), out translatedName)
+                            ? translatedName
+                            : serviceName;
+                }
+
+                cmbServices.DisplayMember = arabicDisplayColumn;
+            }
+
+            // DateTimePicker uses the Windows culture for month/day names.
+            // Use a culture-neutral numeric date in Arabic mode to avoid English words.
+            dtpPrescriptionDate.Format = DateTimePickerFormat.Custom;
+            dtpPrescriptionDate.CustomFormat = "dd/MM/yyyy";
+
+            foreach (DataGridView grid in new[] { dgvDoctorQueue, dgvServices, dgvMedicines })
+            {
+                if (grid == null) continue;
+                grid.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
+                grid.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+            }
         }
 
         private bool CheckAuth()
@@ -1149,5 +1379,6 @@ namespace Clinic.Medical_Services.Visit
         {
             new frmAddUpdateServices().ShowDialog();
         }
+
     }
 }

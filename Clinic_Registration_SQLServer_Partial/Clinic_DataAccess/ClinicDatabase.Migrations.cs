@@ -1054,6 +1054,51 @@ namespace Clinic_DataAccess
                                 ADD COLUMN BillNumber VARCHAR(30) NULL;
                             "
                         },
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_0022",
+                            Description = "Create XRayTests and XRayRequests tables",
+                            Sql = @"
+                                CREATE TABLE IF NOT EXISTS xraytests (
+                                    XRayTestID INT NOT NULL AUTO_INCREMENT,
+                                    TestName VARCHAR(200) NOT NULL,
+                                    TestPrice DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+                                    IsActive TINYINT(1) NOT NULL DEFAULT 1,
+                                    PRIMARY KEY (XRayTestID),
+                                    UNIQUE KEY UQ_XRayTests_Name (TestName)
+                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+                                  COLLATE=utf8mb4_0900_ai_ci;
+
+                                CREATE TABLE IF NOT EXISTS xrayrequests (
+                                    XRayRequestID INT NOT NULL AUTO_INCREMENT,
+                                    VisitID INT NOT NULL,
+                                    XRayTestID INT NOT NULL,
+                                    RequestedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                    Status VARCHAR(30) NOT NULL DEFAULT 'Ordered',
+                                    ClinicalNotes TEXT,
+                                    Findings TEXT,
+                                    Impression TEXT,
+                                    ImagePath VARCHAR(1000) DEFAULT NULL,
+                                    ResultedAt DATETIME DEFAULT NULL,
+
+                                    PRIMARY KEY (XRayRequestID),
+
+                                    KEY IX_XRayRequests_Visit (VisitID),
+                                    KEY IX_XRayRequests_Test (XRayTestID),
+                                    KEY IX_XRayRequests_Status (Status),
+
+                                    CONSTRAINT FK_XRayRequests_Test
+                                        FOREIGN KEY (XRayTestID)
+                                        REFERENCES xraytests (XRayTestID),
+
+                                    CONSTRAINT FK_XRayRequests_Visit
+                                        FOREIGN KEY (VisitID)
+                                        REFERENCES visits (VisitID)
+
+                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+                                  COLLATE=utf8mb4_0900_ai_ci;
+                            "
+                        },
                         //Views  
                         new DatabaseMigration
                         {

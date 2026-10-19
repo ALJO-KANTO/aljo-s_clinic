@@ -1,4 +1,5 @@
 ﻿using Clinic_Business;
+using Clinic.global_classes;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -18,6 +19,9 @@ namespace Clinic.Medical_Services.Casher
         public frmManageBills()
         {
             InitializeComponent();
+            TranslationHelper.TranslateAnyForm(this, TranslationClass.IsArabic);
+            // Use the existing TranslationClass method for this form.
+            ApplyBillFormTranslation();
 
             txtSearchByPatientName.TextChanged +=
                 txtSearchByPatientName_TextChanged;
@@ -51,6 +55,89 @@ namespace Clinic.Medical_Services.Casher
             dgMasterBillList.CellContentClick +=
                 dgMasterBillList_CellContentClick;
         }
+        private void ApplyBillFormTranslation()
+        {
+            bool isArabic = TranslationClass.IsArabic;
+
+            this.Text = TranslateBillDisplayText("Bill Management", isArabic);
+            this.RightToLeft = isArabic ? RightToLeft.Yes : RightToLeft.No;
+            this.RightToLeftLayout = isArabic;
+
+            TranslateBillControls(this, isArabic);
+
+            if (dgMasterBillList != null)
+            {
+                dgMasterBillList.RightToLeft = isArabic ? RightToLeft.Yes : RightToLeft.No;
+
+                TranslateBillGridHeader("BillNumber", "Bill Number", isArabic);
+                TranslateBillGridHeader("PatientName", "Patient Name", isArabic);
+                TranslateBillGridHeader("BillDate", "Bill Date", isArabic);
+                TranslateBillGridHeader("TotalAmount", "Total Amount", isArabic);
+                TranslateBillGridHeader("PaidAmount", "Paid Amount", isArabic);
+                TranslateBillGridHeader("BalanceDue", "Balance Due", isArabic);
+                TranslateBillGridHeader("BillDateString", "Bill Date", isArabic);
+                TranslateBillGridHeader("Status", "Status", isArabic);
+                TranslateBillGridHeader("btnPayAction", "Full Pay", isArabic);
+                TranslateBillGridHeader("btnEditAction", "Adjustment", isArabic);
+                TranslateBillGridHeader("btnCancelAction", "Cancel Bill", isArabic);
+
+            }
+        }
+
+        // Translate exact captions and captions that contain icons or extra spaces.
+        // TranslationClass.Translate only matches exact dictionary keys, so strings such
+        // as "⌛ Pending Bills" or "Search Filters 🎯" otherwise remain English.
+        private string TranslateBillDisplayText(string text, bool isArabic)
+        {
+            if (string.IsNullOrEmpty(text) || !isArabic)
+                return text;
+
+            string translated = TranslationClass.Translate(text, true);
+            if (!string.Equals(translated, text, StringComparison.Ordinal))
+                return translated;
+
+            foreach (KeyValuePair<string, string> item in TranslationClass.sidebarTranslations
+                         .OrderByDescending(x => x.Key.Length))
+            {
+                if (!string.IsNullOrEmpty(item.Key) &&
+                    translated.IndexOf(item.Key, StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    translated = Regex.Replace(
+                        translated,
+                        Regex.Escape(item.Key),
+                        _ => item.Value,
+                        RegexOptions.IgnoreCase);
+                }
+            }
+
+            return translated;
+        }
+
+        private void TranslateBillControls(Control parent, bool isArabic)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                // Translate only strings present in TranslationClass. Data values
+                // such as the current user's name remain unchanged if no key exists.
+                if (!string.IsNullOrWhiteSpace(control.Text))
+                    control.Text = TranslateBillDisplayText(control.Text, isArabic);
+
+                control.RightToLeft = isArabic ? RightToLeft.Yes : RightToLeft.No;
+
+                if (control.HasChildren)
+                    TranslateBillControls(control, isArabic);
+            }
+        }
+
+        private void TranslateBillGridHeader(string columnName, string englishText, bool isArabic)
+        {
+            if (dgMasterBillList.Columns.Contains(columnName))
+            {
+                dgMasterBillList.Columns[columnName].HeaderText =
+                    TranslateBillDisplayText(englishText, isArabic);
+            }
+        }
+
         private void frmManageBills_Load(object sender, EventArgs e)
         {
             lbCurrentUser.Text = clsGlobal.PersonName;
@@ -69,6 +156,7 @@ namespace Clinic.Medical_Services.Casher
                 chkAllDates.Checked = true;
 
             _RefreshBillsList();
+            ApplyBillFormTranslation();
         }
 
         private void _RefreshBillsList()
@@ -144,6 +232,9 @@ namespace Clinic.Medical_Services.Casher
 
                 // 6. Add action buttons
                 _AddActionButtonsOnce();
+
+                // Translate dynamic grid columns and action buttons after binding.
+                ApplyBillFormTranslation();
             }
             catch (Exception ex)
             {
@@ -404,6 +495,7 @@ namespace Clinic.Medical_Services.Casher
 
             if (columnName == "Status")
             {
+                e.Value = TranslationClass.Translate(status, TranslationClass.IsArabic);
                 switch (status)
                 {
                     case "Paid": e.CellStyle.ForeColor = Color.SpringGreen; break;
@@ -467,6 +559,14 @@ namespace Clinic.Medical_Services.Casher
                 e.CellStyle.BackColor = canCancel
                     ? Color.FromArgb(120, 40, 40) : Color.FromArgb(20, 43, 50);
                 e.CellStyle.ForeColor = canCancel ? Color.White : Color.DarkGray;
+            }
+
+            // Translate button-cell captions for display only; internal status values remain English.
+            if (columnName == "btnPayAction" || columnName == "btnEditAction" || columnName == "btnCancelAction")
+            {
+                string caption = Convert.ToString(e.Value) ?? string.Empty;
+                e.Value = TranslateBillDisplayText(caption, TranslationClass.IsArabic);
+                e.FormattingApplied = true;
             }
         }
 

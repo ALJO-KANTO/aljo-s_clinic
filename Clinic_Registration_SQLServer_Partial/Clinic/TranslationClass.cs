@@ -45,7 +45,7 @@ namespace Clinic
             { "Process Payments", "معالجة المدفوعات" },
             { "Issue Invoice", "إصدار فاتورة" },
             { "Check in Appointment", "تسجيل دخول الموعد" },
-
+            { "Today", "اليوم" },
             { "Welcome Back", "مرحباً بعودتك" },
             { "Admin", "مدير النظام" },
             { "Doctor", "طبيب" },
@@ -160,7 +160,6 @@ namespace Clinic
 
 // Patient information
 { "Patient ID", "رقم المريض" },
-{ "Patient ID:", "رقم المريض:" },
 
 { "Add New Person", "إضافة شخص جديد" },
 { "Update Person", "تحديث بيانات الشخص" },
@@ -180,8 +179,6 @@ namespace Clinic
 { "Saved", "تم الحفظ" },
 { "Error: Data Is not Saved Successfully.", "خطأ: لم يتم حفظ البيانات بنجاح." },
 { "Personal Info", "المعلومات الشخصية" },
-{ "Patient Info", "بيانات المريض" },
-{ "Next", "التالي" },
 { "Selection Required", "الاختيار مطلوب" },
 { "Please select a valid person first before moving to patient medical info.", "يرجى اختيار شخص صالح قبل الانتقال إلى المعلومات الطبية للمريض." },
 { "Filter", "تصفية" },
@@ -200,11 +197,9 @@ namespace Clinic
 { "Filter By:", "تصفية حسب:" },
 { "None", "الكل" },
 { "Appointment ID", "رقم الموعد" },
-{ "Patient Name", "اسم المريض" },
 { "Doctor ID", "رقم الطبيب" },
 { "Doctor Name", "اسم الطبيب" },
 { "AppointmentType", "نوع الموعد" },
-{ "Status", "الحالة" },
 { "Created By UserID", "رقم المستخدم المنشئ" },
 { "All", "الكل" },
 { "Scheduled", "مجدول" },
@@ -213,7 +208,6 @@ namespace Clinic
 { "Postponed", "مؤجل" },
 { "In Queue", "في قائمة الانتظار" },
 { "Appointments Registry", "سجل المواعيد" },
-{ "# Records:", "عدد السجلات:" },
 { "Fees", "الرسوم" },
 { "Date", "التاريخ" },
 { "C.UserID", "رقم المستخدم المنشئ" },
@@ -235,9 +229,257 @@ namespace Clinic
 { "App.ID", "رقم الموعد" },
 { "Visit Date", "تاريخ الزيارة" },
 { "Diagnosis", "التشخيص" },
-{ "Open", "مفتوح" },
+{ "Open", "مفتوح" },//
+ { "Add New Visit", "إضافة زيارة جديدة" },
+                { "Update Visit Info", "تحديث معلومات الزيارة" },
+                { "Visit Details", "تفاصيل الزيارة" },
+                { "Patient Information", "معلومات المريض" },
+                { "Doctor Info", "معلومات الطبيب" },
+                { "Doctor ID:", "رقم الطبيب:" },
+                { "Apponitment ID:", "رقم الموعد:" },
+                { "Appointment ID:", "رقم الموعد:" },
+                { "Visit ID:", "رقم الزيارة:" },
+                { "Visit ID :", "رقم الزيارة:" },
+                { "VisitInfo", "معلومات الزيارة" },
+                { "Vitals Info", "المعلومات الحيوية" },
+                { "Vitals Information", "المعلومات الحيوية" },
+                { "Visit Information", "معلومات الزيارة" },
+                { "Patient Waiting List", "قائمة انتظار المرضى" },
+                { "View Patient Details", "عرض بيانات المريض" },
+                { "View Doctor Details", "عرض بيانات الطبيب" },
+                { "Visit Notes", "ملاحظات الزيارة" },
+                { "Blood Pressure", "ضغط الدم" },
+                { "Temperature", "درجة الحرارة" },
+                { "Pulse", "النبض" },
+                { "BP:", "ضغط الدم:" },
+                { "Weight:", "الوزن:" },
+                { "Temp:", "درجة الحرارة:" },
+                { "Pluse:", "النبض:" },
+                { "Pulse:", "النبض:" },
+                { "Notes:", "ملاحظات:" },
+                { "Notes", "ملاحظات" },
+                { "DiscountAmount:", "مبلغ الخصم:" },
+                { "Quality :", "الكمية:" },
+                { "Services :", "الخدمات:" },
+                { "Add New Services", "إضافة خدمات جديدة" },
+                { "Services & Procedures", "الخدمات والإجراءات" },
+                { "Prescription Info", "معلومات الوصفة الطبية" },
+                { "Add New Medicen", "إضافة دواء جديد" },
+                { "Add New Medicine", "إضافة دواء جديد" },
+                { "Prescription Notes:", "ملاحظات الوصفة الطبية:" },
+                { "Prescription Date:", "تاريخ الوصفة الطبية:" },
+                { "Prescription ID :", "رقم الوصفة الطبية:" },
+                { "Save Visit", "حفظ الزيارة" },
+                { "In-Progress", "قيد التنفيذ" },
+                { "Cancel Visit", "إلغاء الزيارة" },
+                { "Postpone", "تأجيل" },
+                { "Next Patient", "المريض التالي" },
+                { "Waitting List", "قائمة الانتظار" },
+                { "Waiting List", "قائمة الانتظار" },
+                { "Date Time", "التاريخ والوقت" },
+                { "Modern Clinic - Doctor Station", "العيادة الحديثة - محطة الطبيب" },
+                { "Modern Clinic  •  Doctor Station", "العيادة الحديثة  •  محطة الطبيب" },
+                { "Service Name", "اسم الخدمة" },
+                { "Unit Price", "سعر الوحدة" },
+                { "Qty", "الكمية" },
+                { "Discount", "الخصم" },
+                { "Total", "الإجمالي" },
+                { "Action", "الإجراء" },
+                { "M.Name", "اسم الدواء" },
+                { "Dosage", "الجرعة" },
+                { "Instructions", "التعليمات" },
+                { "FRY", "التكرار" },
+                { "TaxRate", "نسبة الضريبة" },
+                { "Check-In Time", "وقت تسجيل الوصول" },
+                { "Call", "استدعاء" },
+                { "V.ID", "رقم الزيارة" },
+                { "Ap.ID", "رقم الموعد" },
+                { "Select", "اختيار" },
+                { "Add", "إضافة" },
+                { "Edit", "تعديل" },
+                { "Delete", "حذف" },
+                // Add New Visit - additional translations
+{ "Modern Clinic", "العيادة الحديثة" },
+{ "Records #:", "عدد السجلات:" },
+{ "Check-In", "تسجيل الوصول" },
+{ "Prescription", "الوصفة الطبية" },
+// Add New Visit - remaining Arabic translations
+{ "Patient Name", "اسم المريض" },
+{ "Weight", "الوزن" },
+{ "Next", "التالي" },
+{ "→ Next", "التالي ←" },
+{ "Records #", "عدد السجلات" },
+{ "→ View Doctor Details", "عرض بيانات الطبيب ←" },
+{ "→ View Patient Details", "عرض بيانات المريض ←" },
+{ "← View Doctor Details", "عرض بيانات الطبيب →" },
+{ "← View Patient Details", "عرض بيانات المريض →" },
+{ "← Next", "التالي →" },
+{ "Please select a visit first.", ".يرجى اختيار زيارة أولاً" },
+// Doctor List
+{ "Manage Doctors", "إدارة الأطباء" },
+{ "Doctor List", "قائمة الأطباء" },
+{ "Add New Doctor", "إضافة طبيب جديد" },
+{ "LicenseNumber", "رقم الترخيص" },
+{ "License #", "رقم الترخيص" },
 
+{ "ConsultationFees", "رسوم الاستشارة" },
+{ "Specializations", "التخصصات" },
+{ "WorkingDays", "أيام العمل" },
+{ "Working Days", "أيام العمل" },
+{ "Country", "الدولة" },
+{ "CountryName", "اسم الدولة" },
+{ "Is Active", "نشط" },
+{ "IsActive", "حالة النشاط" },
+{ "Yes", "نعم" },
+{ "No", "لا" },
+{ "Doctor Deleted Successfully.", "تم حذف الطبيب بنجاح." },
+{ "Doctor List Error", "خطأ في قائمة الأطباء" },
+{ "Doctor data could not be loaded.", "تعذر تحميل بيانات الأطباء." },
+{ "Are you sure you want to delete Doctor", "هل أنت متأكد أنك تريد حذف الطبيب" },
+{ "Doctor was not deleted because it has data linked to it in the system.", "لم يتم حذف الطبيب لوجود بيانات مرتبطة به في النظام." },
 
+{ "User ID", "رقم المستخدم" },
+{ "UserName", "اسم المستخدم" },
+{ "Role Name", "اسم الدور" },
+{ "# Records:", "عدد السجلات:" },
+
+{ "Translate", "ترجمة" },
+{ "Billing_Payments", "الفواتير والمدفوعات" },
+
+{ "X-Ray / Radiology", "الأشعة السينية / الأشعة" },
+// Bill Management
+{ "Bill Management", "إدارة الفواتير" },
+{ "Search Filters", "فلاتر البحث" },
+{ "Filter by Date", "تصفية حسب التاريخ" },
+{ "All Dates", "جميع التواريخ" },
+{ "Bill Status", "حالة الفاتورة" },
+{ "Partial Payments", "المدفوعات الجزئية" },
+{ "Fully Paid (Today)", "المدفوعة بالكامل (اليوم)" },
+{ "Search Patient Name", "البحث باسم المريض" },
+{ "Current User:", "المستخدم الحالي:" },
+
+// Bill grid headings
+{ "Bill Number", "رقم الفاتورة" },
+{ "Bill Date", "تاريخ الفاتورة" },
+{ "Total Amount", "المبلغ الإجمالي" },
+{ "Paid Amount", "المبلغ المدفوع" },
+{ "Balance Due", "المبلغ المتبقي" },
+{ "Status", "الحالة" },
+{ "Full Pay", "الدفع الكامل" },
+{ "Adjustment", "التعديل" },
+{ "Cancel Bill", "إلغاء الفاتورة" },
+
+// Dynamic action buttons
+{ "Pay", "دفع" },
+{ "Pay All", "دفع الكل" },
+{ "Complete", "إكمال" },
+{ "Print", "طباعة" },
+{ "Refund", "استرداد" },
+{ "Cancel", "إلغاء" },
+{ "Locked", "مقفل" },
+{ "Unavailable", "غير متاح" },
+{ "BILL MANAGEMENT", "إدارة الفواتير" },
+// Bill statuses
+{ "Pending", "معلقة" },
+{ "Partial", "مدفوعة جزئياً" },
+{ "Paid", "مدفوعة" },
+{ "Refunded", "مستردة" },
+{ "Fully Paid", "مدفوعة بالكامل" },
+ { "PROCESS PAYMENTS - System View", "معالجة المدفوعات - عرض النظام" },
+        
+        { "BillNumber", "رقم الفاتورة" },
+        { "PatientName", "اسم المريض" },
+        { "TotalAmount", "المبلغ الإجمالي" },
+        { "PaidAmount", "المبلغ المدفوع" },
+        { "BalanceDue", "الرصيد المستحق" },
+        { "Total Bill Amount", "إجمالي مبلغ الفاتورة" },
+        { "PaymentAmount", "مبلغ الدفع" },
+        { "Select Payment Method", "اختر طريقة الدفع" },
+        { "Cash", "نقداً" },
+        { "Credit Card", "بطاقة ائتمان" },
+        { "InSurance", "التأمين" },
+        { "Payment App", "تطبيق الدفع" },
+        { "Summary", "الملخص" },
+        { "Subtotal", "المجموع الفرعي" },
+        { "Tax", "الضريبة" },
+        { "Discounts", "الخصومات" },
+        { "Medicines", "الأدوية" },
+        { "Services", "الخدمات" },
+        { "App.Fees", "رسوم الموعد" },
+        { "Final Total", "الإجمالي النهائي" },
+        { "Payment", "المدفوع" },
+        { "Final Payment Due", "المبلغ النهائي المستحق" },
+        { "Amount to Pay", "المبلغ المطلوب دفعه" },
+        { "Ammount to Pay", "المبلغ المطلوب دفعه" },
+        { "Amount Received", "المبلغ المستلم" },
+        { "New X-Ray Request", "طلب أشعة سينية جديد" },
+        { "Change", "الباقي" },
+        { "Confirm Payment", "تأكيد الدفع" },
+        { "Bill Not Found", "الفاتورة غير موجودة" },
+        { "Unable to Load Payment Details", "تعذر تحميل تفاصيل الدفع" },
+        { "Please fill all required fields correctly.", "يرجى تعبئة جميع الحقول المطلوبة بشكل صحيح." },
+        { "Input Error", "خطأ في الإدخال" },
+        { "Invalid financial numbers. Please check the amounts.", "المبالغ المالية غير صحيحة. يرجى التحقق من المبالغ." },
+        { "Policy Restriction", "قيود السياسة" },
+        { "Success", "نجاح" },
+        { "Payment has been processed successfully!", "تمت معالجة الدفع بنجاح!" },
+        { "Payment Error", "خطأ في الدفع" },
+        { "Payment Database Error", "خطأ في قاعدة بيانات الدفع" },
+        { "Amount cannot exceed the required total!", "لا يمكن أن يتجاوز المبلغ الإجمالي المطلوب!" },
+        { "Minimum 70% payment required!", "يجب دفع 70٪ على الأقل!" },
+        { "Change to return: ", "المبلغ المتبقي للإرجاع: " },
+        { "Remaining Debt: ", "المبلغ المتبقي المستحق: " },
+        { "Are you sure you want to confirm this payment?", "هل أنت متأكد من تأكيد هذا الدفع؟" },
+        { "X-Ray / Radiology Management", "إدارة الأشعة" },
+{ "X-ray requests, imaging studies and patient results", "طلبات الأشعة والفحوصات ونتائج المرضى" },
+{ "Active X-Ray Tests", "فحوصات الأشعة النشطة" },
+{ "Total Requests", "إجمالي الطلبات" },
+{ "In Progress", "قيد التنفيذ" },
+{ "Manage X-Ray Tests", "إدارة فحوصات الأشعة" },
+{ "Enter Result", "إدخال النتيجة" },
+{ "View Image", "عرض الصورة" },
+{ "Refresh", "تحديث" },
+{ "VisitID", "رقم الزيارة" },
+{ "Dates", "التواريخ" },
+{ "XRayRequestID", "رقم طلب الأشعة" },
+{ "Image", "الصورة" },
+{ "View", "عرض" },
+{ "TestName", "اسم الفحص" },
+{ "RequestedAt", "تاريخ الطلب" },
+{ "Search", "بحث" },
+{ "Select a request.", "يرجى تحديد طلب." },
+{ "Only ordered requests can be edited.", "يمكن تعديل الطلبات التي تم طلبها فقط." },
+{ "Completed/cancelled reports cannot be overwritten.", "لا يمكن استبدال التقارير المكتملة أو الملغاة." },
+{ "Cancel this X-Ray request?", "هل تريد إلغاء طلب الأشعة هذا؟" },
+{ "Confirm", "تأكيد" },
+{ "Request could not be cancelled.", "تعذر إلغاء الطلب." },
+{ "No available image is attached to this request.", "لا توجد صورة مرفقة بهذا الطلب." },
+{ "X-Ray setup", "إعداد الأشعة" },
+{ "Load X-Ray", "تحميل بيانات الأشعة" },
+{ "Patient / Visit", "المريض / الزيارة" },
+{ "X-Ray Test", "فحص الأشعة" },
+{ "Clinical Notes", "ملاحظات سريرية" },
+{ "Create Request", "إنشاء الطلب" },
+{ "New", "جديد" },
+{ "Test Name", "اسم الفحص" },
+{ "Price", "السعر" },
+{ "Active", "نشط" },
+{ "Save Test", "حفظ الفحص" },
+{ "Deactivate", "إلغاء التفعيل" },
+{ "Test ID", "رقم الفحص" },
+{ "Deactivate selected test?", "هل تريد إلغاء تفعيل الفحص المحدد؟" },
+{ "Unable to load X-Ray tests", "تعذر تحميل فحوصات الأشعة" },//prescription
+{ "Prescription ID", "رقم الوصفة الطبية" },
+{ "Master Prescriptions Registry", "سجل الوصفات الطبية الرئيسي" },
+
+{ "Invalid Visit ID.", "رقم الزيارة غير صالح." },
+{ "Prescription deleted successfully.", "تم حذف الوصفة الطبية بنجاح." },
+{ "Prescription not found.", "لم يتم العثور على الوصفة الطبية." },
+{ "Delete Failed", "فشل الحذف" },
+{ "Search By Patient Name .....", ".....البحث باسم المريض" },
+{ "From:", ":من" },
+{ "To:", ":إلى" },
+{ "Filter by Status", "تصفية حسب الحالة" },
 
             {"✚  CLINIC\n     MANAGEMENT SYSTEM", "✚  نظام إدارة\n     العيادة" },
         };
@@ -258,6 +500,7 @@ namespace Clinic
         }
     }
 
+
     public static class TranslationHelper
     {
         public static string Translate(string english, bool isArabic)
@@ -270,55 +513,60 @@ namespace Clinic
             TranslateControls(frmFindPatient, isArabic);
         }
 
+        public static void TranslateAnyForm(Form form, bool isArabic)
+        {
+            TranslateControls(form, isArabic);
+        }
+
         private static void TranslateControls(Control parent, bool isArabic)
         {
             foreach (Control control in parent.Controls)
             {
-                string english = control.Tag as string;
-
-                if (!string.IsNullOrWhiteSpace(english) &&
-                    (control is Label || control is Button))
+                if (control is Label || control is Button ||
+                    control is CheckBox || control is GroupBox)
                 {
-                    string lookupText = english
-                        .Replace("\r", "")
-                        .Replace("\n", " ")
-                        .Trim();
-
-                    string translated =
-                        TranslationClass.Translate(lookupText, isArabic);
-
-                    control.Text = isArabic
-                        ? translated
-                        : english;
-
-                    if (control is Label)
+                    // Preserve the original English text for language switching.
+                    if (!(control.Tag is string) ||
+                        string.IsNullOrWhiteSpace(control.Tag as string))
                     {
-                        Label label = (Label)control;
-
-                        label.RightToLeft = isArabic
-                            ? RightToLeft.Yes
-                            : RightToLeft.No;
-
-                        label.TextAlign = isArabic
-                            ? ContentAlignment.MiddleRight
-                            : ContentAlignment.MiddleLeft;
+                        control.Tag = control.Text;
                     }
-                    else if (control is Button)
-                    {
-                        Button button = (Button)control;
 
-                        button.RightToLeft = isArabic
+                    string english = control.Tag as string;
+
+                    if (!string.IsNullOrWhiteSpace(english))
+                    {
+                        string lookupText = english
+                            .Replace("\r", "")
+                            .Replace("\n", " ")
+                            .Trim();
+
+                        string translated =
+                            TranslationClass.Translate(lookupText, isArabic);
+
+                        control.Text = isArabic ? translated : english;
+
+                        control.RightToLeft = isArabic
                             ? RightToLeft.Yes
                             : RightToLeft.No;
+
+                        if (control is Label)
+                        {
+                            Label label = (Label)control;
+
+                            label.TextAlign = isArabic
+                                ? ContentAlignment.MiddleRight
+                                : ContentAlignment.MiddleLeft;
+                        }
                     }
                 }
 
-                // Translate all nested panels and layouts.
                 if (control.HasChildren)
                 {
-                    TranslateControls(control,isArabic);
+                    TranslateControls(control, isArabic);
                 }
             }
         }
     }
+
 }
