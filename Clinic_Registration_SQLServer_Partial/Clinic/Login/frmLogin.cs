@@ -2,6 +2,7 @@
 using Clinic_DataAccess;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
@@ -16,6 +17,8 @@ namespace Clinic.Login
 {
     public partial class frmLogin : Form
     {
+        public static Dictionary<string, int> defaultAccounts;
+
         public frmLogin()
         {
             InitializeComponent();
@@ -272,6 +275,8 @@ namespace Clinic.Login
 
         private void frmLogin_Load(object sender, EventArgs e)
         {
+            //defaultAccounts = BindCombos.LoadDefaultAccounts();
+
             string username = string.Empty, password = string.Empty;
             if (clsGlobal.GetStoredCredentialFromRegistry(ref username, ref password))
             {

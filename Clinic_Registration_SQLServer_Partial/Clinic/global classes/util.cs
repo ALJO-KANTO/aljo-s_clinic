@@ -82,5 +82,20 @@ namespace Clinic
             sourceFile= destinationFile;
             return true;
         }
+        
+    }
+    public static class AccountCategory
+    {
+        public static readonly string[] Codes = new string[]
+        {
+            ASSET, LIABILITY, EQUITY, INCOME, COST, EXPENSE
+        };
+
+        public const string ASSET = "ASSET";
+        public const string LIABILITY = "LIABILITY";
+        public const string EQUITY = "EQUITY";
+        public const string INCOME = "INCOME";
+        public const string COST = "COST";
+        public const string EXPENSE = "EXPENSE";
     }
 }
