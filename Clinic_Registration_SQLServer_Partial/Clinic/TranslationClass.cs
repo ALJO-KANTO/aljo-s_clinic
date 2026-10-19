@@ -200,7 +200,6 @@ namespace Clinic
 { "Doctor ID", "رقم الطبيب" },
 { "Doctor Name", "اسم الطبيب" },
 { "AppointmentType", "نوع الموعد" },
-{ "Status", "الحالة" },
 { "Created By UserID", "رقم المستخدم المنشئ" },
 { "All", "الكل" },
 { "Scheduled", "مجدول" },
@@ -349,7 +348,44 @@ namespace Clinic
 { "Billing_Payments", "الفواتير والمدفوعات" },
 
 { "X-Ray / Radiology", "الأشعة السينية / الأشعة" },
+// Bill Management
+{ "Bill Management", "إدارة الفواتير" },
+{ "Search Filters", "فلاتر البحث" },
+{ "Filter by Date", "تصفية حسب التاريخ" },
+{ "All Dates", "جميع التواريخ" },
+{ "Bill Status", "حالة الفاتورة" },
+{ "Partial Payments", "المدفوعات الجزئية" },
+{ "Fully Paid (Today)", "المدفوعة بالكامل (اليوم)" },
+{ "Search Patient Name", "البحث باسم المريض" },
+{ "Current User:", "المستخدم الحالي:" },
 
+// Bill grid headings
+{ "Bill Number", "رقم الفاتورة" },
+{ "Bill Date", "تاريخ الفاتورة" },
+{ "Total Amount", "المبلغ الإجمالي" },
+{ "Paid Amount", "المبلغ المدفوع" },
+{ "Balance Due", "المبلغ المتبقي" },
+{ "Status", "الحالة" },
+{ "Full Pay", "الدفع الكامل" },
+{ "Adjustment", "التعديل" },
+{ "Cancel Bill", "إلغاء الفاتورة" },
+
+// Dynamic action buttons
+{ "Pay", "دفع" },
+{ "Pay All", "دفع الكل" },
+{ "Complete", "إكمال" },
+{ "Print", "طباعة" },
+{ "Refund", "استرداد" },
+{ "Cancel", "إلغاء" },
+{ "Locked", "مقفل" },
+{ "Unavailable", "غير متاح" },
+{ "BILL MANAGEMENT", "إدارة الفواتير" },
+// Bill statuses
+{ "Pending", "معلقة" },
+{ "Partial", "مدفوعة جزئياً" },
+{ "Paid", "مدفوعة" },
+{ "Refunded", "مستردة" },
+{ "Fully Paid", "مدفوعة بالكامل" },
 
 
             {"✚  CLINIC\n     MANAGEMENT SYSTEM", "✚  نظام إدارة\n     العيادة" },
@@ -371,6 +407,7 @@ namespace Clinic
         }
     }
 
+
     public static class TranslationHelper
     {
         public static string Translate(string english, bool isArabic)
@@ -383,55 +420,60 @@ namespace Clinic
             TranslateControls(frmFindPatient, isArabic);
         }
 
+        public static void TranslateAnyForm(Form form, bool isArabic)
+        {
+            TranslateControls(form, isArabic);
+        }
+
         private static void TranslateControls(Control parent, bool isArabic)
         {
             foreach (Control control in parent.Controls)
             {
-                string english = control.Tag as string;
-
-                if (!string.IsNullOrWhiteSpace(english) &&
-                    (control is Label || control is Button))
+                if (control is Label || control is Button ||
+                    control is CheckBox || control is GroupBox)
                 {
-                    string lookupText = english
-                        .Replace("\r", "")
-                        .Replace("\n", " ")
-                        .Trim();
-
-                    string translated =
-                        TranslationClass.Translate(lookupText, isArabic);
-
-                    control.Text = isArabic
-                        ? translated
-                        : english;
-
-                    if (control is Label)
+                    // Preserve the original English text for language switching.
+                    if (!(control.Tag is string) ||
+                        string.IsNullOrWhiteSpace(control.Tag as string))
                     {
-                        Label label = (Label)control;
-
-                        label.RightToLeft = isArabic
-                            ? RightToLeft.Yes
-                            : RightToLeft.No;
-
-                        label.TextAlign = isArabic
-                            ? ContentAlignment.MiddleRight
-                            : ContentAlignment.MiddleLeft;
+                        control.Tag = control.Text;
                     }
-                    else if (control is Button)
-                    {
-                        Button button = (Button)control;
 
-                        button.RightToLeft = isArabic
+                    string english = control.Tag as string;
+
+                    if (!string.IsNullOrWhiteSpace(english))
+                    {
+                        string lookupText = english
+                            .Replace("\r", "")
+                            .Replace("\n", " ")
+                            .Trim();
+
+                        string translated =
+                            TranslationClass.Translate(lookupText, isArabic);
+
+                        control.Text = isArabic ? translated : english;
+
+                        control.RightToLeft = isArabic
                             ? RightToLeft.Yes
                             : RightToLeft.No;
+
+                        if (control is Label)
+                        {
+                            Label label = (Label)control;
+
+                            label.TextAlign = isArabic
+                                ? ContentAlignment.MiddleRight
+                                : ContentAlignment.MiddleLeft;
+                        }
                     }
                 }
 
-                // Translate all nested panels and layouts.
                 if (control.HasChildren)
                 {
-                    TranslateControls(control,isArabic);
+                    TranslateControls(control, isArabic);
                 }
             }
         }
     }
+
 }

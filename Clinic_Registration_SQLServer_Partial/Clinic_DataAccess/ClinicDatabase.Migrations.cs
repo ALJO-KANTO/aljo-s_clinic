@@ -1056,7 +1056,7 @@ namespace Clinic_DataAccess
                         },
                         new DatabaseMigration
                         {
-                            Version = "20261019_022",
+                            Version = "20261019_0022",
                             Description = "Create XRayTests and XRayRequests tables",
                             Sql = @"
                                 CREATE TABLE IF NOT EXISTS xraytests (

@@ -407,7 +407,7 @@ namespace Clinic.Medical_Services.Casher
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(194, 30);
             this.label2.TabIndex = 1;
-            this.label2.Text = "🎯 Search & Filters";
+            this.label2.Text = "🎯 Search Filters";
             // 
             // flowLayoutPanel1
             // 
