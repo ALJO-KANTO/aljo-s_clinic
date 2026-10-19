@@ -198,6 +198,8 @@ namespace Clinic
             // Existing designer label
             lblUser.Text = $"User : {roleName}";
 
+            BindDataTable.FetchData();
+            BindCombos.ClearCache();
             // Modern dashboard header
             if (modernUser != null)
             {
@@ -1059,33 +1061,107 @@ namespace Clinic
                     var matches = AppDomain.CurrentDomain.GetAssemblies()
                         .SelectMany(assembly =>
                         {
-                            try { return assembly.GetTypes(); }
+                            try
+                            {
+                                return assembly.GetTypes();
+                            }
                             catch (System.Reflection.ReflectionTypeLoadException ex)
-                            { return ex.Types.Where(t => t != null); }
+                            {
+                                return ex.Types.Where(t => t != null);
+                            }
                         })
-                        .Where(t => t != null && t.Name == className &&
-                                    typeof(Form).IsAssignableFrom(t) && !t.IsAbstract)
+                        .Where(t =>
+                            t != null &&
+                            t.Name.Equals(className, StringComparison.Ordinal) &&
+                            typeof(Form).IsAssignableFrom(t) &&
+                            !t.IsAbstract)
                         .ToList();
 
                     if (matches.Count != 1)
                     {
-                        MessageBox.Show(matches.Count == 0
-                            ? "Form not found: " + className
-                            : "Multiple forms named " + className + ". Specify its namespace.",
-                            "Navigation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        MessageBox.Show(
+                            matches.Count == 0
+                                ? "Form not found: " + className
+                                : "Multiple forms named " + className +
+                                  ". Specify its namespace.",
+                            "Navigation",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Warning);
+
                         return;
                     }
 
-                    using (Form form = (Form)Activator.CreateInstance(matches[0]))
+                    Type formType = matches[0];
+
+                    // First try a public parameterless constructor.
+                    var constructor = formType.GetConstructor(Type.EmptyTypes);
+
+                    Form form = null;
+
+                    if (constructor != null)
+                    {
+                        form = (Form)constructor.Invoke(null);
+                    }
+                    else
+                    {
+                        // Try a public constructor where every parameter is optional.
+                        var optionalConstructor = formType
+                            .GetConstructors()
+                            .FirstOrDefault(c =>
+                                c.GetParameters().All(p => p.IsOptional));
+
+                        if (optionalConstructor != null)
+                        {
+                            object[] parameters = optionalConstructor
+                                .GetParameters()
+                                .Select(p => p.DefaultValue)
+                                .ToArray();
+
+                            form = (Form)optionalConstructor.Invoke(parameters);
+                        }
+                    }
+
+                    if (form == null)
+                    {
+                        var constructors = formType.GetConstructors()
+                            .Select(c =>
+                                "(" + string.Join(", ",
+                                    c.GetParameters().Select(p =>
+                                        p.ParameterType.Name + " " + p.Name)) + ")");
+
+                        MessageBox.Show(
+                            "Cannot open: " + className +
+                            Environment.NewLine +
+                            Environment.NewLine +
+                            "This form requires constructor parameters." +
+                            Environment.NewLine +
+                            Environment.NewLine +
+                            "Available constructors:" +
+                            Environment.NewLine +
+                            string.Join(Environment.NewLine, constructors),
+                            "Form Constructor Required",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Warning);
+
+                        return;
+                    }
+
+                    using (form)
+                    {
+                        form.StartPosition = FormStartPosition.CenterParent;
                         form.ShowDialog(this);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.ToString(), "Unable to Open Form",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(
+                        ex.ToString(),
+                        "Unable to Open Form",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
                 }
+
             }, clsGlobal.UserRole.Admin);
         }
-
     }
 }

@@ -1171,6 +1171,109 @@ namespace Clinic_DataAccess
                         },
                         new DatabaseMigration
                         {
+                            Version = "20261019_0027",
+                            Description = "Create General Settings table",
+                            Sql = @"
+                                CREATE TABLE IF NOT EXISTS `tbl_general_settings` (
+                                    `id` int NOT NULL AUTO_INCREMENT,
+                                    `name` varchar(150)
+                                        CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci
+                                        NOT NULL DEFAULT '',
+                                    `value` int NOT NULL DEFAULT '0',
+                                    `description` varchar(150)
+                                        CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci
+                                        NOT NULL DEFAULT '',
+                                    `status` int DEFAULT '0',
+                                    PRIMARY KEY (`id`)
+                                ) ENGINE=InnoDB
+                                  DEFAULT CHARSET=utf8mb4
+                                  COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+                        new DatabaseMigration
+                            {
+                                Version = "20261019_0028",
+                                Description = "Insert default General Settings",
+                                Sql = @"
+                                    INSERT INTO `tbl_general_settings`
+                                        (`id`, `name`, `value`, `description`, `status`)
+                                    VALUES
+                                        (1, 'ALL ITEMS IN SALES', 0, '', 0),
+                                        (2, 'ALL ITEMS IN PURCHASE', 0, '', 0),
+                                        (3, 'ALLOW ITEM WITHOUT QTY', 0, '', 0),
+                                        (4, 'DEFAULT TAX PERCENTAGE', 1, '', 1),
+                                        (5, 'PRINT KITCHEN KOT', 0, '', 1),
+                                        (6, 'PRINT BILL', 0, '', 1),
+                                        (7, 'PROJECT OPTION', 0, '', 0),
+                                        (8, 'ENABLE PETTYCASH APPROVAL', 0, '', 0),
+                                        (9, 'ENABLE BARCODE', 0, '', 0),
+                                        (10, 'ENABLE ITEM SERIAL NO', 0, '', 0),
+                                        (11, 'ENABLE ITEM EXPIREDATE', 0, '', 0),
+                                        (12, 'FINISHED GOODS SAVE WITHOUT QTY', 0, '', 0),
+                                        (13, 'USE PREPAYMENTS (DEPOSITS) FOR SALES ORDERS', 0, '', 0)
+                                    ON DUPLICATE KEY UPDATE `id` = `id`;
+                                "
+                            },
+                        new DatabaseMigration
+{
+    Version = "20261019_0029",
+    Description = "Create Petty Cash Category table",
+    Sql = @"
+        CREATE TABLE IF NOT EXISTS `tbl_petty_cash_category` (
+            `id` int NOT NULL AUTO_INCREMENT,
+            `name` varchar(200)
+                CHARACTER SET utf8mb4
+                COLLATE utf8mb4_general_ci DEFAULT NULL,
+            `description` varchar(500)
+                CHARACTER SET utf8mb4
+                COLLATE utf8mb4_general_ci DEFAULT NULL,
+            PRIMARY KEY (`id`)
+        ) ENGINE=InnoDB
+          DEFAULT CHARSET=utf8mb4
+          COLLATE=utf8mb4_general_ci;
+    "
+},
+                        new DatabaseMigration
+{
+    Version = "20261019_0031",
+    Description = "Create Bank table",
+    Sql = @"
+        CREATE TABLE IF NOT EXISTS `tbl_bank` (
+            `id` int NOT NULL AUTO_INCREMENT,
+            `code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+            `name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+            `abb_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+            `ent_id` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+            `route_num` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+            `country_id` int DEFAULT NULL,
+            `state` int DEFAULT NULL,
+            `created_by` int DEFAULT NULL,
+            `created_date` date DEFAULT NULL,
+            PRIMARY KEY (`id`)
+        ) ENGINE=InnoDB
+          DEFAULT CHARSET=utf8mb4
+          COLLATE=utf8mb4_general_ci;
+    "
+},
+                        new DatabaseMigration
+{
+    Version = "20261019_0030",
+    Description = "Create Vendor Category table",
+    Sql = @"
+        CREATE TABLE IF NOT EXISTS `tbl_vendor_category` (
+            `id` int NOT NULL AUTO_INCREMENT,
+            `name` varchar(200)
+                CHARACTER SET utf8mb4
+                COLLATE utf8mb4_general_ci
+                NOT NULL DEFAULT '0',
+            PRIMARY KEY (`id`)
+        ) ENGINE=InnoDB
+          DEFAULT CHARSET=utf8mb4
+          COLLATE=utf8mb4_general_ci;
+    "
+},
+                        new DatabaseMigration
+                        {
                             Version = "20261019_0026",
                             Description = "Create Company Information table",
                             Sql = @"
@@ -1456,7 +1559,90 @@ namespace Clinic_DataAccess
                                                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
                             "
                         },
-
+                        new DatabaseMigration
+{
+    Version = "20261019_0032",
+    Description = "Create Bank Card table",
+    Sql = @"
+        CREATE TABLE IF NOT EXISTS `tbl_bank_card` (
+            `id` int NOT NULL AUTO_INCREMENT,
+            `bank_id` int DEFAULT NULL,
+            `account_name` varchar(70) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+            `account_type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+            `account_no` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+            `swift` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+            `iban_no` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+            `branch_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+            `emirates` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+            `currency` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+            `account_manager` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+            `account_sign` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+            `account_mob` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+            `account_id` int DEFAULT NULL,
+            `state` int DEFAULT NULL,
+            `created_by` int DEFAULT NULL,
+            `created_date` date DEFAULT NULL,
+            `company_ac` int DEFAULT '0',
+            PRIMARY KEY (`id`)
+        ) ENGINE=InnoDB
+          DEFAULT CHARSET=utf8mb4
+          COLLATE=utf8mb4_general_ci;
+    "
+},
+                        new DatabaseMigration
+{
+    Version = "20261019_0034",
+    Description = "Create Departments table",
+    Sql = @"
+        CREATE TABLE IF NOT EXISTS `tbl_departments` (
+            `id` int NOT NULL AUTO_INCREMENT,
+            `name` varchar(200)
+                CHARACTER SET utf8mb4
+                COLLATE utf8mb4_general_ci DEFAULT NULL,
+            `Department` varchar(100)
+                CHARACTER SET utf8mb4
+                COLLATE utf8mb4_general_ci DEFAULT NULL,
+            PRIMARY KEY (`id`)
+        ) ENGINE=InnoDB
+          DEFAULT CHARSET=utf8mb4
+          COLLATE=utf8mb4_general_ci;
+    "
+},
+                        new DatabaseMigration
+{
+    Version = "20261019_0035",
+    Description = "Create Position table",
+    Sql = @"
+        CREATE TABLE IF NOT EXISTS `tbl_position` (
+            `id` int NOT NULL AUTO_INCREMENT,
+            `name` varchar(200)
+                CHARACTER SET utf8mb4
+                COLLATE utf8mb4_general_ci DEFAULT NULL,
+            `department_id` int DEFAULT NULL,
+            `AnnualLeaveDays` INT DEFAULT 30,
+            `EOSDaysPerYear` INT DEFAULT 0,
+            PRIMARY KEY (`id`)
+        ) ENGINE=InnoDB
+          DEFAULT CHARSET=utf8mb4
+          COLLATE=utf8mb4_general_ci;
+    "
+},
+                        new DatabaseMigration
+{
+    Version = "20261019_0033",
+    Description = "Create Bank Register table",
+    Sql = @"
+        CREATE TABLE IF NOT EXISTS `tbl_bank_register` (
+            `id` int NOT NULL AUTO_INCREMENT,
+            `bank_id` int DEFAULT NULL,
+            `created_by` int DEFAULT NULL,
+            `created_date` date DEFAULT NULL,
+            PRIMARY KEY (`id`)
+        ) ENGINE=InnoDB
+          DEFAULT CHARSET=utf8mb4
+          COLLATE=utf8mb4_general_ci;
+    "
+},
                         new DatabaseMigration
                         {
                             Version = "20261019_ERP_012",

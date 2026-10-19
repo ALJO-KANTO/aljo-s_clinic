@@ -275,7 +275,7 @@ namespace Clinic.Login
 
         private void frmLogin_Load(object sender, EventArgs e)
         {
-            //defaultAccounts = BindCombos.LoadDefaultAccounts();
+            defaultAccounts = BindCombos.LoadDefaultAccounts();
 
             string username = string.Empty, password = string.Empty;
             if (clsGlobal.GetStoredCredentialFromRegistry(ref username, ref password))

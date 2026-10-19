@@ -74,11 +74,6 @@
         private Guna.UI2.WinForms.Guna2Button guna2Button2;
         private Guna.UI2.WinForms.Guna2Button guna2Button1;
         private Guna.UI2.WinForms.Guna2ControlBox guna2ControlBox1;
-        private System.Windows.Forms.Label lblSchoolFeeType;
-        private Guna.UI2.WinForms.Guna2ComboBox cmbSchoolFeeType;
-        private System.Windows.Forms.Label lblSchoolGrade;
-        private Guna.UI2.WinForms.Guna2ComboBox cmbSchoolGrade;
-        private System.Windows.Forms.LinkLabel lnkAddGrade;
         private System.Windows.Forms.Label label18;
         private Guna.UI2.WinForms.Guna2ComboBox cmbPurchasetype;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
@@ -174,11 +169,6 @@
             this.picItemDetailsIcon = new System.Windows.Forms.PictureBox();
             this.lblItemDetailsTitle = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
-            this.lblSchoolFeeType = new System.Windows.Forms.Label();
-            this.cmbSchoolFeeType = new Guna.UI2.WinForms.Guna2ComboBox();
-            this.lblSchoolGrade = new System.Windows.Forms.Label();
-            this.cmbSchoolGrade = new Guna.UI2.WinForms.Guna2ComboBox();
-            this.lnkAddGrade = new System.Windows.Forms.LinkLabel();
             this.pnlImageCard = new System.Windows.Forms.Panel();
             this.lblImageTitle = new System.Windows.Forms.Label();
             this.picItemPlaceholder = new System.Windows.Forms.PictureBox();
@@ -658,11 +648,6 @@
             this.pnlItemDetailsCard.Controls.Add(this.txtcode);
             this.pnlItemDetailsCard.Controls.Add(this.label1);
             this.pnlItemDetailsCard.Controls.Add(this.txtName);
-            this.pnlItemDetailsCard.Controls.Add(this.lblSchoolFeeType);
-            this.pnlItemDetailsCard.Controls.Add(this.cmbSchoolFeeType);
-            this.pnlItemDetailsCard.Controls.Add(this.lblSchoolGrade);
-            this.pnlItemDetailsCard.Controls.Add(this.cmbSchoolGrade);
-            this.pnlItemDetailsCard.Controls.Add(this.lnkAddGrade);
             this.pnlItemDetailsCard.Location = new System.Drawing.Point(0, 0);
             this.pnlItemDetailsCard.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.pnlItemDetailsCard.Name = "pnlItemDetailsCard";
@@ -702,79 +687,6 @@
             this.label10.Size = new System.Drawing.Size(88, 20);
             this.label10.TabIndex = 2;
             this.label10.Text = "Item Code *";
-            // 
-            // lblSchoolFeeType
-            // 
-            this.lblSchoolFeeType.AutoSize = true;
-            this.lblSchoolFeeType.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(63)))), ((int)(((byte)(66)))), ((int)(((byte)(113)))));
-            this.lblSchoolFeeType.Location = new System.Drawing.Point(25, 141);
-            this.lblSchoolFeeType.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblSchoolFeeType.Name = "lblSchoolFeeType";
-            this.lblSchoolFeeType.Size = new System.Drawing.Size(116, 20);
-            this.lblSchoolFeeType.TabIndex = 6;
-            this.lblSchoolFeeType.Text = "School Fee Type";
-            // 
-            // cmbSchoolFeeType
-            // 
-            this.cmbSchoolFeeType.BackColor = System.Drawing.Color.Transparent;
-            this.cmbSchoolFeeType.BorderRadius = 6;
-            this.cmbSchoolFeeType.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-            this.cmbSchoolFeeType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbSchoolFeeType.FocusedColor = System.Drawing.Color.Empty;
-            this.cmbSchoolFeeType.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.cmbSchoolFeeType.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(68)))), ((int)(((byte)(88)))), ((int)(((byte)(112)))));
-            this.cmbSchoolFeeType.ItemHeight = 26;
-            this.cmbSchoolFeeType.Items.AddRange(new object[] {
-            "None",
-            "Tuition",
-            "Uniform",
-            "Books"});
-            this.cmbSchoolFeeType.Location = new System.Drawing.Point(162, 130);
-            this.cmbSchoolFeeType.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.cmbSchoolFeeType.Name = "cmbSchoolFeeType";
-            this.cmbSchoolFeeType.Size = new System.Drawing.Size(274, 32);
-            this.cmbSchoolFeeType.StartIndex = 0;
-            this.cmbSchoolFeeType.TabIndex = 7;
-            // 
-            // lblSchoolGrade
-            // 
-            this.lblSchoolGrade.AutoSize = true;
-            this.lblSchoolGrade.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(63)))), ((int)(((byte)(66)))), ((int)(((byte)(113)))));
-            this.lblSchoolGrade.Location = new System.Drawing.Point(465, 141);
-            this.lblSchoolGrade.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblSchoolGrade.Name = "lblSchoolGrade";
-            this.lblSchoolGrade.Size = new System.Drawing.Size(49, 20);
-            this.lblSchoolGrade.TabIndex = 8;
-            this.lblSchoolGrade.Text = "Grade";
-            // 
-            // cmbSchoolGrade
-            // 
-            this.cmbSchoolGrade.BackColor = System.Drawing.Color.Transparent;
-            this.cmbSchoolGrade.BorderRadius = 6;
-            this.cmbSchoolGrade.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-            this.cmbSchoolGrade.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbSchoolGrade.FocusedColor = System.Drawing.Color.Empty;
-            this.cmbSchoolGrade.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.cmbSchoolGrade.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(68)))), ((int)(((byte)(88)))), ((int)(((byte)(112)))));
-            this.cmbSchoolGrade.ItemHeight = 26;
-            this.cmbSchoolGrade.Location = new System.Drawing.Point(588, 130);
-            this.cmbSchoolGrade.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.cmbSchoolGrade.Name = "cmbSchoolGrade";
-            this.cmbSchoolGrade.Size = new System.Drawing.Size(268, 32);
-            this.cmbSchoolGrade.TabIndex = 9;
-            // 
-            // lnkAddGrade
-            // 
-            this.lnkAddGrade.AutoSize = true;
-            this.lnkAddGrade.LinkColor = System.Drawing.Color.FromArgb(((int)(((byte)(86)))), ((int)(((byte)(55)))), ((int)(((byte)(205)))));
-            this.lnkAddGrade.Location = new System.Drawing.Point(870, 141);
-            this.lnkAddGrade.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lnkAddGrade.Name = "lnkAddGrade";
-            this.lnkAddGrade.Size = new System.Drawing.Size(95, 20);
-            this.lnkAddGrade.TabIndex = 10;
-            this.lnkAddGrade.TabStop = true;
-            this.lnkAddGrade.Text = "+ Add Grade";
-            this.lnkAddGrade.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkAddGrade_LinkClicked);
             // 
             // pnlImageCard
             // 

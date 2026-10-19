@@ -918,7 +918,7 @@ public static class BindCombos
     }
     public static Guna2ComboBox PopulateCountries(Guna2ComboBox cmb, bool isAddOption = false, bool forceRefresh = false)
     {
-        string query = "select id,name from tbl_country";
+        string query = "select CountryID as Id,CountryName as Name from tbl_country";
         BindComboBox(cmb, query, "id", "name", isAddOption, "0", "<< Add >>", forceRefresh);
         return cmb;
         //DataTable dt = ClinicDatabase.ExecuteDataTable("select id,name from tbl_country");
@@ -1473,7 +1473,7 @@ public static class BindCombos
     }
     public static Guna2ComboBox PopulateProjects(Guna2ComboBox cmb, bool isAddOption = false, bool forceRefresh = false)
     {
-        string query = "SELECT CONCAT(CODE ,' - ' , name) as name ,id FROM tbl_projects";
+        string query = "SELECT '' as name ,1 id";
         BindComboBox(cmb, query, "id", "name", isAddOption, "0", "<< Add >>", forceRefresh);
         return cmb;
         //DataTable dt = ClinicDatabase.ExecuteDataTable("SELECT CONCAT(CODE ,' - ' , name) as name ,id FROM tbl_projects");

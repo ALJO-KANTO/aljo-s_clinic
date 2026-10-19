@@ -16,7 +16,7 @@ namespace Clinic
             LoadTable(ref tableCountries, "SELECT * FROM tbl_country");
             LoadTable(ref tableCities, "SELECT * FROM tbl_city");
             LoadTable(ref tableLevel4, "select CONCAT(CODE , ' - ' , NAME) AS name, id from tbl_coa_level_4 ORDER BY code");
-            LoadTable(ref tableModules, "select id, name, status from tbl_set_main_menu id");
+            //LoadTable(ref tableModules, "select id, name, status from tbl_set_main_menu id");
         }
 
         //public static DataTable tableBank, tableBankCard, tableBankCheque, tableCompany, tableCostCenter, tableCustomers, tableCustomerCategory, tableDepartments, tableEmployee, tableFixedAssetsCategory, tableItemCategory, tableProducts, tableProductUnits, tableProductWarehouses, tablePettyCashCategory, tablePosition, tablePrepaidExpenseCategory,

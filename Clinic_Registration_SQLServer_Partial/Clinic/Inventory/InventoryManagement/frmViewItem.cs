@@ -1374,13 +1374,8 @@ namespace YamyProject
             cmbAssetAccount.SelectedValue = BindCombos.SelectDefaultLevelAccount("Inventory");
             cmbCOGSAccount.SelectedValue = BindCombos.SelectDefaultLevelAccount("COGS");
 
-            LoadSchoolGrades();
 
-            if (cmbSchoolFeeType.Items.Count > 0 &&
-                cmbSchoolFeeType.SelectedIndex < 0)
-            {
-                cmbSchoolFeeType.SelectedIndex = 0;
-            }
+           
 
             ApplyItemTypeLayout();
         }
@@ -1430,26 +1425,7 @@ namespace YamyProject
                 if (!LoadItemImageFromDatabaseBytes(id))
                     LoadItemImageFromDatabasePath(_currentImageDbPath);
 
-                // School fee mapping
-                if (HasColumn(reader, "school_fee_type"))
-                {
-                    string feeType =
-                        reader["school_fee_type"] == DBNull.Value
-                            ? ""
-                            : reader["school_fee_type"].ToString();
-
-                    if (string.IsNullOrWhiteSpace(feeType))
-                        feeType = "None";
-
-                    cmbSchoolFeeType.Text = feeType;
-                }
-
-                if (HasColumn(reader, "school_standard_id") &&
-                    reader["school_standard_id"] != DBNull.Value)
-                {
-                    cmbSchoolGrade.SelectedValue =
-                        Convert.ToInt32(reader["school_standard_id"]);
-                }
+                
 
                 dtStart.Value = DateTime.Parse(reader["date"].ToString());
                 chkActive.Checked = (int.Parse(reader["active"].ToString()) == 0) ? true : false;
@@ -1581,7 +1557,7 @@ namespace YamyProject
                               income_account_id = @income_account_id,asset_account_id = @asset_account_id,
                               min_amount = @min_amount,max_amount = @max_amount,on_hand = @on_hand,method=@method,total_value = @total_value,
                               date = @date,img = @img,img_data = @img_data,img_file_name = @img_file_name,active = @active,state = @state,created_By = @created_By,created_date = @created_date,
-                              Item_type=@Item_type, school_fee_type=@school_fee_type, school_standard_id=@school_standard_id
+                              Item_type=@Item_type
                               WHERE id = @id",
                             ClinicDatabase.CreateParameterNew("type", cmbType.Text),
                             ClinicDatabase.CreateParameterNew("name", txtName.Text),
@@ -1608,9 +1584,7 @@ namespace YamyProject
                             ClinicDatabase.CreateParameterNew("created_By", -1),
                             ClinicDatabase.CreateParameterNew("created_date", DateTime.Now.Date),
                             ClinicDatabase.CreateParameterNew("id", id),
-                            ClinicDatabase.CreateParameterNew("@Item_type", cmbPurchasetype.Text),
-                            ClinicDatabase.CreateParameterNew("@school_fee_type", GetSelectedSchoolFeeType()),
-                            ClinicDatabase.CreateParameterNew("@school_standard_id", GetSelectedSchoolStandardId()));
+                            ClinicDatabase.CreateParameterNew("@Item_type", cmbPurchasetype.Text));
             ClinicDatabase.ExecuteNonQuery("delete from tbl_items_unit where item_id=@id", ClinicDatabase.CreateParameterNew("id", id));
             ClinicDatabase.ExecuteNonQuery("delete from tbl_item_assembly where assembly_id=@id", ClinicDatabase.CreateParameterNew("id", id));
             if (cmbType.Text != "12 - Service" && cmbMainUnit.SelectedValue != null)
@@ -1673,11 +1647,11 @@ namespace YamyProject
             id = (int)decimal.Parse(ClinicDatabase.ExecuteScalar(@"INSERT INTO `tbl_items`(`code`,`warehouse_id`,  `type`,category_id, `name`, `unit_id`, `barcode`, `cost_price`, 
                                     `cogs_account_id`, `vendor_id`, `sales_price`, `income_account_id`, `asset_account_id`, 
                                     `min_amount`, `max_amount`, `on_hand`,method, `total_value`, `date`, `img`, `img_data`, `img_file_name`, `active`, `state`, 
-                                    `created_By`, `created_date`,Item_type, GlobalId, DeviceId, school_fee_type, school_standard_id) VALUES (
+                                    `created_By`, `created_date`,Item_type, GlobalId, DeviceId) VALUES (
                                     @code, @warehouseId, @type,@category, @name, @unit_id, @barcode, @cost_price, 
                                     @cogs_account_id, @vendor_id, @sales_price, @income_account_id, @asset_account_id, 
                                     @min_amount, @max_amount, @on_hand,@method, @total_value, @date, @img, @img_data, @img_file_name, @active, @state, 
-                                    @created_By, @created_date,@Item_type, @GlobalId, @DeviceId, @school_fee_type, @school_standard_id); SELECT LAST_INSERT_ID();",
+                                    @created_By, @created_date,@Item_type, @GlobalId, @DeviceId); SELECT LAST_INSERT_ID();",
                              ClinicDatabase.CreateParameterNew("code", itemCode),
                              ClinicDatabase.CreateParameterNew("warehouseId", cmbWarehouse.SelectedValue.ToString()),
                              ClinicDatabase.CreateParameterNew("type", cmbType.Text),
@@ -1706,9 +1680,8 @@ namespace YamyProject
                 ClinicDatabase.CreateParameterNew("state", 0),
                              ClinicDatabase.CreateParameterNew("created_By", -1),
                              ClinicDatabase.CreateParameterNew("created_date", DateTime.Now.Date),
-                             ClinicDatabase.CreateParameterNew("@Item_type", cmbPurchasetype.Text),
-                             ClinicDatabase.CreateParameterNew("@school_fee_type", GetSelectedSchoolFeeType()),
-                             ClinicDatabase.CreateParameterNew("@school_standard_id", GetSelectedSchoolStandardId())).ToString());
+                             ClinicDatabase.CreateParameterNew("@Item_type", cmbPurchasetype.Text)).ToString());
+
             if (cmbType.Text != "12 - Service" && cmbMainUnit.SelectedValue != null)
                 insertItemUnits(id);
             if (cmbType.Text == "13 - Inventory Assembly")
@@ -1775,36 +1748,6 @@ namespace YamyProject
                 return false;
             }
 
-            if (!string.Equals(
-                    GetSelectedSchoolFeeType(),
-                    "None",
-                    StringComparison.OrdinalIgnoreCase))
-            {
-                if (cmbType.Text != "12 - Service")
-                {
-                    MessageBox.Show(
-                        "School fee items such as Tuition, Uniform and Books must be created as a Service item.",
-                        "School Fee Item",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
-
-                    cmbType.Focus();
-                    return false;
-                }
-
-                if (cmbSchoolGrade.SelectedValue == null ||
-                    cmbSchoolGrade.SelectedValue == DBNull.Value)
-                {
-                    MessageBox.Show(
-                        "Please select the Grade / Standard for this School fee item.",
-                        "School Fee Item",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
-
-                    cmbSchoolGrade.Focus();
-                    return false;
-                }
-            }
             if (txtOnHand.Text != "" && txtCostPrice.Text == "")
             {
                 MessageBox.Show("Enter Cost Price");
@@ -1865,58 +1808,6 @@ namespace YamyProject
         }
 
 
-        private void LoadSchoolGrades()
-        {
-            try
-            {
-                System.Data.DataTable dt =
-                    ClinicDatabase.ExecuteDataTable(
-                        @"SELECT id, name
-                          FROM tbl_school_standard
-                          WHERE state = 0
-                            AND active = 1
-                          ORDER BY sort_order, name;");
-
-                cmbSchoolGrade.DataSource = null;
-                cmbSchoolGrade.DataSource = dt;
-                cmbSchoolGrade.DisplayMember = "name";
-                cmbSchoolGrade.ValueMember = "id";
-                cmbSchoolGrade.SelectedIndex = -1;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    "School Grade list could not be loaded.\n\n" + ex.Message,
-                    "School Grade",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning);
-            }
-        }
-
-        private string GetSelectedSchoolFeeType()
-        {
-            string value =
-                cmbSchoolFeeType.Text == null
-                    ? ""
-                    : cmbSchoolFeeType.Text.Trim();
-
-            return string.IsNullOrWhiteSpace(value)
-                ? "None"
-                : value;
-        }
-
-        private object GetSelectedSchoolStandardId()
-        {
-            if (cmbSchoolGrade.SelectedValue == null ||
-                cmbSchoolGrade.SelectedValue == DBNull.Value)
-            {
-                return DBNull.Value;
-            }
-
-            return Convert.ToInt32(
-                cmbSchoolGrade.SelectedValue);
-        }
-
         private static bool HasColumn(
             MySqlDataReader reader,
             string columnName)
@@ -1931,255 +1822,6 @@ namespace YamyProject
             }
         }
 
-        private void lnkAddGrade_LinkClicked(
-            object sender,
-            LinkLabelLinkClickedEventArgs e)
-        {
-            try
-            {
-                using (Form form = new Form())
-                {
-                    bool arabic = IsInventoryArabic();
-                    form.Text = arabic ? "إضافة صف / مرحلة" : "Add Grade / Standard";
-                    form.RightToLeft = arabic ? RightToLeft.Yes : RightToLeft.No;
-                    form.RightToLeftLayout = arabic;
-                    form.StartPosition = FormStartPosition.CenterParent;
-                    form.FormBorderStyle = FormBorderStyle.FixedDialog;
-                    form.MaximizeBox = false;
-                    form.MinimizeBox = false;
-                    form.ClientSize =
-                        new System.Drawing.Size(430, 245);
-                    form.Font =
-                        new System.Drawing.Font("Segoe UI", 9.5F);
-                    form.BackColor =
-                        System.Drawing.Color.White;
-
-                    Label lblName = new Label
-                    {
-                        Text = arabic ? "اسم الصف / المرحلة *" : "Grade / Standard Name *",
-                        AutoSize = true,
-                        Location = new System.Drawing.Point(25, 25),
-                        RightToLeft = arabic ? RightToLeft.Yes : RightToLeft.No,
-                        TextAlign = arabic ? ContentAlignment.MiddleRight : ContentAlignment.MiddleLeft,
-                        Width = 370
-                    };
-
-                    TextBox txtGrade = new TextBox
-                    {
-                        Location = new System.Drawing.Point(25, 50),
-                        Size = new System.Drawing.Size(370, 28),
-                        RightToLeft = arabic ? RightToLeft.Yes : RightToLeft.No,
-                        TextAlign = arabic ? HorizontalAlignment.Right : HorizontalAlignment.Left
-                    };
-
-                    Label lblCycle = new Label
-                    {
-                        Text = arabic ? "المرحلة الدراسية" : "Cycle",
-                        AutoSize = true,
-                        Location = new System.Drawing.Point(25, 95),
-                        RightToLeft = arabic ? RightToLeft.Yes : RightToLeft.No,
-                        TextAlign = arabic ? ContentAlignment.MiddleRight : ContentAlignment.MiddleLeft,
-                        Width = 220
-                    };
-
-                    ComboBox cboCycle = new ComboBox
-                    {
-                        Location = new System.Drawing.Point(25, 120),
-                        Size = new System.Drawing.Size(220, 28),
-                        DropDownStyle = ComboBoxStyle.DropDown,
-                        RightToLeft = arabic ? RightToLeft.Yes : RightToLeft.No
-                    };
-
-                    cboCycle.Items.AddRange(
-                        new object[]
-                        {
-                            arabic ? "رياض الأطفال" : "Kindergarten",
-                            arabic ? "الحلقة الأولى" : "Cycle 1",
-                            arabic ? "الحلقة الثانية" : "Cycle 2",
-                            arabic ? "الحلقة الثالثة" : "Cycle 3"
-                        });
-
-                    Button btnCancel = new Button
-                    {
-                        Text = arabic ? "إلغاء" : "Cancel",
-                        Location = new System.Drawing.Point(205, 180),
-                        Size = new System.Drawing.Size(90, 34),
-                        RightToLeft = arabic ? RightToLeft.Yes : RightToLeft.No
-                    };
-
-                    Button btnSaveGrade = new Button
-                    {
-                        Text = arabic ? "حفظ" : "Save Grade",
-                        Location = new System.Drawing.Point(305, 180),
-                        Size = new System.Drawing.Size(90, 34),
-                        RightToLeft = arabic ? RightToLeft.Yes : RightToLeft.No
-                    };
-
-                    btnCancel.Click += delegate
-                    {
-                        form.DialogResult = DialogResult.Cancel;
-                        form.Close();
-                    };
-
-                    btnSaveGrade.Click += delegate
-                    {
-                        string gradeName =
-                            txtGrade.Text.Trim();
-
-                        if (gradeName == "")
-                        {
-                            MessageBox.Show(
-                                arabic ? "يرجى إدخال اسم الصف / المرحلة." : "Enter Grade / Standard Name.",
-                                arabic ? "الصف الدراسي" : "School Grade",
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Warning);
-
-                            txtGrade.Focus();
-                            return;
-                        }
-
-                        object existing =
-                            ClinicDatabase.ExecuteScalar(
-                                @"SELECT id
-                                  FROM tbl_school_standard
-                                  WHERE state=0
-                                    AND LOWER(TRIM(name)) =
-                                        LOWER(TRIM(@name))
-                                  LIMIT 1;",
-                                ClinicDatabase.CreateParameterNew(
-                                    "name",
-                                    gradeName));
-
-                        if (existing != null &&
-                            existing != DBNull.Value)
-                        {
-                            MessageBox.Show(
-                                arabic ? "هذا الصف / المرحلة موجود بالفعل." : "This Grade / Standard already exists.",
-                                arabic ? "الصف الدراسي" : "School Grade",
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Information);
-                            return;
-                        }
-
-                        object maxOrder =
-                            ClinicDatabase.ExecuteScalar(
-                                @"SELECT IFNULL(MAX(sort_order),0)
-                                  FROM tbl_school_standard
-                                  WHERE state=0;");
-
-                        int nextOrder =
-                            Convert.ToInt32(
-                                maxOrder == null ||
-                                maxOrder == DBNull.Value
-                                    ? 0
-                                    : maxOrder) + 1;
-
-                        int newId =
-                            Convert.ToInt32(
-                                ClinicDatabase.ExecuteScalar(
-                                    @"INSERT INTO tbl_school_standard
-                                      (
-                                          name,
-                                          cycle_name,
-                                          sort_order,
-                                          active,
-                                          created_by,
-                                          created_date,
-                                          modified_by,
-                                          modified_date,
-                                          state,
-                                          GlobalId,
-                                          DeviceId,
-                                          LastModified,
-                                          SyncStatus
-                                      )
-                                      VALUES
-                                      (
-                                          @name,
-                                          @cycle_name,
-                                          @sort_order,
-                                          1,
-                                          @created_by,
-                                          @created_date,
-                                          @modified_by,
-                                          @modified_date,
-                                          0,
-                                          @GlobalId,
-                                          @DeviceId,
-                                          @LastModified,
-                                          0
-                                      );
-                                      SELECT LAST_INSERT_ID();",
-                                    ClinicDatabase.CreateParameterNew(
-                                        "name",
-                                        gradeName),
-                                    ClinicDatabase.CreateParameterNew(
-                                        "cycle_name",
-                                        cboCycle.Text.Trim()),
-                                    ClinicDatabase.CreateParameterNew(
-                                        "sort_order",
-                                        nextOrder),
-                                    ClinicDatabase.CreateParameterNew(
-                                        "created_by",
-                                        -1),
-                                    ClinicDatabase.CreateParameterNew(
-                                        "created_date",
-                                        DateTime.Now),
-                                    ClinicDatabase.CreateParameterNew(
-                                        "modified_by",
-                                        -1),
-                                    ClinicDatabase.CreateParameterNew(
-                                        "modified_date",
-                                        DateTime.Now),
-                                    ClinicDatabase.CreateParameterNew(
-                                        "GlobalId",
-                                        Guid.NewGuid().ToString()),
-                                    ClinicDatabase.CreateParameterNew(
-                                        "DeviceId",
-                                        Utilities.MachineName),
-                                    ClinicDatabase.CreateParameterNew(
-                                        "LastModified",
-                                        DateTime.Now)));
-
-                        form.Tag = newId;
-                        form.DialogResult = DialogResult.OK;
-                        form.Close();
-                    };
-
-                    form.Controls.Add(lblName);
-                    form.Controls.Add(txtGrade);
-                    form.Controls.Add(lblCycle);
-                    form.Controls.Add(cboCycle);
-                    form.Controls.Add(btnCancel);
-                    form.Controls.Add(btnSaveGrade);
-
-                    if (form.ShowDialog(this) ==
-                        DialogResult.OK)
-                    {
-                        object newGradeId =
-                            form.Tag;
-
-                        LoadSchoolGrades();
-
-                        if (newGradeId != null)
-                        {
-                            cmbSchoolGrade.SelectedValue =
-                                Convert.ToInt32(newGradeId);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    "Grade / Standard could not be added.\n\n" +
-                    ex.Message,
-                    "School Grade",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-            }
-        }
-
         private void resetTextBox()
         {
             txtcode.Text = "";
@@ -2191,11 +1833,6 @@ namespace YamyProject
             txtMax.Text = "";
             txtOnHand.Text = "";
             dtStart.Value = DateTime.Now;
-
-            if (cmbSchoolFeeType.Items.Count > 0)
-                cmbSchoolFeeType.SelectedIndex = 0;
-
-            cmbSchoolGrade.SelectedIndex = -1;
 
             dgvItems.Rows.Clear();
         }
@@ -3040,12 +2677,6 @@ namespace YamyProject
             dtStart.Value = DateTime.Now;
             chkActive.Checked = true;
             radAvg.Checked = true;
-
-            if (cmbSchoolFeeType.Items.Count > 0)
-                cmbSchoolFeeType.SelectedIndex = 0;
-
-            if (cmbSchoolGrade.Items.Count > 0)
-                cmbSchoolGrade.SelectedIndex = -1;
 
             dgvItems.Rows.Clear();
 
