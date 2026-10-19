@@ -1099,6 +1099,110 @@ namespace Clinic_DataAccess
                                   COLLATE=utf8mb4_0900_ai_ci;
                             "
                         },
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_0024",
+                            Description = "Create Chart of Accounts Configuration table",
+                            Sql = @"
+                                CREATE TABLE IF NOT EXISTS `tbl_coa_config` (
+                                    `id` int NOT NULL AUTO_INCREMENT,
+                                    `account_id` int DEFAULT NULL,
+                                    `category` varchar(150)
+                                        CHARACTER SET utf8mb4
+                                        COLLATE utf8mb4_general_ci NOT NULL UNIQUE,
+                                    PRIMARY KEY (`id`)
+                                ) ENGINE=InnoDB
+                                  DEFAULT CHARSET=utf8mb4
+                                  COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_0025",
+                            Description = "Insert default Chart of Accounts Configuration",
+                            Sql = @"
+                                INSERT IGNORE INTO `tbl_coa_config`
+                                (`id`, `account_id`, `category`)
+                                VALUES
+                                    (1, 23, 'Sales'),
+                                    (2, 25, 'COGS'),
+                                    (3, 42, 'Default Account For Cash'),
+                                    (4, 5, 'Inventory'),
+                                    (5, 4, 'Item Damage'),
+                                    (6, 42, 'Invoice Payment Cash Method'),
+                                    (7, 13, 'Invoice Payment Credit Method'),
+                                    (8, 17, 'Vat Output'),
+                                    (9, 13, 'Vendor'),
+                                    (10, 10, 'Vat Input'),
+                                    (11, 42, 'Purchase Payment Cash Method'),
+                                    (12, 13, 'Purchase Payment Credit Method'),
+                                    (13, 3, 'Opening Balance'),
+                                    (14, 22, 'Opening Balance Equity'),
+                                    (15, 14, 'Accrued Salaries'),
+                                    (16, 16, 'Acroal Leave Salary'),
+                                    (17, 28, 'Employee Receivable'),
+                                    (18, 8, 'Prepaid Expense Debit Account'),
+                                    (19, 12, 'Fixed Asset Credit Account'),
+                                    (20, 37, 'PDC Payable'),
+                                    (21, 38, 'PDC Payable Return'),
+                                    (22, 39, 'PDC Payable Hold'),
+                                    (23, 40, 'PDC Payable Cancel'),
+                                    (24, 33, 'PDC Receivable'),
+                                    (25, 34, 'PDC Receivable Return'),
+                                    (26, 35, 'PDC Receivable Hold'),
+                                    (27, 36, 'PDC Receivable Cancel'),
+                                    (28, 3, 'Customer'),
+                                    (29, 2, 'Petty Cash Account'),
+                                    (30, 14, 'End of Service Debit'),
+                                    (31, 30, 'End of Service Credit'),
+                                    (32, 30, 'Leave Salary Debit'),
+                                    (33, 30, 'Leave Salary Credit'),
+                                    (34, 13, 'Purchase'),
+                                    (35, 13, 'PurchaseReturn'),
+                                    (36, 43, 'SalesReturn'),
+                                    (37, 1, 'Default Account For Bank'),
+                                    (38, 1, 'Salaries'),
+                                    (39, 31, 'Stock Settlement'),
+                                    (40, 44, 'Customer Advances'),
+                                    (41, 45, 'Retention'),
+                                    (42, 1, 'Deduction'),
+                                    (43, 46, 'Retention Purchase');
+                            "
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_0026",
+                            Description = "Create Company Information table",
+                            Sql = @"
+                                CREATE TABLE IF NOT EXISTS `tbl_company` (
+                                    `id` int NOT NULL AUTO_INCREMENT,
+                                    `name` varchar(200)
+                                        CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+                                    `descriptions` varchar(200)
+                                        CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+                                    `phone1` varchar(50)
+                                        CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+                                    `phone2` varchar(50)
+                                        CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+                                    `gmail` varchar(50)
+                                        CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+                                    `mobile_number` varchar(50)
+                                        CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+                                    `website` varchar(100)
+                                        CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+                                    `address` varchar(100)
+                                        CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+                                    `trn_no` varchar(100)
+                                        CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+                                    `country_id` int NOT NULL DEFAULT 0,
+                                    `logoComp` longblob,
+                                    `stampComp` longblob,
+                                    PRIMARY KEY (`id`) USING BTREE
+                                ) ENGINE=InnoDB
+                                  DEFAULT CHARSET=utf8mb4
+                                  COLLATE=utf8mb4_general_ci;
+                            "
+                        },
                         //Views  
                         new DatabaseMigration
                         {
