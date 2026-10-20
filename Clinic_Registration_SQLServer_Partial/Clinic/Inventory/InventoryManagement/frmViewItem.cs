@@ -1,4 +1,5 @@
 ﻿using Clinic;
+using Clinic.Login;
 using Clinic_DataAccess;
 using MySql.Data.MySqlClient;
 using System;
@@ -78,11 +79,12 @@ namespace YamyProject
             };
 
             itemCategoryUpdatedHandler = (sender, args) => setComboBoxCategory();
-            itemUnitUpdatedHandler = (sender, args) => BindCombos.PopulateItemUnit(cmbMainUnit);
+            itemUnitUpdatedHandler = (sender, args) => PopulateReferenceUom(cmbMainUnit);
             warehouseUpdatedHandler = (sender, args) => BindCombos.PopulateWarehouse(cmbWarehouse);
-            //.ItemCategory += itemCategoryUpdatedHandler;
-            //.ItemUnit += itemUnitUpdatedHandler;
-            //.wareHouse += warehouseUpdatedHandler;
+
+            EventHub.ItemCategory += itemCategoryUpdatedHandler;
+            EventHub.ItemUnit += itemUnitUpdatedHandler;
+            EventHub.wareHouse += warehouseUpdatedHandler;
 
             //btnSave.Text = id != 0 ? "Update" : btnSave.Text;
             dtStart.Value = DateTime.Now;
@@ -90,9 +92,9 @@ namespace YamyProject
         }
         private void frmViewItem_FormClosing(object sender, FormClosingEventArgs e)
         {
-            //.ItemCategory -= itemCategoryUpdatedHandler;
-            //.ItemUnit -= itemUnitUpdatedHandler;
-            //.wareHouse -= warehouseUpdatedHandler;
+            EventHub.ItemCategory -= itemCategoryUpdatedHandler;
+            EventHub.ItemUnit -= itemUnitUpdatedHandler;
+            EventHub.wareHouse -= warehouseUpdatedHandler;
 
             if (_defaultUploadImage != null)
             {
@@ -1359,12 +1361,67 @@ namespace YamyProject
                 comboBox.SelectedIndex = comboBox.Items.Count - 1;
             }
         }
+        public static void PopulateReferenceUom(Guna.UI2.WinForms.Guna2ComboBox cmb)
+        {
+            if (cmb == null)
+                return;
 
+            try
+            {
+                DataTable dt = ClinicDatabase.ExecuteDataTable(@"
+                    SELECT
+                        u.id,
+                        u.name
+                    FROM tbl_uom u
+                    INNER JOIN tbl_uom_category c
+                        ON c.id = u.category_id
+                    WHERE IFNULL(u.state, 0) = 0
+                      AND IFNULL(u.active, 1) = 1
+                      AND IFNULL(c.state, 0) = 0
+                      AND IFNULL(c.active, 1) = 1
+                      AND LOWER(TRIM(IFNULL(u.uom_type, ''))) = 'reference'
+                    ORDER BY
+                        c.name,
+                        u.name;
+                ");
+
+                cmb.DataSource = null;
+
+                if (dt == null || dt.Rows.Count == 0)
+                {
+                    cmb.Items.Clear();
+                    cmb.SelectedIndex = -1;
+                    return;
+                }
+
+                cmb.DisplayMember = "name";
+                cmb.ValueMember = "id";
+                cmb.DataSource = dt;
+
+                cmb.SelectedIndex = 0;
+            }
+            catch (Exception ex)
+            {
+                cmb.DataSource = null;
+                cmb.Items.Clear();
+                cmb.SelectedIndex = -1;
+
+                MessageBox.Show(
+                    "Unable to load Main Units.\n\n" +
+                    ex.Message,
+                    "Unit of Measure",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
         public void bindCombo()
         {
             BindCombos.PopulateWarehouse(cmbWarehouse);
             BindCombos.PopulateItemsCategory(cmbCategory);
-            BindCombos.PopulateItemUnit(cmbMainUnit);
+            PopulateReferenceUom(cmbMainUnit);
+            if (id == 0 && cmbMainUnit.Items.Count > 0)
+                cmbMainUnit.SelectedIndex = 0;
+
             BindCombos.PopulateVendors(cmbVendorAccount);
             cmbVendorAccount.SelectedValue = -1;
             BindCombos.PopulateAllLevel4Account(cmbIncomeAccount);
@@ -1374,14 +1431,11 @@ namespace YamyProject
             cmbAssetAccount.SelectedValue = BindCombos.SelectDefaultLevelAccount("Inventory");
             cmbCOGSAccount.SelectedValue = BindCombos.SelectDefaultLevelAccount("COGS");
 
-
-           
-
             ApplyItemTypeLayout();
         }
         private void BindItem()
         {
-            MySqlDataReader reader = ClinicDatabase.ExecuteReader("select * from tbl_items where id = " + id);
+            MySqlDataReader reader = ClinicDatabase.ExecuteReader("select * from tbl_items where id = @id ;",ClinicDatabase.CreateParameterNew("id", id));
             if (reader.Read())
             {
                 if (reader["method"].ToString() == "lifo")
@@ -1430,15 +1484,7 @@ namespace YamyProject
                 dtStart.Value = DateTime.Parse(reader["date"].ToString());
                 chkActive.Checked = (int.Parse(reader["active"].ToString()) == 0) ? true : false;
                 txtCostPrice.Enabled = txtSalesPrice.Enabled = txtOnHand.Enabled = dtStart.Enabled = true;
-                reader = ClinicDatabase.ExecuteReader("select tbl_items_unit.* , tbl_unit.name from tbl_items_unit  inner join tbl_unit on tbl_items_unit.unit_id = tbl_unit.id where item_id =@id", ClinicDatabase.CreateParameterNew("id", id));
-                while (reader.Read())
-                {
-                    if (cmbMainUnit.SelectedValue != null && int.Parse(reader["unit_id"].ToString()) == int.Parse(cmbMainUnit.SelectedValue.ToString()))
-                        continue;
-                    unitIds.Add(int.Parse(reader["unit_id"].ToString()));
-                    unitFactors.Add(decimal.Parse(reader["factor"].ToString()));
-                    unitNames.Add(reader["name"].ToString());
-                }
+                
                 reader = ClinicDatabase.ExecuteReader("select ti.code,ti.id,ta.qty,ti.cost_price from tbl_item_assembly ta inner join tbl_items ti on ta.item_id = ti.id where ta.assembly_id =@id", ClinicDatabase.CreateParameterNew("id", id));
                 while (reader.Read())
                 {
@@ -1474,7 +1520,7 @@ namespace YamyProject
         {
             if (SaveCurrentItem())
             {
-                //.RefreshItem();
+                EventHub.RefreshItem();
                 Close();
             }
         }
@@ -1483,7 +1529,7 @@ namespace YamyProject
         {
             if (SaveCurrentItem())
             {
-                //.RefreshItem();
+                EventHub.RefreshItem();
                 ResetForNewItem();
             }
         }
@@ -1520,23 +1566,6 @@ namespace YamyProject
             }
         }
 
-        void insertItemUnits(int id)
-        {
-            ClinicDatabase.ExecuteReader(@"insert into tbl_items_unit (item_id,unit_id,factor) values (@id,@unit_id,@factor)",
-                   ClinicDatabase.CreateParameterNew("id", id),
-                   ClinicDatabase.CreateParameterNew("unit_id", cmbMainUnit.SelectedValue),
-                   ClinicDatabase.CreateParameterNew("factor", 1));
-            ////Utilities.LogAudit(-1, "Insert Item Unit", "Item Unit", id, "Inserted Main Unit: " + cmbMainUnit.Text + " for Item: " + txtName.Text);
-            if (unitFactors != null)
-                for (int i = 0; i < unitFactors.Count; i++)
-                {
-                    ClinicDatabase.ExecuteReader(@"insert into tbl_items_unit (item_id,unit_id,factor) values (@id,@unit_id,@factor)",
-                        ClinicDatabase.CreateParameterNew("id", id),
-                        ClinicDatabase.CreateParameterNew("unit_id", unitIds[i]),
-                        ClinicDatabase.CreateParameterNew("factor", unitFactors[i]));
-                    ////Utilities.LogAudit(-1, "Insert Item Unit", "Item Unit", id, "Inserted Sub Unit: " + unitNames[i] + " for Item: " + txtName.Text);
-                }
-        }
         private bool updateItem()
         {
             if (!chkRequiredDate())
@@ -1584,10 +1613,9 @@ namespace YamyProject
                             ClinicDatabase.CreateParameterNew("created_date", DateTime.Now.Date),
                             ClinicDatabase.CreateParameterNew("id", id),
                             ClinicDatabase.CreateParameterNew("@Item_type", cmbPurchasetype.Text));
-            ClinicDatabase.ExecuteNonQuery("delete from tbl_items_unit where item_id=@id", ClinicDatabase.CreateParameterNew("id", id));
+            
             ClinicDatabase.ExecuteNonQuery("delete from tbl_item_assembly where assembly_id=@id", ClinicDatabase.CreateParameterNew("id", id));
-            if (cmbType.Text != "12 - Service" && cmbMainUnit.SelectedValue != null)
-                insertItemUnits(id);
+            
             if (cmbType.Text == "13 - Inventory Assembly")
                 insertItemsAssembly(id);
 
@@ -1680,8 +1708,6 @@ namespace YamyProject
                              ClinicDatabase.CreateParameterNew("created_date", DateTime.Now.Date),
                              ClinicDatabase.CreateParameterNew("@Item_type", cmbPurchasetype.Text)).ToString());
 
-            if (cmbType.Text != "12 - Service" && cmbMainUnit.SelectedValue != null)
-                insertItemUnits(id);
             if (cmbType.Text == "13 - Inventory Assembly")
                 insertItemsAssembly(id);
             if (txtOnHand.Text.Trim() != "0" && cmbType.Text != "12 - Service")
@@ -1692,7 +1718,7 @@ namespace YamyProject
                     insertItemJournal();
                 }
             }
-            ////Utilities.LogAudit(-1, "Insert Item", "Item", id, "Inserted Item: " + txtName.Text + " with Code: " + itemCode);
+            Utilities.LogAudit(clsGlobal.CurrentUser.UserID, "Insert Item", "Item", id, "Inserted Item: " + txtName.Text + " with Code: " + itemCode);
 
             _selectedImageBytes = null;
             _selectedImageSourcePath = string.Empty;
@@ -1852,11 +1878,253 @@ namespace YamyProject
 
         private void lnkAddItemUnit_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            frmMain.LoadFormIntoPanel(new frmViewItemUnit(0));
-            BindCombos.PopulateItemUnit(cmbMainUnit, false, true);
+            try
+            {
+                string unitName = "";
+
+                using (Form inputForm = new Form())
+                {
+                    inputForm.Text = "Add Main Unit";
+                    inputForm.Width = 350;
+                    inputForm.Height = 160;
+                    inputForm.StartPosition = FormStartPosition.CenterParent;
+                    inputForm.FormBorderStyle = FormBorderStyle.FixedDialog;
+                    inputForm.MaximizeBox = false;
+                    inputForm.MinimizeBox = false;
+
+                    Label lbl = new Label()
+                    {
+                        Text = "Enter Main Unit name:",
+                        Left = 15,
+                        Top = 15,
+                        AutoSize = true
+                    };
+
+                    TextBox txt = new TextBox()
+                    {
+                        Left = 15,
+                        Top = 40,
+                        Width = 300
+                    };
+
+                    Button btnOK = new Button()
+                    {
+                        Text = "OK",
+                        Left = 155,
+                        Top = 75,
+                        Width = 75,
+                        DialogResult = DialogResult.OK
+                    };
+
+                    Button btnCancel = new Button()
+                    {
+                        Text = "Cancel",
+                        Left = 240,
+                        Top = 75,
+                        Width = 75,
+                        DialogResult = DialogResult.Cancel
+                    };
+
+                    inputForm.Controls.AddRange(
+                        new Control[] { lbl, txt, btnOK, btnCancel });
+
+                    inputForm.AcceptButton = btnOK;
+                    inputForm.CancelButton = btnCancel;
+
+                    if (inputForm.ShowDialog(this) == DialogResult.OK)
+                    {
+                        unitName = txt.Text.Trim();
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(unitName))
+                    return;
+
+                unitName = (unitName ?? "").Trim();
+
+                if (string.IsNullOrWhiteSpace(unitName))
+                    return;
+
+
+                // ============================================================
+                // CHECK IF THIS REFERENCE UNIT ALREADY EXISTS
+                // ============================================================
+
+                object existingUnitId = ClinicDatabase.ExecuteScalar(@"
+                    SELECT id
+                    FROM tbl_uom
+                    WHERE LOWER(TRIM(name)) = LOWER(TRIM(@name))
+                      AND LOWER(TRIM(IFNULL(uom_type, ''))) = 'reference'
+                      AND IFNULL(state, 0) = 0
+                    LIMIT 1;",
+                    ClinicDatabase.CreateParameter("@name", unitName));
+
+
+                if (existingUnitId != null &&
+                    existingUnitId != DBNull.Value)
+                {
+                    int existingId =
+                        Convert.ToInt32(existingUnitId);
+
+                    // Reload dropdown
+                    PopulateReferenceUom(cmbMainUnit);
+
+                    // Select existing unit
+                    cmbMainUnit.SelectedValue = existingId;
+
+                    MessageBox.Show(
+                        "This Main Unit already exists.\n\n" +
+                        "It has been selected in the Main Unit dropdown.",
+                        "Main Unit",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+
+                    return;
+                }
+
+
+                // ============================================================
+                // CREATE CATEGORY FOR THE MAIN UNIT
+                //
+                // Every UOM requires category_id.
+                // Since this button is only for creating a MAIN UNIT,
+                // create one category for that reference unit.
+                // ============================================================
+
+                string categoryName = unitName;
+
+
+                // ============================================================
+                // CHECK CATEGORY
+                // ============================================================
+
+                object existingCategoryId = ClinicDatabase.ExecuteScalar(@"
+                    SELECT id
+                    FROM tbl_uom_category
+                    WHERE LOWER(TRIM(name)) = LOWER(TRIM(@name))
+                      AND IFNULL(state, 0) = 0
+                    LIMIT 1;",
+                    ClinicDatabase.CreateParameter("@name", categoryName));
+
+
+                int categoryId;
+
+
+                if (existingCategoryId != null &&
+                    existingCategoryId != DBNull.Value)
+                {
+                    categoryId =
+                        Convert.ToInt32(existingCategoryId);
+                }
+                else
+                {
+                    // ========================================================
+                    // INSERT NEW CATEGORY
+                    // ========================================================
+
+                    object newCategoryId = ClinicDatabase.ExecuteScalar(@"
+                            INSERT INTO tbl_uom_category
+                            (
+                                name,
+                                active,
+                                state,
+                                created_by,
+                                created_date
+                            )
+                            VALUES
+                            (
+                                @name,
+                                1,
+                                0,
+                                @created_by,
+                                NOW()
+                            );
+
+                            SELECT LAST_INSERT_ID();",
+
+                        ClinicDatabase.CreateParameterNew(
+                            "@name",
+                            categoryName),
+
+                        ClinicDatabase.CreateParameterNew(
+                            "@created_by",
+                            clsGlobal.CurrentUser.UserID));
+
+
+                    categoryId =
+                        Convert.ToInt32(newCategoryId);
+                }
+
+
+                // ============================================================
+                // INSERT MAIN / REFERENCE UOM
+                //
+                // ratio = 1 because this is the reference unit.
+                // ============================================================
+
+                object newUnitId = ClinicDatabase.ExecuteScalar(@"
+                        INSERT INTO tbl_uom
+                        (
+                            category_id,
+                            name,
+                            uom_type,
+                            ratio,
+                            rounding_precision,
+                            active,
+                            state,
+                            created_by,
+                            created_date
+                        )
+                        VALUES
+                        (
+                            @category_id,
+                            @name,
+                            'reference',
+                            1,
+                            0.01,
+                            1,
+                            0,
+                            @created_by,
+                            NOW()
+                        );
+                        SELECT LAST_INSERT_ID();",
+                    ClinicDatabase.CreateParameterNew(
+                        "@category_id",
+                        categoryId),
+                    ClinicDatabase.CreateParameterNew(
+                        "@name",
+                        unitName),
+                    ClinicDatabase.CreateParameterNew(
+                        "@created_by",
+                        clsGlobal.CurrentUser.UserID));
+
+
+                int unitId = Convert.ToInt32(newUnitId);
+                PopulateReferenceUom(cmbMainUnit);
+                cmbMainUnit.SelectedValue = unitId;
+                EventHub.RefreshItemUnit();
+
+
+                MessageBox.Show(
+                    "Main Unit added successfully.",
+                    "Main Unit",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Unable to add Main Unit.\n\n" +
+                    ex.Message,
+                    "Main Unit",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
         }
-
-
 
         private void lnkNewWarehouse_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {

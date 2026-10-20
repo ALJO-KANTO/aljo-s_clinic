@@ -3024,6 +3024,59 @@ namespace Clinic_DataAccess
                         },
                         new DatabaseMigration
                         {
+                            Version = "20261014_001",
+                            Description = "Create tbl_uom_category tables",
+                            Sql = @"
+                                CREATE TABLE IF NOT EXISTS `tbl_uom_category`
+                                (
+                                    `id` INT NOT NULL AUTO_INCREMENT,
+                                    `name` VARCHAR(100) NOT NULL DEFAULT '' COLLATE 'utf8mb4_general_ci',
+                                    `active` TINYINT(1) NOT NULL DEFAULT 1,
+                                    `state` INT NOT NULL DEFAULT 0,
+                                    `created_by` INT NOT NULL DEFAULT 0,
+                                    `created_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                    `modified_by` INT NOT NULL DEFAULT 0,
+                                    `modified_date` DATETIME NULL DEFAULT NULL,
+                                    PRIMARY KEY (`id`),
+                                    UNIQUE KEY `uq_uom_category_name` (`name`)
+                                )
+                                ENGINE=InnoDB
+                                DEFAULT CHARSET=utf8mb4
+                                COLLATE=utf8mb4_general_ci;"
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261014_002",
+                            Description = "Create tbl_uom tables",
+                            Sql = @"
+                                CREATE TABLE IF NOT EXISTS `tbl_uom`
+                                (
+                                    `id` INT NOT NULL AUTO_INCREMENT,
+                                    `category_id` INT NOT NULL DEFAULT 0,
+                                    `name` VARCHAR(100) NOT NULL DEFAULT '' COLLATE 'utf8mb4_general_ci',
+                                    `uom_type` VARCHAR(20) NOT NULL DEFAULT 'reference' COLLATE 'utf8mb4_general_ci',
+                                    `ratio` DECIMAL(20,6) NOT NULL DEFAULT 1.000000,
+                                    `rounding_precision` DECIMAL(20,6) NOT NULL DEFAULT 0.010000,
+                                    `active` TINYINT(1) NOT NULL DEFAULT 1,
+                                    `state` INT NOT NULL DEFAULT 0,
+                                    `created_by` INT NOT NULL DEFAULT 0,
+                                    `created_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                    `modified_by` INT NOT NULL DEFAULT 0,
+                                    `modified_date` DATETIME NULL DEFAULT NULL,
+                                    PRIMARY KEY (`id`),
+                                    UNIQUE KEY `uq_uom_category_name` (`category_id`, `name`),
+                                    KEY `ix_uom_category` (`category_id`),
+                                    KEY `ix_uom_reference` (`category_id`, `uom_type`, `active`, `state`)
+                                )
+                                ENGINE=InnoDB
+                                DEFAULT CHARSET=utf8mb4
+                                COLLATE=utf8mb4_general_ci;"
+                        },
+
+/*************************************Table Views************************************************/
+
+                        new DatabaseMigration
+                        {
                             Version = "20261014_003",
                             Description = "Create billing list view",
                             Sql = @"
