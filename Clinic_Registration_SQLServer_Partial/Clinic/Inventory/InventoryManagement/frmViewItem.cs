@@ -1556,7 +1556,7 @@ namespace YamyProject
                               cost_price = @cost_price,cogs_account_id = @cogs_account_id,vendor_id = @vendor_id,sales_price = @sales_price,
                               income_account_id = @income_account_id,asset_account_id = @asset_account_id,
                               min_amount = @min_amount,max_amount = @max_amount,on_hand = @on_hand,method=@method,total_value = @total_value,
-                              date = @date,img = @img,img_data = @img_data,img_file_name = @img_file_name,active = @active,state = @state,created_By = @created_By,created_date = @created_date,
+                              date = @date,img = @img,ItemImg = @img_data,active = @active,state = @state,created_By = @created_By,created_date = @created_date,
                               Item_type=@Item_type
                               WHERE id = @id",
                             ClinicDatabase.CreateParameterNew("type", cmbType.Text),
@@ -1578,7 +1578,6 @@ namespace YamyProject
                             ClinicDatabase.CreateParameterNew("date", dtStart.Value.Date),
                             ClinicDatabase.CreateParameterNew("img", imageDbPath),
                             ClinicDatabase.CreateParameterNew("img_data", (object)imageBytes ?? DBNull.Value),
-                            ClinicDatabase.CreateParameterNew("img_file_name", imageFileName),
                             ClinicDatabase.CreateParameterNew("active", chkActive.Checked ? 0 : 1),
                             ClinicDatabase.CreateParameterNew("state", 0),
                             ClinicDatabase.CreateParameterNew("created_By", -1),
@@ -1646,11 +1645,11 @@ namespace YamyProject
             string imageFileName = GetImageFileNameForDatabase();
             id = (int)decimal.Parse(ClinicDatabase.ExecuteScalar(@"INSERT INTO `tbl_items`(`code`,`warehouse_id`,  `type`,category_id, `name`, `unit_id`, `barcode`, `cost_price`, 
                                     `cogs_account_id`, `vendor_id`, `sales_price`, `income_account_id`, `asset_account_id`, 
-                                    `min_amount`, `max_amount`, `on_hand`,method, `total_value`, `date`, `img`, `img_data`, `img_file_name`, `active`, `state`, 
+                                    `min_amount`, `max_amount`, `on_hand`,method, `total_value`, `date`, `img`, `ItemImg`,  `active`, `state`, 
                                     `created_By`, `created_date`,Item_type, GlobalId, DeviceId) VALUES (
                                     @code, @warehouseId, @type,@category, @name, @unit_id, @barcode, @cost_price, 
                                     @cogs_account_id, @vendor_id, @sales_price, @income_account_id, @asset_account_id, 
-                                    @min_amount, @max_amount, @on_hand,@method, @total_value, @date, @img, @img_data, @img_file_name, @active, @state, 
+                                    @min_amount, @max_amount, @on_hand,@method, @total_value, @date, @img, @img_data, @active, @state, 
                                     @created_By, @created_date,@Item_type, @GlobalId, @DeviceId); SELECT LAST_INSERT_ID();",
                              ClinicDatabase.CreateParameterNew("code", itemCode),
                              ClinicDatabase.CreateParameterNew("warehouseId", cmbWarehouse.SelectedValue.ToString()),
@@ -1673,7 +1672,6 @@ namespace YamyProject
                              ClinicDatabase.CreateParameterNew("date", dtStart.Value.Date),
                              ClinicDatabase.CreateParameterNew("img", imageDbPath),
                              ClinicDatabase.CreateParameterNew("img_data", (object)imageBytes ?? DBNull.Value),
-                             ClinicDatabase.CreateParameterNew("img_file_name", imageFileName),
                              ClinicDatabase.CreateParameterNew("active", chkActive.Checked ? 0 : 1),
                 ClinicDatabase.CreateParameterNew("GlobalId", Guid.NewGuid().ToString()),
                 ClinicDatabase.CreateParameterNew("DeviceId", Utilities.MachineName),
@@ -2367,7 +2365,7 @@ namespace YamyProject
             {
                 object value =
                     ClinicDatabase.ExecuteScalar(
-                        @"SELECT img_data
+                        @"SELECT ItemImg
                           FROM tbl_items
                           WHERE id=@id
                           LIMIT 1;",
@@ -2392,20 +2390,20 @@ namespace YamyProject
             if (!string.IsNullOrWhiteSpace(_selectedImageFileName))
                 return _selectedImageFileName;
 
-            if (id > 0)
-            {
-                object value =
-                    ClinicDatabase.ExecuteScalar(
-                        @"SELECT IFNULL(img_file_name,'')
-                          FROM tbl_items
-                          WHERE id=@id
-                          LIMIT 1;",
-                        ClinicDatabase.CreateParameterNew("@id", id));
+            //if (id > 0)
+            //{
+            //    object value =
+            //        ClinicDatabase.ExecuteScalar(
+            //            @"SELECT IFNULL(img_file_name,'')
+            //              FROM tbl_items
+            //              WHERE id=@id
+            //              LIMIT 1;",
+            //            ClinicDatabase.CreateParameterNew("@id", id));
 
-                return value == null || value == DBNull.Value
-                    ? string.Empty
-                    : Convert.ToString(value);
-            }
+            //    return value == null || value == DBNull.Value
+            //        ? string.Empty
+            //        : Convert.ToString(value);
+            //}
 
             return string.Empty;
         }
@@ -2419,7 +2417,7 @@ namespace YamyProject
             {
                 object value =
                     ClinicDatabase.ExecuteScalar(
-                        @"SELECT img_data
+                        @"SELECT ItemImg
                           FROM tbl_items
                           WHERE id=@id
                           LIMIT 1;",
@@ -2450,19 +2448,19 @@ namespace YamyProject
                 _selectedImageSourcePath = string.Empty;
                 _removeImageRequested = false;
 
-                object fileNameValue =
-                    ClinicDatabase.ExecuteScalar(
-                        @"SELECT IFNULL(img_file_name,'')
-                          FROM tbl_items
-                          WHERE id=@id
-                          LIMIT 1;",
-                        ClinicDatabase.CreateParameterNew("@id", itemId));
+                //object fileNameValue =
+                //    ClinicDatabase.ExecuteScalar(
+                //        @"SELECT IFNULL(img_file_name,'')
+                //          FROM tbl_items
+                //          WHERE id=@id
+                //          LIMIT 1;",
+                //        ClinicDatabase.CreateParameterNew("@id", itemId));
 
-                _selectedImageFileName =
-                    fileNameValue == null ||
-                    fileNameValue == DBNull.Value
-                        ? string.Empty
-                        : Convert.ToString(fileNameValue);
+                //_selectedImageFileName =
+                //    fileNameValue == null ||
+                //    fileNameValue == DBNull.Value
+                //        ? string.Empty
+                //        : Convert.ToString(fileNameValue);
 
                 SetImageUploadOverlay(false);
                 return true;

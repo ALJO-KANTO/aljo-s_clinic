@@ -602,18 +602,33 @@ namespace Clinic.Medical_Services.Visit
 
         private void _FillServicesInCheckBox()
         {
-            DataTable dtServices = clsServicesType.GetServiceList();
+            DataTable dtServices = new DataTable();
+
+            string query = @"
+        SELECT
+            id AS ServiceID,
+            name AS ServiceName,
+            COALESCE(sales_price, 0) AS ServiceFees
+        FROM tbl_items
+        WHERE TRIM(type) IN ('12', '12 - Service')
+          AND state = 0
+AND active = 0        ORDER BY name;";
+
+            using (MySql.Data.MySqlClient.MySqlConnection connection =
+                Clinic_DataAccess.ClinicDatabase.GetConnection())
+            {
+                using (MySql.Data.MySqlClient.MySqlDataAdapter adapter =
+                    new MySql.Data.MySqlClient.MySqlDataAdapter(query, connection))
+                {
+                    adapter.Fill(dtServices);
+                }
+            }
 
             cmbServices.DataSource = null;
-
-            if (dtServices == null)
-                return;
-
             cmbServices.DisplayMember = "ServiceName";
             cmbServices.ValueMember = "ServiceID";
             cmbServices.DataSource = dtServices;
         }
-
         private string FindServiceColumn(DataTable table, params string[] names)
         {
             foreach (string name in names)
@@ -1377,7 +1392,13 @@ namespace Clinic.Medical_Services.Visit
 
         private void btnNewService_Click(object sender, EventArgs e)
         {
-            new frmAddUpdateServices().ShowDialog();
+            using (YamyProject.frmViewItem frm =
+                new YamyProject.frmViewItem(0))
+            {
+                frm.ShowDialog(this);
+            }
+
+            _FillServicesInCheckBox();
         }
 
     }
