@@ -3024,7 +3024,7 @@ namespace Clinic_DataAccess
                         },
                         new DatabaseMigration
                         {
-                            Version = "20261014_001",
+                            Version = "20261020_001",
                             Description = "Create tbl_uom_category tables",
                             Sql = @"
                                 CREATE TABLE IF NOT EXISTS `tbl_uom_category`
@@ -3046,7 +3046,7 @@ namespace Clinic_DataAccess
                         },
                         new DatabaseMigration
                         {
-                            Version = "20261014_002",
+                            Version = "20261020_002",
                             Description = "Create tbl_uom tables",
                             Sql = @"
                                 CREATE TABLE IF NOT EXISTS `tbl_uom`
@@ -3074,7 +3074,7 @@ namespace Clinic_DataAccess
                         },
                         new DatabaseMigration
                         {
-                            Version = "20261014_003",
+                            Version = "20261020_003",
                             Description = "Create tbl_item_assembly tables",
                             Sql = @"
                                 CREATE TABLE IF NOT EXISTS `tbl_item_assembly`
