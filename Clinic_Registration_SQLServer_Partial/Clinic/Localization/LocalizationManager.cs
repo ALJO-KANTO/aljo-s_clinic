@@ -15,7 +15,7 @@ namespace YamyProject.Localization
     {
         private static CultureInfo _uiCulture = new CultureInfo("en"); // default
         private static readonly ResourceManager _resourceManager =
-            new ResourceManager("YamyProject.Localization.Localization", typeof(LocalizationManager).Assembly);
+            new ResourceManager("Clinic.Localization.Localization", typeof(LocalizationManager).Assembly);
 
         public static void SetLanguage(string cultureCode)
         {

@@ -2,6 +2,7 @@
 using MySql.Data.MySqlClient;
 using System;
 using System.Windows.Forms;
+using YamyProject.Localization;
 
 namespace YamyProject
 {
@@ -14,6 +15,7 @@ namespace YamyProject
             this.id = id;
             this.Text = id != 0 ? "Vendors - Edit Vendors Category" : "Vendors - New Vendors Category";
             headerUC1.FormText = this.Text;
+            LocalizationManager.LocalizeForm(this);
         }
 
         private void btnClose_Click(object sender, EventArgs e)
@@ -72,6 +74,7 @@ namespace YamyProject
                     ClinicDatabase.CreateParameterNew("id", id),
               ClinicDatabase.CreateParameterNew("name", txtName.Text));
             MessageBox.Show("Category saved successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            EventHub.RefreshVendorCategory();
             this.Close();
         }
     }
