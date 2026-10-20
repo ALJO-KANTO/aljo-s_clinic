@@ -24,12 +24,32 @@ namespace Clinic.Medical_Services.Vital
             InitializeComponent();
         }
 
+
         private void _RefreashData()
         {
             _dtAllVitals = clsVital.GetPatientsWaitingForVitals();
+
+            if (_dtAllVitals == null)
+            {
+                MessageBox.Show("The nurse query returned NULL.");
+                return;
+            }
+
             dgvNurseQueue.DataSource = _dtAllVitals;
-            lblRecordsCount.Text = _dtAllVitals.DefaultView.Count.ToString();
+
+            lblRecordsCount.Text =
+                _dtAllVitals.Rows.Count.ToString();
+
+            System.Diagnostics.Debug.WriteLine(
+                "Nurse queue rows: " + _dtAllVitals.Rows.Count);
+
+            foreach (DataColumn col in _dtAllVitals.Columns)
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    "Column: " + col.ColumnName);
+            }
         }
+
 
         private void _SetupNurseGrid()
         {
@@ -46,14 +66,26 @@ namespace Clinic.Medical_Services.Vital
             dgvNurseQueue.Columns.Add(new DataGridViewTextBoxColumn { Name = "CheckInTime", HeaderText = "CheckInTime", DataPropertyName = "CheckInTime", ReadOnly = true, Width = 150 });
             dgvNurseQueue.Columns.Add(new DataGridViewTextBoxColumn { Name = "StatusText", HeaderText = "StatusText", DataPropertyName = "StatusText", ReadOnly = true, Width = 150 });
 
+            dgvNurseQueue.Columns.Add(
+    new DataGridViewCheckBoxColumn
+    {
+        Name = "IsCalled",
+        DataPropertyName = "IsCalled",
+        Visible = false
+    });
+
         }
 
         private void frmNurse_Load(object sender, EventArgs e)
         {
-            _RefreashData();
+            ApplyNurseModernDesign();
+
             _SetupNurseGrid();
+            _RefreashData();
+
             timer1.Start();
             timer2.Start();
+
             if (dgvNurseQueue.Rows.Count > 0)
                 _CallNextPatientInQueue();
 
@@ -107,61 +139,154 @@ namespace Clinic.Medical_Services.Vital
         {
             if (dgvNurseQueue.CurrentRow == null)
             {
-                MessageBox.Show("Please select a patient from the queue first.", "Selection Required", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(
+                    "Please select a patient from the queue first.",
+                    "Selection Required",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
                 return;
             }
 
-            if (!this.ValidateChildren())
+            if (!ValidateChildren())
             {
-                MessageBox.Show("Please correct the errors in the input fields.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(
+                    "Please correct the input errors.",
+                    "Validation Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
                 return;
             }
 
-            int currentAppID = (int)dgvNurseQueue.CurrentRow.Cells["AppointmentID"].Value;
-            _Vital.AppointmentID = currentAppID;
+            int appointmentID = Convert.ToInt32(
+                dgvNurseQueue.CurrentRow.Cells["AppointmentID"].Value);
+
+            int visitID = Convert.ToInt32(
+                dgvNurseQueue.CurrentRow.Cells["VisitID"].Value);
+
+            _Vital.AppointmentID = appointmentID;
+            _Vital.VisitID = visitID;
             _Vital.BloodPressure = txtBloodPressure.Text.Trim();
             _Vital.Pulse = (short)nudPulse.Value;
             _Vital.Temperature = nudTemperature.Value;
             _Vital.Weight = nudWeight.Value;
             _Vital.CreatedByUserID = clsGlobal.CurrentUser.UserID;
-           _Vital.VisitID= (int)dgvNurseQueue.CurrentRow.Cells["VisitID"].Value;
-            if (_Vital.Save())
+
+            if (!_Vital.Save())
             {
-                clsAppointment.UpdateAppointmentStatus(currentAppID, clsAppointment.enAppointmentStatus.Ready_For_Doctor, clsGlobal.CurrentUser.UserID);
-
-                _CallNextPatientInQueue();
-
-                MessageBox.Show("Vital signs saved successfully, and the next patient has been called.", "Process Completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                _ResetForm();
-
+                MessageBox.Show(
+                    "Unable to save vital signs.",
+                    "Database Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+                return;
             }
-            else
+
+            bool statusUpdated = clsAppointment.UpdateAppointmentStatus(
+                appointmentID,
+                clsAppointment.enAppointmentStatus.Ready_For_Doctor,
+                clsGlobal.CurrentUser.UserID);
+
+            if (!statusUpdated)
             {
-                MessageBox.Show("An error occurred while saving data. Please try again.", "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(
+                    "Vitals were saved, but the appointment status was not updated. Please retry the status transition without saving duplicate vitals.",
+                    "Status Update Failed",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return;
             }
+
+            _Vital = new clsVital();
+
+            _ResetForm();
+
+            MessageBox.Show(
+                "Vital signs saved successfully. Patient is ready for the doctor.",
+                "Success",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
         }
 
         private void _CallNextPatientInQueue()
         {
             DataTable dtQueue = clsVital.GetPatientsWaitingForVitals();
 
-            if (dtQueue.Rows.Count > 0)
+            if (dtQueue == null || dtQueue.Rows.Count == 0)
             {
-                int nextAppointmentID = (int)dtQueue.Rows[0]["AppointmentID"];
-                bool IsWaiting_For_Vitals = dtQueue.Rows[0]["StatusText"].ToString() == "Waiting_For_Vitals" ? true : false;
-                if(!IsWaiting_For_Vitals)
-                    clsAppointment.UpdateAppointmentStatus(nextAppointmentID, clsAppointment.enAppointmentStatus.Waiting_For_Vitals, clsGlobal.CurrentUser.UserID);
-
-
-                clsAppointment.UpdatePatientCallStatus(nextAppointmentID, true, 1);
+                lbPatientName.Text = "No patients waiting";
                 _RefreashData();
-                lbPatientName.Text = dgvNurseQueue.CurrentRow.Cells["PatientName"].Value.ToString();
-
+                return;
             }
 
-        }
+            DataRow nextRow = null;
 
+            if (dtQueue.Columns.Contains("IsCalled"))
+            {
+                nextRow = dtQueue.AsEnumerable()
+                    .FirstOrDefault(r =>
+                        r["IsCalled"] != DBNull.Value &&
+                        Convert.ToBoolean(r["IsCalled"]));
+            }
+
+            if (nextRow == null)
+            {
+                nextRow = dtQueue.AsEnumerable()
+                    .FirstOrDefault(r =>
+                        !dtQueue.Columns.Contains("IsCalled") ||
+                        r["IsCalled"] == DBNull.Value ||
+                        !Convert.ToBoolean(r["IsCalled"]));
+            }
+
+            if (nextRow == null)
+            {
+                lbPatientName.Text = "No available patient";
+                _RefreashData();
+                return;
+            }
+
+            int appointmentID =
+                Convert.ToInt32(nextRow["AppointmentID"]);
+
+            string patientName =
+                Convert.ToString(nextRow["PatientName"]);
+
+            string status =
+                Convert.ToString(nextRow["StatusText"]);
+
+            bool isCalled =
+                dtQueue.Columns.Contains("IsCalled") &&
+                nextRow["IsCalled"] != DBNull.Value &&
+                Convert.ToBoolean(nextRow["IsCalled"]);
+
+            if (status != "Waiting_For_Vitals")
+            {
+                bool updated = clsAppointment.UpdateAppointmentStatus(
+                    appointmentID,
+                    clsAppointment.enAppointmentStatus.Waiting_For_Vitals,
+                    clsGlobal.CurrentUser.UserID);
+
+                if (!updated)
+                {
+                    MessageBox.Show(
+                        "Unable to update patient status.",
+                        "Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                    return;
+                }
+            }
+
+            if (!isCalled)
+            {
+                clsAppointment.UpdatePatientCallStatus(
+                    appointmentID,
+                    true,
+                    clsGlobal.CurrentUser.UserID);
+            }
+
+            lbPatientName.Text = patientName;
+            _RefreashData();
+        }
         private void txtBloodPressure_Validating(object sender, CancelEventArgs e)
         {
 
@@ -220,20 +345,39 @@ namespace Clinic.Medical_Services.Vital
             txtBloodPressure.Focus();
         }
 
-        private void btnWaiting_For_Vitals_Click(object sender, EventArgs e)
+        private void btnWaiting_For_Vitals_Click(
+            object sender, EventArgs e)
         {
-            if(dgvNurseQueue.Rows.Count==0) return;
-            bool IsWaiting_For_Vitals = dgvNurseQueue.CurrentRow.Cells["StatusText"].ToString() == "Waiting_For_Vitals" ? true : false;
-            if (IsWaiting_For_Vitals)
+            if (dgvNurseQueue.CurrentRow == null)
                 return;
-            int AppoinmetnID = (int)dgvNurseQueue.CurrentRow.Cells["AppointmentID"].Value;
 
-            if (clsAppointment.UpdateAppointmentStatus(AppoinmetnID, clsAppointment.enAppointmentStatus.Waiting_For_Vitals, clsGlobal.CurrentUser.UserID))
-                _ResetForm();
+            string status = Convert.ToString(
+                dgvNurseQueue.CurrentRow.Cells["StatusText"].Value);
 
+            if (status == "Waiting_For_Vitals")
+                return;
 
+            int appointmentID = Convert.ToInt32(
+                dgvNurseQueue.CurrentRow.Cells["AppointmentID"].Value);
+
+            bool updated = clsAppointment.UpdateAppointmentStatus(
+                appointmentID,
+                clsAppointment.enAppointmentStatus.Waiting_For_Vitals,
+                clsGlobal.CurrentUser.UserID);
+
+            if (updated)
+            {
+                _RefreashData();
+            }
+            else
+            {
+                MessageBox.Show(
+                    "Unable to update appointment status.",
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
         }
-
         private void btnNextPatient_Click(object sender, EventArgs e)
         {
 

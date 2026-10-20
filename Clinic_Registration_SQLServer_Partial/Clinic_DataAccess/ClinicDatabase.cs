@@ -295,9 +295,16 @@ public static class Utilities
         return "";
     }
 
-    public static bool AreDefaultAccountsSet(List<string> list)
+    public static bool AreDefaultAccountsSet(List<string> accountCategories)
     {
-        throw new NotImplementedException();
+        string categories = string.Join(",", accountCategories.ConvertAll(c => $"'{c}'"));
+
+        string query = $"SELECT COUNT(*) FROM tbl_coa_config WHERE category IN ({categories})";
+        using (MySqlDataReader reader = ClinicDatabase.ExecuteReader(query))
+            if (reader.Read() && Convert.ToInt32(reader[0]) == accountCategories.Count)
+                return true;
+
+        return false;
     }
 
     public static void LogAudit(object userId, string v1, string v2, int v3, string v4)

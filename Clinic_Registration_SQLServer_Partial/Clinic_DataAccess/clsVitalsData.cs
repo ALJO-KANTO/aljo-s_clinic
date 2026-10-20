@@ -197,33 +197,47 @@ namespace Clinic_DataAccess
             return IsUpdated;
         }
 
+
+
         public static DataTable GetPatientsWaitingForVitals()
         {
             DataTable dt = new DataTable();
 
             try
             {
-                using (MySqlConnection connection = new MySqlConnection(clsDataAccessSettings.ConnectionString))
+                using (MySqlConnection connection =
+                    new MySqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    string query = @"SELECT * FROM View_PatientsWaitingForVitals 
-                             WHERE StatusText in('Waiting_For_Vitals','In-Queue')
-                            ORDER BY CheckInTime ASC";
+                    string query = @"
+                SELECT *
+                FROM View_PatientsWaitingForVitals
+                WHERE StatusText COLLATE utf8mb4_general_ci IN
+                (
+                    _utf8mb4'In-Queue' COLLATE utf8mb4_general_ci,
+                    _utf8mb4'Waiting_For_Vitals' COLLATE utf8mb4_general_ci
+                )
+                ORDER BY CheckInTime ASC;";
 
-                                                                
-                    using (MySqlCommand command = new MySqlCommand(query, connection))
+                    using (MySqlCommand command =
+                        new MySqlCommand(query, connection))
                     {
                         connection.Open();
-                        using (MySqlDataReader reader = command.ExecuteReader())
+
+                        using (MySqlDataReader reader =
+                            command.ExecuteReader())
                         {
-                            if (reader.HasRows) dt.Load(reader);
+                            dt.Load(reader);
                         }
                     }
                 }
             }
             catch (MySqlException ex)
             {
-                clsGlobalLogger.LogMySqlException(ex, clsGlobalLogger.LogLevel.Error);
+                clsGlobalLogger.LogMySqlException(
+                    ex,
+                    clsGlobalLogger.LogLevel.Error);
             }
+
             return dt;
         }
 
