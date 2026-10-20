@@ -11,6 +11,7 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Windows.Forms;
+
 //using YamyProject.DAL;
 //using YamyProject.Localization;
 using OpenFileDialog = System.Windows.Forms.OpenFileDialog;
@@ -59,6 +60,11 @@ namespace YamyProject
                     }
                     base.CellTemplate = value;
                 }
+            }
+
+            public static implicit operator DataGridViewCalendarColumn(frmPurchase.DataGridViewCalendarColumn v)
+            {
+                throw new NotImplementedException();
             }
         }
 

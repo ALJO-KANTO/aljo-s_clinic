@@ -304,7 +304,7 @@ namespace YamyProject
                         totalCost += cost_price * qtyToUse;
 
                         CommonInsert.InsertItemTransaction(dtInv.Value.Date, "Damage", invId.ToString(), row.Cells["itemId"].Value.ToString(),
-                            cost_price.ToString(), "0", cost_price.ToString(), qtyToUse.ToString(), "0", "Damage Invoice No. " + invCode, "0");
+                            cost_price.ToString(), "0", cost_price.ToString(), qtyToUse.ToString(), "0", "Damage Invoice No. " + invCode, "0", "0", "0", "0", "0");
 
                         ClinicDatabase.ExecuteNonQuery("UPDATE tbl_item_transaction SET qty_inc = qty_inc - @qty WHERE id = @id",
                             ClinicDatabase.CreateParameterNew("qty", qtyToUse),
@@ -326,7 +326,7 @@ namespace YamyProject
                         totalCost += cost_price * qtyToUse;
 
                         CommonInsert.InsertItemTransaction(dtInv.Value.Date, "Damage", invId.ToString(), row.Cells["itemId"].Value.ToString(),
-                            cost_price.ToString(), "0", cost_price.ToString(), qtyToUse.ToString(), "0", "Damage Invoice No. " + invCode, "0");
+                            cost_price.ToString(), "0", cost_price.ToString(), qtyToUse.ToString(), "0", "Damage Invoice No. " + invCode, "0", "0", "0", "0", "0");
 
                         ClinicDatabase.ExecuteNonQuery("UPDATE tbl_item_transaction SET qty_inc = qty_inc - @qty WHERE id = @id",
                             ClinicDatabase.CreateParameterNew("qty", qtyToUse),
@@ -346,7 +346,7 @@ namespace YamyProject
                 totalCost = cost_price * qty;
 
                 CommonInsert.InsertItemTransaction(dtInv.Value.Date, "Damage", invId.ToString(), row.Cells["itemId"].Value.ToString(),
-                    cost_price.ToString(), "0", cost_price.ToString(), qty.ToString(), "0", "Damage Invoice No. " + invCode, "0");
+                    cost_price.ToString(), "0", cost_price.ToString(), qty.ToString(), "0", "Damage Invoice No. " + invCode, "0", "0", "0", "0", "0");
             }
 
             if (totalCost > 0)
