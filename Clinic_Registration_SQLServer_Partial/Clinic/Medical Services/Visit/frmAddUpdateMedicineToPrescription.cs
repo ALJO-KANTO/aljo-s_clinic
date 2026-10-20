@@ -38,13 +38,34 @@ namespace Clinic.Medical_Services.Visit
 
         private void _FillMedicensInCheckBox()
         {
-            DataTable dtMedicen = clsMedicine.GetAllMedicines();
-            if (dtMedicen != null)
+            DataTable dtMedicines = new DataTable();
+
+            string query = @"
+        SELECT
+            id AS MedicineID,
+            name AS MedicineName,
+            COALESCE(sales_price, 0) AS MedicinePrice,
+            0 AS TaxRate
+        FROM tbl_items
+        WHERE TRIM(type) IN ('11', '11 - Inventory Part')
+          AND state = 0
+          AND active = 0
+        ORDER BY name;";
+
+            using (MySql.Data.MySqlClient.MySqlConnection connection =
+                Clinic_DataAccess.ClinicDatabase.GetConnection())
             {
-                cbMedicines.DataSource = dtMedicen;
-                cbMedicines.DisplayMember = "MedicineName";
-                cbMedicines.ValueMember = "MedicineID";
+                using (MySql.Data.MySqlClient.MySqlDataAdapter adapter =
+                    new MySql.Data.MySqlClient.MySqlDataAdapter(query, connection))
+                {
+                    adapter.Fill(dtMedicines);
+                }
             }
+
+            cbMedicines.DataSource = null;
+            cbMedicines.DisplayMember = "MedicineName";
+            cbMedicines.ValueMember = "MedicineID";
+            cbMedicines.DataSource = dtMedicines;
         }
 
         private void _ResetDefaultValues()
@@ -81,8 +102,8 @@ namespace Clinic.Medical_Services.Visit
 
             }
             cbMedicines.SelectedValue = _Row["MedicineID"];
-            NUDQuantity.Value = (int)_Row["Quantity"];
-            nudFrequency.Value = (int)_Row["Frequency"];
+            NUDQuantity.Value = Convert.ToInt32(_Row["Quantity"]);
+            nudFrequency.Value = Convert.ToInt32(_Row["Frequency"]);
             txtDosage.Text = _Row["Dosage"].ToString();
             txtDiscount.Text = _Row["DiscountAmount"].ToString();
             txtInstructions.Text = _Row["Instructions"] == DBNull.Value || _Row["Instructions"] == null ? "" : _Row["Instructions"].ToString();
@@ -265,7 +286,13 @@ namespace Clinic.Medical_Services.Visit
         }
         private void btnNewMedicine_Click(object sender, EventArgs e)
         {
-            //new 
+            using (YamyProject.frmViewItem frm =
+                new YamyProject.frmViewItem(0))
+            {
+                frm.ShowDialog(this);
+            }
+
+            _FillMedicensInCheckBox();
         }
     }
 }

@@ -13,7 +13,8 @@ namespace Clinic_Business
     {
         public static bool CheckInPatient(clsAppointment Appointment, int UserID, string PaymentMethod)
         {
-            return clsBillingServiceData.CheckInPatient(Appointment.AppointmentID, Appointment.DoctorID, Appointment.PatientID, Appointment.AppointmentFees, UserID, PaymentMethod);
+            string status = clsAppointment.enAppointmentStatus.Waiting_For_Vitals.ToString();
+            return clsBillingServiceData.CheckInPatient(Appointment.AppointmentID, Appointment.DoctorID, Appointment.PatientID, Appointment.AppointmentFees, UserID, PaymentMethod,status);
         }
 
         public enum enPaymetnStatus:byte

@@ -18,7 +18,8 @@ namespace Clinic_DataAccess
             int PatientID,
             decimal Fees,
             int UserID,
-            string PaymentMethod)
+            string PaymentMethod,
+            string status)
         {
             using (MySqlConnection connection =
                 new MySqlConnection(clsDataAccessSettings.ConnectionString))
@@ -66,84 +67,84 @@ namespace Clinic_DataAccess
                             VisitID = Convert.ToInt32(cmdVisit.ExecuteScalar());
                         }
 
-                        // 2. Create bill
-                        string queryBill = @"
-                 INSERT INTO Bills
-                    (
-                        VisitID,
-                        PaymentStatus,
-                        CreatedByUserID,
-                        BillDate,
-                        TotalAmount,
-                        BillNumber
-                    )
-                    SELECT 
-                        @VisitID,
-                        2,                                      -- PaymentStatus
-                        @UserID,
-                        NOW(),
-                        COALESCE(
-                            SUM( (vs.SavedServicePrice * vs.Quantity) - IFNULL(vs.Discount, 0) ), 
-                            0
-                        ) AS TotalAmount,
-                        CONCAT('INV-', YEAR(NOW()), '-', LPAD(
-                            (SELECT IFNULL(MAX(CAST(SUBSTRING(BillNumber, 10) AS UNSIGNED)), 0) + 1 
-                             FROM Bills 
-                             WHERE BillNumber LIKE CONCAT('INV-', YEAR(NOW()), '-%')), 
-                            4, '0')
-                        ) AS BillNumber
-                    FROM visitservices vs
-                    WHERE vs.VisitID = @VisitID;
+                 //       // 2. Create bill
+                 //       string queryBill = @"
+                 //INSERT INTO Bills
+                 //   (
+                 //       VisitID,
+                 //       PaymentStatus,
+                 //       CreatedByUserID,
+                 //       BillDate,
+                 //       TotalAmount,
+                 //       BillNumber
+                 //   )
+                 //   SELECT 
+                 //       @VisitID,
+                 //       2,                                      -- PaymentStatus
+                 //       @UserID,
+                 //       NOW(),
+                 //       COALESCE(
+                 //           SUM( (vs.SavedServicePrice * vs.Quantity) - IFNULL(vs.Discount, 0) ), 
+                 //           0
+                 //       ) AS TotalAmount,
+                 //       CONCAT('INV-', YEAR(NOW()), '-', LPAD(
+                 //           (SELECT IFNULL(MAX(CAST(SUBSTRING(BillNumber, 10) AS UNSIGNED)), 0) + 1 
+                 //            FROM Bills 
+                 //            WHERE BillNumber LIKE CONCAT('INV-', YEAR(NOW()), '-%')), 
+                 //           4, '0')
+                 //       ) AS BillNumber
+                 //   FROM visitservices vs
+                 //   WHERE vs.VisitID = @VisitID;
 
-                    SELECT LAST_INSERT_ID();";
+                 //   SELECT LAST_INSERT_ID();";
 
-                        int BillID;
+                    //    int BillID;
 
-                        using (MySqlCommand cmdBill =
-                            new MySqlCommand(queryBill, connection, transaction))
-                        {
-                            cmdBill.Parameters.AddWithValue("@VisitID", VisitID);
-                            cmdBill.Parameters.AddWithValue("@UserID", UserID);
+                    //    using (MySqlCommand cmdBill =
+                    //        new MySqlCommand(queryBill, connection, transaction))
+                    //    {
+                    //        cmdBill.Parameters.AddWithValue("@VisitID", VisitID);
+                    //        cmdBill.Parameters.AddWithValue("@UserID", UserID);
 
-                            BillID = Convert.ToInt32(cmdBill.ExecuteScalar());
-                        }
+                    //        BillID = Convert.ToInt32(cmdBill.ExecuteScalar());
+                    //    }
 
-                        UpdateBillNumber(BillID, transaction);
+                    //    UpdateBillNumber(BillID, transaction);
 
-                        // 3. Record consultation payment
-                        string queryPay = @"
-                    INSERT INTO Payments
-                    (
-                        BillID,
-                        PaymentAmount,
-                        PaymentDate,
-                        PaymentMethod,
-                        CreatedByUserID
-                    )
-                    VALUES
-                    (
-                        @BillID,
-                        @Amount,
-                        NOW(),
-                        @Method,
-                        @UserID
-                    );";
+                    //    // 3. Record consultation payment
+                    //    string queryPay = @"
+                    //INSERT INTO Payments
+                    //(
+                    //    BillID,
+                    //    PaymentAmount,
+                    //    PaymentDate,
+                    //    PaymentMethod,
+                    //    CreatedByUserID
+                    //)
+                    //VALUES
+                    //(
+                    //    @BillID,
+                    //    @Amount,
+                    //    NOW(),
+                    //    @Method,
+                    //    @UserID
+                    //);";
 
-                        using (MySqlCommand cmdPay =
-                            new MySqlCommand(queryPay, connection, transaction))
-                        {
-                            cmdPay.Parameters.AddWithValue("@BillID", BillID);
-                            cmdPay.Parameters.AddWithValue("@Amount", Fees);
-                            cmdPay.Parameters.AddWithValue("@Method", PaymentMethod);
-                            cmdPay.Parameters.AddWithValue("@UserID", UserID);
+                    //    using (MySqlCommand cmdPay =
+                    //        new MySqlCommand(queryPay, connection, transaction))
+                    //    {
+                    //        cmdPay.Parameters.AddWithValue("@BillID", BillID);
+                    //        cmdPay.Parameters.AddWithValue("@Amount", Fees);
+                    //        cmdPay.Parameters.AddWithValue("@Method", PaymentMethod);
+                    //        cmdPay.Parameters.AddWithValue("@UserID", UserID);
 
-                            cmdPay.ExecuteNonQuery();
-                        }
+                    //        cmdPay.ExecuteNonQuery();
+                    //    }
 
                         // 4. Update appointment status
                         if (!clsAppointmentData.UpdateAppointmentStatus(
                             AppointmentID,
-                            "InQueue",
+                            status,
                             UserID,
                             transaction))
                         {

@@ -602,18 +602,33 @@ namespace Clinic.Medical_Services.Visit
 
         private void _FillServicesInCheckBox()
         {
-            DataTable dtServices = clsServicesType.GetServiceList();
+            DataTable dtServices = new DataTable();
+
+            string query = @"
+        SELECT
+            id AS ServiceID,
+            name AS ServiceName,
+            COALESCE(sales_price, 0) AS ServiceFees
+        FROM tbl_items
+        WHERE TRIM(type) IN ('12', '12 - Service')
+          AND state = 0
+AND active = 0        ORDER BY name;";
+
+            using (MySql.Data.MySqlClient.MySqlConnection connection =
+                Clinic_DataAccess.ClinicDatabase.GetConnection())
+            {
+                using (MySql.Data.MySqlClient.MySqlDataAdapter adapter =
+                    new MySql.Data.MySqlClient.MySqlDataAdapter(query, connection))
+                {
+                    adapter.Fill(dtServices);
+                }
+            }
 
             cmbServices.DataSource = null;
-
-            if (dtServices == null)
-                return;
-
             cmbServices.DisplayMember = "ServiceName";
             cmbServices.ValueMember = "ServiceID";
             cmbServices.DataSource = dtServices;
         }
-
         private string FindServiceColumn(DataTable table, params string[] names)
         {
             foreach (string name in names)
@@ -974,18 +989,34 @@ namespace Clinic.Medical_Services.Visit
         #region Utilities
         private void _RefreshQueueData()
         {
-            DataTable dtQueue =
-                clsVisit.GetPatientsWaitingForDoctors(_DoctorPersonID);
+            DateTime? selectedDate = mdChkToday.Checked ? (DateTime?)null : mdQueueDate.Value.Date;
 
-            dgvDoctorQueue.DataSource = null;
+            DataTable dtQueue = clsVisit.GetPatientsWaitingForDoctors(_DoctorPersonID, selectedDate);
+            if (dtQueue == null)
+                dtQueue = new DataTable();
+
+            DataView queueView = dtQueue.DefaultView;
+
+            //if (dtQueue.Columns.Contains("StatusText"))
+            //{
+            //    queueView.RowFilter = "TRIM(StatusText) = 'InQueue'";
+            //}
+
             dgvDoctorQueue.AutoGenerateColumns = false;
-            dgvDoctorQueue.DataSource = dtQueue;
+            dgvDoctorQueue.DataSource = queueView;
+
+            // Apply existing Today / Date / Search filters.
+            
+            MdFilterQueue();
 
             dgvDoctorQueue.BringToFront();
             dgvDoctorQueue.Refresh();
 
             lblRecordsCount.Text =
-                (dtQueue?.Rows.Count ?? 0).ToString();
+                dgvDoctorQueue.Rows
+                    .Cast<DataGridViewRow>()
+                    .Count(r => !r.IsNewRow)
+                    .ToString();
         }
         private void _ResetForm()
         {
@@ -1082,13 +1113,12 @@ namespace Clinic.Medical_Services.Visit
             }
         }
 
-
         private void _CallNextPatientInQueue()
         {
-            DataTable dtQueue =
-                clsVisit.GetPatientsWaitingForDoctors(_DoctorPersonID);
+            DateTime? selectedDate = mdChkToday.Checked ? (DateTime?)null : mdQueueDate.Value.Date;
+            DataTable dtQueue = clsVisit.GetPatientsWaitingForDoctors(_DoctorPersonID, selectedDate);
 
-            if (dtQueue != null && dtQueue.Rows.Count > 0)
+            if (dtQueue.Rows.Count > 0)
             {
                 DataRow row = dtQueue.Rows[0];
 
@@ -1123,32 +1153,15 @@ namespace Clinic.Medical_Services.Visit
                 _FillVitalsInfo();
                 _FillPatientInfo();
 
-                // Allow editing and saving an existing consultation
-                // only when the appointment is in progress.
-                bool isInProgress =
-                    string.Equals(
-                        Convert.ToString(row["StatusText"]),
-                        "InProgress",
-                        StringComparison.OrdinalIgnoreCase)
-                    ||
-                    string.Equals(
-                        Convert.ToString(row["StatusText"]),
-                        "Progress",
-                        StringComparison.OrdinalIgnoreCase)
-                    ||
-                    string.Equals(
-                        Convert.ToString(row["StatusText"]),
-                        "In-Progress",
-                        StringComparison.OrdinalIgnoreCase);
-
-                SetFormControlsState(isInProgress);
+                // InQueue patients must first be moved to
+                // InProgress before consultation editing is enabled.
+                SetFormControlsState(false);
             }
             else
             {
                 _ResetForm();
             }
         }
-
 
         private void btnRefresh_Click(object sender, EventArgs e)
         {
@@ -1270,9 +1283,23 @@ namespace Clinic.Medical_Services.Visit
                 ShowError("Unable to start the appointment.");
                 return;
             }
+            else
+            {
+                int rowIndex = dgvDoctorQueue.SelectedRows[0].Index;
+                int _visitID = Convert.ToInt32(dgvDoctorQueue.Rows[rowIndex].Cells["VisitID"].Value);
+                if (_visitID == 0) return;
+                int _appointmentID = Convert.ToInt32(dgvDoctorQueue.Rows[rowIndex].Cells["AppointmentID"].Value);
+                _Visit = clsVisit.Find(_visitID);
+                if (_Visit == null) return;
+                int _doctorID = Convert.ToInt32(_Visit.DoctorID);
+                int _patientID = Convert.ToInt32(_Visit.PatientID);
+                lblAppointmentID.Text = _appointmentID.ToString();
+                lblDoctorID.Text = _doctorID.ToString();
+                lblPatientID.Text = _patientID.ToString();
+            }
 
-            // Enable visit details, services, prescription and saving
-            SetFormControlsState(true);
+                // Enable visit details, services, prescription and saving
+                SetFormControlsState(true);
 
             // Show the visit ID
             lbVisitID.Text = _VisitID.ToString();
@@ -1308,20 +1335,61 @@ namespace Clinic.Medical_Services.Visit
                 column.SortMode = DataGridViewColumnSortMode.NotSortable;
             }
         }
+        
+        private void dgvDoctorQueue_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
+            if (dgvDoctorQueue.Columns[e.ColumnIndex].Name == "IsCalledCheck")
+            {
+                bool isCalled = Convert.ToBoolean(dgvDoctorQueue.Rows[e.RowIndex].Cells["IsCalledCheck"].Value);
+                int appointmentId = Convert.ToInt32(dgvDoctorQueue.Rows[e.RowIndex].Cells["AppointmentID"].Value);
+                if (ConfirmAction("Are you sure you want to " + (isCalled ? "uncall" : "call") + " this patient?") == DialogResult.Yes)
+                {
+                    clsAppointment.UpdatePatientCallStatus(appointmentId, !isCalled, clsGlobal.CurrentUser.UserID);
+                    _RefreshQueueData();
+                }
+            }
+            //int _visitID = Convert.ToInt32(dgvDoctorQueue.Rows[e.RowIndex].Cells["VisitID"].Value);
+            //if (_visitID == 0) return;
+            //int _appointmentID = Convert.ToInt32(dgvDoctorQueue.Rows[e.RowIndex].Cells["AppointmentID"].Value);
+            //_Visit = clsVisit.Find(_visitID);
+            //if (_Visit == null) return;
+            //int _doctorID = Convert.ToInt32(_Visit.DoctorID);
+            //int _patientID = Convert.ToInt32(_Visit.PatientID);
+            //lblAppointmentID.Text = _appointmentID.ToString();
+            //lblDoctorID.Text = _doctorID.ToString();
+            //lblPatientID.Text = _patientID.ToString();
+
+        }
+
+        //private void dgvDoctorQueue_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        //{
+        //    if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
+        //    if (dgvDoctorQueue.Columns[e.ColumnIndex].Name == "IsCalledCheck")
+        //    {
+        //        bool isCalled = Convert.ToBoolean(dgvDoctorQueue.Rows[e.RowIndex].Cells["IsCalledCheck"].Value);
+        //        int appointmentId = Convert.ToInt32(dgvDoctorQueue.Rows[e.RowIndex].Cells["AppointmentID"].Value);
+        //        if (ConfirmAction("Are you sure you want to " + (isCalled ? "uncall" : "call") + " this patient?") == DialogResult.Yes)
+        //        {
+        //            clsAppointment.UpdatePatientCallStatus(appointmentId, !isCalled, clsGlobal.CurrentUser.UserID);
+        //            _RefreshQueueData();
+        //        }
+        //    }
+        //}
 
         private void dgvDoctorQueue_SelectionChanged(object sender, EventArgs e)
         {
-            if (dgvDoctorQueue.Rows.Count == 0) return;
+            //if (dgvDoctorQueue.Rows.Count == 0) return;
 
-            if (dgvDoctorQueue.CurrentRow != null && dgvDoctorQueue.CurrentRow.Index == 0) return;
+            //if (dgvDoctorQueue.CurrentRow != null && dgvDoctorQueue.CurrentRow.Index == 0) return;
 
-            dgvDoctorQueue.SelectionChanged -= dgvDoctorQueue_SelectionChanged;
+            //dgvDoctorQueue.SelectionChanged -= dgvDoctorQueue_SelectionChanged;
 
-            dgvDoctorQueue.ClearSelection();
-            dgvDoctorQueue.Rows[0].Selected = true;
-            dgvDoctorQueue.CurrentCell = dgvDoctorQueue.Rows[0].Cells[0];
+            //dgvDoctorQueue.ClearSelection();
+            //dgvDoctorQueue.Rows[0].Selected = true;
+            //dgvDoctorQueue.CurrentCell = dgvDoctorQueue.Rows[0].Cells[0];
 
-            dgvDoctorQueue.SelectionChanged += dgvDoctorQueue_SelectionChanged;
+            //dgvDoctorQueue.SelectionChanged += dgvDoctorQueue_SelectionChanged;
         }
 
         private void frmDoctor_FormClosing(object sender, FormClosingEventArgs e)
@@ -1377,7 +1445,13 @@ namespace Clinic.Medical_Services.Visit
 
         private void btnNewService_Click(object sender, EventArgs e)
         {
-            new frmAddUpdateServices().ShowDialog();
+            using (YamyProject.frmViewItem frm =
+                new YamyProject.frmViewItem(0))
+            {
+                frm.ShowDialog(this);
+            }
+
+            _FillServicesInCheckBox();
         }
 
     }

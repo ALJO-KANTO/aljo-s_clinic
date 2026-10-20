@@ -29,15 +29,15 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle12 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle13 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle14 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle15 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle16 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle17 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle18 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
             this.gpPatientInfo = new System.Windows.Forms.GroupBox();
             this.llDoctorInfo = new System.Windows.Forms.LinkLabel();
             this.llPatientInfo = new System.Windows.Forms.LinkLabel();
@@ -83,6 +83,7 @@
             this.label14 = new System.Windows.Forms.Label();
             this.tpServices = new System.Windows.Forms.TabPage();
             this.pnlServicesInfo = new System.Windows.Forms.Panel();
+            this.btnNewService = new System.Windows.Forms.Button();
             this.dgvServices = new System.Windows.Forms.DataGridView();
             this.pictureBox11 = new System.Windows.Forms.PictureBox();
             this.txtDiscount = new System.Windows.Forms.TextBox();
@@ -133,7 +134,6 @@
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.timer2 = new System.Windows.Forms.Timer(this.components);
             this.errorProvider1 = new System.Windows.Forms.ErrorProvider(this.components);
-            this.btnNewService = new System.Windows.Forms.Button();
             this.gpPatientInfo.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
@@ -206,7 +206,7 @@
             this.llDoctorInfo.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
             this.llDoctorInfo.Location = new System.Drawing.Point(981, 82);
             this.llDoctorInfo.Name = "llDoctorInfo";
-            this.llDoctorInfo.Size = new System.Drawing.Size(97, 21);
+            this.llDoctorInfo.Size = new System.Drawing.Size(121, 28);
             this.llDoctorInfo.TabIndex = 234;
             this.llDoctorInfo.TabStop = true;
             this.llDoctorInfo.Text = "Doctor Info";
@@ -218,7 +218,7 @@
             this.llPatientInfo.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
             this.llPatientInfo.Location = new System.Drawing.Point(983, 42);
             this.llPatientInfo.Name = "llPatientInfo";
-            this.llPatientInfo.Size = new System.Drawing.Size(100, 21);
+            this.llPatientInfo.Size = new System.Drawing.Size(124, 28);
             this.llPatientInfo.TabIndex = 233;
             this.llPatientInfo.TabStop = true;
             this.llPatientInfo.Text = "Patient Info";
@@ -241,7 +241,7 @@
             this.lblDoctorID.Location = new System.Drawing.Point(862, 87);
             this.lblDoctorID.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblDoctorID.Name = "lblDoctorID";
-            this.lblDoctorID.Size = new System.Drawing.Size(43, 21);
+            this.lblDoctorID.Size = new System.Drawing.Size(53, 28);
             this.lblDoctorID.TabIndex = 231;
             this.lblDoctorID.Text = "[???]";
             // 
@@ -252,7 +252,7 @@
             this.label7.Location = new System.Drawing.Point(680, 87);
             this.label7.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(87, 21);
+            this.label7.Size = new System.Drawing.Size(109, 28);
             this.label7.TabIndex = 230;
             this.label7.Text = "Doctor ID:";
             // 
@@ -273,7 +273,7 @@
             this.lblPatientID.Location = new System.Drawing.Point(862, 42);
             this.lblPatientID.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblPatientID.Name = "lblPatientID";
-            this.lblPatientID.Size = new System.Drawing.Size(43, 21);
+            this.lblPatientID.Size = new System.Drawing.Size(53, 28);
             this.lblPatientID.TabIndex = 228;
             this.lblPatientID.Text = "[???]";
             // 
@@ -284,7 +284,7 @@
             this.label5.Location = new System.Drawing.Point(677, 42);
             this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(90, 21);
+            this.label5.Size = new System.Drawing.Size(112, 28);
             this.label5.TabIndex = 227;
             this.label5.Text = "Patient ID:";
             // 
@@ -305,7 +305,7 @@
             this.lblAppointmentID.Location = new System.Drawing.Point(427, 87);
             this.lblAppointmentID.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblAppointmentID.Name = "lblAppointmentID";
-            this.lblAppointmentID.Size = new System.Drawing.Size(43, 21);
+            this.lblAppointmentID.Size = new System.Drawing.Size(53, 28);
             this.lblAppointmentID.TabIndex = 225;
             this.lblAppointmentID.Text = "[???]";
             // 
@@ -316,7 +316,7 @@
             this.label3.Location = new System.Drawing.Point(159, 82);
             this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(137, 21);
+            this.label3.Size = new System.Drawing.Size(169, 28);
             this.label3.TabIndex = 224;
             this.label3.Text = "Apponitment ID:";
             // 
@@ -337,7 +337,7 @@
             this.lblVisitID.Location = new System.Drawing.Point(427, 42);
             this.lblVisitID.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblVisitID.Name = "lblVisitID";
-            this.lblVisitID.Size = new System.Drawing.Size(43, 21);
+            this.lblVisitID.Size = new System.Drawing.Size(53, 28);
             this.lblVisitID.TabIndex = 222;
             this.lblVisitID.Text = "[???]";
             // 
@@ -348,7 +348,7 @@
             this.label1.Location = new System.Drawing.Point(242, 42);
             this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(69, 21);
+            this.label1.Size = new System.Drawing.Size(86, 28);
             this.label1.TabIndex = 221;
             this.label1.Text = "Visit ID:";
             // 
@@ -370,11 +370,11 @@
             this.tpVisitInfo.Controls.Add(this.pnlVisitInfo);
             this.tpVisitInfo.Controls.Add(this.label6);
             this.tpVisitInfo.Controls.Add(this.label14);
-            this.tpVisitInfo.Location = new System.Drawing.Point(4, 30);
+            this.tpVisitInfo.Location = new System.Drawing.Point(4, 37);
             this.tpVisitInfo.Margin = new System.Windows.Forms.Padding(6);
             this.tpVisitInfo.Name = "tpVisitInfo";
             this.tpVisitInfo.Padding = new System.Windows.Forms.Padding(5);
-            this.tpVisitInfo.Size = new System.Drawing.Size(931, 499);
+            this.tpVisitInfo.Size = new System.Drawing.Size(931, 492);
             this.tpVisitInfo.TabIndex = 0;
             this.tpVisitInfo.Text = "VisitInfo";
             this.tpVisitInfo.UseVisualStyleBackColor = true;
@@ -399,7 +399,7 @@
             this.lbVisitID.Location = new System.Drawing.Point(195, 18);
             this.lbVisitID.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbVisitID.Name = "lbVisitID";
-            this.lbVisitID.Size = new System.Drawing.Size(77, 30);
+            this.lbVisitID.Size = new System.Drawing.Size(97, 38);
             this.lbVisitID.TabIndex = 236;
             this.lbVisitID.Text = "[? ? ? ]";
             // 
@@ -411,7 +411,7 @@
             this.label16.Location = new System.Drawing.Point(33, 10);
             this.label16.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(124, 37);
+            this.label16.Size = new System.Drawing.Size(149, 45);
             this.label16.TabIndex = 235;
             this.label16.Text = "Visit ID :";
             // 
@@ -430,7 +430,7 @@
             this.pnlVisitInfo.Location = new System.Drawing.Point(5, 5);
             this.pnlVisitInfo.Name = "pnlVisitInfo";
             this.pnlVisitInfo.Padding = new System.Windows.Forms.Padding(5);
-            this.pnlVisitInfo.Size = new System.Drawing.Size(921, 489);
+            this.pnlVisitInfo.Size = new System.Drawing.Size(921, 482);
             this.pnlVisitInfo.TabIndex = 227;
             // 
             // txtDiagnosis
@@ -503,7 +503,7 @@
             this.label18.Location = new System.Drawing.Point(403, 102);
             this.label18.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(34, 21);
+            this.label18.Size = new System.Drawing.Size(42, 28);
             this.label18.TabIndex = 230;
             this.label18.Text = "BP:";
             // 
@@ -535,7 +535,7 @@
             this.label20.Location = new System.Drawing.Point(54, 102);
             this.label20.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label20.Name = "label20";
-            this.label20.Size = new System.Drawing.Size(70, 21);
+            this.label20.Size = new System.Drawing.Size(85, 28);
             this.label20.TabIndex = 227;
             this.label20.Text = "Weight:";
             // 
@@ -570,7 +570,7 @@
             this.label17.Location = new System.Drawing.Point(403, 44);
             this.label17.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(56, 21);
+            this.label17.Size = new System.Drawing.Size(68, 28);
             this.label17.TabIndex = 224;
             this.label17.Text = "Temp:";
             // 
@@ -602,7 +602,7 @@
             this.label23.Location = new System.Drawing.Point(54, 44);
             this.label23.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label23.Name = "label23";
-            this.label23.Size = new System.Drawing.Size(55, 21);
+            this.label23.Size = new System.Drawing.Size(67, 28);
             this.label23.TabIndex = 221;
             this.label23.Text = "Pluse:";
             // 
@@ -643,7 +643,7 @@
             this.label4.Location = new System.Drawing.Point(18, 311);
             this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(59, 21);
+            this.label4.Size = new System.Drawing.Size(73, 28);
             this.label4.TabIndex = 249;
             this.label4.Text = "Notes:";
             // 
@@ -674,7 +674,7 @@
             this.label12.Location = new System.Drawing.Point(9, 254);
             this.label12.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(89, 21);
+            this.label12.Size = new System.Drawing.Size(109, 28);
             this.label12.TabIndex = 244;
             this.label12.Text = "Diagnosis:";
             // 
@@ -685,7 +685,7 @@
             this.label6.Location = new System.Drawing.Point(499, 356);
             this.label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(59, 21);
+            this.label6.Size = new System.Drawing.Size(73, 28);
             this.label6.TabIndex = 225;
             this.label6.Text = "Notes:";
             // 
@@ -696,7 +696,7 @@
             this.label14.Location = new System.Drawing.Point(-68, 208);
             this.label14.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(56, 20);
+            this.label14.Size = new System.Drawing.Size(68, 25);
             this.label14.TabIndex = 219;
             this.label14.Text = "Notes";
             // 
@@ -704,10 +704,10 @@
             // 
             this.tpServices.Controls.Add(this.pnlServicesInfo);
             this.tpServices.Controls.Add(this.panel5);
-            this.tpServices.Location = new System.Drawing.Point(4, 30);
+            this.tpServices.Location = new System.Drawing.Point(4, 37);
             this.tpServices.Name = "tpServices";
             this.tpServices.Padding = new System.Windows.Forms.Padding(3);
-            this.tpServices.Size = new System.Drawing.Size(931, 499);
+            this.tpServices.Size = new System.Drawing.Size(931, 492);
             this.tpServices.TabIndex = 1;
             this.tpServices.Text = "Services";
             this.tpServices.UseVisualStyleBackColor = true;
@@ -729,27 +729,39 @@
             this.pnlServicesInfo.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlServicesInfo.Location = new System.Drawing.Point(3, 69);
             this.pnlServicesInfo.Name = "pnlServicesInfo";
-            this.pnlServicesInfo.Size = new System.Drawing.Size(925, 427);
+            this.pnlServicesInfo.Size = new System.Drawing.Size(925, 420);
             this.pnlServicesInfo.TabIndex = 245;
+            // 
+            // btnNewService
+            // 
+            this.btnNewService.BackColor = System.Drawing.Color.PeachPuff;
+            this.btnNewService.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnNewService.Location = new System.Drawing.Point(491, 34);
+            this.btnNewService.Name = "btnNewService";
+            this.btnNewService.Size = new System.Drawing.Size(31, 31);
+            this.btnNewService.TabIndex = 259;
+            this.btnNewService.Text = "+";
+            this.btnNewService.UseVisualStyleBackColor = false;
+            this.btnNewService.Click += new System.EventHandler(this.btnNewService_Click);
             // 
             // dgvServices
             // 
             this.dgvServices.AllowUserToAddRows = false;
             this.dgvServices.AllowUserToDeleteRows = false;
             this.dgvServices.AllowUserToResizeRows = false;
-            dataGridViewCellStyle10.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(249)))), ((int)(((byte)(249)))));
-            this.dgvServices.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle10;
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(249)))), ((int)(((byte)(249)))));
+            this.dgvServices.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
             this.dgvServices.BackgroundColor = System.Drawing.Color.White;
             this.dgvServices.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dgvServices.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            dataGridViewCellStyle11.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle11.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
-            dataGridViewCellStyle11.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle11.ForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle11.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
-            dataGridViewCellStyle11.SelectionForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle11.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvServices.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle11;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.Color.White;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.Color.White;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvServices.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
             this.dgvServices.ColumnHeadersHeight = 70;
             this.dgvServices.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.dgvServices.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
@@ -762,12 +774,12 @@
             this.dgvServices.ReadOnly = true;
             this.dgvServices.RowHeadersVisible = false;
             this.dgvServices.RowHeadersWidth = 51;
-            dataGridViewCellStyle12.BackColor = System.Drawing.Color.White;
-            dataGridViewCellStyle12.Font = new System.Drawing.Font("Segoe UI", 11F);
-            dataGridViewCellStyle12.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(55)))), ((int)(((byte)(71)))), ((int)(((byte)(79)))));
-            dataGridViewCellStyle12.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(242)))), ((int)(((byte)(241)))));
-            dataGridViewCellStyle12.SelectionForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(77)))), ((int)(((byte)(64)))));
-            this.dgvServices.RowsDefaultCellStyle = dataGridViewCellStyle12;
+            dataGridViewCellStyle3.BackColor = System.Drawing.Color.White;
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("Segoe UI", 11F);
+            dataGridViewCellStyle3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(55)))), ((int)(((byte)(71)))), ((int)(((byte)(79)))));
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(242)))), ((int)(((byte)(241)))));
+            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(77)))), ((int)(((byte)(64)))));
+            this.dgvServices.RowsDefaultCellStyle = dataGridViewCellStyle3;
             this.dgvServices.RowTemplate.DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             this.dgvServices.RowTemplate.Height = 45;
             this.dgvServices.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
@@ -793,7 +805,7 @@
             this.txtDiscount.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
             this.txtDiscount.MaxLength = 50;
             this.txtDiscount.Name = "txtDiscount";
-            this.txtDiscount.Size = new System.Drawing.Size(155, 29);
+            this.txtDiscount.Size = new System.Drawing.Size(155, 34);
             this.txtDiscount.TabIndex = 253;
             this.txtDiscount.Text = "0.00";
             this.txtDiscount.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtDiscount_KeyPress);
@@ -806,7 +818,7 @@
             this.label8.Location = new System.Drawing.Point(451, 101);
             this.label8.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(147, 20);
+            this.label8.Size = new System.Drawing.Size(177, 25);
             this.label8.TabIndex = 252;
             this.label8.Text = "DiscountAmount:";
             // 
@@ -834,7 +846,7 @@
             this.lbQuality.Location = new System.Drawing.Point(584, 40);
             this.lbQuality.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbQuality.Name = "lbQuality";
-            this.lbQuality.Size = new System.Drawing.Size(74, 20);
+            this.lbQuality.Size = new System.Drawing.Size(93, 25);
             this.lbQuality.TabIndex = 248;
             this.lbQuality.Text = "Quality :";
             // 
@@ -845,7 +857,7 @@
             this.lbServeces.Location = new System.Drawing.Point(50, 40);
             this.lbServeces.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbServeces.Name = "lbServeces";
-            this.lbServeces.Size = new System.Drawing.Size(87, 20);
+            this.lbServeces.Size = new System.Drawing.Size(109, 25);
             this.lbServeces.TabIndex = 247;
             this.lbServeces.Text = "Services :";
             // 
@@ -858,7 +870,7 @@
             0,
             0});
             this.nudQuality.Name = "nudQuality";
-            this.nudQuality.Size = new System.Drawing.Size(125, 29);
+            this.nudQuality.Size = new System.Drawing.Size(125, 34);
             this.nudQuality.TabIndex = 246;
             this.nudQuality.Value = new decimal(new int[] {
             1,
@@ -871,7 +883,7 @@
             this.cmbServices.FormattingEnabled = true;
             this.cmbServices.Location = new System.Drawing.Point(176, 34);
             this.cmbServices.Name = "cmbServices";
-            this.cmbServices.Size = new System.Drawing.Size(309, 29);
+            this.cmbServices.Size = new System.Drawing.Size(309, 36);
             this.cmbServices.TabIndex = 245;
             // 
             // btnAddService
@@ -911,7 +923,7 @@
             this.label21.Location = new System.Drawing.Point(6, 11);
             this.label21.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label21.Name = "label21";
-            this.label21.Size = new System.Drawing.Size(280, 37);
+            this.label21.Size = new System.Drawing.Size(338, 45);
             this.label21.TabIndex = 235;
             this.label21.Text = "Services & Procedures";
             // 
@@ -919,10 +931,10 @@
             // 
             this.tpPrescriptionInfo.Controls.Add(this.pnlPrescriptionInfo);
             this.tpPrescriptionInfo.Controls.Add(this.panel6);
-            this.tpPrescriptionInfo.Location = new System.Drawing.Point(4, 30);
+            this.tpPrescriptionInfo.Location = new System.Drawing.Point(4, 37);
             this.tpPrescriptionInfo.Name = "tpPrescriptionInfo";
             this.tpPrescriptionInfo.Padding = new System.Windows.Forms.Padding(3);
-            this.tpPrescriptionInfo.Size = new System.Drawing.Size(931, 499);
+            this.tpPrescriptionInfo.Size = new System.Drawing.Size(931, 492);
             this.tpPrescriptionInfo.TabIndex = 2;
             this.tpPrescriptionInfo.Text = "Prescription Info";
             this.tpPrescriptionInfo.UseVisualStyleBackColor = true;
@@ -941,7 +953,7 @@
             this.pnlPrescriptionInfo.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlPrescriptionInfo.Location = new System.Drawing.Point(3, 69);
             this.pnlPrescriptionInfo.Name = "pnlPrescriptionInfo";
-            this.pnlPrescriptionInfo.Size = new System.Drawing.Size(925, 427);
+            this.pnlPrescriptionInfo.Size = new System.Drawing.Size(925, 420);
             this.pnlPrescriptionInfo.TabIndex = 238;
             // 
             // dgvMedicines
@@ -949,19 +961,19 @@
             this.dgvMedicines.AllowUserToAddRows = false;
             this.dgvMedicines.AllowUserToDeleteRows = false;
             this.dgvMedicines.AllowUserToResizeRows = false;
-            dataGridViewCellStyle13.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(249)))), ((int)(((byte)(249)))));
-            this.dgvMedicines.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle13;
+            dataGridViewCellStyle4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(249)))), ((int)(((byte)(249)))));
+            this.dgvMedicines.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle4;
             this.dgvMedicines.BackgroundColor = System.Drawing.Color.White;
             this.dgvMedicines.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dgvMedicines.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            dataGridViewCellStyle14.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle14.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
-            dataGridViewCellStyle14.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle14.ForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle14.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
-            dataGridViewCellStyle14.SelectionForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle14.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvMedicines.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle14;
+            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
+            dataGridViewCellStyle5.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle5.ForeColor = System.Drawing.Color.White;
+            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
+            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.Color.White;
+            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvMedicines.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
             this.dgvMedicines.ColumnHeadersHeight = 70;
             this.dgvMedicines.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.dgvMedicines.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
@@ -974,12 +986,12 @@
             this.dgvMedicines.ReadOnly = true;
             this.dgvMedicines.RowHeadersVisible = false;
             this.dgvMedicines.RowHeadersWidth = 51;
-            dataGridViewCellStyle15.BackColor = System.Drawing.Color.White;
-            dataGridViewCellStyle15.Font = new System.Drawing.Font("Segoe UI", 11F);
-            dataGridViewCellStyle15.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(55)))), ((int)(((byte)(71)))), ((int)(((byte)(79)))));
-            dataGridViewCellStyle15.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(242)))), ((int)(((byte)(241)))));
-            dataGridViewCellStyle15.SelectionForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(77)))), ((int)(((byte)(64)))));
-            this.dgvMedicines.RowsDefaultCellStyle = dataGridViewCellStyle15;
+            dataGridViewCellStyle6.BackColor = System.Drawing.Color.White;
+            dataGridViewCellStyle6.Font = new System.Drawing.Font("Segoe UI", 11F);
+            dataGridViewCellStyle6.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(55)))), ((int)(((byte)(71)))), ((int)(((byte)(79)))));
+            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(242)))), ((int)(((byte)(241)))));
+            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(77)))), ((int)(((byte)(64)))));
+            this.dgvMedicines.RowsDefaultCellStyle = dataGridViewCellStyle6;
             this.dgvMedicines.RowTemplate.DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             this.dgvMedicines.RowTemplate.Height = 45;
             this.dgvMedicines.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
@@ -1023,7 +1035,7 @@
             this.label15.Location = new System.Drawing.Point(97, 375);
             this.label15.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(161, 20);
+            this.label15.Size = new System.Drawing.Size(195, 25);
             this.label15.TabIndex = 249;
             this.label15.Text = "Prescription Notes:";
             // 
@@ -1033,7 +1045,7 @@
             this.dtpPrescriptionDate.Location = new System.Drawing.Point(561, 25);
             this.dtpPrescriptionDate.MinDate = new System.DateTime(1900, 1, 1, 0, 0, 0, 0);
             this.dtpPrescriptionDate.Name = "dtpPrescriptionDate";
-            this.dtpPrescriptionDate.Size = new System.Drawing.Size(335, 29);
+            this.dtpPrescriptionDate.Size = new System.Drawing.Size(335, 34);
             this.dtpPrescriptionDate.TabIndex = 246;
             this.dtpPrescriptionDate.Value = new System.DateTime(2000, 12, 31, 0, 0, 0, 0);
             // 
@@ -1044,7 +1056,7 @@
             this.lbPrescriptionDate.Location = new System.Drawing.Point(336, 34);
             this.lbPrescriptionDate.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbPrescriptionDate.Name = "lbPrescriptionDate";
-            this.lbPrescriptionDate.Size = new System.Drawing.Size(153, 20);
+            this.lbPrescriptionDate.Size = new System.Drawing.Size(184, 25);
             this.lbPrescriptionDate.TabIndex = 247;
             this.lbPrescriptionDate.Text = "Prescription Date:";
             // 
@@ -1088,7 +1100,7 @@
             this.lbPrescriptionID.Location = new System.Drawing.Point(316, 20);
             this.lbPrescriptionID.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbPrescriptionID.Name = "lbPrescriptionID";
-            this.lbPrescriptionID.Size = new System.Drawing.Size(77, 30);
+            this.lbPrescriptionID.Size = new System.Drawing.Size(97, 38);
             this.lbPrescriptionID.TabIndex = 236;
             this.lbPrescriptionID.Text = "[? ? ? ]";
             // 
@@ -1100,7 +1112,7 @@
             this.label11.Location = new System.Drawing.Point(9, 12);
             this.label11.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(223, 37);
+            this.label11.Size = new System.Drawing.Size(267, 45);
             this.label11.TabIndex = 235;
             this.label11.Text = "Prescription ID :";
             // 
@@ -1239,20 +1251,20 @@
             this.dgvDoctorQueue.AllowUserToAddRows = false;
             this.dgvDoctorQueue.AllowUserToDeleteRows = false;
             this.dgvDoctorQueue.AllowUserToResizeRows = false;
-            dataGridViewCellStyle16.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(249)))), ((int)(((byte)(249)))));
-            this.dgvDoctorQueue.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle16;
+            dataGridViewCellStyle7.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(249)))), ((int)(((byte)(249)))));
+            this.dgvDoctorQueue.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle7;
             this.dgvDoctorQueue.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgvDoctorQueue.BackgroundColor = System.Drawing.Color.White;
             this.dgvDoctorQueue.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dgvDoctorQueue.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            dataGridViewCellStyle17.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle17.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
-            dataGridViewCellStyle17.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle17.ForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle17.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
-            dataGridViewCellStyle17.SelectionForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle17.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvDoctorQueue.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle17;
+            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle8.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
+            dataGridViewCellStyle8.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle8.ForeColor = System.Drawing.Color.White;
+            dataGridViewCellStyle8.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
+            dataGridViewCellStyle8.SelectionForeColor = System.Drawing.Color.White;
+            dataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvDoctorQueue.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle8;
             this.dgvDoctorQueue.ColumnHeadersHeight = 70;
             this.dgvDoctorQueue.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.dgvDoctorQueue.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -1266,18 +1278,21 @@
             this.dgvDoctorQueue.ReadOnly = true;
             this.dgvDoctorQueue.RowHeadersVisible = false;
             this.dgvDoctorQueue.RowHeadersWidth = 51;
-            dataGridViewCellStyle18.BackColor = System.Drawing.Color.White;
-            dataGridViewCellStyle18.Font = new System.Drawing.Font("Segoe UI", 11F);
-            dataGridViewCellStyle18.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(55)))), ((int)(((byte)(71)))), ((int)(((byte)(79)))));
-            dataGridViewCellStyle18.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(242)))), ((int)(((byte)(241)))));
-            dataGridViewCellStyle18.SelectionForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(77)))), ((int)(((byte)(64)))));
-            this.dgvDoctorQueue.RowsDefaultCellStyle = dataGridViewCellStyle18;
+            dataGridViewCellStyle9.BackColor = System.Drawing.Color.White;
+            dataGridViewCellStyle9.Font = new System.Drawing.Font("Segoe UI", 11F);
+            dataGridViewCellStyle9.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(55)))), ((int)(((byte)(71)))), ((int)(((byte)(79)))));
+            dataGridViewCellStyle9.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(242)))), ((int)(((byte)(241)))));
+            dataGridViewCellStyle9.SelectionForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(77)))), ((int)(((byte)(64)))));
+            this.dgvDoctorQueue.RowsDefaultCellStyle = dataGridViewCellStyle9;
             this.dgvDoctorQueue.RowTemplate.DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             this.dgvDoctorQueue.RowTemplate.Height = 45;
             this.dgvDoctorQueue.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvDoctorQueue.Size = new System.Drawing.Size(565, 421);
             this.dgvDoctorQueue.TabIndex = 259;
             this.dgvDoctorQueue.TabStop = false;
+            this.dgvDoctorQueue.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvDoctorQueue_CellClick);
+            this.dgvDoctorQueue.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this.dgvDoctorQueue_DataBindingComplete);
+            this.dgvDoctorQueue.SelectionChanged += new System.EventHandler(this.dgvDoctorQueue_SelectionChanged);
             // 
             // panel1
             // 
@@ -1292,25 +1307,17 @@
             // 
             // lblRecordsCount
             // 
-            //this.lblRecordsCount.AutoSize = true;
-            //this.lblRecordsCount.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
-            //this.lblRecordsCount.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(34)))), ((int)(((byte)(197)))), ((int)(((byte)(94)))));
-            //this.lblRecordsCount.Location = new System.Drawing.Point(113, 0);
-            //this.lblRecordsCount.Name = "lblRecordsCount";
-            //this.lblRecordsCount.Size = new System.Drawing.Size(23, 20);
-            //this.lblRecordsCount.TabIndex = 247;
-            //this.lblRecordsCount.Text = "??";
+            this.lblRecordsCount.Location = new System.Drawing.Point(0, 0);
+            this.lblRecordsCount.Name = "lblRecordsCount";
+            this.lblRecordsCount.Size = new System.Drawing.Size(100, 23);
+            this.lblRecordsCount.TabIndex = 0;
             // 
             // label22
             // 
-            //this.label22.AutoSize = true;
-            //this.label22.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
-            //this.label22.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(107)))), ((int)(((byte)(114)))), ((int)(((byte)(128)))));
-            //this.label22.Location = new System.Drawing.Point(3, 0);
-            //this.label22.Name = "label22";
-            //this.label22.Size = new System.Drawing.Size(82, 20);
-            //this.label22.TabIndex = 246;
-            //this.label22.Text = "# Records:";
+            this.label22.Location = new System.Drawing.Point(0, 0);
+            this.label22.Name = "label22";
+            this.label22.Size = new System.Drawing.Size(100, 23);
+            this.label22.TabIndex = 1;
             // 
             // panel2
             // 
@@ -1338,6 +1345,7 @@
             this.btnRefresh.Size = new System.Drawing.Size(146, 48);
             this.btnRefresh.TabIndex = 236;
             this.btnRefresh.UseVisualStyleBackColor = false;
+            this.btnRefresh.Click += new System.EventHandler(this.btnRefresh_Click);
             // 
             // label2
             // 
@@ -1347,7 +1355,7 @@
             this.label2.Location = new System.Drawing.Point(13, 12);
             this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(181, 37);
+            this.label2.Size = new System.Drawing.Size(217, 45);
             this.label2.TabIndex = 235;
             this.label2.Text = "Waitting List";
             // 
@@ -1373,7 +1381,7 @@
             this.lbDate.Location = new System.Drawing.Point(23, 21);
             this.lbDate.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbDate.Name = "lbDate";
-            this.lbDate.Size = new System.Drawing.Size(130, 32);
+            this.lbDate.Size = new System.Drawing.Size(162, 41);
             this.lbDate.TabIndex = 256;
             this.lbDate.Text = "Date Time";
             // 
@@ -1403,7 +1411,7 @@
             this.label24.Location = new System.Drawing.Point(869, 24);
             this.label24.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label24.Name = "label24";
-            this.label24.Size = new System.Drawing.Size(347, 32);
+            this.label24.Size = new System.Drawing.Size(437, 41);
             this.label24.TabIndex = 238;
             this.label24.Text = "Modern Clinic - Doctor Station";
             // 
@@ -1415,7 +1423,7 @@
             this.lblTitle.Location = new System.Drawing.Point(489, 24);
             this.lblTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblTitle.Name = "lblTitle";
-            this.lblTitle.Size = new System.Drawing.Size(167, 32);
+            this.lblTitle.Size = new System.Drawing.Size(211, 41);
             this.lblTitle.TabIndex = 236;
             this.lblTitle.Text = "Add New Visit";
             // 
@@ -1432,21 +1440,9 @@
             // 
             this.errorProvider1.ContainerControl = this;
             // 
-            // btnNewService
-            // 
-            this.btnNewService.BackColor = System.Drawing.Color.PeachPuff;
-            this.btnNewService.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnNewService.Location = new System.Drawing.Point(491, 34);
-            this.btnNewService.Name = "btnNewService";
-            this.btnNewService.Size = new System.Drawing.Size(31, 31);
-            this.btnNewService.TabIndex = 259;
-            this.btnNewService.Text = "+";
-            this.btnNewService.UseVisualStyleBackColor = false;
-            this.btnNewService.Click += new System.EventHandler(this.btnNewService_Click);
-            // 
             // frmDoctor
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 21F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 28F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
             this.AutoSize = true;
@@ -1510,7 +1506,6 @@
             this.pnlWaittingList.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dgvDoctorQueue)).EndInit();
             this.panel1.ResumeLayout(false);
-            this.panel1.PerformLayout();
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
             this.panTitle.ResumeLayout(false);
@@ -1518,6 +1513,16 @@
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider1)).EndInit();
             this.ResumeLayout(false);
 
+        }
+
+        private void DgvDoctorQueue_CellClick1(object sender, System.Windows.Forms.DataGridViewCellEventArgs e)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        private void DgvDoctorQueue_CellClick(object sender, System.Windows.Forms.DataGridViewCellEventArgs e)
+        {
+            throw new System.NotImplementedException();
         }
 
         #endregion

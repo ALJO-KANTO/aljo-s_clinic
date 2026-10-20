@@ -840,11 +840,13 @@ namespace Clinic.Medical_Services.Visit
             ResumeLayout(true);
         }
 
+
         private void MdFilterQueue()
         {
             if (mdQueueSearch == null ||
                 mdQueueDate == null ||
-                mdChkToday == null)
+                mdChkToday == null ||
+                dgvDoctorQueue == null)
                 return;
 
             DataView dv = dgvDoctorQueue.DataSource as DataView;
@@ -859,7 +861,7 @@ namespace Clinic.Medical_Services.Visit
 
             List<string> filters = new List<string>();
 
-            // Search filter
+            // 3. Search within the filtered waiting list.
             string search = mdQueueSearch.Text.Trim()
                 .Replace("'", "''")
                 .Replace("[", "[[]")
@@ -885,29 +887,16 @@ namespace Clinic.Medical_Services.Visit
                 }
 
                 if (parts.Count > 0)
-                    filters.Add("(" + string.Join(" OR ", parts) + ")");
+                {
+                    filters.Add(
+                        "(" + string.Join(" OR ", parts) + ")");
+                }
             }
 
-            // Date filter using CheckInTime
-            if (dv.Table.Columns.Contains("CheckInTime"))
-            {
-                DateTime selectedDate = mdChkToday.Checked
-                    ? DateTime.Today
-                    : mdQueueDate.Value.Date;
-
-                string fromDate = selectedDate.ToString(
-                    "MM/dd/yyyy", CultureInfo.InvariantCulture);
-
-                string toDate = selectedDate.AddDays(1).ToString(
-                    "MM/dd/yyyy", CultureInfo.InvariantCulture);
-
-                filters.Add(
-                    "([CheckInTime] >= #" + fromDate +
-                    "# AND [CheckInTime] < #" + toDate + "#)");
-            }
-
+            // 4. Apply all filters together.
             dv.RowFilter = string.Join(" AND ", filters);
         }
+
 
     }
 }
