@@ -234,7 +234,7 @@ namespace YamyProject
                                 //    insertItemsAssembly(id);
                                 if (_qty != "0" || decimal.Parse(_qty) > 0)
                                 {
-                                    CommonInsert.InsertItemTransaction(dtpDate.Value.Date, "Opening Qty", "0", id.ToString(), _costPrice, _qty, _salesPrice, "0", _qty, "Opening Balance", "0");
+                                    CommonInsert.InsertItemTransaction(dtpDate.Value.Date, "Opening Qty", "0", id.ToString(), _costPrice, _qty, _salesPrice, "0", _qty, "Opening Balance", "0", "0", "0", "0", "0");
                                     //journal transactions
 
                                     CommonInsert.InsertTransactionEntry(dtpDate.Value.Date, cmbAccountId.ToString(), totalValue.ToString(), "0",

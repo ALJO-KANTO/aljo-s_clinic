@@ -188,9 +188,9 @@ namespace Clinic_Business
             return clsVisitData.IsVisitClosed(VisitID);
         }
 
-        public static DataTable GetPatientsWaitingForDoctors(int DoctorID)
+        public static DataTable GetPatientsWaitingForDoctors(int DoctorID, DateTime? date = null)
         {
-            return clsVisitData.GetPatientsWaitingForDoctors(DoctorID);
+            return clsVisitData.GetPatientsWaitingForDoctors(DoctorID, date);
         }
         public static DataTable GetAllMedicalRecords()
         {

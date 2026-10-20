@@ -428,7 +428,9 @@ namespace Clinic_DataAccess
         }
 
 
-        public static DataTable GetPatientsWaitingForDoctors(int DoctorPersonID)
+        public static DataTable GetPatientsWaitingForDoctors(
+            int DoctorPersonID,
+            DateTime? date = null)
         {
             DataTable dt = new DataTable();
 
@@ -438,33 +440,40 @@ namespace Clinic_DataAccess
                     new MySqlConnection(clsDataAccessSettings.ConnectionString))
                 {
                     string query = @"
-                    SELECT
-                        VisitID,
-                        AppointmentID,
-                        PatientName,
-                        CheckInTime,
-                        StatusText,
-                        IsCalled
-                    FROM View_PatientsWaitingForDoctors
-                    WHERE
-                        (@DoctorPersonID = 0
-                         OR DoctorPersonID = @DoctorPersonID)
-                      AND StatusText IN
-                    (
-                        'InQueue',
-                        'Waiting_For_Vitals',
-                        'Ready_For_Doctor',
-                        'Progress',
-                        'InProgress',
-                        'In-Progress'
-                    )
-                    ORDER BY CheckInTime;";
+            SELECT
+                VisitID,
+                AppointmentID,
+                PatientName,
+                CheckInTime,
+                StatusText,
+                IsCalled
+            FROM View_PatientsWaitingForDoctors
+            WHERE
+                (@DoctorPersonID = 0
+                 OR DoctorPersonID = @DoctorPersonID)
+
+              AND DATE(CheckInTime) = @Date
+
+              AND StatusText IN
+            (
+                'InQueue' ,
+               -- 'Waiting_For_Vitals',
+                'Ready_For_Doctor',
+                'Progress',
+                 'InProgress',
+                'In-Progress'
+            )
+            ORDER BY CheckInTime;";
 
                     using (MySqlCommand cmd =
                         new MySqlCommand(query, connection))
                     {
                         cmd.Parameters.AddWithValue(
                             "@DoctorPersonID", DoctorPersonID);
+
+                        // If date is null, use today's date.
+                        cmd.Parameters.AddWithValue(
+                            "@Date", (date ?? DateTime.Today).Date);
 
                         connection.Open();
 

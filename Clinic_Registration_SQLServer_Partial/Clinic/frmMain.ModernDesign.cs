@@ -188,13 +188,7 @@ namespace Clinic
             {
                 menu.Controls.Add(MakeNav("✚", "Prescriptions", () => listPrescriptionToolStripMenuItem_Click(this, EventArgs.Empty)));
             }
-            if (CanAccessMenu(clsGlobal.UserRole.Pharmacist))
-            {
-                menu.Controls.Add(
-                    MakeNav("◈", "Inventory / Medicines",
-                        () => addNewDrugToolStripMenuItem_Click(this, EventArgs.Empty))
-                );
-            }
+          
             if (CanAccessMenu(clsGlobal.UserRole.Doctor))
             {
                 menu.Controls.Add(
