@@ -3,6 +3,7 @@ using Guna.UI2.WinForms;
 using MySql.Data.MySqlClient;
 using System;
 using System.Windows.Forms;
+using YamyProject.Localization;
 
 namespace YamyProject
 {
@@ -16,10 +17,10 @@ namespace YamyProject
         public frmViewVendor( int id = 0)
         {
             InitializeComponent();
-            //LocalizationManager.LocalizeForm(this);
+            LocalizationManager.LocalizeForm(this);
             this.id = id;
             vendorCategoryUpdatedHandler = (sender, args) => BindCombos.PopulateVendorCategory(cmbCategory);
-            //EventHub.VendorCategory += vendorCategoryUpdatedHandler;
+            EventHub.VendorCategory += vendorCategoryUpdatedHandler;
             this.Text = id != 0 ? "Vendor - Edit Vendor" : "Vendor - New Vendor";
             headerUC1.FormText = this.Text;
         }

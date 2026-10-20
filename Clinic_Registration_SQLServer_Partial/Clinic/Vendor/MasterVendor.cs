@@ -10,7 +10,7 @@ using System.Drawing.Printing;
 using System.Linq;
 using System.Windows.Forms;
 //using YamyProject.DAL;
-//using YamyProject.Localization;
+using YamyProject.Localization;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace YamyProject
@@ -25,7 +25,7 @@ namespace YamyProject
         public MasterVendor()
         {
             InitializeComponent();
-            //LocalizationManager.LocalizeForm(this);
+            LocalizationManager.LocalizeForm(this);
             vendorUpdatedHandler = PaymentVoucherHandler= InvoiceUpdatedHandler = (sender, args) => BindVendor();
             
             headerUC1.FormText = this.Text;
@@ -125,7 +125,7 @@ namespace YamyProject
             else
                 ClearVendorDetails();
 
-            //LocalizationManager.LocalizeDataGridViewHeaders(dgvCustomer);
+            LocalizationManager.LocalizeDataGridViewHeaders(dgvCustomer);
         }
 
         private void HideUnusedColumns()
@@ -142,139 +142,6 @@ namespace YamyProject
             BindInvoice();
             BindCashInvoice();
             AdjustColumnWidths();
-        }
-        private void BindInvoiceOld()
-        {
-            List<string> includeTypes = new List<string> { "Vendor%", "Purchase%", "Check Cancel (Vendor)", "%Purchase Invoice Cash%" };
-            List<string> excludeTypes = new List<string> { };
-
-            string query = @"WITH CTE AS (
-                                SELECT 
-                                    t.id,
-                                    t.transaction_id AS `Invoice Id`,
-                                    ROW_NUMBER() OVER (ORDER BY t.date, t.id) AS SN,
-                                    t.voucher_no AS `V - No`,
-                                    t.date AS `Date`,
-                                    CONCAT(ta.code, ' - ', ta.name) AS `Account Name`,
-                                    t.Type,
-                                    -- Amount logic
-                                    CASE
-                                        WHEN t.type = 'Vendor Payment' THEN IF(t.debit = 0, t.credit, t.debit)
-                                        WHEN t.type = 'Petty Cash' THEN IF(t.debit = 0, t.credit, t.debit)
-                                        WHEN t.type = 'Purchase Invoice Cash' THEN IF(t.debit = 0, t.credit, t.debit)
-                                        WHEN t.type = 'Vendor Opening Balance' AND t.debit > 0 THEN -t.debit
-                                        WHEN t.type = 'Check Cancel (Vendor)' THEN t.credit
-                                        WHEN t.type = 'Debit Note' THEN IF(t.debit = 0, t.credit, t.debit)
-                                        WHEN t.type = 'PDC Payable' THEN IF(t.debit = 0, t.credit, t.debit)
-                                        WHEN t.type LIKE 'Vendor%' OR t.type LIKE 'Purchase%' THEN 
-                                            IF(t.debit = 0, t.credit, t.debit)
-                                        ELSE NULL
-                                    END AS `Amount`,
-                                    -- Paid Amount logic
-                                    CASE
-                                        WHEN t.type = 'Purchase Invoice Cash' THEN IF(t.debit = 0, t.credit, t.debit)
-                                        WHEN t.type = 'Vendor Payment' THEN IF(t.debit = 0, t.credit, t.debit)
-                                        WHEN t.type = 'Petty Cash' THEN IF(t.debit = 0, t.credit, t.debit)
-                                        WHEN t.type = 'Purchase Return Invoice' THEN IF(t.debit = 0, t.credit, t.debit)
-                                        WHEN t.type = 'Debit Note' THEN IF(t.debit = 0, t.credit, t.debit)
-                                        ELSE 0
-                                    END AS `Paid Amt`
-                                FROM tbl_transaction t
-                                INNER JOIN tbl_coa_level_4 ta ON t.account_id = ta.id
-                                WHERE t.hum_id = @id AND t.state = 0  
-                                  AND t.type IN (
-                                    'Vendor Payment',
-                                    'Petty Cash',
-                                    'Purchase Invoice',
-                                    'Purchase Invoice Cash',
-                                    'Vendor Opening Balance',
-                                    'Check Cancel (Vendor)',
-                                    'Purchase Return Invoice',
-                                    'Debit Note',
-                                    'PDC Payable'
-                                )
-                            )
-                            , Running_Balance AS (
-                                SELECT *,
-                                    SUM(`Amount` - `Paid Amt`) OVER (ORDER BY `Date`, id ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS `Balance`
-                                FROM CTE
-                            )
-                            SELECT 
-                                `id`,
-                                `Invoice Id`,
-                                `SN`,
-                                `V - No`,
-                                `Date`,
-                                `Account Name`,
-                                `Type`,
-                                `Amount`,
-                                `Paid Amt`,
-                                `Balance`
-                            FROM Running_Balance
-                            ORDER BY `Date`, id;";
-
-            //if (includeTypes.Count > 0)
-            //{
-            //    query += " AND (";
-            //    query += string.Join(" OR ", includeTypes.Select((t, i) => $"t.type LIKE @include{i}"));
-            //    query += ")";
-            //}
-
-            //if (excludeTypes.Count > 0)
-            //{
-            //    query += " AND (";
-            //    query += string.Join(" AND ", excludeTypes.Select((t, i) => $"t.type NOT LIKE @exclude{i}"));
-            //    query += ")";
-            //}
-
-            //query += " ORDER BY t.date;";
-
-            var parameters = new List<MySqlParameter> { new MySqlParameter("@id", dgvCustomer.SelectedRows[0].Cells["id"].Value.ToString()) };
-            //for (int i = 0; i < includeTypes.Count; i++)
-            //    parameters.Add(new MySqlParameter($"@include{i}", includeTypes[i]));
-            //for (int i = 0; i < excludeTypes.Count; i++)
-            //    parameters.Add(new MySqlParameter($"@exclude{i}", excludeTypes[i]));
-
-            DataTable dt = ClinicDatabase.ExecuteDataTable(query, parameters.ToArray());
-            decimal totalAmount = 0, totalPaidAmount = 0, amount = 0, paidAmount = 0;
-            string _type = "";
-            foreach (DataRow row in dt.Rows)
-            {
-                _type = string.IsNullOrEmpty(row["Type"]?.ToString()) ? "" : row["Type"]?.ToString();
-
-                if (decimal.TryParse(row["Amount"]?.ToString(), out amount))
-                {
-                    totalAmount += amount;
-                }
-                if (decimal.TryParse(row["Paid Amt"]?.ToString(), out paidAmount))
-                {
-                    if (_type == "Vendor Payment" || _type == "Purchase Return Invoice" || _type == "PDC Payable")
-                    {
-                        totalPaidAmount += paidAmount;
-                        totalAmount = totalAmount - paidAmount;
-                    }
-                    else
-                    {
-                        decimal _paid = paidAmount;// (paidAmount == 0 ? amount : 0);
-                        totalPaidAmount += _paid;
-                        //row["Paid Amt"] = _paid.ToString("N2");
-                    }
-                }
-                row["Balance"] = (totalAmount - totalPaidAmount).ToString("F2");
-            }
-            //DataRow totalRow = dt.NewRow();
-            //totalRow["Account Name"] = "Total";
-            //totalRow["Amount"] = totalAmount.ToString("F2");
-            //dt.Rows.Add(totalRow);
-            dgvTransactions.DataSource = dt;
-            dgvTransactions.Columns["Amount"].DefaultCellStyle.Alignment = dgvTransactions.Columns["Paid Amt"].DefaultCellStyle.Alignment = dgvTransactions.Columns["Balance"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dgvTransactions.Columns["Account Name"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            dgvTransactions.Columns["Amount"].DefaultCellStyle.Format = dgvTransactions.Columns["Paid Amt"].DefaultCellStyle.Format = dgvTransactions.Columns["Balance"].DefaultCellStyle.Format = "N2";
-            foreach (DataGridViewColumn column in dgvTransactions.Columns)
-            {
-                column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            }
-            //LocalizationManager.LocalizeDataGridViewHeaders(dgvTransactions);
         }
         private void BindInvoice()
         {
@@ -327,7 +194,7 @@ namespace YamyProject
                     (string.IsNullOrEmpty(row["No"].ToString()) ? ("GV-00" + row["Invoice Id"]) : row["No"]), 
                     _type, row["Description"], row["Debit"], row["Credit"], row["Balance"]);
             }
-            //LocalizationManager.LocalizeDataGridViewHeaders(dgvTransactions);
+            LocalizationManager.LocalizeDataGridViewHeaders(dgvTransactions);
         }
         private void BindCashInvoice()
         {
@@ -392,7 +259,7 @@ namespace YamyProject
                 column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
             }
             dgvInvoiceCash.Columns["id"].Visible = dgvInvoiceCash.Columns["Invoice Id"].Visible = false;
-            //LocalizationManager.LocalizeDataGridViewHeaders(dgvInvoiceCash);
+            LocalizationManager.LocalizeDataGridViewHeaders(dgvInvoiceCash);
         }
         private void AdjustColumnWidths()
         {
@@ -435,7 +302,7 @@ namespace YamyProject
         {
             dgvInvoiceCash.DataSource = dgvTransactions.DataSource = null;
             lblCode.Text = lblAddress.Text = lblCat.Text = lblEmail.Text = lblName.Text = lblPhone.Text = lblTRN.Text = lblWorkPhone.Text = "-";
-            //LocalizationManager.LocalizeDataGridViewHeaders(dgvInvoiceCash);
+            LocalizationManager.LocalizeDataGridViewHeaders(dgvInvoiceCash);
         }
         private void dgvInvoice_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -468,6 +335,9 @@ namespace YamyProject
      
         private void createInvoiceToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (dgvCustomer.Rows.Count <= 0)
+                return;
+
             frmMain.openChildForm(new frmPurchase(0,"",int.Parse(dgvCustomer.SelectedRows[0].Cells["id"].Value.ToString())));
         }
         private void cToolStripMenuItem_Click(object sender, EventArgs e)
