@@ -102,8 +102,8 @@ namespace Clinic.Medical_Services.Visit
 
             }
             cbMedicines.SelectedValue = _Row["MedicineID"];
-            NUDQuantity.Value = (int)_Row["Quantity"];
-            nudFrequency.Value = (int)_Row["Frequency"];
+            NUDQuantity.Value = Convert.ToInt32(_Row["Quantity"]);
+            nudFrequency.Value = Convert.ToInt32(_Row["Frequency"]);
             txtDosage.Text = _Row["Dosage"].ToString();
             txtDiscount.Text = _Row["DiscountAmount"].ToString();
             txtInstructions.Text = _Row["Instructions"] == DBNull.Value || _Row["Instructions"] == null ? "" : _Row["Instructions"].ToString();
