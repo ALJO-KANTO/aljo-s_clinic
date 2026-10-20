@@ -568,15 +568,10 @@ namespace Clinic.Medical_Services.Visit
             clsVital vital = clsVital.FindByVisitID(_VisitID);
             if (vital == null)
             {
-                if (_Mode == enMode.AddNew)
-                {
-                    clsAppointment.UpdateAppointmentStatus(
-                        _AppointmentID,
-                        clsAppointment.enAppointmentStatus.Waiting_For_Vitals,
-                        clsGlobal.CurrentUser.UserID);
-
-                    _RefreshQueueData();
-                }
+                lbPluse.Text = "Not recorded";
+                lblTemp.Text = "Not recorded";
+                lbBP.Text = "Not recorded";
+                lbWeight.Text = "Not recorded";
 
                 return;
             }
@@ -1113,56 +1108,85 @@ AND active = 0        ORDER BY name;";
             }
         }
 
+
         private void _CallNextPatientInQueue()
         {
-            DateTime? selectedDate = mdChkToday.Checked ? (DateTime?)null : mdQueueDate.Value.Date;
-            DataTable dtQueue = clsVisit.GetPatientsWaitingForDoctors(_DoctorPersonID, selectedDate);
+            _RefreshQueueData();
 
-            if (dtQueue.Rows.Count > 0)
+            DataGridViewRow nextRow = dgvDoctorQueue.Rows
+                .Cast<DataGridViewRow>()
+                .FirstOrDefault(row =>
+                    !row.IsNewRow &&
+                    row.Cells["IsCalledCheck"].Value != DBNull.Value &&
+                    row.Cells["IsCalledCheck"].Value != null &&
+                    Convert.ToBoolean(row.Cells["IsCalledCheck"].Value));
+
+            if (nextRow == null)
             {
-                DataRow row = dtQueue.Rows[0];
+                nextRow = dgvDoctorQueue.Rows
+                    .Cast<DataGridViewRow>()
+                    .FirstOrDefault(row =>
+                        !row.IsNewRow &&
+                        (row.Cells["IsCalledCheck"].Value == null ||
+                         row.Cells["IsCalledCheck"].Value == DBNull.Value ||
+                         !Convert.ToBoolean(
+                             row.Cells["IsCalledCheck"].Value)));
+            }
 
-                _AppointmentID =
-                    Convert.ToInt32(row["AppointmentID"]);
+            if (nextRow == null)
+            {
+                MessageBox.Show(
+                    "No available patients in the doctor queue.",
+                    "Doctor Queue",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+                return;
+            }
 
-                _VisitID =
-                    Convert.ToInt32(row["VisitID"]);
+            int appointmentID = Convert.ToInt32(
+                nextRow.Cells["AppointmentID"].Value);
 
-                bool isCalled =
-                    row["IsCalled"] != DBNull.Value &&
-                    Convert.ToBoolean(row["IsCalled"]);
+            bool isCalled =
+                nextRow.Cells["IsCalledCheck"].Value != null &&
+                nextRow.Cells["IsCalledCheck"].Value != DBNull.Value &&
+                Convert.ToBoolean(nextRow.Cells["IsCalledCheck"].Value);
 
-                if (!isCalled)
+            if (!isCalled)
+            {
+                bool updated = clsAppointment.UpdatePatientCallStatus(
+                    appointmentID,
+                    true,
+                    clsGlobal.CurrentUser.UserID);
+
+                if (!updated)
                 {
-                    clsAppointment.UpdatePatientCallStatus(
-                        _AppointmentID,
-                        true,
-                        2);
-                }
-
-                _RefreshQueueData();
-
-                _Visit = clsVisit.Find(_VisitID);
-
-                if (_Visit == null)
-                {
-                    ShowError("The selected visit could not be loaded.");
+                    MessageBox.Show(
+                        "Unable to call the next patient.",
+                        "Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
                     return;
                 }
-
-                _FillVitalsInfo();
-                _FillPatientInfo();
-
-                // InQueue patients must first be moved to
-                // InProgress before consultation editing is enabled.
-                SetFormControlsState(false);
             }
-            else
+
+            _RefreshQueueData();
+
+            foreach (DataGridViewRow row in dgvDoctorQueue.Rows)
             {
-                _ResetForm();
+                if (row.IsNewRow)
+                    continue;
+
+                if (Convert.ToInt32(
+                    row.Cells["AppointmentID"].Value) == appointmentID)
+                {
+                    dgvDoctorQueue.ClearSelection();
+                    row.Selected = true;
+                    dgvDoctorQueue.CurrentCell =
+                        row.Cells["AppointmentID"];
+                    break;
+                }
             }
         }
-
         private void btnRefresh_Click(object sender, EventArgs e)
         {
             _RefreshQueueData();
