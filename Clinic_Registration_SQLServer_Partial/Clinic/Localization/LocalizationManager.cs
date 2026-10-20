@@ -54,36 +54,67 @@ namespace YamyProject.Localization
             SetLanguage(savedCulture);
         }
 
-        public static string GetString(string key)
-        {
-            if (string.IsNullOrWhiteSpace(key))
-                return null;
+       
+public static string GetString(string key)
+{
+    if (string.IsNullOrWhiteSpace(key))
+        return null;
 
-            // Normalize the key: replace spaces with underscores and convert to lowercase
-            string normalizedKey = key.Trim().Replace(" ", "_").ToLowerInvariant();
+    // Try the exact resource key first.
+    string resourceKey = key.Trim();
 
-            var nKey = SanitizeResourceKey(normalizedKey);
-            // Find the best matching key in resource manager (case-insensitive search)
-            var allKeys = _resourceManager
-                .GetResourceSet(_uiCulture ?? CultureInfo.CurrentUICulture, true, true)
-                .Cast<DictionaryEntry>();
+    // Also try the normalized key.
+    string normalizedKey = resourceKey
+        .Replace(" ", "_")
+        .ToLowerInvariant();
 
-            var match = allKeys.FirstOrDefault(entry =>
-                entry.Key is string k && k.ToLowerInvariant() == normalizedKey);
+    string sanitizedKey = SanitizeResourceKey(resourceKey);
 
-            if (match.Value != null)
-            {
-                return match.Value.ToString();
-            }
+    var resourceSet = _resourceManager.GetResourceSet(
+        _uiCulture ?? CultureInfo.CurrentUICulture,
+        true,
+        true);
 
-            // Fallback: return original string (but replace underscores with spaces)
-            return key.Replace("_", " ");
-        }
+    if (resourceSet == null)
+        return key;
+
+    var allKeys = resourceSet.Cast<DictionaryEntry>().ToList();
+
+    // Match the original or normalized key, ignoring case.
+    var match = allKeys.FirstOrDefault(entry =>
+        entry.Key is string k &&
+        (string.Equals(k, resourceKey, StringComparison.OrdinalIgnoreCase) ||
+         string.Equals(k, normalizedKey, StringComparison.OrdinalIgnoreCase) ||
+         string.Equals(k, sanitizedKey, StringComparison.OrdinalIgnoreCase)));
+
+    if (match.Value != null)
+        return match.Value.ToString();
+
+    // Try the sanitized key through ResourceManager.
+    string translated = _resourceManager.GetString(
+        sanitizedKey,
+        _uiCulture ?? CultureInfo.CurrentUICulture);
+
+    if (!string.IsNullOrEmpty(translated))
+        return translated;
+
+    return key;
+}
+
 
         public static void LocalizeForm(Control container)
         {
+            if (!string.IsNullOrWhiteSpace(container.Text))
+            {
+                string localizedText = GetString(container.Text);
+
+                if (!string.IsNullOrEmpty(localizedText))
+                    container.Text = localizedText;
+            }
+
             foreach (Control control in container.Controls)
             {
+                
                 // Localize control Text
                 string localizedText = GetString(control.Text);
                 if (!string.IsNullOrEmpty(localizedText))

@@ -825,6 +825,9 @@
     <Compile Include="Medical Services\Vital\frmNurse.Designer.cs">
       <DependentUpon>frmNurse.cs</DependentUpon>
     </Compile>
+    <Compile Include="Medical Services\Vital\frmNurse.ModernDesign.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="PasswordHelper.cs" />
     <Compile Include="Person\Controls\ctrlPersonCard.cs">
       <SubType>UserControl</SubType>

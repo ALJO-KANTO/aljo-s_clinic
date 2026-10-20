@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
 using System.Windows.Forms;
-//using YamyProject.DAL;
-//using YamyProject.Localization;
+using YamyProject.DAL;
+using YamyProject.Localization;
 
 namespace YamyProject
 {
@@ -33,7 +33,10 @@ namespace YamyProject
                 }; public MasterAdvancePaymentVoucher()
         {
             InitializeComponent();
-           // LocalizationManager.LocalizeForm(this);
+            LocalizationManager.ApplySavedLanguage();
+            LocalizationManager.LocalizeForm(this);
+            ApplyLanguageLayout();
+            ApplyRuntimeArabicText();
             PaymentVoucherUpdatedHandler =
                 (sender, args) =>
                 {
@@ -70,36 +73,101 @@ namespace YamyProject
             if (!string.IsNullOrWhiteSpace(type))
                 BindPayment(type);
 
+            ApplyLanguageLayout();
+            ApplyRuntimeArabicText();
             SetViewDocHeaderLanguage();
         }
         private void ApplyRuntimeArabicText()
         {
             bool arabic = IsArabicCulture();
-            // ==========================================
-            // VIEW DOCUMENT COLUMN
-            // ==========================================
-            if (dgvCustomer.Columns.Contains("ViewDoc"))
+
+            if (arabic)
             {
-                dgvCustomer.Columns["ViewDoc"].HeaderText =
-                    arabic
-                        ? "عرض المستند"
-                        : "View Doc";
+                btnNew.Text = GetLocalizedOrArabic("New AP", "سند جديد");
+                btnEdit.Text = GetLocalizedOrArabic("Edit AP", "تعديل السند");
+                btnDelete.Text = GetLocalizedOrArabic("Delete", "حذف");
+                btnRecycle.Text = GetLocalizedOrArabic("Recycle", "استعادة");
+                label4.Text = GetLocalizedOrArabic("Type", "النوع");
+                label11.Text = GetLocalizedOrArabic("From", "من تاريخ");
+                label2.Text = GetLocalizedOrArabic("To", "إلى تاريخ");
+                chkDate.Text = GetLocalizedOrArabic("All", "الكل");
+                this.Text = GetLocalizedOrArabic(
+                    "Advance Payment Voucher Center", "مركز سندات الدفع المقدم");
+            }
+            else
+            {
+                btnNew.Text = GetLocalizedOrEnglish("New AP");
+                btnEdit.Text = GetLocalizedOrEnglish("Edit AP");
+                btnDelete.Text = GetLocalizedOrEnglish("Delete");
+                btnRecycle.Text = GetLocalizedOrEnglish("Recycle");
+                label4.Text = GetLocalizedOrEnglish("Type");
+                label11.Text = GetLocalizedOrEnglish("From");
+                label2.Text = GetLocalizedOrEnglish("To");
+                chkDate.Text = GetLocalizedOrEnglish("All");
+                this.Text = GetLocalizedOrEnglish("Advance Payment Voucher Center");
             }
 
-            // ==========================================
-            // TYPE COMBO
-            // ==========================================
-            cmbType.RightToLeft =
-                arabic
-                    ? RightToLeft.Yes
-                    : RightToLeft.No;
+            headerUC1.FormText = this.Text;
+            ApplyLanguageLayout();
+            SetViewDocHeaderLanguage();
+            ApplyGridHeaderFallbacks(dgvCustomer);
+            ApplyGridHeaderFallbacks(dgvDetails);
 
+            cmbType.RightToLeft = arabic ? RightToLeft.Yes : RightToLeft.No;
             cmbType.Invalidate();
             cmbType.Refresh();
-
-            // Force grid repaint too.
             dgvCustomer.Invalidate();
             dgvCustomer.Refresh();
+            dgvDetails.Invalidate();
+            dgvDetails.Refresh();
+        }
+
+        private string GetLocalizedOrEnglish(string english)
+        {
+            string translated = LocalizationManager.GetString(english);
+            return string.IsNullOrWhiteSpace(translated) ? english : translated;
+        }
+
+        private string GetLocalizedOrArabic(string english, string arabicFallback)
+        {
+            string translated = LocalizationManager.GetString(english);
+            if (string.IsNullOrWhiteSpace(translated) ||
+                string.Equals(translated, english, StringComparison.OrdinalIgnoreCase))
+                return arabicFallback;
+
+            return translated;
+        }
+
+        private void ApplyGridHeaderFallbacks(DataGridView grid)
+        {
+            if (grid == null || !IsArabicCulture())
+                return;
+
+            foreach (DataGridViewColumn column in grid.Columns)
+            {
+                string key = (column.Name + "|" + column.DataPropertyName + "|" +
+                              column.HeaderText).ToLowerInvariant();
+
+                if (key.Contains("date"))
+                    column.HeaderText = "التاريخ";
+                else if (key.Contains("payment code"))
+                    column.HeaderText = "رقم سند الدفع";
+                else if (key.Contains("jv no"))
+                    column.HeaderText = "رقم القيد";
+                else if (key.Contains("amount"))
+                    column.HeaderText = "المبلغ";
+                else if (key.Contains("debit account"))
+                    column.HeaderText = "الحساب المدين";
+                else if (key.Contains("credit account"))
+                    column.HeaderText = "الحساب الدائن";
+                else if (key.Contains("description"))
+                    column.HeaderText = "الوصف";
+                else if (key.Contains("name"))
+                    column.HeaderText = "الاسم";
+
+                column.HeaderCell.Style.Alignment =
+                    DataGridViewContentAlignment.MiddleRight;
+            }
         }
 
         private void LoadPaymentTypeCombo()
@@ -296,8 +364,8 @@ namespace YamyProject
             // -----------------------------------------
             // THEN localize normal DB columns
             // -----------------------------------------
-           // LocalizationManager.LocalizeDataGridViewHeaders(
-                //dgvCustomer);
+            LocalizationManager.LocalizeDataGridViewHeaders(
+                dgvCustomer);
 
             // -----------------------------------------
             // LAST:
@@ -305,6 +373,8 @@ namespace YamyProject
             // Do not depend on// LocalizationManager.
             // -----------------------------------------
             SetViewDocHeaderLanguage();
+            ApplyGridHeaderFallbacks(dgvCustomer);
+            ApplyRuntimeArabicText();
 
             dgvCustomer.Invalidate();
         }
@@ -452,14 +522,17 @@ namespace YamyProject
 
             dgvDetails.DataSource = dt;
 
-           // LocalizationManager.LocalizeDataGridViewHeaders(dgvDetails);
+            LocalizationManager.LocalizeDataGridViewHeaders(dgvDetails);
+            ApplyGridHeaderFallbacks(dgvDetails);
+            ApplyRuntimeArabicText();
         }
 
         private void btnDelete_Click(object sender, EventArgs e)
         {
             if (dgvCustomer.Rows.Count == 0)
                 return;
-            if (UserPermissions.canDelete("Vouchers")) {
+            if (UserPermissions.canDelete("Vouchers"))
+            {
                 ClinicDatabase.ExecuteNonQuery("UPDATE tbl_advance_payment_voucher SET state = -1 WHERE id = @id ",
                                               ClinicDatabase.CreateParameterNew("id", dgvCustomer.SelectedRows[0].Cells["id"].Value.ToString()));
                 BindPayment(GetSelectedPaymentType());

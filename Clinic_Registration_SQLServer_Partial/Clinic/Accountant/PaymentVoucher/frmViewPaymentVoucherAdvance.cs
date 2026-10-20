@@ -8,8 +8,8 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-//using YamyProject.DAL;
-//using YamyProject.Localization;
+using YamyProject.DAL;
+using YamyProject.Localization;
 
 namespace YamyProject
 {
@@ -21,9 +21,11 @@ namespace YamyProject
         public frmViewPaymentVoucherAdvance(int id = 0, int _customerId = 0)
         {
             InitializeComponent();
-           // LocalizationManager.LocalizeForm(this);
+            LocalizationManager.LocalizeForm(this);
             this.id = id;
-            headerUC1.FormText = id == 0 ? "New - Advance Payment Voucher" : "Edit - Advance Payment Voucher";
+            headerUC1.FormText = id == 0
+     ? LocalizationManager.GetString("New - Advance Payment Voucher")
+     : LocalizationManager.GetString("Edit - Advance Payment Voucher");
 
             this.defaultCustomerId = _customerId;
             //AppTheme.DefaultFont(dgvPartner);
