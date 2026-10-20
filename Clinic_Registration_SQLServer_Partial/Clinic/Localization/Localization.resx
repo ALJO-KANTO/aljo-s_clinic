@@ -5797,8 +5797,8 @@
   <data name="Prepayment_Rent" xml:space="preserve">
     <value>Prepayment Rent</value>
   </data>
-  <data name="Prepayment_Other&#x27;s" xml:space="preserve">
-    <value>Prepayment Other&#x27;s</value>
+  <data name="Prepayment_Other's" xml:space="preserve">
+    <value>Prepayment Other's</value>
   </data>
   <data name="Deposits" xml:space="preserve">
     <value>Deposits</value>
@@ -5874,5 +5874,8 @@
   </data>
   <data name="Stock_Settlement_Gain" xml:space="preserve">
     <value>Stock Settlement Gain</value>
+  </data>
+  <data name="New - Advance Payment Voucher" xml:space="preserve">
+    <value>New - Advance Payment Voucher</value>
   </data>
 </root>

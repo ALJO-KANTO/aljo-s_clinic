@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
 using System.Windows.Forms;
-//using YamyProject.DAL;
-//using YamyProject.Localization;
+using YamyProject.DAL;
+using YamyProject.Localization;
 
 namespace YamyProject
 {
@@ -125,7 +125,7 @@ namespace YamyProject
         {
             InitializeComponent();
 
-           // LocalizationManager.LocalizeForm(this);
+            LocalizationManager.LocalizeForm(this);
 
             PaymentVoucherUpdatedHandler =
                 (sender, args) =>
@@ -137,7 +137,7 @@ namespace YamyProject
                 };
 
             //.PaymentVoucher +=
-                //PaymentVoucherUpdatedHandler;
+            //   PaymentVoucherUpdatedHandler;
 
             headerUC1.FormText = this.Text;
         }
@@ -200,6 +200,8 @@ namespace YamyProject
 
                 dgvDetails.ColumnHeadersDefaultCellStyle.Alignment =
                     DataGridViewContentAlignment.MiddleRight;
+
+                ApplyPaymentVoucherControlText(this, true);
             }
             else
             {
@@ -238,6 +240,66 @@ namespace YamyProject
 
                 dgvDetails.ColumnHeadersDefaultCellStyle.Alignment =
                     DataGridViewContentAlignment.MiddleLeft;
+
+                ApplyPaymentVoucherControlText(this, false);
+            }
+        }
+
+        // Translate only the requested labels and buttons on this form.
+        private void ApplyPaymentVoucherControlText(Control parent, bool arabic)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                string originalText = (control.Text ?? string.Empty).Trim();
+
+                switch (originalText)
+                {
+                    case "Payment Voucher Center":
+                        control.Text = arabic ? "مركز سندات الدفع" : "Payment Voucher Center";
+                        break;
+                    case "Type":
+                        control.Text = arabic ? "النوع" : "Type";
+                        break;
+                    case "From":
+                        control.Text = arabic ? "من" : "From";
+                        break;
+                    case "To":
+                        control.Text = arabic ? "إلى" : "To";
+                        break;
+                    case "All":
+                        control.Text = arabic ? "الكل" : "All";
+                        break;
+                    case "New PV":
+                        control.Text = arabic ? "سند دفع جديد" : "New PV";
+                        break;
+                    case "Edit PV":
+                        control.Text = arabic ? "تعديل سند الدفع" : "Edit PV";
+                        break;
+                    case "Delete":
+                        control.Text = arabic ? "حذف" : "Delete";
+                        break;
+                    case "Recycle":
+                        control.Text = arabic ? "استعادة" : "Recycle";
+                        break;
+                }
+
+                if (arabic)
+                {
+                    if (control.Text == "النوع" || control.Text == "من" ||
+                        control.Text == "إلى" || control.Text == "الكل" ||
+                        control.Text == "مركز سندات الدفع")
+                        control.RightToLeft = RightToLeft.Yes;
+                }
+                else
+                {
+                    if (originalText == "Type" || originalText == "From" ||
+                        originalText == "To" || originalText == "All" ||
+                        originalText == "Payment Voucher Center")
+                        control.RightToLeft = RightToLeft.No;
+                }
+
+                if (control.HasChildren)
+                    ApplyPaymentVoucherControlText(control, arabic);
             }
         }
 
@@ -325,6 +387,7 @@ namespace YamyProject
                     ClinicDatabase.CreateParameterNew("type", type));
 
             dgvCustomer.DataSource = dt;
+            ApplyPaymentGridHeaderLanguage(dgvCustomer);
             dgvCustomer.Columns["id"].Visible = false;
             dgvCustomer.Columns["Amount"].DefaultCellStyle.Format = "N2";
             //dgvCustomer.Columns["Amount"].Width = 100;
@@ -339,7 +402,7 @@ namespace YamyProject
                 dgvDetails.DataSource = null;
 
            // LocalizationManager.LocalizeDataGridViewHeaders(
-//
+
             if (dt != null)
                 AddViewDocImageColumn();
 
@@ -494,6 +557,53 @@ namespace YamyProject
             BindPVDetails();
         }
 
+        private void ApplyPaymentGridHeaderLanguage(DataGridView grid)
+        {
+            bool arabic = IsArabicCulture();
+
+            foreach (DataGridViewColumn column in grid.Columns)
+            {
+                string key = (column.Name ?? column.HeaderText ?? "").Trim();
+
+                switch (key)
+                {
+                    case "Date":
+                        column.HeaderText = arabic ? "التاريخ" : "Date";
+                        break;
+                    case "Payment Code":
+                        column.HeaderText = arabic ? "رمز الدفع" : "Payment Code";
+                        break;
+                    case "JV NO":
+                        column.HeaderText = arabic ? "رقم القيد" : "JV NO";
+                        break;
+                    case "Amount":
+                        column.HeaderText = arabic ? "المبلغ" : "Amount";
+                        break;
+                    case "Debit Account":
+                        column.HeaderText = arabic ? "حساب المدين" : "Debit Account";
+                        break;
+                    case "Credit Account":
+                        column.HeaderText = arabic ? "حساب الدائن" : "Credit Account";
+                        break;
+                    case "Inv No":
+                        column.HeaderText = arabic ? "رقم الفاتورة" : "Inv No";
+                        break;
+                    case "Invoice":
+                        column.HeaderText = arabic ? "الفاتورة" : "Invoice";
+                        break;
+                    case "Total":
+                        column.HeaderText = arabic ? "الإجمالي" : "Total";
+                        break;
+                    case "Payment":
+                        column.HeaderText = arabic ? "الدفعة" : "Payment";
+                        break;
+                    case "Description":
+                        column.HeaderText = arabic ? "الوصف" : "Description";
+                        break;
+                }
+            }
+        }
+
         private void BindPVDetails()
         {
             DataTable dt = ClinicDatabase.ExecuteDataTable(@"
@@ -502,12 +612,13 @@ namespace YamyProject
                       ClinicDatabase.CreateParameterNew("id", dgvCustomer.SelectedRows[0].Cells["id"].Value.ToString()));
 
             dgvDetails.DataSource = dt;
+            ApplyPaymentGridHeaderLanguage(dgvDetails);
 
             dgvDetails.Columns["Total"].DefaultCellStyle.Format = dgvDetails.Columns["Payment"].DefaultCellStyle.Format = "N2";
             //dgvDetails.Columns["Total"].Width = 100;
             dgvDetails.Columns["Total"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dgvDetails.Columns["Payment"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-           // LocalizationManager.LocalizeDataGridViewHeaders(dgvDetails);
+             LocalizationManager.LocalizeDataGridViewHeaders(dgvDetails);
         }
 
         private void btnDelete_Click(object sender, EventArgs e)

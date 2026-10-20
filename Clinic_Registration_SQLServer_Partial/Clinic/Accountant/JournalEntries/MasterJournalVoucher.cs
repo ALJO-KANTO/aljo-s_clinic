@@ -57,7 +57,38 @@ namespace YamyProject
         private void ApplyJournalLanguage()
         {
             bool arabic = IsArabicLanguage();
+            if (menuStrip1 != null && newCustomerToolStripMenuItem != null)
+            {
+                newCustomerToolStripMenuItem.Alignment = arabic
+                    ? ToolStripItemAlignment.Right
+                    : ToolStripItemAlignment.Left;
 
+                newCustomerToolStripMenuItem.RightToLeft = arabic
+                    ? RightToLeft.Yes
+                    : RightToLeft.No;
+
+                // Translate the dropdown heading.
+                newCustomerToolStripMenuItem.Text = arabic
+                    ? "عمليات سندات القيد   ▼"
+                    : "Journal Voucher Operations   ▼";
+
+                // Translate the dropdown items.
+                nToolStripMenuItem.Text = arabic
+                    ? "سند قيد جديد"
+                    : "New Journal Voucher";
+
+                editCustomerToolStripMenuItem1.Text = arabic
+                    ? "تعديل سند القيد"
+                    : "Edit Journal Voucher";
+
+                deleteCustomerToolStripMenuItem.Text = arabic
+                    ? "حذف سند القيد"
+                    : "Delete Journal Voucher";
+
+                restoreJournalVoucherToolStripMenuItem.Text = arabic
+                    ? "استعادة سند القيد"
+                    : "Restore Journal Voucher";
+            }
             // Translate existing controls only; do not add, remove, move or resize controls.
             TranslateJournalControls(this, arabic);
 
@@ -80,6 +111,7 @@ namespace YamyProject
                 foreach (DataGridViewColumn column in dgvDetails.Columns)
                     column.HeaderText = TranslateJournalText(column.HeaderText, arabic);
             }
+
         }
 
         private void TranslateJournalControls(Control parent, bool arabic)
@@ -368,5 +400,6 @@ namespace YamyProject
         {
             this.BringToFront();
         }
+       
     }
 }

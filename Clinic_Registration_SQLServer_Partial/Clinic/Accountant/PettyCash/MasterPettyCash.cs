@@ -4,8 +4,8 @@ using MySql.Data.MySqlClient;
 using System;
 using System.Data;
 using System.Windows.Forms;
-//using YamyProject.DAL;
-//using YamyProject.Localization;
+using YamyProject.DAL;
+using YamyProject.Localization;
 
 namespace YamyProject
 {
@@ -78,6 +78,13 @@ namespace YamyProject
                 case "Confirm Deletion": return arabic ? "تأكيد الحذف" : value;
                 case "Cannot delete this Petty Cash Card because it is referenced in Petty Cash Vouchers.": return arabic ? "لا يمكن حذف بطاقة العهدة النثرية لأنها مرتبطة بسندات العهدة النثرية." : value;
                 case "Deletion Error": return arabic ? "خطأ في الحذف" : value;
+
+                case "Configuration": return arabic ? "الإعدادات" : "Configuration";
+                case "Search By Name, Code": return arabic ? "البحث بالاسم أو الرمز" : "Search By Name, Code";
+                case "Petty Cash Log": return arabic ? "سجل العهدة النثرية" : "Petty Cash Log";
+                case "Petty Cash Voucher": return arabic ? "سند العهدة النثرية" : "Petty Cash Voucher";
+
+
                 default: return value;
             }
         }
@@ -86,6 +93,8 @@ namespace YamyProject
         {
             bool arabic = IsArabicLanguage();
             TranslatePettyCashControls(this, arabic);
+            TranslatePettyCashControls(this, arabic);
+            TranslatePettyCashSpecificControls(this, arabic);
             if (headerUC1 != null)
                 headerUC1.FormText = TranslatePettyCashText("PettyCash Center", arabic);
             TranslateGridHeaders(dgvEmployees, arabic);
@@ -132,7 +141,7 @@ namespace YamyProject
         public MasterPettyCash()
         {
             InitializeComponent();
-           // LocalizationManager.LocalizeForm(this);
+            LocalizationManager.LocalizeForm(this);
             headerUC1.FormText = this.Text;
             ApplyPettyCashLanguage();
             employeeUpdateHandler = (sender, args) => BindEmployees();
@@ -171,7 +180,7 @@ namespace YamyProject
             dgvEmployees.Columns["Employee Name"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             dgvEmployees.Columns["Amount"].DefaultCellStyle.Format = "N2";
 
-           // LocalizationManager.LocalizeDataGridViewHeaders(dgvEmployees);
+            LocalizationManager.LocalizeDataGridViewHeaders(dgvEmployees);
             ApplyPettyCashLanguage();
             if (dt != null)
             {
@@ -213,6 +222,10 @@ namespace YamyProject
             //AppTheme.DefaultFont(dgvInvoiceCash);
             //AppTheme.DefaultFont(dgvRequest);
             ApplyPettyCashLanguage();
+
+            // Reapply after the form finishes loading, so nested/custom controls
+            // that set their text during loading also receive the selected language.
+            BeginInvoke((MethodInvoker)(() => ApplyPettyCashLanguage()));
         }
 
         private void dgvEmployees_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -305,7 +318,7 @@ namespace YamyProject
                 //dgvInvoiceCash.DefaultCellStyle.Font = new Font("Times New Roman", 9);
                 dgvInvoiceCash.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
 
-               // LocalizationManager.LocalizeDataGridViewHeaders(dgvInvoiceCash);
+                LocalizationManager.LocalizeDataGridViewHeaders(dgvInvoiceCash);
                 ApplyPettyCashLanguage();
             }
             else
@@ -345,7 +358,7 @@ namespace YamyProject
                 //dgvInvoiceCash.DefaultCellStyle.Font = new Font("Times New Roman", 9);
                 dgvInvoiceCash.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
 
-               // LocalizationManager.LocalizeDataGridViewHeaders(dgvInvoiceCash);
+                LocalizationManager.LocalizeDataGridViewHeaders(dgvInvoiceCash);
                 ApplyPettyCashLanguage();
             }
         }
@@ -394,7 +407,7 @@ namespace YamyProject
                 //dgvRequest.DefaultCellStyle.Font = new Font("Times New Roman", 9);
                 dgvRequest.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
 
-               // LocalizationManager.LocalizeDataGridViewHeaders(dgvRequest);
+                LocalizationManager.LocalizeDataGridViewHeaders(dgvRequest);
                 ApplyPettyCashLanguage();
             }
         }
@@ -570,7 +583,7 @@ namespace YamyProject
             dgvInvoice.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             ApplyPettyCashLanguage();
 
-            //LocalizationManager.LocalizeDataGridViewHeaders(dgvInvoice);
+            LocalizationManager.LocalizeDataGridViewHeaders(dgvInvoice);
             //}
         }
 
@@ -925,6 +938,21 @@ namespace YamyProject
                 {
                     MessageBox.Show("Invalid or missing ID.");
                 }
+            }
+        }
+        private void TranslatePettyCashSpecificControls(Control parent, bool arabic)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                string text = (control.Text ?? "").Trim();
+
+                if (text.Equals("Configuration", StringComparison.OrdinalIgnoreCase))
+                    control.Text = arabic ? "الإعدادات" : "Configuration";
+                else if (text.Equals("Search By Name, Code", StringComparison.OrdinalIgnoreCase))
+                    control.Text = arabic ? "البحث بالاسم أو الرمز" : "Search By Name, Code";
+
+                if (control.HasChildren)
+                    TranslatePettyCashSpecificControls(control, arabic);
             }
         }
     }
