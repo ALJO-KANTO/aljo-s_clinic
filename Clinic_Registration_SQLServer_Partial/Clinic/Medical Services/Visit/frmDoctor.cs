@@ -984,25 +984,66 @@ AND active = 0        ORDER BY name;";
         #region Utilities
         private void _RefreshQueueData()
         {
-            DateTime? selectedDate = mdChkToday.Checked ? (DateTime?)null : mdQueueDate.Value.Date;
+            int selectedVisitID = -1;
 
-            DataTable dtQueue = clsVisit.GetPatientsWaitingForDoctors(_DoctorPersonID, selectedDate);
+            if (dgvDoctorQueue.CurrentRow != null)
+            {
+                int.TryParse(
+                    Convert.ToString(
+                        dgvDoctorQueue.CurrentRow.Cells["VisitID"].Value),
+                    out selectedVisitID);
+            }
+
+            DateTime? selectedDate = mdChkToday.Checked
+                ? (DateTime?)null
+                : mdQueueDate.Value.Date;
+
+            DataTable dtQueue =
+                clsVisit.GetPatientsWaitingForDoctors(
+                    _DoctorPersonID, selectedDate);
+
             if (dtQueue == null)
                 dtQueue = new DataTable();
 
-            DataView queueView = dtQueue.DefaultView;
-
-            //if (dtQueue.Columns.Contains("StatusText"))
-            //{
-            //    queueView.RowFilter = "TRIM(StatusText) = 'InQueue'";
-            //}
-
             dgvDoctorQueue.AutoGenerateColumns = false;
-            dgvDoctorQueue.DataSource = queueView;
+            dgvDoctorQueue.DataSource = dtQueue.DefaultView;
 
-            // Apply existing Today / Date / Search filters.
-            
             MdFilterQueue();
+
+            dgvDoctorQueue.ClearSelection();
+
+            bool restored = false;
+
+            foreach (DataGridViewRow row in dgvDoctorQueue.Rows)
+            {
+                if (row.IsNewRow)
+                    continue;
+
+                int visitID;
+
+                if (!int.TryParse(
+                    Convert.ToString(row.Cells["VisitID"].Value),
+                    out visitID))
+                    continue;
+
+                if (visitID == selectedVisitID)
+                {
+                    dgvDoctorQueue.CurrentCell =
+                        row.Cells["VisitID"];
+
+                    row.Selected = true;
+                    restored = true;
+                    break;
+                }
+            }
+
+            if (!restored)
+            {
+                dgvDoctorQueue.ClearSelection();
+
+                if (dgvDoctorQueue.CurrentCell != null)
+                    dgvDoctorQueue.CurrentCell = null;
+            }
 
             dgvDoctorQueue.BringToFront();
             dgvDoctorQueue.Refresh();
@@ -1285,20 +1326,38 @@ AND active = 0        ORDER BY name;";
 
         private void btnInProgress_Click(object sender, EventArgs e)
         {
-            if (_Visit == null || _VisitID <= 0 || _AppointmentID <= 0)
+            if (dgvDoctorQueue.CurrentRow == null)
             {
-                ShowWarning("Please select a patient visit first.");
+                ShowWarning("Please select a patient first.");
+                return;
+            }
+
+            int visitID = Convert.ToInt32(
+                dgvDoctorQueue.CurrentRow.Cells["VisitID"].Value);
+
+            int appointmentID = Convert.ToInt32(
+                dgvDoctorQueue.CurrentRow.Cells["AppointmentID"].Value);
+
+            if (visitID <= 0 || appointmentID <= 0)
+            {
+                ShowWarning("Invalid patient visit.");
                 return;
             }
 
             if (ConfirmAction("Start consultation for this patient?")
                 != DialogResult.Yes)
+                return;
+
+            clsVisit selectedVisit = clsVisit.Find(visitID);
+
+            if (selectedVisit == null)
             {
+                ShowError("Unable to load selected visit.");
                 return;
             }
 
             bool updated = clsAppointment.UpdateAppointmentStatus(
-                _AppointmentID,
+                appointmentID,
                 clsAppointment.enAppointmentStatus.Progress,
                 clsGlobal.CurrentUser.UserID);
 
@@ -1307,37 +1366,26 @@ AND active = 0        ORDER BY name;";
                 ShowError("Unable to start the appointment.");
                 return;
             }
-            else
-            {
-                int rowIndex = dgvDoctorQueue.SelectedRows[0].Index;
-                int _visitID = Convert.ToInt32(dgvDoctorQueue.Rows[rowIndex].Cells["VisitID"].Value);
-                if (_visitID == 0) return;
-                int _appointmentID = Convert.ToInt32(dgvDoctorQueue.Rows[rowIndex].Cells["AppointmentID"].Value);
-                _Visit = clsVisit.Find(_visitID);
-                if (_Visit == null) return;
-                int _doctorID = Convert.ToInt32(_Visit.DoctorID);
-                int _patientID = Convert.ToInt32(_Visit.PatientID);
-                lblAppointmentID.Text = _appointmentID.ToString();
-                lblDoctorID.Text = _doctorID.ToString();
-                lblPatientID.Text = _patientID.ToString();
-            }
 
-                // Enable visit details, services, prescription and saving
-                SetFormControlsState(true);
+            _Visit = selectedVisit;
+            _VisitID = visitID;
+            _AppointmentID = appointmentID;
 
-            // Show the visit ID
-            lbVisitID.Text = _VisitID.ToString();
+            lblVisitID.Text = visitID.ToString();
+            lbVisitID.Text = visitID.ToString();
+            lblAppointmentID.Text = appointmentID.ToString();
+            lblDoctorID.Text = _Visit.DoctorID.ToString();
+            lblPatientID.Text = _Visit.PatientID.ToString();
 
-            // Refresh waiting list
+            _FillVitalsInfo();
+
+            SetFormControlsState(true);
+
             _RefreshQueueData();
 
-            // Open Visit Information tab
             tcVisitInfo.SelectedIndex = 0;
-
-            // Focus diagnosis field
             txtDiagnosis.Focus();
         }
-
         private void btnPostpone_Click(object sender, EventArgs e)
         {
             if (_ProcessAppointmentStatus(clsAppointment.enAppointmentStatus.Postponed,
@@ -1359,33 +1407,74 @@ AND active = 0        ORDER BY name;";
                 column.SortMode = DataGridViewColumnSortMode.NotSortable;
             }
         }
-        
-        private void dgvDoctorQueue_CellClick(object sender, DataGridViewCellEventArgs e)
+
+        private void dgvDoctorQueue_CellClick(
+            object sender,
+            DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
-            if (dgvDoctorQueue.Columns[e.ColumnIndex].Name == "IsCalledCheck")
+            if (e.RowIndex < 0 || e.ColumnIndex < 0)
+                return;
+
+            DataGridViewRow row =
+                dgvDoctorQueue.Rows[e.RowIndex];
+
+            if (dgvDoctorQueue.Columns[e.ColumnIndex].Name
+                == "IsCalledCheck")
             {
-                bool isCalled = Convert.ToBoolean(dgvDoctorQueue.Rows[e.RowIndex].Cells["IsCalledCheck"].Value);
-                int appointmentId = Convert.ToInt32(dgvDoctorQueue.Rows[e.RowIndex].Cells["AppointmentID"].Value);
-                if (ConfirmAction("Are you sure you want to " + (isCalled ? "uncall" : "call") + " this patient?") == DialogResult.Yes)
+                bool isCalled = Convert.ToBoolean(
+                    row.Cells["IsCalledCheck"].Value);
+
+                int appointmentId = Convert.ToInt32(
+                    row.Cells["AppointmentID"].Value);
+
+                if (ConfirmAction(
+                    "Are you sure you want to " +
+                    (isCalled ? "uncall" : "call") +
+                    " this patient?") == DialogResult.Yes)
                 {
-                    clsAppointment.UpdatePatientCallStatus(appointmentId, !isCalled, clsGlobal.CurrentUser.UserID);
+                    clsAppointment.UpdatePatientCallStatus(
+                        appointmentId,
+                        !isCalled,
+                        clsGlobal.CurrentUser.UserID);
+
                     _RefreshQueueData();
                 }
+
+                return;
             }
-            //int _visitID = Convert.ToInt32(dgvDoctorQueue.Rows[e.RowIndex].Cells["VisitID"].Value);
-            //if (_visitID == 0) return;
-            //int _appointmentID = Convert.ToInt32(dgvDoctorQueue.Rows[e.RowIndex].Cells["AppointmentID"].Value);
-            //_Visit = clsVisit.Find(_visitID);
-            //if (_Visit == null) return;
-            //int _doctorID = Convert.ToInt32(_Visit.DoctorID);
-            //int _patientID = Convert.ToInt32(_Visit.PatientID);
-            //lblAppointmentID.Text = _appointmentID.ToString();
-            //lblDoctorID.Text = _doctorID.ToString();
-            //lblPatientID.Text = _patientID.ToString();
 
+            int visitID = Convert.ToInt32(
+                row.Cells["VisitID"].Value);
+
+            if (visitID <= 0)
+                return;
+
+            clsVisit selectedVisit = clsVisit.Find(visitID);
+
+            if (selectedVisit == null)
+            {
+                ShowWarning("Unable to load selected patient visit.");
+                return;
+            }
+
+            _Visit = selectedVisit;
+            _VisitID = visitID;
+            _AppointmentID = selectedVisit.AppointmentID;
+
+            lblVisitID.Text = _VisitID.ToString();
+            lbVisitID.Text = _VisitID.ToString();
+
+            lblAppointmentID.Text =
+                _AppointmentID.ToString();
+
+            lblDoctorID.Text =
+                _Visit.DoctorID.ToString();
+
+            lblPatientID.Text =
+                _Visit.PatientID.ToString();
+
+            _FillVitalsInfo();
         }
-
         //private void dgvDoctorQueue_CellContentClick(object sender, DataGridViewCellEventArgs e)
         //{
         //    if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
