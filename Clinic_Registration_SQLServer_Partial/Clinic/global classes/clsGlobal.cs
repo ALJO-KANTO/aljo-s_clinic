@@ -16,7 +16,7 @@ using System.Windows.Forms;
 
 namespace Clinic
 {
-    internal static  class clsGlobal
+    public static  class clsGlobal
     {
         public enum UserRole { Admin = 1, Doctor = 2, Nurse = 3, Receptionist = 4, Staff = 5,Pharmacist= 6, Cashier = 7 }
 
@@ -265,17 +265,17 @@ public static class CryptoHelper
  public static class UserPermissions
 
 {
-    internal static bool canDelete(string v)
+    public static bool canDelete(string v)
     {
         return true;
     }
 
-    internal static bool canEdit(string v)
+    public static bool canEdit(string v)
     {
         return true;
     }
 
-    internal static bool canView(string v)
+    public static bool canView(string v)
     {
         return true;
     }
@@ -509,7 +509,7 @@ public static class BindCombos
         //return lst;
     }
 
-    internal static void PopulateItems()
+    public static void PopulateItems()
     {
         throw new NotImplementedException();
     }
@@ -1704,7 +1704,7 @@ public static class BindCombos
 public static class BindDataTable
 {
     public static DataTable tableCountries, tableCities, tableGeneralSettings, tableModules;
-    internal static DataTable tableLevel4, tableCoaConfig;
+    public static DataTable tableLevel4, tableCoaConfig;
     public static Dictionary<string, int> coaConfigDict;
 
     public static void FetchData()
@@ -1764,7 +1764,7 @@ public static class BindDataTable
         table = ClinicDatabase.ExecuteDataTable(query);
     }
 
-    internal static void LoadConfigData()
+    public static void LoadConfigData()
     {
         string configQuery = "SELECT category, account_id FROM tbl_coa_config";
         BindDataTable.tableCoaConfig = ClinicDatabase.ExecuteDataTable(configQuery);
@@ -1784,22 +1784,22 @@ public static class BindDataTable
 }
 public  class ItemSuggestion
 {
-    public  string Code { get; internal set; }
-    public  string Name { get; internal set; }
+    public  string Code { get; set; }
+    public  string Name { get; set; }
 }
 public static class AttachmentManager
 {
-    internal static bool HasAttachment(int purchaseId, string v)
+    public static bool HasAttachment(int purchaseId, string v)
     {
         throw new NotImplementedException();
     }
 
-    internal static void OpenAttachmentByType(int purchaseId, string v)
+    public static void OpenAttachmentByType(int purchaseId, string v)
     {
         throw new NotImplementedException();
     }
 
-    internal static void SaveAttachment(string v, int fId, string fileName)
+    public static void SaveAttachment(string v, int fId, string fileName)
     {
         throw new NotImplementedException();
     }
@@ -2095,35 +2095,141 @@ public static class AmountToWordsHelper
 }
 public static class EventHub
 {
-    internal static EventHandler wareHouse;
 
-    public static EventHandler VendorCategory { get; internal set; }
-    public static EventHandler Item { get; internal set; }
-    public static EventHandler Vendor { get; internal set; }
-    public static EventHandler PurchaseInv { get; internal set; }
+    public static event EventHandler lvl1Account;
+    public static event EventHandler lvl2Account;
+    public static event EventHandler lvl3Account;
+    public static event EventHandler lvl4Account;
+    public static event EventHandler Journal;
+    public static event EventHandler User;
+    public static event EventHandler Roles;
+    public static event EventHandler Customer;
+    public static event EventHandler CustomerCategory;
+    public static event EventHandler ReceiptVoucher;
+    public static event EventHandler PaymentVoucher;
+    public static event EventHandler PettyCashVoucher;
+    public static event EventHandler SalesInv;
+    public static event EventHandler JobCard;
+    public static event EventHandler SalesOrder;
+    public static event EventHandler SalesQuotation;
+    public static event EventHandler SalesProforma;
+    public static event EventHandler DeliveryNote;
+    public static event EventHandler SalesReturn;
+    public static event EventHandler Vendor;
+    public static event EventHandler SubContract;
+    public static event EventHandler VendorCategory;
+    public static event EventHandler SubContractCategory;
+    public static event EventHandler PurchaseInv;
+    public static event EventHandler PurchaseOrder;
+    public static event EventHandler PurchaseOffer;
+    public static event EventHandler MaterialRequest;
+    public static event EventHandler MaterialReceived;
+    public static event EventHandler PurchaseReturn;
+    public static event EventHandler DamageInv;
+    public static event EventHandler Item;
+    public static event EventHandler ItemCategory;
+    public static event EventHandler FixedAssetsCategory;
+    public static event EventHandler ItemUnit;
+    public static event EventHandler wareHouse;
+    public static event EventHandler Employee;
+    public static event EventHandler EmployeeDept;
+    public static event EventHandler EmployeePosition;
+    public static event EventHandler Bank;
+    public static event EventHandler PDCPayable;
+    public static event EventHandler PDCReceivable;
+    public static event EventHandler Check;
+    public static event EventHandler BankCard;
+    public static event EventHandler PrepaidExpense;
+    public static event EventHandler FixedAsset;
+    public static event EventHandler CreditNote;
+    public static event EventHandler DebitNote;
+    public static event EventHandler MainCostCenter;
+    public static event EventHandler TaxSchedule;
+    public static event EventHandler Project;
+    public static event EventHandler ProjectPlanning;
+    public static event EventHandler ProjectTendering;
+    public static event EventHandler ProjectViewSites;
+    public static event EventHandler ProjectViewResource;
+    public static event EventHandler ProjectInvoice;
+    public static event EventHandler ProjectClassification;
+    public static event EventHandler ProjectPhase;
+    public static event EventHandler MaterialReservation;
+    public static event EventHandler MaterialProcurement;
+    public static event EventHandler MaterialIssue;
+    public static event EventHandler MaterialReceipt;
+    public static event EventHandler MaterialReturn;
+    public static event EventHandler MaterialTransfer;
+    public static event EventHandler MaterialConsumption;
+    public static event EventHandler StockReconciliation;
 
-    internal static void RefreshPurchase()
+    private static void RaiseEvent(EventHandler handler)
     {
-        throw new NotImplementedException();
+        handler?.Invoke(null, EventArgs.Empty);
     }
+    public static void Refreshlvl1Account() => RaiseEvent(lvl1Account);
+    public static void Refreshlvl2Account() => RaiseEvent(lvl2Account);
+    public static void Refreshlvl3Account() => RaiseEvent(lvl3Account);
+    public static void Refreshlvl4Account() => RaiseEvent(lvl4Account);
 
-    internal static void RefreshPurchaseOffer()
-    {
-        throw new NotImplementedException();
-    }
-
-    internal static void RefreshPurchaseOrder()
-    {
-        throw new NotImplementedException();
-    }
-
-    internal static void RefreshRoles()
-    {
-        throw new NotImplementedException();
-    }
-
-    internal static void RefreshVendor()
-    {
-        throw new NotImplementedException();
-    }
+    public static void RefreshJournal() => RaiseEvent(Journal);
+    public static void RefreshUser() => RaiseEvent(User);
+    public static void RefreshRoles() => RaiseEvent(Roles);
+    public static void RefreshCustomer() => RaiseEvent(Customer);
+    public static void RefreshCustomerCategory() => RaiseEvent(CustomerCategory);
+    public static void RefreshJobCard() => RaiseEvent(JobCard);
+    public static void RefreshSales() => RaiseEvent(SalesInv);
+    public static void RefreshSalesOrder() => RaiseEvent(SalesOrder);
+    public static void RefreshQuotation() => RaiseEvent(SalesQuotation);
+    public static void RefreshSalesProforma() => RaiseEvent(SalesProforma);
+    public static void RefreshDeliveryNote() => RaiseEvent(DeliveryNote);
+    public static void RefreshSalesReturn() => RaiseEvent(SalesReturn);
+    public static void RefreshVendor() => RaiseEvent(Vendor);
+    public static void RefreshSubContract() => RaiseEvent(SubContract);
+    public static void RefreshVendorCategory() => RaiseEvent(VendorCategory);
+    public static void RefreshSubContractCategory() => RaiseEvent(SubContractCategory);
+    public static void RefreshPurchase() => RaiseEvent(PurchaseInv);
+    public static void RefreshPurchaseOrder() => RaiseEvent(PurchaseOrder);
+    public static void RefreshPurchaseOffer() => RaiseEvent(PurchaseOffer);
+    public static void RefreshMaterialRequest() => RaiseEvent(MaterialRequest);
+    public static void RefreshMaterialReceived() => RaiseEvent(MaterialReceived);
+    public static void RefreshPurchaseReturn() => RaiseEvent(PurchaseReturn);
+    public static void RefreshDamage() => RaiseEvent(DamageInv);
+    public static void RefreshItem() => RaiseEvent(Item);
+    public static void RefreshWarehouse() => RaiseEvent(wareHouse);
+    public static void RefreshItemUnit() => RaiseEvent(ItemUnit);
+    public static void RefreshItemCategory() => RaiseEvent(ItemCategory);
+    public static void RefreshFixedAsset() => RaiseEvent(FixedAsset);
+    public static void RefreshFixedAssetsCategory() => RaiseEvent(FixedAssetsCategory);
+    public static void RefreshReceiptVoucher() => RaiseEvent(ReceiptVoucher);
+    public static void RefreshPaymentVoucher() => RaiseEvent(PaymentVoucher);
+    public static void RefreshPettyCashVoucher() => RaiseEvent(PettyCashVoucher);
+    public static void RefreshEmployee() => RaiseEvent(Employee);
+    public static void RefreshEmployeeDept() => RaiseEvent(EmployeeDept);
+    public static void RefreshEmployeePosition() => RaiseEvent(EmployeePosition);
+    public static void RefreshBank() => RaiseEvent(Bank);
+    public static void RefreshCheck() => RaiseEvent(Check);
+    public static void RefreshPDCPayable() => RaiseEvent(PDCPayable);
+    public static void RefreshPDCReceivable() => RaiseEvent(PDCReceivable);
+    public static void RefreshBankCard() => RaiseEvent(BankCard);
+    public static void RefreshPrepaidExpense() => RaiseEvent(PrepaidExpense);
+    public static void RefreshCreditNote() => RaiseEvent(CreditNote);
+    public static void RefreshDebitNote() => RaiseEvent(DebitNote);
+    public static void RefreshMainCostCenter() => RaiseEvent(MainCostCenter);
+    public static void RefreshTaxSchedule() => RaiseEvent(TaxSchedule);
+    public static void RefreshProject() => RaiseEvent(Project);
+    public static void RefreshProjectPlanning() => RaiseEvent(ProjectPlanning);
+    public static void RefreshProjectTendering() => RaiseEvent(ProjectTendering);
+    public static void RefreshProjectViewSites() => RaiseEvent(ProjectViewSites);
+    public static void RefreshProjectViewResource() => RaiseEvent(ProjectViewResource);
+    public static void RefreshProjectInvoice() => RaiseEvent(ProjectInvoice);
+    public static void RefreshProjectClassification() => RaiseEvent(ProjectClassification);
+    public static void RefreshPhase() => RaiseEvent(ProjectPhase);
+    public static void RefreshMaterialReservation() => RaiseEvent(MaterialReservation);
+    public static void RefreshMaterialProcurement() => RaiseEvent(MaterialProcurement);
+    public static void RefreshMaterialIssue() => RaiseEvent(MaterialIssue);
+    public static void RefreshMaterialReceipt() => RaiseEvent(MaterialReceipt);
+    public static void RefreshMaterialReturn() => RaiseEvent(MaterialReturn);
+    public static void RefreshMaterialTransfer() => RaiseEvent(MaterialTransfer);
+    public static void RefreshMaterialConsumption() => RaiseEvent(MaterialConsumption);
+    public static void RefreshStockReconciliation() => RaiseEvent(StockReconciliation);
 }
