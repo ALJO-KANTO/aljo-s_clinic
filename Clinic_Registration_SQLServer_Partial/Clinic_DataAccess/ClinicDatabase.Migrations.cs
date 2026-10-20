@@ -3072,6 +3072,23 @@ namespace Clinic_DataAccess
                                 DEFAULT CHARSET=utf8mb4
                                 COLLATE=utf8mb4_general_ci;"
                         },
+                        new DatabaseMigration
+                        {
+                            Version = "20261014_003",
+                            Description = "Create tbl_item_assembly tables",
+                            Sql = @"
+                                CREATE TABLE IF NOT EXISTS `tbl_item_assembly`
+                                (
+                                    `id` INT NOT NULL AUTO_INCREMENT,
+                                    `assembly_id` INT DEFAULT NULL,
+                                    `item_id` INT DEFAULT NULL,
+                                    `qty` DECIMAL(20,4) DEFAULT NULL,
+                                    PRIMARY KEY (`id`)
+                                )
+                                ENGINE=InnoDB
+                                DEFAULT CHARSET=utf8mb4
+                                COLLATE=utf8mb4_general_ci;"
+                        },
 
 /*************************************Table Views************************************************/
 
