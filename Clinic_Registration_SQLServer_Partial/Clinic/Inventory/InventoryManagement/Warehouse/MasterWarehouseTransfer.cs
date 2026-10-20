@@ -278,7 +278,7 @@ namespace YamyProject
         {
             CommonInsert.InsertItemTransaction(date, "Warehouse Transfer", invId.ToString(), itemId.ToString(),
                     cost_price.ToString("N2"), qtyIn.ToString("N2"), price.ToString("N2"), qtyOut.ToString("N2"), "0",
-                    "Warehouse Transfer No. " + invId + description, warehouseId.ToString());
+                    "Warehouse Transfer No. " + invId + description, warehouseId.ToString(), "0", "0", "0", "0");
         }
 
         private void txtSearchFrom_TextChanged(object sender, EventArgs e)

@@ -5797,7 +5797,7 @@
   <data name="Prepayment_Rent" xml:space="preserve">
     <value>إيجار مدفوع مقدماً</value>
   </data>
-  <data name="Prepayment_Other&#x27;s" xml:space="preserve">
+  <data name="Prepayment_Other's" xml:space="preserve">
     <value>دفعات مقدمة أخرى</value>
   </data>
   <data name="Deposits" xml:space="preserve">
@@ -5874,5 +5874,8 @@
   </data>
   <data name="Stock_Settlement_Gain" xml:space="preserve">
     <value>أرباح تسوية المخزون</value>
+  </data>
+  <data name="New - Advance Payment Voucher" xml:space="preserve">
+    <value>سند دفع مقدم جديد</value>
   </data>
 </root>

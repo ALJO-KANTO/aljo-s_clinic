@@ -1715,7 +1715,7 @@ namespace YamyProject
         private void insertItemTransaction()
         {
             CommonInsert.InsertItemTransaction(dtStart.Value.Date, "Opening Qty", "0", id.ToString(), txtCostPrice.Text,
-                txtOnHand.Text, "0", "0", txtOnHand.Text, "Opening Balance", cmbWarehouse.SelectedValue.ToString());
+                txtOnHand.Text, "0", "0", txtOnHand.Text, "Opening Balance", cmbWarehouse.SelectedValue.ToString(), "0", "0", "0", "0");
         }
         private void insertItemJournal()
         {

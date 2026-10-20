@@ -369,7 +369,7 @@ namespace YamyProject
                             remainingQty -= qtyToUse;
 
                             CommonInsert.InsertItemTransaction(dtInv.Value.Date, "Stock Settlement", invId.ToString(), row.Cells["itemId"].Value.ToString(),
-                                row.Cells["cost_price"].Value.ToString(), "0", "0", qtyToUse.ToString(), "0", "Stock Settlement No. " + invCode, "0");
+                                row.Cells["cost_price"].Value.ToString(), "0", "0", qtyToUse.ToString(), "0", "Stock Settlement No. " + invCode, "0", "0", "0", "0", "0");
 
                             ClinicDatabase.ExecuteNonQuery("UPDATE tbl_item_transaction SET qty_inc = qty_inc - @qty WHERE id = @id",
                                 ClinicDatabase.CreateParameterNew("qty", qtyToUse),
@@ -389,7 +389,7 @@ namespace YamyProject
                             remainingQty -= qtyToUse;
 
                             CommonInsert.InsertItemTransaction(dtInv.Value.Date, "Stock Settlement", invId.ToString(), row.Cells["itemId"].Value.ToString(),
-                                row.Cells["cost_price"].Value.ToString(), "0", "0", qtyToUse.ToString(), "0", "Stock Settlement No. " + invCode, "0");
+                                row.Cells["cost_price"].Value.ToString(), "0", "0", qtyToUse.ToString(), "0", "Stock Settlement No. " + invCode, "0", "0", "0", "0", "0");
 
                             ClinicDatabase.ExecuteNonQuery("UPDATE tbl_item_transaction SET qty_inc = qty_inc - @qty WHERE id = @id",
                                 ClinicDatabase.CreateParameterNew("qty", qtyToUse),
@@ -404,7 +404,7 @@ namespace YamyProject
                         ClinicDatabase.CreateParameterNew("id", row.Cells["itemId"].Value.ToString())))
 
                         CommonInsert.InsertItemTransaction(dtInv.Value.Date, "Stock Settlement", invId.ToString(), row.Cells["itemId"].Value.ToString(),
-                           row.Cells["cost_price"].Value.ToString(), "0", row.Cells["cost_price"].Value.ToString(), qty.ToString(), "0", "Stock Settlement No. " + invCode, "0");
+                           row.Cells["cost_price"].Value.ToString(), "0", row.Cells["cost_price"].Value.ToString(), qty.ToString(), "0", "Stock Settlement No. " + invCode, "0", "0", "0", "0", "0");
                 }
 
             }
@@ -413,7 +413,7 @@ namespace YamyProject
                 qty = decimal.Parse(row.Cells["newQty"].Value.ToString()) - decimal.Parse(row.Cells["qty"].Value.ToString());
 
                 CommonInsert.InsertItemTransaction(dtInv.Value.Date, "Stock Settlement", invId.ToString(), row.Cells["itemId"].Value.ToString(), row.Cells["cost_price"].Value.ToString(),
-                      qty.ToString(), "0", "0",qty.ToString(), "Stock Settlement No. " + invCode, "0");
+                      qty.ToString(), "0", "0", qty.ToString(), "Stock Settlement No. " + invCode, "0", "0", "0", "0", "0");
 
             }
 

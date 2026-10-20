@@ -309,15 +309,14 @@ public static class Utilities
 }
 public static class CommonInsert
 {
-    
 
     public static void InsertItemTransaction(DateTime date, string type, string reference, string itemId,
-                              string costPrice, string qtyIn, string salesPrice, string qtyOut, string qtyInc,
-                              string description, string warehouseId, int? sourceTransactionId = 0)
+                                  string costPrice, string qtyIn, string salesPrice, string qtyOut, string qtyInc,
+                                  string description, string warehouseId, string batchId, string unitId, string factor, string qtyDisplay)
     {
         ClinicDatabase.ExecuteNonQuery(@"INSERT INTO tbl_item_transaction 
-                    (date, type, reference, item_id, cost_price, qty_in,sales_price, qty_out,qty_inc, description, warehouse_id , GlobalId, DeviceId,source_transaction_id) 
-                    VALUES (@date, @type, @reference, @itemId, @costPrice, @qtyIn,@sales_price, @qtyOut,@qtyInc, @description, @warehouseId, @GlobalId, @DeviceId,@source_transaction_id);",
+                    (date, type, reference, item_id, cost_price, qty_in,sales_price, qty_out,qty_inc, description, warehouse_id, unit_id, factor, qty_display, batch_id) 
+                    VALUES (@date, @type, @reference, @itemId, @costPrice, @qtyIn,@sales_price, @qtyOut,@qtyInc, @description, @warehouseId, @unit_id, @factor, @qty_display, @batchId);",
                                 ClinicDatabase.CreateParameterNew("@date", date),
                                 ClinicDatabase.CreateParameterNew("@type", type),
                                 ClinicDatabase.CreateParameterNew("@reference", reference),
@@ -328,10 +327,11 @@ public static class CommonInsert
                                 ClinicDatabase.CreateParameterNew("@qtyOut", qtyOut),
                                 ClinicDatabase.CreateParameterNew("@qtyInc", qtyInc),
                                 ClinicDatabase.CreateParameterNew("@description", description),
-                                ClinicDatabase.CreateParameterNew("GlobalId", Guid.NewGuid().ToString()),
-                                ClinicDatabase.CreateParameterNew("DeviceId", Utilities.MachineName),
-                                ClinicDatabase.CreateParameterNew("warehouseId", warehouseId),
-                                ClinicDatabase.CreateParameterNew("source_transaction_id", sourceTransactionId ?? 0));
+                                ClinicDatabase.CreateParameterNew("unit_id", unitId),
+                                ClinicDatabase.CreateParameterNew("factor", factor),
+                                ClinicDatabase.CreateParameterNew("qty_display", qtyDisplay),
+                                ClinicDatabase.CreateParameterNew("batchId", batchId),
+                                ClinicDatabase.CreateParameterNew("warehouseId", warehouseId));
 
         UpdateOnHandItem(itemId);
         AddItemCardDetails(date, type, reference, itemId, costPrice, qtyIn, salesPrice, qtyOut, qtyInc, description, warehouseId);
@@ -355,17 +355,17 @@ public static class CommonInsert
         }
         string query = "SELECT * FROM tbl_items WHERE id = @itemId";
 
-        using (MySqlDataReader reader = ClinicDatabase.ExecuteReader(query, ClinicDatabase.CreateParameterNew("itemId", itemId)))
+        using (MySqlDataReader reader = ClinicDatabase.ExecuteReader(query, ClinicDatabase.CreateParameter("itemId", itemId)))
         {
             object netResult = ClinicDatabase.ExecuteScalar(
                         "SELECT IFNULL(SUM(qty_in-qty_out),0) as QtyBalance FROM tbl_item_card_details WHERE itemId = @id",
-                        ClinicDatabase.CreateParameterNew("id", itemId)
+                        ClinicDatabase.CreateParameter("id", itemId)
                     );
             decimal _QtyBalance = netResult != DBNull.Value ? Convert.ToDecimal(netResult) : 0;
             qtyBalance = _QtyBalance + (_qtyIn - _qtyOut);
             netResult = ClinicDatabase.ExecuteScalar(
                         "SELECT IFNULL(SUM(debit-credit),0) as Balance FROM tbl_item_card_details WHERE itemId = @id",
-                        ClinicDatabase.CreateParameterNew("id", itemId)
+                        ClinicDatabase.CreateParameter("id", itemId)
                     );
             decimal _Balance = netResult != DBNull.Value ? Convert.ToDecimal(netResult) : 0;
             balance = _Balance + (debit - credit);
@@ -394,54 +394,53 @@ public static class CommonInsert
                             ClinicDatabase.CreateParameterNew("balance", balance),
                             ClinicDatabase.CreateParameterNew("fifo_qty", fifoQty),
                             ClinicDatabase.CreateParameterNew("fifo_cost", fifoCost)
-                        );
+            );
         }
     }
     public static void UpdateOnHandItem(string itemId)
     {
         ClinicDatabase.ExecuteNonQuery(@"UPDATE tbl_items SET on_hand = (SELECT SUM(qty_in - qty_out) FROM tbl_item_transaction WHERE item_id = @itemId) where id = @itemId",
-                                ClinicDatabase.CreateParameterNew("@itemId", itemId));
+                                ClinicDatabase.CreateParameter("@itemId", itemId));
     }
     public static void DeleteItemTransaction(string type, string reference)
     {
         if (type == "Sales")
         {
-            ClinicDatabase.ExecuteNonQuery("DELETE FROM tbl_item_transaction WHERE `type` = 'Sales Invoice' AND `REFERENCE` = @id", ClinicDatabase.CreateParameterNew("id", reference));
-            ClinicDatabase.ExecuteNonQuery("DELETE FROM tbl_item_card_details WHERE `trans_type` = 'Sales Invoice' AND `trans_no` = @id", ClinicDatabase.CreateParameterNew("id", reference));
+            ClinicDatabase.ExecuteNonQuery("DELETE FROM tbl_item_transaction WHERE `type` = 'Sales Invoice' AND `REFERENCE` = @id", ClinicDatabase.CreateParameter("id", reference));
+            ClinicDatabase.ExecuteNonQuery("DELETE FROM tbl_item_card_details WHERE `trans_type` = 'Sales Invoice' AND `trans_no` = @id", ClinicDatabase.CreateParameter("id", reference));
             ClinicDatabase.ExecuteNonQuery(@"UPDATE tbl_items i
                                             INNER JOIN tbl_sales_details sd ON i.id = sd.item_id
                                             SET i.on_hand = i.on_hand + sd.qty
-                                            WHERE sd.sales_id = @id;", ClinicDatabase.CreateParameterNew("id", reference));
+                                            WHERE sd.sales_id = @id;", ClinicDatabase.CreateParameter("id", reference));
         }
         else if (type == "Sales return")
         {
-            ClinicDatabase.ExecuteNonQuery("DELETE FROM tbl_item_transaction WHERE `type` = 'Sales Return Invoice' AND `REFERENCE` = @id", ClinicDatabase.CreateParameterNew("id", reference));
-            ClinicDatabase.ExecuteNonQuery("DELETE FROM tbl_item_card_details WHERE `trans_type` = 'Sales Return Invoice' AND `trans_no` = @id", ClinicDatabase.CreateParameterNew("id", reference));
+            ClinicDatabase.ExecuteNonQuery("DELETE FROM tbl_item_transaction WHERE `type` = 'Sales Return Invoice' AND `REFERENCE` = @id", ClinicDatabase.CreateParameter("id", reference));
+            ClinicDatabase.ExecuteNonQuery("DELETE FROM tbl_item_card_details WHERE `trans_type` = 'Sales Return Invoice' AND `trans_no` = @id", ClinicDatabase.CreateParameter("id", reference));
             ClinicDatabase.ExecuteNonQuery(@"UPDATE tbl_items i
                                             INNER JOIN tbl_sales_details sd ON i.id = sd.item_id
                                             SET i.on_hand = i.on_hand - sd.qty
-                                            WHERE sd.sales_id = @id;", ClinicDatabase.CreateParameterNew("id", reference));
+                                            WHERE sd.sales_id = @id;", ClinicDatabase.CreateParameter("id", reference));
         }
         else if (type == "Purchase")
         {
-            ClinicDatabase.ExecuteNonQuery("DELETE FROM tbl_item_transaction WHERE `type` = 'Purchase Invoice' AND `REFERENCE` = @id", ClinicDatabase.CreateParameterNew("id", reference));
-            ClinicDatabase.ExecuteNonQuery("DELETE FROM tbl_item_card_details WHERE `trans_type` = 'Purchase Invoice' AND `trans_no` = @id", ClinicDatabase.CreateParameterNew("id", reference));
+            ClinicDatabase.ExecuteNonQuery("DELETE FROM tbl_item_transaction WHERE `type` = 'Purchase Invoice' AND `REFERENCE` = @id", ClinicDatabase.CreateParameter("id", reference));
+            ClinicDatabase.ExecuteNonQuery("DELETE FROM tbl_item_card_details WHERE `trans_type` = 'Purchase Invoice' AND `trans_no` = @id", ClinicDatabase.CreateParameter("id", reference));
             ClinicDatabase.ExecuteNonQuery(@"UPDATE tbl_items i
                                             INNER JOIN tbl_sales_details sd ON i.id = sd.item_id
                                             SET i.on_hand = i.on_hand - sd.qty
-                                            WHERE sd.sales_id = @id;", ClinicDatabase.CreateParameterNew("id", reference));
+                                            WHERE sd.sales_id = @id;", ClinicDatabase.CreateParameter("id", reference));
         }
         else if (type == "Purchase return")
         {
-            ClinicDatabase.ExecuteNonQuery("DELETE FROM tbl_item_transaction WHERE `type` = 'Purchase Return Invoice' AND `REFERENCE` = @id", ClinicDatabase.CreateParameterNew("id", reference));
-            ClinicDatabase.ExecuteNonQuery("DELETE FROM tbl_item_card_details WHERE `trans_type` = 'Purchase Return Invoice' AND `trans_no` = @id", ClinicDatabase.CreateParameterNew("id", reference));
+            ClinicDatabase.ExecuteNonQuery("DELETE FROM tbl_item_transaction WHERE `type` = 'Purchase Return Invoice' AND `REFERENCE` = @id", ClinicDatabase.CreateParameter("id", reference));
+            ClinicDatabase.ExecuteNonQuery("DELETE FROM tbl_item_card_details WHERE `trans_type` = 'Purchase Return Invoice' AND `trans_no` = @id", ClinicDatabase.CreateParameter("id", reference));
             ClinicDatabase.ExecuteNonQuery(@"UPDATE tbl_items i
                                             INNER JOIN tbl_sales_details sd ON i.id = sd.item_id
                                             SET i.on_hand = i.on_hand + sd.qty
-                                            WHERE sd.sales_id = @id;", ClinicDatabase.CreateParameterNew("id", reference));
+                                            WHERE sd.sales_id = @id;", ClinicDatabase.CreateParameter("id", reference));
         }
     }
-
     public static void InsertTransactionEntry(DateTime date, string accountId, string debit, string credit,
                            string transactionId, string humId, string type, string description, int createdBy, DateTime createdDate)
     {
