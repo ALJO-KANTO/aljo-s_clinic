@@ -6,7 +6,10 @@ using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Threading;
+using System.Globalization;
 using System.Windows.Forms;
+using YamyProject.Localization;
 
 
 namespace YamyProject
@@ -15,22 +18,170 @@ namespace YamyProject
     {
         int inventoryAccount, stockSettleAccount;
         decimal invId;
-       
+
         string invCode = "SIS-0001";
         int id;
 
-        public frmAddStockSettlement(int id=0)
+        // This form uses explicit translations so it does not depend on missing resource keys.
+        private bool IsArabicLanguage()
+        {
+            // The application setting may store "Arabic" instead of "ar".
+            // Also check the active UI culture because the language switch updates it.
+            string language = Clinic.Properties.Settings.Default.ApplicationLanguage ?? string.Empty;
+            return language.StartsWith("ar", StringComparison.OrdinalIgnoreCase)
+                || language.Equals("Arabic", StringComparison.OrdinalIgnoreCase)
+                || Thread.CurrentThread.CurrentUICulture.Name.StartsWith("ar", StringComparison.OrdinalIgnoreCase)
+                || Thread.CurrentThread.CurrentCulture.Name.StartsWith("ar", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private string TranslateSettlementText(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return text;
+
+            string key = text.Trim();
+            var translations = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Stock Settlement - Edit"] = "تعديل تسوية المخزون",
+                ["Stock Settlement - Edit "] = "تعديل تسوية المخزون",
+                ["Stock Settlement - New"] = "تسوية مخزون جديدة",
+                ["Stock Settlement - New "] = "تسوية مخزون جديدة",
+                ["Stock Settlement"] = "تسوية المخزون",
+                ["Warehouse"] = "المستودع",
+                ["Date"] = "التاريخ",
+                ["Invoice No"] = "رقم الفاتورة",
+                ["Invoice ID"] = "رقم الفاتورة",
+                ["Item"] = "الصنف",
+                ["Item Name"] = "اسم الصنف",
+                ["Name"] = "الاسم",
+                ["Code"] = "الرمز",
+                ["Qty"] = "الكمية",
+                ["Quantity"] = "الكمية",
+                ["On Hand"] = "الكمية المتوفرة",
+                ["Cost Price"] = "سعر التكلفة",
+                ["Total"] = "الإجمالي",
+                ["New Qty"] = "الكمية الجديدة",
+                ["New Quantity"] = "الكمية الجديدة",
+                ["Qty Difference"] = "فرق الكمية",
+                ["Quantity Difference"] = "فرق الكمية",
+                ["Minus Amount"] = "مبلغ النقص",
+                ["Plus Amount"] = "مبلغ الزيادة",
+                ["Amount Minus"] = "مبلغ النقص",
+                ["Amount Plus"] = "مبلغ الزيادة",
+                ["Amount"] = "المبلغ",
+                ["Save"] = "حفظ",
+                ["Save & New"] = "حفظ وجديد",
+                ["Save and New"] = "حفظ وجديد",
+                ["Close"] = "إغلاق",
+                ["Cancel"] = "إلغاء",
+                ["Previous"] = "السابق",
+                ["Next"] = "التالي",
+                ["Search"] = "بحث",
+                ["Add"] = "إضافة",
+                ["Delete"] = "حذف",
+                ["Remove"] = "إزالة",
+                ["Info"] = "معلومات",
+                ["Inventory Account Must Be Set First"] = "يجب إعداد حساب المخزون أولاً",
+                ["Stock Settlement Account Must Be Set First"] = "يجب إعداد حساب تسوية المخزون أولاً",
+                ["Invalid Item ID."] = "معرّف الصنف غير صالح.",
+                ["Invalid Quantity."] = "الكمية غير صالحة.",
+                ["Insert Items First."] = "يرجى إضافة الأصناف أولاً.",
+                ["Amount Must Be Bigger Than Zero"] = "يجب أن يكون المبلغ أكبر من صفر.",
+                ["No previous records."] = "لا توجد سجلات سابقة.",
+                ["No next records."] = "لا توجد سجلات تالية."
+            };
+
+            if (translations.TryGetValue(key, out string translated)) return translated;
+            if (key.StartsWith("Total Item In Row ", StringComparison.OrdinalIgnoreCase) && key.EndsWith(" Can't Be 0 or Null", StringComparison.OrdinalIgnoreCase))
+            {
+                string rowNumber = key.Substring("Total Item In Row ".Length);
+                rowNumber = rowNumber.Substring(0, rowNumber.Length - " Can't Be 0 or Null".Length);
+                return "إجمالي الصنف في الصف " + rowNumber + " لا يمكن أن يكون صفراً أو فارغاً";
+            }
+            return text;
+        }
+
+        private void ApplySettlementLocalization(Control root)
+        {
+            if (root == null) return;
+
+            bool arabic = IsArabicLanguage();
+            if (root is DataGridView grid)
+            {
+                ApplySettlementGridLocalization(grid, arabic);
+                return;
+            }
+
+            // The form title is assigned after InitializeComponent, so localize it here too.
+            if (root == this)
+                root.Text = arabic
+                    ? (id != 0 ? "تعديل تسوية المخزون" : "تسوية مخزون جديدة")
+                    : (id != 0 ? "Stock Settlement - Edit " : "Stock Settlement - New ");
+            else if (arabic)
+                root.Text = TranslateSettlementText(root.Text);
+
+            // PlaceholderText is separate from Text and must be translated explicitly.
+            if (arabic && root is Guna2TextBox gunaTextBox && !string.IsNullOrWhiteSpace(gunaTextBox.PlaceholderText))
+                gunaTextBox.PlaceholderText = TranslateSettlementText(gunaTextBox.PlaceholderText);
+
+            foreach (Control child in root.Controls)
+                ApplySettlementLocalization(child);
+
+            // Explicitly cover the action buttons and amount captions if their designer text
+            // differs slightly from the resource key.
+            if (arabic)
+            {
+                if (btnSaveNew != null) btnSaveNew.Text = "حفظ وجديد";
+                if (btnSave != null) btnSave.Text = "حفظ";
+                if (btnClose != null) btnClose.Text = "إغلاق";
+            }
+        }
+
+        private void ApplySettlementGridLocalization(DataGridView grid, bool arabic)
+        {
+            if (grid == null) return;
+            foreach (DataGridViewColumn column in grid.Columns)
+            {
+                string name = (column.Name ?? string.Empty).Replace("_", "").ToLowerInvariant();
+                string english = column.HeaderText;
+                string arabicText = null;
+                switch (name)
+                {
+                    case "code": arabicText = "الرمز"; break;
+                    case "name": arabicText = "اسم الصنف"; break;
+                    case "qty": arabicText = "الكمية المتوفرة"; break;
+                    case "costprice": arabicText = "سعر التكلفة"; break;
+                    case "total": arabicText = "الإجمالي"; break;
+                    case "newqty": arabicText = "الكمية الجديدة"; break;
+                    case "qtydif": arabicText = "فرق الكمية"; break;
+                    case "minusamount": arabicText = "مبلغ النقص"; break;
+                    case "plusamount": arabicText = "مبلغ الزيادة"; break;
+                    case "delete": arabicText = "حذف"; break;
+                    case "method": arabicText = "طريقة التكلفة"; break;
+                    case "type": arabicText = "النوع"; break;
+                }
+                if (arabic && !string.IsNullOrEmpty(arabicText))
+                    column.HeaderText = arabicText;
+            }
+        }
+
+        private void ShowSettlementMessage(string message, string title = "")
+        {
+            string displayMessage = IsArabicLanguage() ? TranslateSettlementText(message) : message;
+            string displayTitle = IsArabicLanguage() ? TranslateSettlementText(title) : title;
+            if (string.IsNullOrEmpty(displayTitle))
+                MessageBox.Show(displayMessage);
+            else
+                MessageBox.Show(displayMessage, displayTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        public frmAddStockSettlement(int id = 0)
         {
             InitializeComponent();
             dgvItems.EnableHeadersVisualStyles = false; // important
             //AppTheme.DefaultFont(dgvItems);
-           // LocalizationManager.LocalizeForm(this);
-
             this.id = id;
-            if (id != 0)
-                this.Text = "Stock Settlement - Edit ";
-            else
-                this.Text = "Stock Settlement - New ";
+            LocalizationManager.LocalizeForm(this);
+            ApplySettlementLocalization(this);
             headerUC1.FormText = this.Text;
         }
 
@@ -40,6 +191,8 @@ namespace YamyProject
         }
         private void frmAddStockSettlement_Load(object sender, EventArgs e)
         {
+            ApplySettlementLocalization(this);
+            headerUC1.FormText = this.Text;
             //AppTheme.DefaultFont(dgvItems);
             dgvItems.Columns["newQty"].DefaultCellStyle.BackColor = Color.LightGray;
             using (MySqlDataReader reader = ClinicDatabase.ExecuteReader("SELECT * FROM tbl_coa_config WHERE category='Inventory'"))
@@ -47,7 +200,7 @@ namespace YamyProject
                     inventoryAccount = int.Parse(reader["account_id"].ToString());
                 else
                 {
-                    MessageBox.Show("Inventory Account Must Be Set First");
+                    ShowSettlementMessage("Inventory Account Must Be Set First");
                     return;
                 }
             using (var reader = ClinicDatabase.ExecuteReader("SELECT * FROM tbl_coa_config WHERE category='Stock Settlement'"))
@@ -55,14 +208,14 @@ namespace YamyProject
                     stockSettleAccount = int.Parse(reader["account_id"].ToString());
                 else
                 {
-                    MessageBox.Show("Stock Settlement Account Must Be Set First");
+                    ShowSettlementMessage("Stock Settlement Account Must Be Set First");
                     return;
                 }
             BindCombos.PopulateWarehouse(cmbWarehouse);
             if (id != 0)
             {
                 BindInvoice();
-                btnSave.Enabled = btnSaveNew.Enabled = UserPermissions.canEdit("Stock Management"); 
+                btnSave.Enabled = btnSaveNew.Enabled = UserPermissions.canEdit("Stock Management");
             }
         }
         private void BindInvoice()
@@ -76,6 +229,7 @@ namespace YamyProject
             }
             invId = id;
             BindInvoiceItems();
+            ApplySettlementGridLocalization(dgvItems, IsArabicLanguage());
             CalculateTotal();
         }
         private void BindInvoiceItems()
@@ -104,6 +258,7 @@ namespace YamyProject
                     dgvItems.Rows[dgvItems.Rows.Count - 2].Cells["method"].Value = reader["method"].ToString();
                     dgvItems.Rows[dgvItems.Rows.Count - 2].Cells["type"].Value = reader["type"].ToString();
                 }
+            ApplySettlementGridLocalization(dgvItems, IsArabicLanguage());
         }
         private DataTable GetFilteredProductsByName(string name = "")
         {
@@ -159,7 +314,7 @@ namespace YamyProject
                     inventoryAccount = int.Parse(reader["account_id"].ToString());
                 else
                 {
-                    MessageBox.Show("Inventory Account Must Be Set First");
+                    ShowSettlementMessage("Inventory Account Must Be Set First");
                     return;
                 }
             using (var reader = ClinicDatabase.ExecuteReader("SELECT * FROM tbl_coa_config WHERE category='Stock Settlement'"))
@@ -167,7 +322,7 @@ namespace YamyProject
                     stockSettleAccount = int.Parse(reader["account_id"].ToString());
                 else
                 {
-                    MessageBox.Show("Stock Settlement Account Must Be Set First");
+                    ShowSettlementMessage("Stock Settlement Account Must Be Set First");
                     return;
                 }
             checkItemValidty();
@@ -211,7 +366,7 @@ namespace YamyProject
             insertJournalEntries();
             ReturnItemsToInventory();
             insertInvItems();
-         
+
             return true;
         }
 
@@ -242,23 +397,23 @@ namespace YamyProject
                             tq = (@"SELECT * FROM tbl_item_transaction WHERE item_id = @id and qty_in != qty_inc
                                                                      and qty_out = 0 ORDER BY id asc");
                         decimal attempQty = -decimal.Parse(reader["qty"].ToString());
-                        using(var tReader = ClinicDatabase.ExecuteReader(tq, ClinicDatabase.CreateParameterNew("id", reader["item_id"].ToString())))
-                        while (tReader.Read())
-                        {
-                            if (decimal.Parse(tReader["qty_inc"].ToString()) + attempQty <= decimal.Parse(tReader["qty_in"].ToString()))
+                        using (var tReader = ClinicDatabase.ExecuteReader(tq, ClinicDatabase.CreateParameterNew("id", reader["item_id"].ToString())))
+                            while (tReader.Read())
                             {
-                                ClinicDatabase.ExecuteNonQuery("update tbl_item_transaction set qty_inc = qty_inc +@qty where id = @id",
-                                    ClinicDatabase.CreateParameterNew("qty", attempQty),
-                                    ClinicDatabase.CreateParameterNew("id", tReader["id"].ToString()));
-                                break;
+                                if (decimal.Parse(tReader["qty_inc"].ToString()) + attempQty <= decimal.Parse(tReader["qty_in"].ToString()))
+                                {
+                                    ClinicDatabase.ExecuteNonQuery("update tbl_item_transaction set qty_inc = qty_inc +@qty where id = @id",
+                                        ClinicDatabase.CreateParameterNew("qty", attempQty),
+                                        ClinicDatabase.CreateParameterNew("id", tReader["id"].ToString()));
+                                    break;
+                                }
+                                else
+                                {
+                                    attempQty = attempQty - decimal.Parse(tReader["qty_in"].ToString()) - decimal.Parse(tReader["qty_inc"].ToString());
+                                    ClinicDatabase.ExecuteNonQuery("update tbl_item_transaction set qty_inc = qty_in where id = @id",
+                                      ClinicDatabase.CreateParameterNew("id", tReader["id"].ToString()));
+                                }
                             }
-                            else
-                            {
-                                attempQty = attempQty - decimal.Parse(tReader["qty_in"].ToString()) - decimal.Parse(tReader["qty_inc"].ToString());
-                                ClinicDatabase.ExecuteNonQuery("update tbl_item_transaction set qty_inc = qty_in where id = @id",
-                                  ClinicDatabase.CreateParameterNew("id", tReader["id"].ToString()));
-                            }
-                        }
                     }
                     ClinicDatabase.ExecuteNonQuery("delete from tbl_item_stock_settlement_details where id =@id", ClinicDatabase.CreateParameterNew("id", reader["id"].ToString()));
                 }
@@ -333,7 +488,7 @@ namespace YamyProject
                   ClinicDatabase.CreateParameterNew("@qty", dgvItems.Rows[i].Cells["qtydif"].Value),
                   ClinicDatabase.CreateParameterNew("@minusamount", decimal.Parse(dgvItems.Rows[i].Cells["minusamount"].Value.ToString())),
                 ClinicDatabase.CreateParameterNew("@plusamount", (decimal.Parse(dgvItems.Rows[i].Cells["plusamount"].Value.ToString()))));
-                
+
                 insertItemTransaction(dgvItems.Rows[i]);
 
                 ////Utilities.LogAudit(-1, "Insert Stock Settlement Item", "Stock Settlement", (int)invId, 
@@ -345,12 +500,12 @@ namespace YamyProject
 
             if (row.Cells["itemId"].Value == null || string.IsNullOrWhiteSpace(row.Cells["itemId"].Value.ToString()))
             {
-                MessageBox.Show("Invalid Item ID.");
+                ShowSettlementMessage("Invalid Item ID.");
                 return;
             }
             if (!decimal.TryParse(row.Cells["newqty"].Value.ToString(), out qty) || qty <= 0)
             {
-                MessageBox.Show("Invalid Quantity.");
+                ShowSettlementMessage("Invalid Quantity.");
                 return;
             }
 
@@ -426,19 +581,19 @@ namespace YamyProject
                     || (dgvItems.Rows[i].Cells["plusamount"].Value.ToString() == "" && dgvItems.Rows[i].Cells["minusamount"].Value.ToString() == "")
                     || (decimal.Parse(dgvItems.Rows[i].Cells["plusamount"].Value.ToString()) == 0 && decimal.Parse(dgvItems.Rows[i].Cells["minusamount"].Value.ToString()) == 0))
                 {
-                    MessageBox.Show("Total Item In Row " + (dgvItems.Rows[i].Index + 1) + " Can't Be 0 or Null");
+                    ShowSettlementMessage("Total Item In Row " + (dgvItems.Rows[i].Index + 1) + " Can't Be 0 or Null");
                     return false;
                 }
             }
 
             if (dgvItems.Rows.Count == 1)
             {
-                MessageBox.Show("Insert Items First.");
+                ShowSettlementMessage("Insert Items First.");
                 return false;
             }
             if ((txtAmountMinus.Text == "" || decimal.Parse(txtAmountMinus.Text) == 0) && ((txtAmountPlus.Text == "" || decimal.Parse(txtAmountPlus.Text) == 0)))
             {
-                MessageBox.Show("Amount Must Be Bigger Than Zero");
+                ShowSettlementMessage("Amount Must Be Bigger Than Zero");
                 return false;
             }
             return true;
@@ -635,7 +790,7 @@ namespace YamyProject
                     if (row.Cells["qty"].Value == null)
                         return;
 
-                    if (dgvItems.CurrentRow.Cells["itemId"].Value == null  || row.Cells["newqty"].Value.ToString() == "" || row.Cells["newqty"].Value.ToString() == row.Cells["qty"].Value.ToString())
+                    if (dgvItems.CurrentRow.Cells["itemId"].Value == null || row.Cells["newqty"].Value.ToString() == "" || row.Cells["newqty"].Value.ToString() == row.Cells["qty"].Value.ToString())
                         row.Cells["minusamount"].Value = row.Cells["qtydif"].Value = row.Cells["plusamount"].Value = 0;
                     else
                     {
@@ -762,7 +917,7 @@ namespace YamyProject
             if (currentId <= 0)
             {
                 clear();
-                MessageBox.Show("No previous records.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                ShowSettlementMessage("No previous records.", "Info");
                 return;
             }
 
@@ -776,7 +931,7 @@ namespace YamyProject
                 else
                 {
                     clear();
-                    MessageBox.Show("No previous records.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    ShowSettlementMessage("No previous records.", "Info");
                 }
         }
 
@@ -798,7 +953,7 @@ namespace YamyProject
                 else
                 {
                     clear();
-                    MessageBox.Show("No next records.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    ShowSettlementMessage("No next records.", "Info");
                 }
         }
 
