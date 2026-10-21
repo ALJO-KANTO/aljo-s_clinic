@@ -24,20 +24,20 @@ namespace YamyProject
         public MasterInventory()
         {
             InitializeComponent();
-            LocalizationManager.LocalizeForm(this);
             ApplyInventoryLocalization();
+            headerUC1.FormText = this.Text;
+            LocalizationManager.LocalizeForm(this);
             itemUpdatedHandler = (sender, args) => BindItems();
             invoiceUpdatedHandler = purchaseUpdatedHandler = (sender, args) => BindItems();
-            //.Item += itemUpdatedHandler;
-            //.SalesInv += invoiceUpdatedHandler;
-            //.PurchaseInv += purchaseUpdatedHandler;
-            headerUC1.FormText = this.Text;
+            EventHub.Item += itemUpdatedHandler;
+            EventHub.SalesInv += invoiceUpdatedHandler;
+            EventHub.PurchaseInv += purchaseUpdatedHandler;
         }
         private void MasterInventory_FormClosing(object sender, FormClosingEventArgs e)
         {
-            //.Item -= itemUpdatedHandler;
-            //.SalesInv -= invoiceUpdatedHandler;
-            //.PurchaseInv -= purchaseUpdatedHandler;
+            EventHub.Item -= itemUpdatedHandler;
+            EventHub.SalesInv -= invoiceUpdatedHandler;
+            EventHub.PurchaseInv -= purchaseUpdatedHandler;
         }
         private void btnNew_Click(object sender, EventArgs e)
         {
@@ -893,6 +893,11 @@ namespace YamyProject
                     //    frmMain.openChildForm(new frmCreditNote(int.Parse(dgvDetails.Rows[e.RowIndex].Cells["Inv_no"].Value.ToString())));
                 }
             }
+        }
+
+        private void uOMToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            new MasterItemUnit().ShowDialog();
         }
     }
 }

@@ -125,6 +125,7 @@
             this.dataGridViewTextBoxColumn7 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumn8 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumn9 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.uOMToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.dgvCustomer)).BeginInit();
             this.panel3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvDetails)).BeginInit();
@@ -173,8 +174,8 @@
             this.dgvCustomer.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
             this.dgvCustomer.RowHeadersVisible = false;
             this.dgvCustomer.RowHeadersWidth = 51;
-            this.dgvCustomer.RowTemplate.Height = 30;
-            this.dgvCustomer.Size = new System.Drawing.Size(406, 485);
+            this.dgvCustomer.RowTemplate.Height = 25;
+            this.dgvCustomer.Size = new System.Drawing.Size(406, 492);
             this.dgvCustomer.TabIndex = 6;
             this.dgvCustomer.ThemeStyle.AlternatingRowsStyle.BackColor = System.Drawing.Color.White;
             this.dgvCustomer.ThemeStyle.AlternatingRowsStyle.Font = null;
@@ -365,10 +366,10 @@
             this.panel3.Controls.Add(this.dgvCustomer);
             this.panel3.Controls.Add(this.panel15);
             this.panel3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel3.Location = new System.Drawing.Point(2, 194);
+            this.panel3.Location = new System.Drawing.Point(2, 187);
             this.panel3.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(1300, 485);
+            this.panel3.Size = new System.Drawing.Size(1300, 492);
             this.panel3.TabIndex = 8;
             // 
             // dgvDetails
@@ -418,8 +419,8 @@
             this.dgvDetails.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
             this.dgvDetails.RowHeadersVisible = false;
             this.dgvDetails.RowHeadersWidth = 51;
-            this.dgvDetails.RowTemplate.Height = 30;
-            this.dgvDetails.Size = new System.Drawing.Size(884, 485);
+            this.dgvDetails.RowTemplate.Height = 25;
+            this.dgvDetails.Size = new System.Drawing.Size(884, 492);
             this.dgvDetails.TabIndex = 31;
             this.dgvDetails.ThemeStyle.AlternatingRowsStyle.BackColor = System.Drawing.Color.White;
             this.dgvDetails.ThemeStyle.AlternatingRowsStyle.Font = null;
@@ -533,7 +534,7 @@
             this.panel11.Dock = System.Windows.Forms.DockStyle.Left;
             this.panel11.Location = new System.Drawing.Point(411, 0);
             this.panel11.Name = "panel11";
-            this.panel11.Size = new System.Drawing.Size(5, 485);
+            this.panel11.Size = new System.Drawing.Size(5, 492);
             this.panel11.TabIndex = 25;
             // 
             // panel15
@@ -542,7 +543,7 @@
             this.panel15.Dock = System.Windows.Forms.DockStyle.Left;
             this.panel15.Location = new System.Drawing.Point(0, 0);
             this.panel15.Name = "panel15";
-            this.panel15.Size = new System.Drawing.Size(5, 485);
+            this.panel15.Size = new System.Drawing.Size(5, 492);
             this.panel15.TabIndex = 30;
             // 
             // panel5
@@ -622,7 +623,7 @@
             // 
             this.panel7.Controls.Add(this.menuStrip1);
             this.panel7.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panel7.Location = new System.Drawing.Point(2, 37);
+            this.panel7.Location = new System.Drawing.Point(2, 30);
             this.panel7.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.panel7.Name = "panel7";
             this.panel7.Size = new System.Drawing.Size(1300, 25);
@@ -638,7 +639,8 @@
             this.printToolStripMenuItem,
             this.newTransactionToolStripMenuItem,
             this.excelToolStripMenuItem,
-            this.wordToolStripMenuItem});
+            this.wordToolStripMenuItem,
+            this.uOMToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Padding = new System.Windows.Forms.Padding(4, 2, 0, 2);
@@ -662,28 +664,28 @@
             // nToolStripMenuItem
             // 
             this.nToolStripMenuItem.Name = "nToolStripMenuItem";
-            this.nToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
+            this.nToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.nToolStripMenuItem.Text = "New Item ";
             this.nToolStripMenuItem.Click += new System.EventHandler(this.nToolStripMenuItem_Click);
             // 
             // editCustomerToolStripMenuItem1
             // 
             this.editCustomerToolStripMenuItem1.Name = "editCustomerToolStripMenuItem1";
-            this.editCustomerToolStripMenuItem1.Size = new System.Drawing.Size(144, 22);
+            this.editCustomerToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
             this.editCustomerToolStripMenuItem1.Text = "Edit Item";
             this.editCustomerToolStripMenuItem1.Click += new System.EventHandler(this.editCustomerToolStripMenuItem1_Click);
             // 
             // deleteCustomerToolStripMenuItem
             // 
             this.deleteCustomerToolStripMenuItem.Name = "deleteCustomerToolStripMenuItem";
-            this.deleteCustomerToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
+            this.deleteCustomerToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.deleteCustomerToolStripMenuItem.Text = "Delete Item";
             this.deleteCustomerToolStripMenuItem.Click += new System.EventHandler(this.deleteCustomerToolStripMenuItem_Click);
             // 
             // recycleItemToolStripMenuItem
             // 
             this.recycleItemToolStripMenuItem.Name = "recycleItemToolStripMenuItem";
-            this.recycleItemToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
+            this.recycleItemToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.recycleItemToolStripMenuItem.Text = "Recycle Item ";
             this.recycleItemToolStripMenuItem.Visible = false;
             this.recycleItemToolStripMenuItem.Click += new System.EventHandler(this.recycleItemToolStripMenuItem_Click);
@@ -893,7 +895,7 @@
             this.panel2.Controls.Add(this.panel10);
             this.panel2.Controls.Add(this.panel12);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panel2.Location = new System.Drawing.Point(2, 66);
+            this.panel2.Location = new System.Drawing.Point(2, 59);
             this.panel2.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(1300, 128);
@@ -1129,7 +1131,7 @@
             // 
             this.panel16.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(178)))), ((int)(((byte)(178)))), ((int)(((byte)(178)))));
             this.panel16.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panel16.Location = new System.Drawing.Point(2, 62);
+            this.panel16.Location = new System.Drawing.Point(2, 55);
             this.panel16.Name = "panel16";
             this.panel16.Size = new System.Drawing.Size(1300, 4);
             this.panel16.TabIndex = 30;
@@ -1216,6 +1218,13 @@
             this.dataGridViewTextBoxColumn9.Name = "dataGridViewTextBoxColumn9";
             this.dataGridViewTextBoxColumn9.ReadOnly = true;
             this.dataGridViewTextBoxColumn9.Width = 125;
+            // 
+            // uOMToolStripMenuItem
+            // 
+            this.uOMToolStripMenuItem.Name = "uOMToolStripMenuItem";
+            this.uOMToolStripMenuItem.Size = new System.Drawing.Size(47, 21);
+            this.uOMToolStripMenuItem.Text = "UOM";
+            this.uOMToolStripMenuItem.Click += new System.EventHandler(this.uOMToolStripMenuItem_Click);
             // 
             // MasterInventory
             // 
@@ -1337,5 +1346,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn t_cost_price;
         private System.Windows.Forms.DataGridViewTextBoxColumn t_sales_price;
         private System.Windows.Forms.DataGridViewTextBoxColumn t_qty_balance;
+        private System.Windows.Forms.ToolStripMenuItem uOMToolStripMenuItem;
     }
 }

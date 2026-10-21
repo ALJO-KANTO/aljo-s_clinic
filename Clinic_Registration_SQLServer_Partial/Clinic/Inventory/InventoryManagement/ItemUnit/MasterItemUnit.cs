@@ -6,8 +6,8 @@ using System.Data;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
-//using YamyProject.DAL;
-//using YamyProject.Localization;
+using YamyProject.DAL;
+using YamyProject.Localization;
 
 namespace YamyProject
 {
@@ -18,35 +18,61 @@ namespace YamyProject
         public MasterItemUnit()
         {
             InitializeComponent();
-           // LocalizationManager.LocalizeForm(this);
-            itemUnitUpdatedHandler = (sender, args) => BindItems();
             headerUC1.FormText = this.Text;
+            LocalizationManager.LocalizeForm(this);
+            itemUnitUpdatedHandler = (sender, args) => BindItems();
         }
 
         private void MasterItemUnit_FormClosing(object sender, FormClosingEventArgs e)
         {
-            //.ItemUnit -= itemUnitUpdatedHandler;
-            ////.SalesInv -= invoiceUpdatedHandler;
-            ////.PurchaseInv -= purchaseUpdatedHandler;
+            EventHub.ItemUnit -= itemUnitUpdatedHandler;
+            //EventHub.SalesInv -= invoiceUpdatedHandler;
+            //EventHub.PurchaseInv -= purchaseUpdatedHandler;
         }
 
         private void btnNew_Click(object sender, EventArgs e)
         {
-            new frmViewItemUnit().ShowDialog();
+            using (frmViewUomCategory frm = new frmViewUomCategory())
+            {
+                if (frm.ShowDialog() == DialogResult.OK)
+                {
+                    BindItems();
+                }
+            }
         }
         private void MasterItemUnit_Load(object sender, EventArgs e)
         {
-            //AppTheme.DefaultFont(dgvCustomer);
-            //.ItemUnit += itemUnitUpdatedHandler;
+            EventHub.ItemUnit += itemUnitUpdatedHandler;
             BindItems();
         }
         public void BindItems()
+        {
+            dgvCustomer.DataSource = ClinicDatabase.ExecuteDataTable(@"
+                SELECT 
+                    id,
+                    name
+                FROM tbl_uom_category
+                WHERE state = 0
+                ORDER BY name;
+            ");
+
+            dgvCustomer.Columns["name"].DefaultCellStyle.Alignment =
+                DataGridViewContentAlignment.MiddleCenter;
+
+            dgvCustomer.Columns["name"].AutoSizeMode =
+                DataGridViewAutoSizeColumnMode.Fill;
+
+            dgvCustomer.Columns["id"].Visible = false;
+
+            LocalizationManager.LocalizeDataGridViewHeaders(dgvCustomer);
+        }
+        public void BindItemsOld()
         {
             dgvCustomer.DataSource = ClinicDatabase.ExecuteDataTable(@"select id,name from tbl_unit");
             dgvCustomer.Columns["name"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dgvCustomer.Columns["name"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             dgvCustomer.Columns["id"].Visible = false;
-           // LocalizationManager.LocalizeDataGridViewHeaders(dgvCustomer);
+            LocalizationManager.LocalizeDataGridViewHeaders(dgvCustomer);
         }
         private void chkAll_CheckedChanged(object sender, EventArgs e)
         {
@@ -60,18 +86,45 @@ namespace YamyProject
         }
         private void btnEdit_Click(object sender, EventArgs e)
         {
-            if (dgvCustomer.Rows.Count == 0)
+            if (dgvCustomer.SelectedRows.Count == 0)
                 return;
-            new frmViewItemUnit(int.Parse(dgvCustomer.SelectedRows[0].Cells["id"].Value.ToString())).ShowDialog();
+
+            int categoryId = Convert.ToInt32(
+                dgvCustomer.SelectedRows[0]
+                    .Cells["id"].Value);
+
+            using (frmViewUomCategory frm =
+                new frmViewUomCategory(categoryId))
+            {
+                if (frm.ShowDialog() == DialogResult.OK)
+                {
+                    BindItems();
+                }
+            }
         }
         private void dgvCustomer_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (dgvCustomer.Rows.Count == 0)
+            //if (dgvCustomer.Rows.Count == 0)
+            //    return;
+
+            //    new frmViewUomCategory(int.Parse(dgvCustomer.SelectedRows[0].Cells["id"].Value.ToString())).ShowDialog();
+            //if (dgvCustomer.Rows.Count == 0)
+            //    return;
+            if (e.RowIndex < 0)
                 return;
-          
-                new frmViewItemUnit(int.Parse(dgvCustomer.SelectedRows[0].Cells["id"].Value.ToString())).ShowDialog();
-            if (dgvCustomer.Rows.Count == 0)
-                return;
+
+            int categoryId = Convert.ToInt32(
+                dgvCustomer.Rows[e.RowIndex]
+                    .Cells["id"].Value);
+
+            using (frmViewUomCategory frm =
+                new frmViewUomCategory(categoryId))
+            {
+                if (frm.ShowDialog() == DialogResult.OK)
+                {
+                    BindItems();
+                }
+            }
         }
         private void dgvCustomer_MouseHover(object sender, EventArgs e)
         {
@@ -86,7 +139,7 @@ namespace YamyProject
         private void btnDelete_Click(object sender, EventArgs e)
         {
             object result = ClinicDatabase.ExecuteScalar(@"SELECT COUNT(1) FROM tbl_items 
-                  WHERE unit_id = @id", ClinicDatabase.CreateParameterNew("id", int.Parse(dgvCustomer.SelectedRows[0].Cells["id"].Value.ToString())));
+                  WHERE unit_id = @id", ClinicDatabase.CreateParameter("id", int.Parse(dgvCustomer.SelectedRows[0].Cells["id"].Value.ToString())));
             int recordCount = 0;
             if (result != null && result != DBNull.Value)
                 recordCount = Convert.ToInt32(result);
@@ -95,7 +148,7 @@ namespace YamyProject
                 MessageBox.Show("Already used");
                 return;
             }
-            ClinicDatabase.ExecuteNonQuery("DELETE FROM tbl_unit WHERE id=@id", ClinicDatabase.CreateParameterNew("id", int.Parse(dgvCustomer.SelectedRows[0].Cells["id"].Value.ToString())));
+            ClinicDatabase.ExecuteNonQuery("DELETE FROM tbl_uom_category WHERE id=@id", ClinicDatabase.CreateParameter("id", int.Parse(dgvCustomer.SelectedRows[0].Cells["id"].Value.ToString())));
             BindItems();
             MessageBox.Show("Deleted");
         }
