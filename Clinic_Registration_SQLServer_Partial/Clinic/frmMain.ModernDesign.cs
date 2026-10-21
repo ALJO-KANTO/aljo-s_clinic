@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Linq;
 using System.Windows.Forms;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -211,8 +212,23 @@ namespace Clinic
             {
                 AddAdminGroup(menu, "▥", "Reports", new string[]
                 {
-                    "Account Ledger", "Cost Center Summary", "Trial Balance",
-                    "Profit and Loss", "Purchase by Vendor Summary"
+                    "Accountant|Account Ledger|frmAccountLedger",
+                    "Accountant|Balance Sheet|frmBalanceSheetReport",
+                    "Accountant|Cost Center Summary|frmCostCenterSummery",
+                    "Accountant|Trial Balance|MasterTrialBalance",
+                    "Accountant|Profit and Loss Detail|ProfitandLossDetailReport",
+                    "Accountant|Profit and Loss|ProfitandLossReport",
+                    "Employee|Employee Balance Details|frmEmployeeBalanceDetails",
+                    "Employee|Employee Balance Summary|frmEmployeeBalanceSummary",
+                    "Employee|Employee Salary Report|frmEmployeeSalaryReport",
+                    "Inventory|Physical Inventory Worksheet|frmPhysicalInventoryWorksheet",
+                    "PettyCash|Petty Cash Balance Detail EMP|frmPettyCashBalanceDetailEMP",
+                    "PettyCash|Petty Cash Balance Details|frmPettyCashBalanceDetails",
+                    "PettyCash|Petty Cash Detail EMP Transaction|frmPettyCashDetailEMPTransaction",
+                    "Purchase|Purchase by Vendor Details|frmPurchaseByVendorDetails",
+                    "Purchase|Purchase by Vendor Summary|frmPurchaseByVendorSummery",
+                    "Vendor|Vendor Balance Details|frmVendorBalanceDetails",
+                    "Vendor|Vendor Summary|frmVendorSummary"
                 });
             }
             else if (CanAccessMenu(clsGlobal.UserRole.Cashier))
@@ -334,41 +350,36 @@ namespace Clinic
                 Visible = false
             };
 
-            // Reports are grouped under the Accounts heading.
-            if (caption == "Reports")
+            string lastReportFolder = null;
+            foreach (string entry in pages)
             {
-                Label reportHeading = new Label
+                string page = entry;
+                string targetForm = null;
+                if (caption == "Reports")
                 {
-                    Name = "lblReportAccountsHeading",
-                    Tag = "Accounts",
-                    Text = "Accounts",
-                    Width = 214,
-                    Height = 28,
-                    Margin = new Padding(0, 2, 0, 3),
-                    ForeColor = Color.FromArgb(159, 204, 220),
-                    Font = new Font("Segoe UI", 9F, FontStyle.Bold),
-                    TextAlign = ContentAlignment.MiddleLeft
-                };
-                children.Controls.Add(reportHeading);
-            }
+                    string[] parts = entry.Split(new[] { '|' }, 3);
+                    if (parts.Length != 3) continue;
+                    string folder = parts[0];
+                    page = parts[1];
+                    targetForm = parts[2];
 
-            foreach (string page in pages)
-            {
-                if (caption == "Reports" && page == "Purchase by Vendor Summary")
-                {
-                    Label purchaseHeading = new Label
+                    if (!string.Equals(lastReportFolder, folder, StringComparison.Ordinal))
                     {
-                        Name = "lblReportPurchaseHeading",
-                        Tag = "Purchase",
-                        Text = "Purchase",
-                        Width = 214,
-                        Height = 28,
-                        Margin = new Padding(0, 2, 0, 3),
-                        ForeColor = Color.FromArgb(159, 204, 220),
-                        Font = new Font("Segoe UI", 9F, FontStyle.Bold),
-                        TextAlign = ContentAlignment.MiddleLeft
-                    };
-                    children.Controls.Add(purchaseHeading);
+                        Label folderHeading = new Label
+                        {
+                            Name = "lblReport" + folder + "Heading",
+                            Tag = folder,
+                            Text = folder,
+                            Width = 214,
+                            Height = 28,
+                            Margin = new Padding(0, 3, 0, 2),
+                            ForeColor = Color.FromArgb(159, 204, 220),
+                            Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                            TextAlign = ContentAlignment.MiddleLeft
+                        };
+                        children.Controls.Add(folderHeading);
+                        lastReportFolder = folder;
+                    }
                 }
 
                 Button item = new Button
@@ -376,6 +387,7 @@ namespace Clinic
                     Name = "btn" + caption.Replace(" ", "") + page.Replace(" ", ""),
                     Text = "│  ├─  " + page,
                     Tag = page,
+                    AccessibleDescription = targetForm, // Exact target form class for report navigation
                     Width = 214,
                     Height = 36,
                     Margin = new Padding(0, 1, 0, 1),
@@ -388,7 +400,6 @@ namespace Clinic
                 };
                 item.FlatAppearance.BorderSize = 0;
                 item.FlatAppearance.MouseOverBackColor = Color.FromArgb(32, 56, 101);
-                // Navigation is bound by BindMigratedAdminSubmenus() in frmMain.cs.
                 children.Controls.Add(item);
             }
 
@@ -415,7 +426,9 @@ namespace Clinic
                 }
 
                 children.Visible = open;
-                group.Height = open ? 47 + children.Padding.Vertical + pages.Length * 38 + (caption == "Reports" ? 66 : 0) : 47;
+                group.Height = open
+                    ? 47 + children.Padding.Vertical + children.Controls.Cast<Control>().Sum(c => c.Height + c.Margin.Vertical)
+                    : 47;
                 header.BackColor = open ? adminNavSelected : adminNavBackground;
                 expandedAdminGroup = open ? group : null;
                 expandedAdminHeader = open ? header : null;
