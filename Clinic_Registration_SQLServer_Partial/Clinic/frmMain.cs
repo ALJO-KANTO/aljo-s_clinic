@@ -1,4 +1,4 @@
-
+﻿
 using Clinic.Appointment.AppointmentsType;
 using Clinic.Doctor;
 using Clinic.Login;
@@ -734,7 +734,8 @@ namespace Clinic
                     string translated = TranslateAdminNav(caption);
                     string symbol = caption == "Accounts" ? "▤" :
                         caption == "Vendors" ? "🛒" :
-                        caption == "Inventory" ? "⬡" : "♙";
+                        caption == "Inventory" ? "⬡" :
+                        caption == "Reports" ? "▥" : "♙";
                     header.Text = "   " + symbol + "    " + translated + "  ▾";
                     header.TextAlign = isArabic ? ContentAlignment.MiddleRight : ContentAlignment.MiddleLeft;
                     header.RightToLeft = isArabic ? RightToLeft.Yes : RightToLeft.No;
@@ -744,6 +745,15 @@ namespace Clinic
                 {
                     foreach (Control item in submenu.Controls)
                     {
+                        Label sectionHeading = item as Label;
+                        if (sectionHeading != null)
+                        {
+                            string headingKey = sectionHeading.Tag as string ?? sectionHeading.Text;
+                            sectionHeading.Text = TranslateAdminNav(headingKey);
+                            sectionHeading.TextAlign = isArabic ? ContentAlignment.MiddleRight : ContentAlignment.MiddleLeft;
+                            sectionHeading.RightToLeft = isArabic ? RightToLeft.Yes : RightToLeft.No;
+                            continue;
+                        }
                         Button b = item as Button;
                         if (b == null) continue;
                         string english = b.Tag as string ?? "";
@@ -760,6 +770,10 @@ namespace Clinic
             if (!isArabic) return english;
             switch (english)
             {
+                case "Reports": return "التقارير";
+                case "Account Ledger": return "دفتر الأستاذ";
+                case "Cost Center Summary": return "ملخص مراكز التكلفة";
+                case "Trial Balance": return "ميزان المراجعة";
                 case "Accounts": return "الحسابات";
                 case "Account Center": return "مركز الحسابات";
                 case "Fixed Assets": return "الأصول الثابتة";
@@ -997,6 +1011,9 @@ namespace Clinic
 
             var forms = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
+                { "Account Ledger", "frmAccountLedger" },
+                { "Cost Center Summary", "frmCostCenterSummary" },
+                { "Trial Balance", "MasterTrialBalance" },
                 { "Account Center", "MasterChartOfAccount" },
                 { "Fixed Assets", "MasterFixedAssets" },
                 { "Voucher", "MasterJournalVoucher" },

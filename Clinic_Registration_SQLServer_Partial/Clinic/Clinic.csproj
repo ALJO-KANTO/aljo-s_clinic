@@ -993,16 +993,34 @@
     <Compile Include="Purchases\Invoices\MasterPurchases.designer.cs">
       <DependentUpon>MasterPurchases.cs</DependentUpon>
     </Compile>
-    <Compile Include="Purchases\Report\frmPurchaseByVendorDetails.cs">
+    <Compile Include="Report\Accountant\frmAccountLedger.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Purchases\Report\frmPurchaseByVendorDetails.designer.cs">
+    <Compile Include="Report\Accountant\frmAccountLedger.Designer.cs">
+      <DependentUpon>frmAccountLedger.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Report\Accountant\frmCostCenterSummery.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Report\Accountant\frmCostCenterSummery.Designer.cs">
+      <DependentUpon>frmCostCenterSummery.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Report\Accountant\MasterTrialBalance.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Report\Accountant\MasterTrialBalance.Designer.cs">
+      <DependentUpon>MasterTrialBalance.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Report\Purchase\frmPurchaseByVendorDetails.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Report\Purchase\frmPurchaseByVendorDetails.designer.cs">
       <DependentUpon>frmPurchaseByVendorDetails.cs</DependentUpon>
     </Compile>
-    <Compile Include="Purchases\Report\frmPurchaseByVendorSummery.cs">
+    <Compile Include="Report\Purchase\frmPurchaseByVendorSummery.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Purchases\Report\frmPurchaseByVendorSummery.designer.cs">
+    <Compile Include="Report\Purchase\frmPurchaseByVendorSummery.designer.cs">
       <DependentUpon>frmPurchaseByVendorSummery.cs</DependentUpon>
     </Compile>
     <Compile Include="ReportPrinter.cs" />
@@ -1474,10 +1492,10 @@
     <EmbeddedResource Include="Purchases\Invoices\MasterPurchases.resx">
       <DependentUpon>MasterPurchases.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Purchases\Report\frmPurchaseByVendorDetails.resx">
+    <EmbeddedResource Include="Report\Purchase\frmPurchaseByVendorDetails.resx">
       <DependentUpon>frmPurchaseByVendorDetails.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Purchases\Report\frmPurchaseByVendorSummery.resx">
+    <EmbeddedResource Include="Report\Purchase\frmPurchaseByVendorSummery.resx">
       <DependentUpon>frmPurchaseByVendorSummery.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="User\frmAddUpdateUser.resx">

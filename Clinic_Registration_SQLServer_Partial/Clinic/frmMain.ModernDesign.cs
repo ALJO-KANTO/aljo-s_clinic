@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -204,8 +204,20 @@ namespace Clinic
                 AddAdminNavigationGroups(menu);
             }
 
-            if (CanAccessMenu(clsGlobal.UserRole.Admin, clsGlobal.UserRole.Cashier))
+            // Administrator gets expandable accounting reports; retain the existing
+            // Reports entry for Cashier without granting access to accounting reports.
+            if (clsGlobal.CurrentUser != null &&
+                clsGlobal.CurrentUser.RoleID == (int)clsGlobal.UserRole.Admin)
+            {
+                AddAdminGroup(menu, "▥", "Reports", new string[]
+                {
+                    "Account Ledger", "Cost Center Summary", "Trial Balance"
+                });
+            }
+            else if (CanAccessMenu(clsGlobal.UserRole.Cashier))
+            {
                 menu.Controls.Add(MakeNav("▥", "Reports", null));
+            }
             if (CanAccessMenu(clsGlobal.UserRole.Admin))
                 AddMenuHeading(menu, "Administration");
             if (CanAccessMenu(clsGlobal.UserRole.Admin))
@@ -321,6 +333,24 @@ namespace Clinic
                 Visible = false
             };
 
+            // Reports are grouped under the Accounts heading.
+            if (caption == "Reports")
+            {
+                Label reportHeading = new Label
+                {
+                    Name = "lblReportAccountsHeading",
+                    Tag = "Accounts",
+                    Text = "Accounts",
+                    Width = 214,
+                    Height = 28,
+                    Margin = new Padding(0, 2, 0, 3),
+                    ForeColor = Color.FromArgb(159, 204, 220),
+                    Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                    TextAlign = ContentAlignment.MiddleLeft
+                };
+                children.Controls.Add(reportHeading);
+            }
+
             foreach (string page in pages)
             {
                 Button item = new Button
@@ -367,7 +397,7 @@ namespace Clinic
                 }
 
                 children.Visible = open;
-                group.Height = open ? 47 + children.Padding.Vertical + pages.Length * 38 : 47;
+                group.Height = open ? 47 + children.Padding.Vertical + pages.Length * 38 + (caption == "Reports" ? 33 : 0) : 47;
                 header.BackColor = open ? adminNavSelected : adminNavBackground;
                 expandedAdminGroup = open ? group : null;
                 expandedAdminHeader = open ? header : null;
