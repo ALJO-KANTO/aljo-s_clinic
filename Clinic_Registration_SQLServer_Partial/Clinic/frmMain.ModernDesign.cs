@@ -182,7 +182,6 @@ namespace Clinic
             if (CanAccessMenu(clsGlobal.UserRole.Cashier))
             {
                 menu.Controls.Add(MakeNav("▣", "Billing & Payments", () => OpenManageBills()));
-                menu.Controls.Add(MakeNav("▤", "Invoices", null));
             }
             if (CanAccessMenu(clsGlobal.UserRole.Doctor, clsGlobal.UserRole.Pharmacist))
             {
@@ -264,13 +263,12 @@ namespace Clinic
 
             AddAdminGroup(menu, "🛒", "Vendors", new string[]
             {
-                "Vendor Center", "Purchases Center", "Locations",
-                "Receipts", "Purchase Invoice", "Payment Voucher"
+                "Vendor Center", "Purchases Center", "Payment Voucher"
             });
 
-            AddAdminGroup(menu, "⬡", "Inventory Doc", new string[]
+            AddAdminGroup(menu, "⬡", "Inventory", new string[]
             {
-                "Inventory Items", "Add New Item", "Inventory Center", "Stock"
+                "Inventory Items", "Add New Item", "Item Category", "Item Unit"
             });
 
             AddAdminGroup(menu, "♙", "HR", new string[]

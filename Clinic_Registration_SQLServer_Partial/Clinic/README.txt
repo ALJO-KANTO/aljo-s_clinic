@@ -1,0 +1,1 @@
+Replace corresponding frmMain.cs and frmMain.ModernDesign.cs files after backing them up. Inventory sidebar adds Item Category -> MasterItemCategory and Item Unit -> MasterItemUnit. Both are admin-only and use existing reflection-based form navigation. Form classes must be included in compiled project and have public parameterless or all-optional constructors.
