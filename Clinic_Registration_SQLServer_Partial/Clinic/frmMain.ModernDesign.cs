@@ -211,7 +211,8 @@ namespace Clinic
             {
                 AddAdminGroup(menu, "▥", "Reports", new string[]
                 {
-                    "Account Ledger", "Cost Center Summary", "Trial Balance"
+                    "Account Ledger", "Cost Center Summary", "Trial Balance",
+                    "Profit and Loss", "Purchase by Vendor Summary"
                 });
             }
             else if (CanAccessMenu(clsGlobal.UserRole.Cashier))
@@ -353,6 +354,23 @@ namespace Clinic
 
             foreach (string page in pages)
             {
+                if (caption == "Reports" && page == "Purchase by Vendor Summary")
+                {
+                    Label purchaseHeading = new Label
+                    {
+                        Name = "lblReportPurchaseHeading",
+                        Tag = "Purchase",
+                        Text = "Purchase",
+                        Width = 214,
+                        Height = 28,
+                        Margin = new Padding(0, 2, 0, 3),
+                        ForeColor = Color.FromArgb(159, 204, 220),
+                        Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                        TextAlign = ContentAlignment.MiddleLeft
+                    };
+                    children.Controls.Add(purchaseHeading);
+                }
+
                 Button item = new Button
                 {
                     Name = "btn" + caption.Replace(" ", "") + page.Replace(" ", ""),
@@ -397,7 +415,7 @@ namespace Clinic
                 }
 
                 children.Visible = open;
-                group.Height = open ? 47 + children.Padding.Vertical + pages.Length * 38 + (caption == "Reports" ? 33 : 0) : 47;
+                group.Height = open ? 47 + children.Padding.Vertical + pages.Length * 38 + (caption == "Reports" ? 66 : 0) : 47;
                 header.BackColor = open ? adminNavSelected : adminNavBackground;
                 expandedAdminGroup = open ? group : null;
                 expandedAdminHeader = open ? header : null;

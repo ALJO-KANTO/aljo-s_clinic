@@ -1011,6 +1011,18 @@
     <Compile Include="Report\Accountant\MasterTrialBalance.Designer.cs">
       <DependentUpon>MasterTrialBalance.cs</DependentUpon>
     </Compile>
+    <Compile Include="Report\Accountant\ProfitandLossDetailReport.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Report\Accountant\ProfitandLossDetailReport.designer.cs">
+      <DependentUpon>ProfitandLossDetailReport.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Report\Accountant\ProfitandLossReport.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Report\Accountant\ProfitandLossReport.designer.cs">
+      <DependentUpon>ProfitandLossReport.cs</DependentUpon>
+    </Compile>
     <Compile Include="Report\Purchase\frmPurchaseByVendorDetails.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -1491,6 +1503,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Purchases\Invoices\MasterPurchases.resx">
       <DependentUpon>MasterPurchases.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Report\Accountant\ProfitandLossDetailReport.resx">
+      <DependentUpon>ProfitandLossDetailReport.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Report\Accountant\ProfitandLossReport.resx">
+      <DependentUpon>ProfitandLossReport.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Report\Purchase\frmPurchaseByVendorDetails.resx">
       <DependentUpon>frmPurchaseByVendorDetails.cs</DependentUpon>

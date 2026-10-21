@@ -774,6 +774,9 @@ namespace Clinic
                 case "Account Ledger": return "دفتر الأستاذ";
                 case "Cost Center Summary": return "ملخص مراكز التكلفة";
                 case "Trial Balance": return "ميزان المراجعة";
+                case "Profit and Loss": return "الأرباح والخسائر";
+                case "Purchase": return "المشتريات";
+                case "Purchase by Vendor Summary": return "ملخص المشتريات حسب المورد";
                 case "Accounts": return "الحسابات";
                 case "Account Center": return "مركز الحسابات";
                 case "Fixed Assets": return "الأصول الثابتة";
@@ -1014,6 +1017,8 @@ namespace Clinic
                 { "Account Ledger", "frmAccountLedger" },
                 { "Cost Center Summary", "frmCostCenterSummary" },
                 { "Trial Balance", "MasterTrialBalance" },
+                { "Profit and Loss", "ProfitandLossReport" },
+                { "Purchase by Vendor Summary", "frmPurchaseByVendorSummery" },
                 { "Account Center", "MasterChartOfAccount" },
                 { "Fixed Assets", "MasterFixedAssets" },
                 { "Voucher", "MasterJournalVoucher" },
