@@ -11,8 +11,8 @@ using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-//using YamyProject.DAL;
-//using YamyProject.Localization;
+using YamyProject.DAL;
+using YamyProject.Localization;
 
 namespace YamyProject
 {
@@ -22,9 +22,10 @@ namespace YamyProject
         public frmViewLoan(int id = 0)
         {
             InitializeComponent();
-           // LocalizationManager.LocalizeForm(this);
+            LocalizationManager.LocalizeForm(this);
             this.id = id;
-            headerUC1.FormText = this.Text;
+            ApplyLoanFormLocalization(this);
+            headerUC1.FormText = TranslateLoanText(this.Text, IsArabicLanguage());
         }
 
         private void frmViewLoan_Load(object sender, EventArgs e)
@@ -41,6 +42,101 @@ namespace YamyProject
             else
             {
                 txtCode.Text = GenerateNextCode();
+            }
+
+            // Apply after controls, combo boxes, and grid columns have been initialized.
+            ApplyLoanFormLocalization(this);
+            LocalizeLoanGridHeaders();
+            headerUC1.FormText = TranslateLoanText(this.Text, IsArabicLanguage());
+        }
+
+        private bool IsArabicLanguage()
+        {
+            try
+            {
+                string language = Clinic.Properties.Settings.Default.ApplicationLanguage;
+                return !string.IsNullOrWhiteSpace(language) &&
+                       (language.Equals("Arabic", StringComparison.OrdinalIgnoreCase) ||
+                        language.Equals("AR", StringComparison.OrdinalIgnoreCase) ||
+                        language.StartsWith("ar-", StringComparison.OrdinalIgnoreCase));
+            }
+            catch { return false; }
+        }
+
+        private string TranslateLoanText(string text, bool arabic)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return text;
+            string key = text.Trim();
+            var translations = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "Loan", "القرض" }, { "Request Date", "تاريخ الطلب" },
+                { "Debit Account", "حساب المدين" }, { "Credit Account", "حساب الدائن" },
+                { "Employee Name", "اسم الموظف" }, { "Employee Code", "رمز الموظف" },
+                { "Request Amount", "المبلغ المطلوب" }, { "Installments", "عدد الأقساط" },
+                { "Description", "الوصف" }, { "Start Date", "تاريخ البدء" },
+                { "End Date", "تاريخ الانتهاء" }, { "SN#", "م" }, { "SN", "م" },
+                { "Date", "التاريخ" }, { "Month", "الشهر" }, { "Amount", "المبلغ" },
+                { "Save", "حفظ" }, { "Close", "إغلاق" }, { "Save & Close", "حفظ وإغلاق" },
+                { "Save & New", "حفظ وإضافة" }, { "Delete", "حذف" },
+                { "No data available to save.", "لا توجد بيانات متاحة للحفظ." },
+                { "Warning", "تحذير" }, { "Success", "نجاح" }, { "Error", "خطأ" },
+                { "Data saved successfully.", "تم حفظ البيانات بنجاح." },
+                { "Data updated successfully.", "تم تحديث البيانات بنجاح." },
+                { "Enter Request Amount Please.", "يرجى إدخال المبلغ المطلوب." },
+                { "Cannot delete this loan as there are associated payment vouchers.", "لا يمكن حذف هذا القرض لوجود سندات صرف مرتبطة به." },
+                { "Loan deleted successfully.", "تم حذف القرض بنجاح." },
+                { "Info", "معلومات" }, { "OK", "موافق" }, { "Cancel", "إلغاء" }
+            };
+            if (arabic)
+            {
+                if (translations.TryGetValue(key, out string translated)) return translated;
+                // These labels are sometimes assigned as Text placeholders rather than labels.
+                if (key.IndexOf("Request Amount", StringComparison.OrdinalIgnoreCase) >= 0) return key.Replace("Request Amount", "المبلغ المطلوب");
+                if (key.IndexOf("Installments", StringComparison.OrdinalIgnoreCase) >= 0) return key.Replace("Installments", "عدد الأقساط");
+                if (key.IndexOf("Description", StringComparison.OrdinalIgnoreCase) >= 0) return key.Replace("Description", "الوصف");
+                return text;
+            }
+            foreach (var item in translations)
+                if (string.Equals(item.Value, key, StringComparison.Ordinal)) return item.Key;
+            return text;
+        }
+
+        private void ApplyLoanFormLocalization(Control root)
+        {
+            bool arabic = IsArabicLanguage();
+            foreach (Control control in root.Controls)
+            {
+                string newText = TranslateLoanText(control.Text, arabic);
+                if (!string.Equals(control.Text, newText, StringComparison.Ordinal)) control.Text = newText;
+                if (control is Label || control is GroupBox)
+                {
+                    control.RightToLeft = arabic ? RightToLeft.Yes : RightToLeft.No;
+                    if (control is Label label) label.TextAlign = arabic ? ContentAlignment.MiddleRight : ContentAlignment.MiddleLeft;
+                }
+                if (control.HasChildren) ApplyLoanFormLocalization(control);
+            }
+            RightToLeft = arabic ? RightToLeft.Yes : RightToLeft.No;
+            RightToLeftLayout = arabic;
+            LocalizeLoanGridHeaders();
+            if (headerUC1 != null) headerUC1.FormText = TranslateLoanText(Text, arabic);
+        }
+
+        private void LocalizeLoanGridHeaders()
+        {
+            if (dgvLoan == null || dgvLoan.Columns.Count == 0) return;
+            bool arabic = IsArabicLanguage();
+            foreach (DataGridViewColumn column in dgvLoan.Columns)
+            {
+                string key = string.IsNullOrWhiteSpace(column.Name) ? column.HeaderText : column.Name;
+                switch (key.ToLowerInvariant())
+                {
+                    case "sn": column.HeaderText = arabic ? "م" : "SN#"; break;
+                    case "date": column.HeaderText = arabic ? "التاريخ" : "Date"; break;
+                    case "month": column.HeaderText = arabic ? "الشهر" : "Month"; break;
+                    case "description": column.HeaderText = arabic ? "الوصف" : "Description"; break;
+                    case "amount": column.HeaderText = arabic ? "المبلغ" : "Amount"; break;
+                    default: column.HeaderText = TranslateLoanText(column.HeaderText, arabic); break;
+                }
             }
         }
 
@@ -104,7 +200,8 @@ namespace YamyProject
             dgvLoan.Columns.Add("Month", "Month");
             dgvLoan.Columns.Add("Description", "Description");
             dgvLoan.Columns.Add("Amount", "Amount");
-           // LocalizationManager.LocalizeDataGridViewHeaders(dgvLoan);
+            LocalizationManager.LocalizeDataGridViewHeaders(dgvLoan);
+            LocalizeLoanGridHeaders();
         }
 
         private void txtInstallments_TextChanged(object sender, EventArgs e)
@@ -148,7 +245,7 @@ namespace YamyProject
             txtCode.Text = GenerateNextCode();
             if (dgvLoan.Rows.Count == 0)
             {
-                MessageBox.Show("No data available to save.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(TranslateLoanText("No data available to save.", IsArabicLanguage()), TranslateLoanText("Warning", IsArabicLanguage()), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
 
@@ -204,7 +301,7 @@ namespace YamyProject
             }
             insertJournals();
             ////Utilities.LogAudit(-1, "Insert Loan", "Loan", id, "Inserted Loan: " + txtCode.Text + " for Employee: " + employeeName);
-            MessageBox.Show("Data saved successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(TranslateLoanText("Data saved successfully.", IsArabicLanguage()), TranslateLoanText("Success", IsArabicLanguage()), MessageBoxButtons.OK, MessageBoxIcon.Information);
             return true;
         }
 
@@ -215,7 +312,7 @@ namespace YamyProject
 
             if (dgvLoan.Rows.Count == 0)
             {
-                MessageBox.Show("No data available to save.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(TranslateLoanText("No data available to save.", IsArabicLanguage()), TranslateLoanText("Warning", IsArabicLanguage()), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
 
@@ -279,7 +376,7 @@ namespace YamyProject
             }
             insertJournals();
             ////Utilities.LogAudit(-1, "Update Loan", "Loan", id, "Updated Loan: " + txtCode.Text + " for Employee: " + employeeName);
-            MessageBox.Show("Data updated successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(TranslateLoanText("Data updated successfully.", IsArabicLanguage()), TranslateLoanText("Success", IsArabicLanguage()), MessageBoxButtons.OK, MessageBoxIcon.Information);
             return true;
         }
 
@@ -312,7 +409,7 @@ namespace YamyProject
         {
             if (txtRequestAmount.Text.Trim() == "")
             {
-                MessageBox.Show("Enter Request Amount Please.");
+                MessageBox.Show(TranslateLoanText("Enter Request Amount Please.", IsArabicLanguage()));
                 return false;
             }
 
@@ -441,7 +538,7 @@ namespace YamyProject
 
             if (dgvLoan.Rows.Count == 0)
             {
-                MessageBox.Show("No data available to save.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(TranslateLoanText("No data available to save.", IsArabicLanguage()), TranslateLoanText("Warning", IsArabicLanguage()), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
 
@@ -451,11 +548,11 @@ namespace YamyProject
                         pv.`type` = 'Employee'
                         AND pvd.voucher_type = 'Employee Loan Payment'
                         AND pvd.hum_id = (select id from tbl_employee where code = @empCode)";
-            using(MySqlDataReader reader = ClinicDatabase.ExecuteReader(query, ClinicDatabase.CreateParameterNew("empCode", txtEmployeeCode.Text)))
+            using (MySqlDataReader reader = ClinicDatabase.ExecuteReader(query, ClinicDatabase.CreateParameterNew("empCode", txtEmployeeCode.Text)))
             {
                 if (reader.Read())
                 {
-                    MessageBox.Show("Cannot delete this loan as there are associated payment vouchers.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(TranslateLoanText("Cannot delete this loan as there are associated payment vouchers.", IsArabicLanguage()), TranslateLoanText("Error", IsArabicLanguage()), MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return false;
                 }
             }
@@ -482,7 +579,7 @@ namespace YamyProject
             dtpStartDate.Value = DateTime.Now;
             dtpEndDate.Value = DateTime.Now;
 
-            MessageBox.Show("Loan deleted successfully.", "Success");
+            MessageBox.Show(TranslateLoanText("Loan deleted successfully.", IsArabicLanguage()), TranslateLoanText("Success", IsArabicLanguage()));
             return true;
         }
     }
