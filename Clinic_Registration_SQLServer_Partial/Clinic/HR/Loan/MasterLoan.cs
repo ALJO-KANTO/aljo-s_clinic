@@ -7,8 +7,8 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-//using YamyProject.DAL;
-//using YamyProject.Localization;
+using YamyProject.DAL;
+using YamyProject.Localization;
 
 namespace YamyProject
 {
@@ -20,7 +20,8 @@ namespace YamyProject
         public MasterLoan()
         {
             InitializeComponent();
-           // LocalizationManager.LocalizeForm(this);
+            LocalizationManager.LocalizeForm(this);
+            ApplyMasterLoanLocalization(this);
             employeeUpdateHandler = (sender, args) => BindEmployee();
             //.Employee += employeeUpdateHandler;
 
@@ -33,7 +34,10 @@ namespace YamyProject
             ConfigureDataGridViews();
             BindEmployee();
             pnlInfo.Height = 80;
-            btnExpand.Text = "More";
+            btnExpand.Text = IsArabicLanguage() ? "المزيد" : "More";
+            ApplyMasterLoanLocalization(this);
+            LocalizeLoanGridHeaders();
+            headerUC1.FormText = Text;
         }
         private void MasterLoan_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -81,8 +85,9 @@ namespace YamyProject
             else
                 ClearEmployeeDetails();
 
-           // LocalizationManager.LocalizeDataGridViewHeaders(dgvEmployee);
-           // LocalizationManager.LocalizeDataGridViewHeaders(dgvInvoice);
+            LocalizationManager.LocalizeDataGridViewHeaders(dgvEmployee);
+            LocalizationManager.LocalizeDataGridViewHeaders(dgvInvoice);
+            LocalizeLoanGridHeaders();
         }
 
         private void BindEmployeeInfo()
@@ -107,7 +112,7 @@ namespace YamyProject
                                     WHERE e.id = @id;
                                     ";
 
-                    var employeeParams = new List<MySqlParameter>
+            var employeeParams = new List<MySqlParameter>
                 {
                     new MySqlParameter("@id", empId)
                 };
@@ -177,6 +182,7 @@ namespace YamyProject
             dgvInvoice.Columns["change"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dgvInvoice.Columns["LoanDate"].DefaultCellStyle.Format = "dd-MM-yyyy";
             dgvInvoice.Columns["id"].Visible = false;
+            LocalizeLoanGridHeaders();
         }
 
         private void BindEmployeeSalary(string empCode)
@@ -225,7 +231,7 @@ namespace YamyProject
                 FROM combined
                 ORDER BY order_type, DATE, id;";
 
-                    var salaryParams = new List<MySqlParameter>
+            var salaryParams = new List<MySqlParameter>
             {
                 new MySqlParameter("@empCode", empCode)
             };
@@ -251,7 +257,11 @@ namespace YamyProject
 
             if (dgvInvoice.Rows.Count == 0)
             {
-                MessageBox.Show("No salary/loan records found for this employee.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(
+                    TranslateMasterLoanText("No salary/loan records found for this employee.", IsArabicLanguage()),
+                    TranslateMasterLoanText("Info", IsArabicLanguage()),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
             }
 
             if (dgvInvoice.Rows.Count > 0)
@@ -259,12 +269,12 @@ namespace YamyProject
                 //editCustomerToolStripMenuItem1.v
             }
         }
-        
+
         private void dgvInvoice_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
             if (dgvInvoice.Rows[e.RowIndex].Cells["EmployeeName"].Value?.ToString() == "Total")
             {
-                e.CellStyle.Font = new Font("Segoe UI", 9, FontStyle.Bold); 
+                e.CellStyle.Font = new Font("Segoe UI", 9, FontStyle.Bold);
                 e.CellStyle.BackColor = Color.LightGray;
             }
         }
@@ -285,12 +295,12 @@ namespace YamyProject
             if (pnlInfo.Height == 80)
             {
                 pnlInfo.Height = 240;
-                btnExpand.Text = "Less";
+                btnExpand.Text = IsArabicLanguage() ? "أقل" : "Less";
             }
             else
             {
                 pnlInfo.Height = 80;
-                btnExpand.Text = "More";
+                btnExpand.Text = IsArabicLanguage() ? "المزيد" : "More";
             }
         }
 
@@ -314,8 +324,8 @@ namespace YamyProject
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog
             {
-                Filter = "Excel Files|*.xlsx",
-                Title = "Save Excel File"
+                Filter = IsArabicLanguage() ? "ملفات إكسل|*.xlsx" : "Excel Files|*.xlsx",
+                Title = IsArabicLanguage() ? "حفظ ملف إكسل" : "Save Excel File"
             };
 
             if (saveFileDialog.ShowDialog() == DialogResult.OK)
@@ -334,5 +344,234 @@ namespace YamyProject
                 frmMain.openChildForm(new frmViewLoan(loanId));
             }
         }
+
+        private bool IsArabicLanguage()
+        {
+            try
+            {
+                string language = Clinic.Properties.Settings.Default.ApplicationLanguage;
+                return !string.IsNullOrWhiteSpace(language) &&
+                       (language.Equals("Arabic", StringComparison.OrdinalIgnoreCase) ||
+                        language.Equals("AR", StringComparison.OrdinalIgnoreCase) ||
+                        language.StartsWith("ar-", StringComparison.OrdinalIgnoreCase));
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private string TranslateMasterLoanText(string text, bool arabic)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                return text;
+
+            var translations = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "Master Loan", "إدارة القروض" },
+                { "Employee Loan Center", "مركز قروض الموظفين" },
+                { "Employee Information", "معلومات الموظف" },
+                { "Employees", "الموظفون" },
+                { "View employee details and manage loan records.", "عرض تفاصيل الموظف وإدارة سجلات القروض." },
+                { "View employee details and manage loan records", "عرض تفاصيل الموظف وإدارة سجلات القروض" },
+                { "Loan Info", "معلومات القرض" },
+                { "Add New Loan", "إضافة قرض جديد" },
+                { "Add New", "إضافة جديد" },
+                { "Employee Details", "تفاصيل الموظف" },
+                { "Loan Details", "تفاصيل القرض" },
+                { "Employee Code", "رمز الموظف" },
+                { "Employee Name", "اسم الموظف" },
+                { "Employee Address", "عنوان الموظف" },
+                { "Employee Email", "البريد الإلكتروني للموظف" },
+                { "Employee Phone", "هاتف الموظف" },
+                { "Print ▼", "طباعة ▼" },
+                { "▼ Print", "▼ طباعة" },
+                { "Print  ▼", "طباعة  ▼" },
+                { "Print...", "طباعة..." },
+                { "Export", "تصدير" },
+                { "Search", "بحث" },
+                { "Employee Loan", "قرض الموظف" },
+                { "Loan", "القرض" },
+                { "Employee", "الموظف" },
+                { "Code", "الرمز" },
+                { "Name", "الاسم" },
+                { "Position", "الوظيفة" },
+                { "Category", "الفئة" },
+                { "Address", "العنوان" },
+                { "Email", "البريد الإلكتروني" },
+                { "Phone", "الهاتف" },
+                { "Loan Date", "تاريخ القرض" },
+                { "Date", "التاريخ" },
+                { "Request Amount", "المبلغ المطلوب" },
+                { "RequestAmount", "المبلغ المطلوب" },
+                { "Installments", "عدد الأقساط" },
+                { "Start Date", "تاريخ البدء" },
+                { "StartDate", "تاريخ البدء" },
+                { "End Date", "تاريخ الانتهاء" },
+                { "EndDate", "تاريخ الانتهاء" },
+                { "Description", "الوصف" },
+                { "Pay", "المدفوع" },
+                { "Change", "المتبقي" },
+                { "Total", "الإجمالي" },
+                { "More", "المزيد" },
+                { "Less", "أقل" },
+                { "Print", "طباعة" },
+                { "Excel", "إكسل" },
+                { "Export to Excel", "تصدير إلى إكسل" },
+                { "Save Excel File", "حفظ ملف إكسل" },
+                { "Excel Files|*.xlsx", "ملفات إكسل|*.xlsx" },
+                { "No salary/loan records found for this employee.", "لا توجد سجلات رواتب أو قروض لهذا الموظف." },
+                { "Info", "معلومات" },
+                { "OK", "موافق" },
+                { "Cancel", "إلغاء" },
+                { "Close", "إغلاق" }
+            };
+
+            string trimmed = text.Trim();
+            if (arabic && translations.TryGetValue(trimmed, out string translated))
+                return translated;
+
+            // Print controls may contain a dropdown arrow or extra spacing.
+            if (arabic && trimmed.IndexOf("Print", StringComparison.OrdinalIgnoreCase) >= 0)
+                return trimmed.Replace("Print", "طباعة").Replace("print", "طباعة");
+            if (arabic && string.Equals(trimmed, "Excel", StringComparison.OrdinalIgnoreCase))
+                return "إكسل";
+
+            if (!arabic)
+            {
+                foreach (var item in translations)
+                {
+                    if (string.Equals(item.Value, trimmed, StringComparison.Ordinal))
+                        return item.Key;
+                }
+                if (trimmed.Contains("طباعة")) return trimmed.Replace("طباعة", "Print");
+            }
+
+            return text;
+        }
+
+        private void ApplyMasterLoanLocalization(Control root)
+        {
+            bool arabic = IsArabicLanguage();
+
+            foreach (Control control in root.Controls)
+            {
+                string translated = TranslateMasterLoanText(control.Text, arabic);
+                if (!string.Equals(control.Text, translated, StringComparison.Ordinal))
+                    control.Text = translated;
+
+                if (arabic)
+                {
+                    if (control is Label)
+                        control.RightToLeft = RightToLeft.Yes;
+                }
+                else
+                {
+                    if (control is Label)
+                        control.RightToLeft = RightToLeft.No;
+                }
+
+                if (control.HasChildren)
+                    ApplyMasterLoanLocalization(control);
+            }
+
+            if (arabic)
+                RightToLeft = RightToLeft.Yes;
+            else
+                RightToLeft = RightToLeft.No;
+
+            RightToLeftLayout = arabic;
+            if (btnExpand != null)
+                btnExpand.Text = TranslateMasterLoanText(btnExpand.Text, arabic);
+
+            // ToolStrip items are not part of Control.Controls, so localize them separately.
+            ApplyMasterLoanToolStripLocalization(this, arabic);
+
+            if (headerUC1 != null)
+                headerUC1.FormText = TranslateMasterLoanText(Text, arabic);
+        }
+
+        private void ApplyMasterLoanToolStripLocalization(Control root, bool arabic)
+        {
+            foreach (Control control in root.Controls)
+            {
+                if (control is ToolStrip toolStrip)
+                {
+                    foreach (ToolStripItem item in toolStrip.Items)
+                    {
+                        item.Text = TranslateMasterLoanText(item.Text, arabic);
+                        if (item is ToolStripDropDownItem dropDown)
+                            ApplyMasterLoanToolStripItems(dropDown.DropDownItems, arabic);
+                    }
+                }
+
+                if (control.HasChildren)
+                    ApplyMasterLoanToolStripLocalization(control, arabic);
+            }
+        }
+
+        private void ApplyMasterLoanToolStripItems(ToolStripItemCollection items, bool arabic)
+        {
+            foreach (ToolStripItem item in items)
+            {
+                item.Text = TranslateMasterLoanText(item.Text, arabic);
+                if (item is ToolStripDropDownItem dropDown)
+                    ApplyMasterLoanToolStripItems(dropDown.DropDownItems, arabic);
+            }
+        }
+
+        private void LocalizeLoanGridHeaders()
+        {
+            bool arabic = IsArabicLanguage();
+
+            if (dgvEmployee.Columns.Count > 0)
+            {
+                foreach (DataGridViewColumn column in dgvEmployee.Columns)
+                {
+                    string key = column.HeaderText;
+                    if (column.Name == "Employee Code" || column.DataPropertyName == "Employee Code")
+                        key = "Employee Code";
+                    else if (column.Name == "Name" || column.DataPropertyName == "Name")
+                        key = "Name";
+
+                    column.HeaderText = TranslateMasterLoanText(key, arabic);
+                }
+            }
+
+            if (dgvInvoice.Columns.Count > 0)
+            {
+                foreach (DataGridViewColumn column in dgvInvoice.Columns)
+                {
+                    string key = column.Name;
+                    if (string.IsNullOrWhiteSpace(key))
+                        key = column.HeaderText;
+
+                    switch (key.ToLowerInvariant())
+                    {
+                        case "id": column.HeaderText = "ID"; break;
+                        case "code": column.HeaderText = arabic ? "الرمز" : "code"; break;
+                        case "loandate": column.HeaderText = arabic ? "تاريخ القرض" : "LoanDate"; break;
+                        case "employeeid": column.HeaderText = arabic ? "رمز الموظف" : "EmployeeID"; break;
+                        case "employeename": column.HeaderText = arabic ? "اسم الموظف" : "EmployeeName"; break;
+                        case "requestamount": column.HeaderText = arabic ? "المبلغ المطلوب" : "RequestAmount"; break;
+                        case "installments": column.HeaderText = arabic ? "عدد الأقساط" : "Installments"; break;
+                        case "startdate": column.HeaderText = arabic ? "تاريخ البدء" : "StartDate"; break;
+                        case "enddate": column.HeaderText = arabic ? "تاريخ الانتهاء" : "EndDate"; break;
+                        case "description": column.HeaderText = arabic ? "الوصف" : "Description"; break;
+                        case "pay": column.HeaderText = arabic ? "المدفوع" : "pay"; break;
+                        case "change": column.HeaderText = arabic ? "المتبقي" : "change"; break;
+                        case "date": column.HeaderText = arabic ? "التاريخ" : "DATE"; break;
+                        case "type": column.HeaderText = arabic ? "النوع" : "Type"; break;
+                        case "received_amount": column.HeaderText = arabic ? "المبلغ المستلم" : "RECEIVED_AMOUNT"; break;
+                        case "pay_amount": column.HeaderText = arabic ? "مبلغ السداد" : "PAY_AMOUNT"; break;
+                        case "balance": column.HeaderText = arabic ? "الرصيد" : "BALANCE"; break;
+                        default:
+                            column.HeaderText = TranslateMasterLoanText(column.HeaderText, arabic);
+                            break;
+                    }
+                }
+            }
+        }
+
     }
 }
