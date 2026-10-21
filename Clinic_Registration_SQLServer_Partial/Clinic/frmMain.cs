@@ -1018,7 +1018,7 @@ namespace Clinic
                 { "Cost Center Summary", "frmCostCenterSummary" },
                 { "Trial Balance", "MasterTrialBalance" },
                 { "Profit and Loss", "ProfitandLossReport" },
-                { "Purchase by Vendor Summary", "frmPurchaseByVendorSummery" },
+                { "Purchase by Vendor Summary", "frmPurchaseByVendorSummary" },
                 { "Account Center", "MasterChartOfAccount" },
                 { "Fixed Assets", "MasterFixedAssets" },
                 { "Voucher", "MasterJournalVoucher" },
@@ -1114,7 +1114,20 @@ namespace Clinic
 
                     Type formType = matches[0];
 
-                    // First try a public parameterless constructor.
+                    // Profit and Loss requires a report type.
+                    if (formType.Name == "ProfitandLossReport")
+                    {
+                        using (Form report = (Form)Activator.CreateInstance(
+                            formType, new object[] { "standard" }))
+                        {
+                            report.StartPosition = FormStartPosition.CenterParent;
+                            report.ShowDialog(this);
+                        }
+
+                        return;
+                    }
+
+                    // Existing navigation logic remains unchanged.
                     var constructor = formType.GetConstructor(Type.EmptyTypes);
 
                     Form form = null;
