@@ -1,4 +1,7 @@
-﻿using MigraDoc.DocumentObjectModel;
+﻿using Clinic;
+using Clinic.global_classes;
+using Clinic_DataAccess;
+using MigraDoc.DocumentObjectModel;
 using MigraDoc.DocumentObjectModel.Tables;
 using MigraDoc.Rendering;
 using MySql.Data.MySqlClient;
@@ -24,7 +27,7 @@ namespace YamyProject
         {
             btnPrint.Text = "Print ▼";
             LoadSalesData();
-            using (MySqlDataReader reader = DBClass.ExecuteReader("SELECT name FROM tbl_company LIMIT 1"))
+            using (MySqlDataReader reader = ClinicDatabase.ExecuteReader("SELECT name FROM tbl_company LIMIT 1"))
                 if (reader.Read())
                 {
                     lblCompany.Text = reader["name"].ToString();
@@ -171,7 +174,7 @@ namespace YamyProject
                 dgvSales.Rows.Clear();
                 string firstDateStr = "";
 
-                object firstDateObj = DBClass.ExecuteScalar("SELECT MIN(`date`) FROM tbl_transaction WHERE `date` IS NOT NULL");
+                object firstDateObj = ClinicDatabase.ExecuteScalar("SELECT MIN(`date`) FROM tbl_transaction WHERE `date` IS NOT NULL");
                 if (firstDateObj != null && firstDateObj != DBNull.Value)
                 {
                     DateTime firstDate = Convert.ToDateTime(firstDateObj);
@@ -213,8 +216,8 @@ namespace YamyProject
                 if (!chkDate.Checked)
                 {
                     dateFilter = " AND t.date >= @dateFrom AND t.date <= @dateTo";
-                    parameters.Add(DBClass.CreateParameter("@dateFrom", dtpFrom.Value.Date));
-                    parameters.Add(DBClass.CreateParameter("@dateTo", dtpTo.Value.Date.AddDays(1).AddSeconds(-1)));
+                    parameters.Add(ClinicDatabase.CreateParameterNew("@dateFrom", dtpFrom.Value.Date));
+                    parameters.Add(ClinicDatabase.CreateParameterNew("@dateTo", dtpTo.Value.Date.AddDays(1).AddSeconds(-1)));
                 }
 
                 string query = $@"
@@ -253,7 +256,7 @@ namespace YamyProject
                                     v.id, v.code, v.name;
                             ";
 
-                using (MySqlDataReader reader = DBClass.ExecuteReader(query, parameters.ToArray()))
+                using (MySqlDataReader reader = ClinicDatabase.ExecuteReader(query, parameters.ToArray()))
                 {
                     while (reader.Read())
                     {
@@ -293,7 +296,7 @@ namespace YamyProject
             string companyName = "Company Name";
 
             // Get company name from DB
-            using (MySqlDataReader reader = DBClass.ExecuteReader("SELECT name FROM tbl_company LIMIT 1"))
+            using (MySqlDataReader reader = ClinicDatabase.ExecuteReader("SELECT name FROM tbl_company LIMIT 1"))
                 if (reader.Read())
                 {
                     companyName = reader["name"].ToString();
@@ -503,7 +506,7 @@ namespace YamyProject
                 return;
             
                 int id = int.Parse(dgvSales.CurrentRow.Cells["id"].Value.ToString());
-                frmLogin.frmMain.openChildForm(new frmEmployeeBalanceDetails(id));
+                frmMain.openChildForm(new frmEmployeeBalanceDetails(id));
             
         }
 

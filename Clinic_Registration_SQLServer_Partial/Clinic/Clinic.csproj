@@ -1029,6 +1029,12 @@
     <Compile Include="Report\Accountant\ProfitandLossReport.designer.cs">
       <DependentUpon>ProfitandLossReport.cs</DependentUpon>
     </Compile>
+    <Compile Include="Report\Employee\frmEmployeeBalanceDetails.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Report\Employee\frmEmployeeBalanceDetails.designer.cs">
+      <DependentUpon>frmEmployeeBalanceDetails.cs</DependentUpon>
+    </Compile>
     <Compile Include="Report\Employee\frmEmployeeBalanceSummary.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -1078,6 +1084,12 @@
       <DependentUpon>frmPurchaseByVendorSummery.cs</DependentUpon>
     </Compile>
     <Compile Include="ReportPrinter.cs" />
+    <Compile Include="Report\Vendor\frmVendorBalanceDetails.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Report\Vendor\frmVendorBalanceDetails.designer.cs">
+      <DependentUpon>frmVendorBalanceDetails.cs</DependentUpon>
+    </Compile>
     <Compile Include="Report\Vendor\frmVendorSummary.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -1561,6 +1573,9 @@
     <EmbeddedResource Include="Report\Accountant\ProfitandLossReport.resx">
       <DependentUpon>ProfitandLossReport.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Report\Employee\frmEmployeeBalanceDetails.resx">
+      <DependentUpon>frmEmployeeBalanceDetails.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Report\Employee\frmEmployeeBalanceSummary.resx">
       <DependentUpon>frmEmployeeBalanceSummary.cs</DependentUpon>
     </EmbeddedResource>
@@ -1584,6 +1599,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Report\Purchase\frmPurchaseByVendorSummery.resx">
       <DependentUpon>frmPurchaseByVendorSummery.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Report\Vendor\frmVendorBalanceDetails.resx">
+      <DependentUpon>frmVendorBalanceDetails.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Report\Vendor\frmVendorSummary.resx">
       <DependentUpon>frmVendorSummary.cs</DependentUpon>

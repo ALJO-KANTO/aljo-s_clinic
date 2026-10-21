@@ -1,4 +1,7 @@
-﻿using Guna.UI2.WinForms;
+﻿using Clinic;
+using Clinic.global_classes;
+using Clinic_DataAccess;
+using Guna.UI2.WinForms;
 using MigraDoc.DocumentObjectModel;
 using MigraDoc.DocumentObjectModel.Tables;
 using MigraDoc.Rendering;
@@ -46,7 +49,7 @@ namespace YamyProject
         }
         private void loadCompany()
         {
-            using (var reader = DBClass.ExecuteReader("SELECT name FROM tbl_company"))
+            using (var reader = ClinicDatabase.ExecuteReader("SELECT name FROM tbl_company"))
             {
                 if (reader.Read() && reader["name"] != DBNull.Value)
                 {
@@ -337,19 +340,19 @@ namespace YamyProject
                 // Optional WHERE for employee
                 List<MySqlParameter> parameters = new List<MySqlParameter>
                 {
-                    DBClass.CreateParameter("hum_id", id),
-                    DBClass.CreateParameter("startDate", dateTimePicker1.Value.Date),
-                    DBClass.CreateParameter("endDate", dateTimePicker2.Value.Date)
+                    ClinicDatabase.CreateParameterNew("hum_id", id),
+                    ClinicDatabase.CreateParameterNew("startDate", dateTimePicker1.Value.Date),
+                    ClinicDatabase.CreateParameterNew("endDate", dateTimePicker2.Value.Date)
                 };
 
                 if (empId > 0)
                 {
                     query += " AND e.id = @empCode";
-                    parameters.Add(DBClass.CreateParameter("empCode", empId.ToString()));
+                    parameters.Add(ClinicDatabase.CreateParameterNew("empCode", empId.ToString()));
                 }
 
                 query += " ORDER BY t.date, t.id";
-                using (MySqlDataReader reader = DBClass.ExecuteReader(query, parameters.ToArray()))
+                using (MySqlDataReader reader = ClinicDatabase.ExecuteReader(query, parameters.ToArray()))
                 {
                     while (reader.Read())
                     {
@@ -417,8 +420,8 @@ namespace YamyProject
                 decimal totalAmount = 0, totalVat = 0, totalTotal = 0;
                 List<MySqlParameter> parameters = new List<MySqlParameter>
                 {
-                    DBClass.CreateParameter("startDate", dateTimePicker1.Value.Date),
-                    DBClass.CreateParameter("endDate", dateTimePicker2.Value.Date)
+                    ClinicDatabase.CreateParameterNew("startDate", dateTimePicker1.Value.Date),
+                    ClinicDatabase.CreateParameterNew("endDate", dateTimePicker2.Value.Date)
                 };
                 query = @"
                         SELECT 
@@ -443,13 +446,13 @@ namespace YamyProject
                 if (empId > 0)
                 {
                     query += " e.id = @empId AND";
-                    parameters.Add(DBClass.CreateParameter("empId", empId.ToString()));
+                    parameters.Add(ClinicDatabase.CreateParameterNew("empId", empId.ToString()));
                 }
                 query +=@" p.voucher_date >= @startDate AND p.voucher_date <= @endDate
                         ORDER BY p.voucher_date, p.id
                     ";
 
-                using (MySqlDataReader reader = DBClass.ExecuteReader(query, parameters.ToArray()))
+                using (MySqlDataReader reader = ClinicDatabase.ExecuteReader(query, parameters.ToArray()))
                 {
                     while (reader.Read())
                     {
@@ -508,22 +511,22 @@ namespace YamyProject
                     if (EnableApproval)
                     {
                         //if(_type == "Petty Cash") { }
-                        frmLogin.frmMain.openChildForm(new frmViewPettyCashVoucher(_id));
+                        frmMain.openChildForm(new frmViewPettyCashVoucher(_id));
                     }
                     else
                     {
                         var _type = dgvSales.Rows[e.RowIndex].Cells["Type"].Value.ToString();
                         if (_type == "Petty Cash Request")
                         {
-                            frmLogin.frmMain.openChildForm(new frmPettyCashRequest(_id));
+                            frmMain.openChildForm(new frmPettyCashRequest(_id));
                         }
                         else if (_type == "Petty Cash Submission")
                         {
-                            frmLogin.frmMain.openChildForm(new frmPettyCashSubmission(_id));
+                            frmMain.openChildForm(new frmPettyCashSubmission(_id));
                         }
                         else if (_type == "Employee Petty Cash Payment")
                         {
-                            frmLogin.frmMain.openChildForm(new frmViewPaymentVoucher(_id));
+                            frmMain.openChildForm(new frmViewPaymentVoucher(_id));
 
                         }
                     }
@@ -732,8 +735,8 @@ namespace YamyProject
                 targetTextBox.Focus();
                 targetTextBox.SelectionStart = targetTextBox.Text.Length;
 
-                using (MySqlDataReader reader = DBClass.ExecuteReader("select id from tbl_employee where code =@code",
-                    DBClass.CreateParameter("code", selectedCode)))
+                using (MySqlDataReader reader = ClinicDatabase.ExecuteReader("select id from tbl_employee where code =@code",
+                    ClinicDatabase.CreateParameterNew("code", selectedCode)))
                     if (reader.Read())
                         cmbEmployee.SelectedValue = int.Parse(reader["id"].ToString());
             }
@@ -753,7 +756,7 @@ namespace YamyProject
                 string query = @"SELECT code, name FROM tbl_employee 
                          WHERE code LIKE @search OR name LIKE @search LIMIT 20";
 
-                DataTable dt = DBClass.ExecuteDataTable(query, DBClass.CreateParameter("@search", "%" + input + "%"));
+                DataTable dt = ClinicDatabase.ExecuteDataTable(query, ClinicDatabase.CreateParameterNew("@search", "%" + input + "%"));
 
                 lstAccountSuggestions.Items.Clear();
 

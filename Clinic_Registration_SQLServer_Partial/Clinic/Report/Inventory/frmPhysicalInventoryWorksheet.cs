@@ -1,4 +1,6 @@
-﻿using MigraDoc.DocumentObjectModel;
+﻿using Clinic.global_classes;
+using Clinic_DataAccess;
+using MigraDoc.DocumentObjectModel;
 using MigraDoc.DocumentObjectModel.Tables;
 using MigraDoc.Rendering;
 using MySql.Data.MySqlClient;
@@ -28,7 +30,7 @@ namespace YamyProject
         {
             btnPrint.Text = "Print ▼";
             LoadData();
-            using (MySqlDataReader reader = DBClass.ExecuteReader("SELECT name FROM tbl_company LIMIT 1"))
+            using (MySqlDataReader reader = ClinicDatabase.ExecuteReader("SELECT name FROM tbl_company LIMIT 1"))
                 if (reader.Read())
                 {
                     lblCompany.Text = reader["name"].ToString();
@@ -62,9 +64,9 @@ namespace YamyProject
                             ORDER BY c.name, i.name;
                             ";
 
-            DataTable dt = DBClass.ExecuteDataTable(sql,
-                DBClass.CreateParameter("sDate", dtpFrom.Value.Date),
-                DBClass.CreateParameter("eDate", dtpTo.Value.Date));
+            DataTable dt = ClinicDatabase.ExecuteDataTable(sql,
+                ClinicDatabase.CreateParameterNew("sDate", dtpFrom.Value.Date),
+                ClinicDatabase.CreateParameterNew("eDate", dtpTo.Value.Date));
 
             LoadInventoryValuationSummary(dt);
 
@@ -319,8 +321,8 @@ namespace YamyProject
                 if (saveDialog.ShowDialog() == DialogResult.OK)
                 {
                     // Show progress window
-                    FrmProgress progress = new FrmProgress();
-                    progress.Show();
+                    //FrmProgress progress = new FrmProgress();
+                    //progress.Show();
 
                     await Task.Run(() =>
                     {
@@ -398,8 +400,8 @@ namespace YamyProject
                             foreach (DataGridViewRow row in dgvReport.Rows)
                             {
                                 if (row.IsNewRow) continue;
-                                if (progress.CancelRequested)
-                                    throw new Exception("Operation cancelled.");
+                                //if (progress.CancelRequested)
+                                //    throw new Exception("Operation cancelled.");
 
                                 for (int i = 0; i < dgvReport.Columns.Count; i++)
                                 {
@@ -426,7 +428,7 @@ namespace YamyProject
                                 processed++;
 
                                 int percent = processed * 100 / totalRows;
-                                progress.UpdateProgress(percent);
+                                //progress.UpdateProgress(percent);
                             }
 
                             worksheet.Columns.AutoFit();
@@ -441,7 +443,7 @@ namespace YamyProject
                         }
                     });
 
-                    progress.Close();
+                    //progress.Close();
                     MessageBox.Show("Excel exported successfully!", "Export", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }

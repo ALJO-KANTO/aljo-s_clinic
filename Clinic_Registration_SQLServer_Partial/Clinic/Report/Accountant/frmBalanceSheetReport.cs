@@ -1,4 +1,7 @@
-﻿using MigraDoc.DocumentObjectModel;
+﻿using Clinic;
+using Clinic.global_classes;
+using Clinic_DataAccess;
+using MigraDoc.DocumentObjectModel;
 using MigraDoc.DocumentObjectModel.Tables;
 using MigraDoc.Rendering;
 using MySql.Data.MySqlClient;
@@ -35,7 +38,7 @@ namespace YamyProject
         {
             lblDate.Text = DateTime.Now.Date.ToString("dd/MM/yyyy");
             lblTime.Text = DateTime.Now.ToString("hh:mm:tt");
-            using (var reader = DBClass.ExecuteReader("SELECT name FROM tbl_company"))
+            using (var reader = ClinicDatabase.ExecuteReader("SELECT name FROM tbl_company"))
             {
                 if (reader.Read() && reader["name"] != DBNull.Value)
                 {
@@ -170,7 +173,7 @@ namespace YamyProject
 
             if (type == "Prev Year Comparison")
             {
-                using (MySqlDataReader reader = DBClass.ExecuteReader(@"
+                using (MySqlDataReader reader = ClinicDatabase.ExecuteReader(@"
                             WITH AccountBalances AS (
                                 -- Calculate balances for Income, Cost, and Expense categories (for P&L integration)
                                 SELECT 
@@ -232,10 +235,10 @@ namespace YamyProject
                             FROM EquityBalances eb
                             ORDER BY eb.id;
                             ",
-                        DBClass.CreateParameter("@currentFrom", dateTimePicker1.Value.Date),
-                        DBClass.CreateParameter("@currentTo", dateTimePicker2.Value.Date),
-                        DBClass.CreateParameter("@prevFrom", prevFrom),
-                        DBClass.CreateParameter("@prevTo", prevTo)))
+                        ClinicDatabase.CreateParameterNew("@currentFrom", dateTimePicker1.Value.Date),
+                        ClinicDatabase.CreateParameterNew("@currentTo", dateTimePicker2.Value.Date),
+                        ClinicDatabase.CreateParameterNew("@prevFrom", prevFrom),
+                        ClinicDatabase.CreateParameterNew("@prevTo", prevTo)))
                 {
                     while (reader.Read())
                     {
@@ -346,7 +349,7 @@ namespace YamyProject
             }
             else
             {
-                using (MySqlDataReader reader = DBClass.ExecuteReader(@"
+                using (MySqlDataReader reader = ClinicDatabase.ExecuteReader(@"
                     WITH AccountBalances AS (
                         SELECT 
                             l1.category_code AS Category, 
@@ -419,8 +422,8 @@ namespace YamyProject
                     FROM EquityBalances eb
                     ORDER BY eb.id;
                     ",
-                        DBClass.CreateParameter("@fromDate", dateTimePicker1.Value.Date),
-                        DBClass.CreateParameter("@toDate", dateTimePicker2.Value.Date)))
+                        ClinicDatabase.CreateParameterNew("@fromDate", dateTimePicker1.Value.Date),
+                        ClinicDatabase.CreateParameterNew("@toDate", dateTimePicker2.Value.Date)))
                 {
                     while (reader.Read())
                     {
@@ -535,7 +538,7 @@ namespace YamyProject
 
         private bool CheckNameIsAssets(string name)
         {
-            object result = DBClass.ExecuteScalar("SELECT category_code FROM tbl_coa_level_1 where name = @name", DBClass.CreateParameter("@name", name));
+            object result = ClinicDatabase.ExecuteScalar("SELECT category_code FROM tbl_coa_level_1 where name = @name", ClinicDatabase.CreateParameterNew("@name", name));
             if (result != null)
             {
                 string categoryName = (string)result;
@@ -569,8 +572,8 @@ namespace YamyProject
                 int parentId = int.Parse(row.Cells["id"].Value.ToString());
                 List<DataGridViewRow> newRows = new List<DataGridViewRow>();
 
-                using (MySqlDataReader reader = DBClass.ExecuteReader($@"SELECT name as currname, concat(code,' - ',name) as name , id FROM tbl_coa_level_" + (currLvl + 1) + " WHERE main_id = @parentId ORDER BY code",
-                                                                      DBClass.CreateParameter("parentId", parentId)))
+                using (MySqlDataReader reader = ClinicDatabase.ExecuteReader($@"SELECT name as currname, concat(code,' - ',name) as name , id FROM tbl_coa_level_" + (currLvl + 1) + " WHERE main_id = @parentId ORDER BY code",
+                                                                      ClinicDatabase.CreateParameterNew("parentId", parentId)))
                 {
                     int insertIndex = rowIndex + 1;
 
@@ -612,7 +615,7 @@ namespace YamyProject
                             }
                             if (currLvl + 1 == 4)
                             {
-                                using (MySqlDataReader tReader = DBClass.ExecuteReader(@"
+                                using (MySqlDataReader tReader = ClinicDatabase.ExecuteReader(@"
                                         SELECT 
                                                 t.id,
                                                 t.type,
@@ -679,9 +682,9 @@ namespace YamyProject
                                             WHERE t.account_id = @acctId AND t.date BETWEEN @fromDate AND @toDate
                                             ORDER BY t.date, t.id;
                                     ",
-                                    DBClass.CreateParameter("acctId", int.Parse(reader["id"].ToString())),
-                                    DBClass.CreateParameter("fromDate", dateTimePicker1.Value),
-                                    DBClass.CreateParameter("toDate", dateTimePicker2.Value)))
+                                    ClinicDatabase.CreateParameterNew("acctId", int.Parse(reader["id"].ToString())),
+                                    ClinicDatabase.CreateParameterNew("fromDate", dateTimePicker1.Value),
+                                    ClinicDatabase.CreateParameterNew("toDate", dateTimePicker2.Value)))
                                 {
                                     while (tReader.Read())
                                     {
@@ -1264,7 +1267,7 @@ namespace YamyProject
             if (currLvl > 4) return;
             if (currLvl == 4)
             {
-                frmLogin.frmMain.openChildForm(new MasterTransactionByAccount("Transactions By Account", int.Parse(dgvReport.Rows[e.RowIndex].Cells["id"].Value.ToString()), dateTimePicker1.Value.ToString(), dateTimePicker1.Value.ToString()));
+               //frmMain.openChildForm(new MasterTransactionByAccount("Transactions By Account", int.Parse(dgvReport.Rows[e.RowIndex].Cells["id"].Value.ToString()), dateTimePicker1.Value.ToString(), dateTimePicker1.Value.ToString()));
             }
 
             string state = dgvReport.Rows[e.RowIndex].Cells["state"].Value.ToString();
@@ -1281,8 +1284,8 @@ namespace YamyProject
                         int parentId = int.Parse(dgvReport.Rows[e.RowIndex].Cells["id"].Value.ToString());
                         List<DataGridViewRow> newRows = new List<DataGridViewRow>();
 
-                        using (MySqlDataReader reader = DBClass.ExecuteReader($@"SELECT name as currname, concat(code,' - ',name) as name , id FROM tbl_coa_level_" + (currLvl + 1) + " WHERE main_id = @parentId ORDER BY code",
-                                                                          DBClass.CreateParameter("parentId", parentId)))
+                        using (MySqlDataReader reader = ClinicDatabase.ExecuteReader($@"SELECT name as currname, concat(code,' - ',name) as name , id FROM tbl_coa_level_" + (currLvl + 1) + " WHERE main_id = @parentId ORDER BY code",
+                                                                          ClinicDatabase.CreateParameterNew("parentId", parentId)))
                         {
                             int insertIndex = e.RowIndex + 1;
 
@@ -1396,11 +1399,11 @@ namespace YamyProject
                                 END
                             )";
 
-            object result = DBClass.ExecuteScalar(
+            object result = ClinicDatabase.ExecuteScalar(
                 query,
-                DBClass.CreateParameter("@id", id),
-                DBClass.CreateParameter("@fromDate", fromDate),
-                DBClass.CreateParameter("@toDate", toDate)
+                ClinicDatabase.CreateParameterNew("@id", id),
+                ClinicDatabase.CreateParameterNew("@fromDate", fromDate),
+                ClinicDatabase.CreateParameterNew("@toDate", toDate)
             );
 
             string bal = result?.ToString() ?? "0";
@@ -1411,7 +1414,7 @@ namespace YamyProject
             //    balance = GetNetProfit(fromDate, toDate);
             //}
 
-            //object result0 = DBClass.ExecuteScalar("SELECT l1.id FROM tbl_coa_level_1 l1 Inner join tbl_coa_level_2 l2 ON l1.id = l2.main_id where category_code = 'EQUITY' and l2.id = @id", DBClass.CreateParameter("@id", id));
+            //object result0 = ClinicDatabase.ExecuteScalar("SELECT l1.id FROM tbl_coa_level_1 l1 Inner join tbl_coa_level_2 l2 ON l1.id = l2.main_id where category_code = 'EQUITY' and l2.id = @id", ClinicDatabase.CreateParameterNew("@id", id));
             
             //if(result0 != null)
             //{
@@ -1544,11 +1547,11 @@ namespace YamyProject
                             GROUP BY t1.id, t2.id, t3.id, t4.id;
                         ";
 
-            using (MySqlDataReader read = DBClass.ExecuteReader(
+            using (MySqlDataReader read = ClinicDatabase.ExecuteReader(
                 query,
-                DBClass.CreateParameter("@id", id),
-                DBClass.CreateParameter("@fromDate", cutoffDate),
-                DBClass.CreateParameter("@toDate", toDated)))
+                ClinicDatabase.CreateParameterNew("@id", id),
+                ClinicDatabase.CreateParameterNew("@fromDate", cutoffDate),
+                ClinicDatabase.CreateParameterNew("@toDate", toDated)))
             {
                 if (read.Read())
                 {
@@ -1581,9 +1584,9 @@ namespace YamyProject
         //                    WHERE t.state = 0
         //                      AND t.date <= @toDate";
 
-        //    object result = DBClass.ExecuteScalar(
+        //    object result = ClinicDatabase.ExecuteScalar(
         //        query,
-        //        DBClass.CreateParameter("@toDate", fromDate)
+        //        ClinicDatabase.CreateParameterNew("@toDate", fromDate)
         //    );
         //    if (result == null)
         //        return 0;
@@ -1806,13 +1809,13 @@ namespace YamyProject
                                 GROUP BY t1.id, t2.id, t3.id, t4.id;
                                 ";
 
-            using (MySqlDataReader read = DBClass.ExecuteReader(
+            using (MySqlDataReader read = ClinicDatabase.ExecuteReader(
                 query,
-                DBClass.CreateParameter("@name", name),
-                DBClass.CreateParameter("@currFrom", currentFrom),
-                DBClass.CreateParameter("@currTo", currentTo),
-                DBClass.CreateParameter("@prevFrom", previousFrom),
-                DBClass.CreateParameter("@prevTo", previousTo)
+                ClinicDatabase.CreateParameterNew("@name", name),
+                ClinicDatabase.CreateParameterNew("@currFrom", currentFrom),
+                ClinicDatabase.CreateParameterNew("@currTo", currentTo),
+                ClinicDatabase.CreateParameterNew("@prevFrom", previousFrom),
+                ClinicDatabase.CreateParameterNew("@prevTo", previousTo)
             ))
             {
                 if (read.Read())
@@ -1828,7 +1831,7 @@ namespace YamyProject
 
         private string GetBalanceDataXOld(int level, string name)
         {
-            using (MySqlDataReader read = DBClass.ExecuteReader($@"SELECT 
+            using (MySqlDataReader read = ClinicDatabase.ExecuteReader($@"SELECT 
                         t1.name AS level1_name, 
                         t2.name AS level2_name, 
                         t3.name AS level3_name, 
@@ -1880,7 +1883,7 @@ namespace YamyProject
                     WHERE  tt.state=0 and t1.category_code IN ('ASSET', 'LIABILITY', 'EQUITY') AND t{level}.name = @name
 
                     GROUP BY t1.id, t2.id, t3.id, t4.id;
-                    ", DBClass.CreateParameter("name", name)))
+                    ", ClinicDatabase.CreateParameterNew("name", name)))
             {
                 if (read.Read())
                 {

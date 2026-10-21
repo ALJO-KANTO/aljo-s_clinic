@@ -1,4 +1,4 @@
-﻿
+
 using Clinic.Appointment.AppointmentsType;
 using Clinic.Doctor;
 using Clinic.Login;
@@ -770,6 +770,11 @@ namespace Clinic
             if (!isArabic) return english;
             switch (english)
             {
+                case "Accountant": return "المحاسبة";
+                case "Employee": return "الموظفون";
+                case "PettyCash": return "المصروفات النثرية";
+                case "Purchase": return "المشتريات";
+                case "Vendor": return "الموردون";
                 case "Reports": return "التقارير";
                 case "Account Ledger": return "دفتر الأستاذ";
                 case "Cost Center Summary": return "ملخص مراكز التكلفة";
@@ -1061,9 +1066,11 @@ namespace Clinic
                             Button button = item as Button;
                             if (button == null) continue;
                             string caption = button.Tag as string;
-                            string formName;
-                            if (caption == null || !forms.TryGetValue(caption, out formName) ||
-                                string.IsNullOrWhiteSpace(formName)) continue;
+                            string formName = button.AccessibleDescription;
+                            if (string.IsNullOrWhiteSpace(formName) &&
+                                (caption == null || !forms.TryGetValue(caption, out formName)))
+                                continue;
+                            if (string.IsNullOrWhiteSpace(formName)) continue;
 
                             string target = formName;
                             button.Click += (sender, args) => OpenMigratedAdminForm(target);

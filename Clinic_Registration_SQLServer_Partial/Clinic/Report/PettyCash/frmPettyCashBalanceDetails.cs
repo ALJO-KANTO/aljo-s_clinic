@@ -1,4 +1,7 @@
-﻿using MigraDoc.DocumentObjectModel;
+﻿using Clinic;
+using Clinic.global_classes;
+using Clinic_DataAccess;
+using MigraDoc.DocumentObjectModel;
 using MigraDoc.DocumentObjectModel.Tables;
 using MigraDoc.Rendering;
 using MySql.Data.MySqlClient;
@@ -45,7 +48,7 @@ namespace YamyProject
         }
         private void loadCompany()
         {
-            using (var reader = DBClass.ExecuteReader("SELECT name FROM tbl_company"))
+            using (var reader = ClinicDatabase.ExecuteReader("SELECT name FROM tbl_company"))
             {
                 if (reader.Read() && reader["name"] != DBNull.Value)
                 {
@@ -218,11 +221,11 @@ namespace YamyProject
                 decimal totalAmount = 0, totalBalance = 0;
                 List<MySqlParameter> parameters = new List<MySqlParameter>
             {
-                DBClass.CreateParameter("id", id),
-                DBClass.CreateParameter("startDate", dateTimePicker1.Value.Date),
-                DBClass.CreateParameter("endDate", dateTimePicker2.Value.Date)
+                ClinicDatabase.CreateParameterNew("id", id),
+                ClinicDatabase.CreateParameterNew("startDate", dateTimePicker1.Value.Date),
+                ClinicDatabase.CreateParameterNew("endDate", dateTimePicker2.Value.Date)
             };
-                using (MySqlDataReader reader = DBClass.ExecuteReader(@"SELECT 
+                using (MySqlDataReader reader = ClinicDatabase.ExecuteReader(@"SELECT 
                         DATE_FORMAT(t.date, '%Y-%m-%d') AS `Date`,
                         t.transaction_id,
 
@@ -336,12 +339,12 @@ namespace YamyProject
 
                 List<MySqlParameter> parameters = new List<MySqlParameter>
                 {
-                    DBClass.CreateParameter("empCode", id), // Assuming `id` holds employee code
-                    DBClass.CreateParameter("startDate", dateTimePicker1.Value.Date),
-                    DBClass.CreateParameter("endDate", dateTimePicker2.Value.Date)
+                    ClinicDatabase.CreateParameterNew("empCode", id), // Assuming `id` holds employee code
+                    ClinicDatabase.CreateParameterNew("startDate", dateTimePicker1.Value.Date),
+                    ClinicDatabase.CreateParameterNew("endDate", dateTimePicker2.Value.Date)
                 };
 
-                using (MySqlDataReader reader = DBClass.ExecuteReader(@"
+                using (MySqlDataReader reader = ClinicDatabase.ExecuteReader(@"
                         SELECT 
                             p.id,
                             p.voucher_date AS `Date`,
@@ -425,21 +428,21 @@ namespace YamyProject
                     if (EnableApproval)
                     {
                         //if(_type == "Petty Cash") { }
-                        frmLogin.frmMain.openChildForm(new frmViewPettyCashVoucher(_id));
+                        frmMain.openChildForm(new frmViewPettyCashVoucher(_id));
                     }
                     else
                     {
                         if (_type == "Petty Cash Request")
                         {
-                            frmLogin.frmMain.openChildForm(new frmPettyCashRequest(_id));
+                            frmMain.openChildForm(new frmPettyCashRequest(_id));
                         }
                         else if (_type == "Petty Cash Submission")
                         {
-                            frmLogin.frmMain.openChildForm(new frmPettyCashSubmission(_id));
+                            frmMain.openChildForm(new frmPettyCashSubmission(_id));
                         }
                         else if (_type == "Employee Petty Cash Payment")
                         {
-                            frmLogin.frmMain.openChildForm(new frmViewPaymentVoucher(_id));
+                            frmMain.openChildForm(new frmViewPaymentVoucher(_id));
 
                         }
                     }

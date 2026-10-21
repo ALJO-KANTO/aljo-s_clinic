@@ -1,4 +1,6 @@
-﻿using Guna.UI2.WinForms;
+﻿using Clinic.global_classes;
+using Clinic_DataAccess;
+using Guna.UI2.WinForms;
 using MigraDoc.DocumentObjectModel;
 using MigraDoc.DocumentObjectModel.Tables;
 using MigraDoc.Rendering;
@@ -35,7 +37,7 @@ namespace YamyProject
         }
         private void loadCompany()
         {
-            using (var reader = DBClass.ExecuteReader("SELECT name FROM tbl_company"))
+            using (var reader = ClinicDatabase.ExecuteReader("SELECT name FROM tbl_company"))
             {
                 if (reader.Read() && reader["name"] != DBNull.Value)
                 {
@@ -73,15 +75,15 @@ namespace YamyProject
 
                 List<MySqlParameter> parameters = new List<MySqlParameter>
                 {
-                    DBClass.CreateParameter("@id", id)
+                    ClinicDatabase.CreateParameterNew("@id", id)
                 };
 
                 string dateFilter = "";
                 if (!chkDate.Checked)
                 {
                     dateFilter = " AND t.date >= @from AND t.date  <= @to";
-                    parameters.Add(DBClass.CreateParameter("@from", dtpFrom.Value.Date));
-                    parameters.Add(DBClass.CreateParameter("@to", dtpTo.Value.Date));
+                    parameters.Add(ClinicDatabase.CreateParameterNew("@from", dtpFrom.Value.Date));
+                    parameters.Add(ClinicDatabase.CreateParameterNew("@to", dtpTo.Value.Date));
                 }
 
                 string query = $@"
@@ -143,7 +145,7 @@ namespace YamyProject
                 decimal totalLoan = 0;
                 decimal totalBalance = 0;
 
-                using (MySqlDataReader reader = DBClass.ExecuteReader(query, parameters.ToArray()))
+                using (MySqlDataReader reader = ClinicDatabase.ExecuteReader(query, parameters.ToArray()))
                 {
                     while (reader.Read())
                     {

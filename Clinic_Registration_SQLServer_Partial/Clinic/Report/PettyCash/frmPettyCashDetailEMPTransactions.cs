@@ -1,4 +1,7 @@
-﻿using Guna.UI2.WinForms;
+﻿using Clinic;
+using Clinic.global_classes;
+using Clinic_DataAccess;
+using Guna.UI2.WinForms;
 using MigraDoc.DocumentObjectModel;
 using MigraDoc.DocumentObjectModel.Tables;
 using MigraDoc.Rendering;
@@ -49,7 +52,7 @@ namespace YamyProject
         }
         private void loadCompany()
         {
-            using (var reader = DBClass.ExecuteReader("SELECT name FROM tbl_company"))
+            using (var reader = ClinicDatabase.ExecuteReader("SELECT name FROM tbl_company"))
             {
                 if (reader.Read() && reader["name"] != DBNull.Value)
                 {
@@ -117,10 +120,10 @@ namespace YamyProject
                                 ";
 
             // Fetch data
-            DataTable dt = DBClass.ExecuteDataTable(query, 
-                DBClass.CreateParameter("@empId", empId), 
-                DBClass.CreateParameter("@sDate", dateTimePicker1.Value.Date),
-                DBClass.CreateParameter("@eDate", dateTimePicker2.Value.Date)
+            DataTable dt = ClinicDatabase.ExecuteDataTable(query, 
+                ClinicDatabase.CreateParameterNew("@empId", empId), 
+                ClinicDatabase.CreateParameterNew("@sDate", dateTimePicker1.Value.Date),
+                ClinicDatabase.CreateParameterNew("@eDate", dateTimePicker2.Value.Date)
                 );
 
             // Fill rows with running balance
@@ -180,22 +183,22 @@ namespace YamyProject
                     if (EnableApproval)
                     {
                         //if(_type == "Petty Cash") { }
-                        frmLogin.frmMain.openChildForm(new frmViewPettyCashVoucher(_id));
+                        frmMain.openChildForm(new frmViewPettyCashVoucher(_id));
                     }
                     else
                     {
                         var _type = dgvSales.Rows[e.RowIndex].Cells["Type"].Value.ToString();
                         if (_type == "Petty Cash Request")
                         {
-                            frmLogin.frmMain.openChildForm(new frmPettyCashRequest(_id));
+                            frmMain.openChildForm(new frmPettyCashRequest(_id));
                         }
                         else if (_type == "Petty Cash Submission")
                         {
-                            frmLogin.frmMain.openChildForm(new frmPettyCashSubmission(_id));
+                            frmMain.openChildForm(new frmPettyCashSubmission(_id));
                         }
                         else if (_type == "Employee Petty Cash Payment")
                         {
-                            frmLogin.frmMain.openChildForm(new frmViewPaymentVoucher(_id));
+                            frmMain.openChildForm(new frmViewPaymentVoucher(_id));
 
                         }
                     }
@@ -1040,8 +1043,8 @@ namespace YamyProject
                 targetTextBox.Focus();
                 targetTextBox.SelectionStart = targetTextBox.Text.Length;
 
-                using (MySqlDataReader reader = DBClass.ExecuteReader("select id from tbl_employee where code =@code",
-                    DBClass.CreateParameter("code", selectedCode)))
+                using (MySqlDataReader reader = ClinicDatabase.ExecuteReader("select id from tbl_employee where code =@code",
+                    ClinicDatabase.CreateParameter("code", selectedCode)))
                     if (reader.Read())
                         cmbEmployee.SelectedValue = int.Parse(reader["id"].ToString());
             }
@@ -1061,7 +1064,7 @@ namespace YamyProject
                 string query = @"SELECT code, name FROM tbl_employee 
                          WHERE code LIKE @search OR name LIKE @search LIMIT 20";
 
-                DataTable dt = DBClass.ExecuteDataTable(query, DBClass.CreateParameter("@search", "%" + input + "%"));
+                DataTable dt = ClinicDatabase.ExecuteDataTable(query, ClinicDatabase.CreateParameter("@search", "%" + input + "%"));
 
                 lstAccountSuggestions.Items.Clear();
 

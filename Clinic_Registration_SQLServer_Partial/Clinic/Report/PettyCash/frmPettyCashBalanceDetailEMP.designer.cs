@@ -601,7 +601,7 @@
             this.guna2Button4.FillColor = System.Drawing.Color.Transparent;
             this.guna2Button4.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.guna2Button4.ForeColor = System.Drawing.Color.White;
-            this.guna2Button4.Image = global::YamyProject.Properties.Resources.Subtract;
+            this.guna2Button4.Image = global::Clinic.Properties.Resources.Subtract;
             this.guna2Button4.ImageSize = new System.Drawing.Size(15, 15);
             this.guna2Button4.Location = new System.Drawing.Point(978, 3);
             this.guna2Button4.Name = "guna2Button4";
@@ -621,7 +621,7 @@
             this.guna2Button5.FillColor = System.Drawing.Color.Transparent;
             this.guna2Button5.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.guna2Button5.ForeColor = System.Drawing.Color.White;
-            this.guna2Button5.Image = global::YamyProject.Properties.Resources.Restore_Down1;
+            this.guna2Button5.Image = global::Clinic.Properties.Resources.Restore_Down;
             this.guna2Button5.ImageSize = new System.Drawing.Size(15, 15);
             this.guna2Button5.Location = new System.Drawing.Point(1000, 3);
             this.guna2Button5.Name = "guna2Button5";
