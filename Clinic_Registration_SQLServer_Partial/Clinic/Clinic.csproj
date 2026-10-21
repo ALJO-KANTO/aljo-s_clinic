@@ -999,6 +999,12 @@
     <Compile Include="Report\Accountant\frmAccountLedger.Designer.cs">
       <DependentUpon>frmAccountLedger.cs</DependentUpon>
     </Compile>
+    <Compile Include="Report\Accountant\frmBalanceSheetReport.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Report\Accountant\frmBalanceSheetReport.designer.cs">
+      <DependentUpon>frmBalanceSheetReport.cs</DependentUpon>
+    </Compile>
     <Compile Include="Report\Accountant\frmCostCenterSummery.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -1023,6 +1029,42 @@
     <Compile Include="Report\Accountant\ProfitandLossReport.designer.cs">
       <DependentUpon>ProfitandLossReport.cs</DependentUpon>
     </Compile>
+    <Compile Include="Report\Employee\frmEmployeeBalanceSummary.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Report\Employee\frmEmployeeBalanceSummary.designer.cs">
+      <DependentUpon>frmEmployeeBalanceSummary.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Report\Employee\frmEmployeeSalaryReport.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Report\Employee\frmEmployeeSalaryReport.designer.cs">
+      <DependentUpon>frmEmployeeSalaryReport.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Report\Inventory\frmPhysicalInventoryWorksheet.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Report\Inventory\frmPhysicalInventoryWorksheet.designer.cs">
+      <DependentUpon>frmPhysicalInventoryWorksheet.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Report\PettyCash\frmPettyCashBalanceDetailEMP.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Report\PettyCash\frmPettyCashBalanceDetailEMP.designer.cs">
+      <DependentUpon>frmPettyCashBalanceDetailEMP.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Report\PettyCash\frmPettyCashBalanceDetails.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Report\PettyCash\frmPettyCashBalanceDetails.designer.cs">
+      <DependentUpon>frmPettyCashBalanceDetails.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Report\PettyCash\frmPettyCashDetailEMPTransactions.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Report\PettyCash\frmPettyCashDetailEMPTransactions.designer.cs">
+      <DependentUpon>frmPettyCashDetailEMPTransactions.cs</DependentUpon>
+    </Compile>
     <Compile Include="Report\Purchase\frmPurchaseByVendorDetails.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -1036,6 +1078,12 @@
       <DependentUpon>frmPurchaseByVendorSummery.cs</DependentUpon>
     </Compile>
     <Compile Include="ReportPrinter.cs" />
+    <Compile Include="Report\Vendor\frmVendorSummary.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Report\Vendor\frmVendorSummary.designer.cs">
+      <DependentUpon>frmVendorSummary.cs</DependentUpon>
+    </Compile>
     <Compile Include="TranslationClass.cs" />
     <Compile Include="User\Controls\ctrCardUserInfo.cs">
       <SubType>UserControl</SubType>
@@ -1504,17 +1552,41 @@
     <EmbeddedResource Include="Purchases\Invoices\MasterPurchases.resx">
       <DependentUpon>MasterPurchases.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Report\Accountant\frmBalanceSheetReport.resx">
+      <DependentUpon>frmBalanceSheetReport.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Report\Accountant\ProfitandLossDetailReport.resx">
       <DependentUpon>ProfitandLossDetailReport.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Report\Accountant\ProfitandLossReport.resx">
       <DependentUpon>ProfitandLossReport.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Report\Employee\frmEmployeeBalanceSummary.resx">
+      <DependentUpon>frmEmployeeBalanceSummary.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Report\Employee\frmEmployeeSalaryReport.resx">
+      <DependentUpon>frmEmployeeSalaryReport.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Report\Inventory\frmPhysicalInventoryWorksheet.resx">
+      <DependentUpon>frmPhysicalInventoryWorksheet.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Report\PettyCash\frmPettyCashBalanceDetailEMP.resx">
+      <DependentUpon>frmPettyCashBalanceDetailEMP.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Report\PettyCash\frmPettyCashBalanceDetails.resx">
+      <DependentUpon>frmPettyCashBalanceDetails.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Report\PettyCash\frmPettyCashDetailEMPTransactions.resx">
+      <DependentUpon>frmPettyCashDetailEMPTransactions.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Report\Purchase\frmPurchaseByVendorDetails.resx">
       <DependentUpon>frmPurchaseByVendorDetails.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Report\Purchase\frmPurchaseByVendorSummery.resx">
       <DependentUpon>frmPurchaseByVendorSummery.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Report\Vendor\frmVendorSummary.resx">
+      <DependentUpon>frmVendorSummary.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="User\frmAddUpdateUser.resx">
       <DependentUpon>frmAddUpdateUser.cs</DependentUpon>
