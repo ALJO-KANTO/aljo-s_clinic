@@ -773,7 +773,7 @@ namespace Clinic
                 case "Accountant": return "المحاسبة";
                 case "Employee": return "الموظفون";
                 case "PettyCash": return "المصروفات النثرية";
-                case "Purchase": return "المشتريات";
+                //case "Purchase": return "المشتريات";
                 case "Vendor": return "الموردون";
                 case "Reports": return "التقارير";
                 case "Account Ledger": return "دفتر الأستاذ";
