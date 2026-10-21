@@ -1784,8 +1784,13 @@ public static class BindDataTable
 }
 public  class ItemSuggestion
 {
+    public int Id { get; set; }
     public  string Code { get; set; }
     public  string Name { get; set; }
+    public override string ToString()
+    {
+        return Code + " - " + Name;
+    }
 }
 public static class AttachmentManager
 {

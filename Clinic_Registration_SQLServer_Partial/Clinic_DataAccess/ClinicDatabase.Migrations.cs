@@ -1350,7 +1350,7 @@ namespace Clinic_DataAccess
                             Sql = @"
                         CREATE TABLE IF NOT EXISTS `tbl_coa_level_1` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
-                                                  `name` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+                                                  `name` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
                                                   `code` int DEFAULT NULL,
                                                   `category_code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
                                                   PRIMARY KEY (`id`)
@@ -1365,7 +1365,7 @@ namespace Clinic_DataAccess
                             Sql = @"
                         CREATE TABLE IF NOT EXISTS `tbl_coa_level_2` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
-                                                  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+                                                  `name` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
                                                   `code` int NOT NULL,
                                                   `main_id` int NOT NULL,
                                                   `SyncStatus` tinyint NOT NULL DEFAULT 0,
@@ -1381,7 +1381,7 @@ namespace Clinic_DataAccess
                             Sql = @"
                         CREATE TABLE IF NOT EXISTS `tbl_coa_level_3` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
-                                                  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+                                                  `name` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
                                                   `code` int NOT NULL,
                                                   `main_id` int NOT NULL,
                                                   `SyncStatus` tinyint NOT NULL DEFAULT 0,
@@ -1397,7 +1397,7 @@ namespace Clinic_DataAccess
                             Sql = @"
                         CREATE TABLE IF NOT EXISTS `tbl_coa_level_4` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
-                                                  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+                                                  `name` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
                                                   `code` int NOT NULL,
                                                   `main_id` int NOT NULL,
                                                   `debit` decimal(20,3) DEFAULT '0.000',
@@ -2458,33 +2458,6 @@ namespace Clinic_DataAccess
 
                         new DatabaseMigration
                         {
-                            Version = "20261019_ERP_050",
-                            Description = "Create tbl_purchase_details",
-                            Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_purchase_details` (
-                                                  `id` int NOT NULL AUTO_INCREMENT,
-                                                  `purchase_id` int DEFAULT NULL,
-                                                  `item_id` int DEFAULT NULL,
-                                                  `qty` decimal(20,4) DEFAULT NULL,
-                                                  `cost_price` decimal(20,4) DEFAULT NULL,
-                                                  `price` decimal(20,4) DEFAULT NULL,
-                                                  `vatp` decimal(20,4) DEFAULT '0.000',
-                                                  `vat` int DEFAULT NULL,
-                                                  `total` decimal(20,4) DEFAULT NULL,
-                                                  `discount` decimal(20,4) DEFAULT NULL,
-                                                  `cost_center_id` int DEFAULT NULL,
-                                                  `project_id` INT NOT NULL DEFAULT 0,`GlobalId` varchar(36) NOT NULL DEFAULT '0',
-                          `DeviceId` varchar(50) DEFAULT NULL,
-                          `LastModified` datetime DEFAULT CURRENT_TIMESTAMP,
-                          `SyncStatus` tinyint NOT NULL DEFAULT 0,
-                                                  PRIMARY KEY (`id`)
-
-                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-                            "
-                        },
-
-                        new DatabaseMigration
-                        {
                             Version = "20261019_ERP_051",
                             Description = "Create tbl_purchase",
                             Sql = @"
@@ -2533,6 +2506,103 @@ namespace Clinic_DataAccess
                             "
                         },
 
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_050",
+                            Description = "Create tbl_purchase_details",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_purchase_details` (
+                                                  `id` int NOT NULL AUTO_INCREMENT,
+                                                  `purchase_id` int DEFAULT NULL,
+                                                  `item_id` int DEFAULT NULL,
+                                                  `qty` decimal(20,4) DEFAULT NULL,
+                                                  `cost_price` decimal(20,4) DEFAULT NULL,
+                                                  `price` decimal(20,4) DEFAULT NULL,
+                                                  `vatp` decimal(20,4) DEFAULT '0.000',
+                                                  `vat` int DEFAULT NULL,
+                                                  `total` decimal(20,4) DEFAULT NULL,
+                                                  `discount` decimal(20,4) DEFAULT NULL,
+                                                  `cost_center_id` int DEFAULT NULL,
+                                                  `project_id` INT NOT NULL DEFAULT 0,`GlobalId` varchar(36) NOT NULL DEFAULT '0',
+                          `DeviceId` varchar(50) DEFAULT NULL,
+                          `LastModified` datetime DEFAULT CURRENT_TIMESTAMP,
+                          `SyncStatus` tinyint NOT NULL DEFAULT 0,
+                                                  PRIMARY KEY (`id`)
+
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                            "
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261021_ERP_051",
+                            Description = "Create tbl_purchase_return",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_purchase_return` (
+                            `id` int NOT NULL AUTO_INCREMENT,
+                          `date` date NOT NULL,
+                          `vendor_id` int NOT NULL DEFAULT '0',
+                          `invoice_id` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
+                          `warehouse_id` int NOT NULL DEFAULT '0',
+	                      `purchase_ref_id` INT NOT NULL DEFAULT '0',
+                          `po_num` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
+                          `bill_to` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
+                          `city` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
+                          `sales_man` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+                          `ship_date` date DEFAULT NULL,
+                          `ship_via` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                          `ship_to` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
+                          `payment_method` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
+                          `account_cash_id` int NOT NULL DEFAULT '0',
+                          `payment_terms` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
+                          `payment_date` date NOT NULL,
+                          `total` decimal(20,4) NOT NULL DEFAULT '0.000',
+                          `vat` decimal(20,4) NOT NULL DEFAULT '0.000',
+                          `net` decimal(20,4) NOT NULL DEFAULT '0.000',
+                          `pay` decimal(20,4) NOT NULL DEFAULT '0.000',
+                          `change` decimal(20,4) NOT NULL DEFAULT '0.000',
+                          `created_by` int NOT NULL DEFAULT '0',
+                          `created_date` date NOT NULL,
+                          `modified_by` int DEFAULT NULL,
+                          `modified_date` date DEFAULT NULL,
+                          `state` int NOT NULL DEFAULT '0',
+                          `project_id` INT NOT NULL DEFAULT 0,
+                          `description` varchar(300) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+                          `GlobalId` varchar(36) NOT NULL DEFAULT '0',
+                          `DeviceId` varchar(50) DEFAULT NULL,
+                          `LastModified` datetime DEFAULT CURRENT_TIMESTAMP,
+                          `SyncStatus` tinyint NOT NULL DEFAULT 0,
+                            PRIMARY KEY (`id`) USING BTREE
+                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;"
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261021_ERP_052",
+                            Description = "Create tbl_purchase_return_details",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_purchase_return_details` (
+                            `id` int NOT NULL AUTO_INCREMENT,
+                                                    `purchase_id` int DEFAULT NULL,
+                                                    `item_id` int DEFAULT NULL,
+                                                    `qty` decimal(20,4) DEFAULT NULL,
+                                                        unit_id INT NOT NULL DEFAULT 0,
+                                                        unit_factor decimal(20,4) NOT NULL DEFAULT 1,
+                                                        base_qty decimal(20,4) NOT NULL DEFAULT 0,
+                                                    `cost_price` decimal(20,4) DEFAULT NULL,
+                                                    `price` decimal(20,4) DEFAULT NULL,
+                                                    `vatp` decimal(20,4) DEFAULT '0.000',
+                                                    `vat` int DEFAULT NULL,
+                                                    `total` decimal(20,4) DEFAULT NULL,
+                                                    `discount` decimal(20,4) DEFAULT NULL,
+                                                    `cost_center_id` int DEFAULT NULL,
+                                                    `project_id` INT NOT NULL DEFAULT 0,
+                        `GlobalId` varchar(36) NOT NULL DEFAULT '0',
+                            `DeviceId` varchar(50) DEFAULT NULL,
+                            `LastModified` datetime DEFAULT CURRENT_TIMESTAMP,
+                            `SyncStatus` tinyint NOT NULL DEFAULT 0,
+                                                        PRIMARY KEY (`id`) USING BTREE
+                                                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+                                "
+                        },
                         new DatabaseMigration
                         {
                             Version = "20261019_ERP_052",

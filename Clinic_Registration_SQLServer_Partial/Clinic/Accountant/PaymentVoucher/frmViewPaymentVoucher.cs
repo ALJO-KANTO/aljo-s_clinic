@@ -2271,7 +2271,7 @@ EventArgs e)
                     lstAccountSuggestions.Visible = false;
                     return;
                 }
-                string query = @"SELECT code, name FROM tbl_coa_level_4 
+                string query = @"SELECT id, code, name FROM tbl_coa_level_4 
                          WHERE code LIKE @search OR name LIKE @search LIMIT 20";
 
                 DataTable dt = ClinicDatabase.ExecuteDataTable(query, ClinicDatabase.CreateParameterNew("@search", "%" + input + "%"));
@@ -2282,6 +2282,7 @@ EventArgs e)
                 {
                     lstAccountSuggestions.Items.Add(new ItemSuggestion
                     {
+                        Id = Convert.ToInt32(row["id"]),
                         Code = row["code"].ToString(),
                         Name = row["name"].ToString()
                     });
@@ -2328,7 +2329,7 @@ EventArgs e)
                     lstAccountSuggestions.Visible = false;
                     return;
                 }
-                string query = @"SELECT code, name FROM tbl_coa_level_4 
+                string query = @"SELECT id, code, name FROM tbl_coa_level_4 
                          WHERE code LIKE @search OR name LIKE @search LIMIT 20";
 
                 DataTable dt = ClinicDatabase.ExecuteDataTable(query, ClinicDatabase.CreateParameterNew("@search", "%" + input + "%"));
@@ -2337,7 +2338,7 @@ EventArgs e)
 
                 foreach (DataRow row in dt.Rows)
                 {
-                    lstAccountSuggestions.Items.Add(new ItemSuggestion { Code = row["code"].ToString(), Name = row["name"].ToString() });
+                    lstAccountSuggestions.Items.Add(new ItemSuggestion { Id = Convert.ToInt32(row["id"]), Code = row["code"].ToString(), Name = row["name"].ToString() });
                 }
                 if (lstAccountSuggestions.Items.Count > 0)
                 {
@@ -2549,7 +2550,7 @@ EventArgs e)
                     lstAccountSuggestions.Visible = false;
                     return;
                 }
-                string query = @"SELECT code, name FROM tbl_bank 
+                string query = @"SELECT id, code, name FROM tbl_bank 
                          WHERE state = 0 and code LIKE @search OR name LIKE @search LIMIT 20";
 
                 DataTable dt = ClinicDatabase.ExecuteDataTable(query, ClinicDatabase.CreateParameterNew("@search", "%" + input + "%"));
@@ -2558,7 +2559,7 @@ EventArgs e)
 
                 foreach (DataRow row in dt.Rows)
                 {
-                    lstAccountSuggestions.Items.Add(new ItemSuggestion { Code = row["code"].ToString(), Name = row["name"].ToString() });
+                    lstAccountSuggestions.Items.Add(new ItemSuggestion { Id = Convert.ToInt32(row["id"]), Code = row["code"].ToString(), Name = row["name"].ToString() });
                 }
                 if (lstAccountSuggestions.Items.Count > 0)
                 {
@@ -2840,7 +2841,7 @@ EventArgs e)
                     lstAccountSuggestions.Visible = false;
                     return;
                 }
-                string query = @"SELECT code, name FROM tbl_vendor 
+                string query = @"SELECT id, code, name FROM tbl_vendor 
                          WHERE code LIKE @search OR name LIKE @search LIMIT 20";
 
                 DataTable dt = ClinicDatabase.ExecuteDataTable(query, ClinicDatabase.CreateParameterNew("@search", "%" + input + "%"));
@@ -2849,7 +2850,7 @@ EventArgs e)
 
                 foreach (DataRow row in dt.Rows)
                 {
-                    lstAccountSuggestions.Items.Add(new ItemSuggestion { Code = row["code"].ToString(), Name = row["name"].ToString() });
+                    lstAccountSuggestions.Items.Add(new ItemSuggestion { Id = Convert.ToInt32(row["id"]), Code = row["code"].ToString(), Name = row["name"].ToString() });
                 }
                 if (lstAccountSuggestions.Items.Count > 0)
                 {
