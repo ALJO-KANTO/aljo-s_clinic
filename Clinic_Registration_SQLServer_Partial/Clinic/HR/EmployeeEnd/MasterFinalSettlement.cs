@@ -18,17 +18,20 @@ namespace YamyProject
 {
     public partial class MasterFinalSettlement : Form
     {
+        private bool _headerTopLayoutApplied = false;
+
 
         public MasterFinalSettlement()
         {
             InitializeComponent();
 
-           // LocalizationManager.LocalizeForm(this);
+            // LocalizationManager.LocalizeForm(this);
 
-            // We already have the modern page heading.
-            // Do not show the old purple HeaderUC.
-            headerUC1.Visible = false;
-            headerUC1.Enabled = false;
+            // Show the shared header so this page has the same title bar
+            // and header controls as the other pages.
+            headerUC1.Visible = true;
+            headerUC1.Enabled = true;
+            headerUC1.BringToFront();
             ApplyLanguageLayout();
         }
 
@@ -66,9 +69,10 @@ namespace YamyProject
                 RightToLeft = RightToLeft.No;
                 RightToLeftLayout = false;
 
-                // Old HeaderUC remains hidden.
-                headerUC1.Visible = false;
-                headerUC1.Enabled = false;
+                // Keep the shared header visible and update its title
+                // according to the selected application language.
+                headerUC1.Visible = true;
+                headerUC1.Enabled = true;
 
                 // =====================================================
                 // FIND MODERN LABELS
@@ -152,6 +156,13 @@ namespace YamyProject
                     if (stateLabel != null)
                         stateLabel.Text = "State";
                 }
+
+                // Keep the header caption synchronized with the form title.
+                headerUC1.FormText = Text;
+                headerUC1.BringToFront();
+
+                // Keep the shared header title in sync with the selected language.
+                headerUC1.FormText = Text;
 
                 // =====================================================
                 // MAIN PAGE TITLE
@@ -697,7 +708,62 @@ namespace YamyProject
                 ResumeLayout(true);
                 PerformLayout();
             }
+
+            // Position the shared dark-blue title bar above the modern page heading.
+            // This is applied only once because ApplyLanguageLayout() is called again
+            // after data binding and when the language/layout is refreshed.
+            PositionHeaderAboveModernHeading();
         }
+
+        private void PositionHeaderAboveModernHeading()
+        {
+            if (_headerTopLayoutApplied || headerUC1 == null || IsDisposed)
+                return;
+
+            Label pageTitle = FindLabelByTexts(
+                this,
+                "Final Settlement",
+                "التسوية النهائية");
+
+            if (pageTitle == null)
+                return;
+
+            // Find the direct child of this form that contains the modern page heading.
+            Control contentRoot = pageTitle;
+            while (contentRoot.Parent != null && contentRoot.Parent != this)
+                contentRoot = contentRoot.Parent;
+
+            if (contentRoot == headerUC1)
+                return;
+
+            int headerHeight = Math.Max(headerUC1.Height, 32);
+
+            SuspendLayout();
+            try
+            {
+                // Move the shared header to the very top of this child form.
+                headerUC1.Visible = true;
+                headerUC1.Enabled = true;
+                headerUC1.Left = 0;
+                headerUC1.Top = 0;
+                headerUC1.Width = ClientSize.Width;
+                headerUC1.Height = headerHeight;
+                headerUC1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+
+                // Move the modern page content down so the header sits above it
+                // instead of crossing through the middle of the page.
+                contentRoot.Top += headerHeight;
+
+                headerUC1.BringToFront();
+                _headerTopLayoutApplied = true;
+            }
+            finally
+            {
+                ResumeLayout(true);
+                PerformLayout();
+            }
+        }
+
         private void SetDisplayIndex(
     string columnName,
     int displayIndex)
@@ -811,13 +877,13 @@ namespace YamyProject
             //dgvCustomer.Columns["TotalDeductions"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             //dgvCustomer.Columns["NetAccruals"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
 
-          
+
 
             if (dgvCustomer.Rows.Count > 0)
             {
                 btnDelete.Visible = UserPermissions.canDelete("Final Settlement");
             }
-           // LocalizationManager.LocalizeDataGridViewHeaders(dgvCustomer);
+            // LocalizationManager.LocalizeDataGridViewHeaders(dgvCustomer);
             ApplyLanguageLayout();
         }
 

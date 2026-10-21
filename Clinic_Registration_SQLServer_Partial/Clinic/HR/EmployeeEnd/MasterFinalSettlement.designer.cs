@@ -377,7 +377,7 @@
             this.lblFooterHint.Name = "lblFooterHint";
             this.lblFooterHint.Size = new System.Drawing.Size(287, 15);
             this.lblFooterHint.TabIndex = 0;
-            this.lblFooterHint.Text = "ⓘ  Manage employee end-of-service settlement records.";
+           // this.lblFooterHint.Text = "ⓘ  Manage employee end-of-service settlement records.";
 
             // 
             // btnDelete

@@ -10,32 +10,308 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-//using YamyProject.Localization;
+using YamyProject.Localization;
 
 namespace YamyProject
 {
     public partial class frmFinalSettlement : Form
     {
-       
+
         int id;
-        public frmFinalSettlement(int id=0)
+
+        // Keep the designer's original positions so Arabic mirroring can be
+        // applied without repeatedly moving controls when the form is refreshed.
+        private readonly Dictionary<Control, Rectangle> finalSettlementOriginalBounds =
+            new Dictionary<Control, Rectangle>();
+
+        public frmFinalSettlement(int id = 0)
         {
             InitializeComponent();
-           // LocalizationManager.LocalizeForm(this);
+            CaptureFinalSettlementOriginalBounds(this);
+            LocalizationManager.LocalizeForm(this);
             this.id = id;
             this.Text = "Final Settlement";
 
             headerUC2.FormText = this.Text;
+            ApplyFinalSettlementLanguage();
+            Resize += (sender, args) =>
+            {
+                if (IsFinalSettlementArabic())
+                    PositionFinalSettlementButtons(true);
+            };
+        }
+
+        // Applies the same ApplicationLanguage-based English/Arabic switching
+        // used by MasterFinalSettlement. Existing settlement logic is unchanged.
+        private bool IsFinalSettlementArabic()
+        {
+            string language = Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en";
+            return language.StartsWith("ar", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private void ApplyFinalSettlementLanguage()
+        {
+            bool isArabic = IsFinalSettlementArabic();
+
+            Text = isArabic ? "التسوية النهائية" : "Final Settlement";
+            if (headerUC2 != null)
+                headerUC2.FormText = Text;
+
+            // Translate captions first, then mirror control positions manually.
+            // RightToLeftLayout alone does not move labels beside text boxes inside
+            // nested panels/group boxes.
+            RightToLeft = isArabic ? RightToLeft.Yes : RightToLeft.No;
+            RightToLeftLayout = false;
+
+            ApplyFinalSettlementControlText(this, isArabic);
+
+            // Explicitly set these buttons by control name because their designer
+            // text may be reapplied after recursive translation.
+            if (btnSave != null)
+                btnSave.Text = isArabic ? "حفظ" : "Save";
+            if (btnSaveClose != null)
+                btnSaveClose.Text = isArabic ? "حفظ وإضافة جديد" : "Save & New";
+            if (btnClose != null)
+                btnClose.Text = isArabic ? "إغلاق" : "Close";
+
+            ApplyFinalSettlementMirroring(this, isArabic);
+            if (isArabic)
+                AdjustFinalSettlementArabicLabelSpacing(this);
+            PositionFinalSettlementButtons(isArabic);
+            PerformLayout();
+            Invalidate(true);
+        }
+
+        // Arabic labels can be longer than their English captions. Widen field
+        // labels and keep a clear gap between each label and its nearby input.
+        // Original control bounds are restored before every language refresh.
+        private void AdjustFinalSettlementArabicLabelSpacing(Control parent)
+        {
+            if (parent == null) return;
+
+            foreach (Control child in parent.Controls)
+            {
+                if (child is Label label && !string.IsNullOrWhiteSpace(label.Text))
+                {
+                    // Group headings are not Label controls; these are field captions.
+                    const int desiredLabelWidth = 145;
+                    int oldRight = label.Right;
+                    if (label.Width < desiredLabelWidth)
+                    {
+                        label.SetBounds(oldRight - desiredLabelWidth, label.Top,
+                            desiredLabelWidth, label.Height);
+                    }
+                    label.TextAlign = ContentAlignment.MiddleRight;
+                    label.RightToLeft = RightToLeft.Yes;
+
+                    Control nearestInput = null;
+                    int nearestDistance = int.MaxValue;
+                    foreach (Control candidate in parent.Controls)
+                    {
+                        if (candidate == label ||
+                            !(candidate is TextBoxBase || candidate is ComboBox ||
+                              candidate is DateTimePicker || candidate is NumericUpDown))
+                            continue;
+
+                        int verticalDistance = Math.Abs((candidate.Top + candidate.Height / 2) -
+                                                        (label.Top + label.Height / 2));
+                        if (verticalDistance > Math.Max(12, label.Height / 2 + 5))
+                            continue;
+
+                        int distance = Math.Abs(label.Left - candidate.Right);
+                        if (candidate.Right <= label.Left + 8 && distance < nearestDistance)
+                        {
+                            nearestDistance = distance;
+                            nearestInput = candidate;
+                        }
+                    }
+
+                    if (nearestInput != null)
+                    {
+                        const int gap = 12;
+                        int overlap = nearestInput.Right + gap - label.Left;
+                        if (overlap > 0)
+                            nearestInput.Left = Math.Max(0, nearestInput.Left - overlap);
+                    }
+                }
+
+                if (child.HasChildren)
+                    AdjustFinalSettlementArabicLabelSpacing(child);
+            }
+        }
+
+        // Keep the action buttons grouped at the bottom-right in Arabic mode.
+        // The main mirroring routine reverses every control, which can otherwise
+        // move this button group to the left side of the form.
+        private void PositionFinalSettlementButtons(bool isArabic)
+        {
+            if (!isArabic || btnSave == null || btnSaveClose == null || btnClose == null)
+                return;
+
+            Control parent = btnSave.Parent;
+            if (parent == null || btnSaveClose.Parent != parent || btnClose.Parent != parent)
+                return;
+
+            const int rightPadding = 12;
+            const int gap = 12;
+            int y = btnSave.Top;
+
+            // Arabic reading order: Save at the far right, then Save & New,
+            // then Close to its left.
+            int xSave = parent.ClientSize.Width - rightPadding - btnSave.Width;
+            int xSaveClose = xSave - gap - btnSaveClose.Width;
+            int xClose = xSaveClose - gap - btnClose.Width;
+
+            btnSave.Location = new Point(Math.Max(0, xSave), y);
+            btnSaveClose.Location = new Point(Math.Max(0, xSaveClose), y);
+            btnClose.Location = new Point(Math.Max(0, xClose), y);
+        }
+
+        private void CaptureFinalSettlementOriginalBounds(Control parent)
+        {
+            if (parent == null) return;
+
+            foreach (Control control in parent.Controls)
+            {
+                if (!finalSettlementOriginalBounds.ContainsKey(control))
+                    finalSettlementOriginalBounds.Add(control, control.Bounds);
+
+                CaptureFinalSettlementOriginalBounds(control);
+            }
+        }
+
+        private void ApplyFinalSettlementMirroring(Control parent, bool isArabic)
+        {
+            if (parent == null) return;
+
+            foreach (Control control in parent.Controls)
+            {
+                // Keep the custom title-bar control's internal minimize, maximize,
+                // and close buttons in their designed positions.
+                if (control.Name == "headerUC2")
+                    continue;
+
+                if (finalSettlementOriginalBounds.TryGetValue(control, out Rectangle original))
+                {
+                    int left = isArabic
+                        ? parent.ClientSize.Width - original.Right
+                        : original.Left;
+
+                    control.SetBounds(left, original.Top, original.Width, original.Height);
+                }
+
+                control.RightToLeft = isArabic ? RightToLeft.Yes : RightToLeft.No;
+
+                if (control is Label label)
+                {
+                    label.TextAlign = isArabic
+                        ? ContentAlignment.MiddleRight
+                        : ContentAlignment.MiddleLeft;
+                }
+
+                ApplyFinalSettlementMirroring(control, isArabic);
+            }
+        }
+
+        private void ApplyFinalSettlementControlText(Control parent, bool isArabic)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                string current = (control.Text ?? "").Trim();
+                string translated = TranslateFinalSettlementText(current, isArabic);
+
+                if (!string.Equals(current, translated, StringComparison.Ordinal))
+                    control.Text = translated;
+
+                // Textboxes show entered values, not labels. Do not translate
+                // employee names, codes, dates, or numeric values.
+                if (control.HasChildren)
+                    ApplyFinalSettlementControlText(control, isArabic);
+            }
+        }
+
+        private string TranslateFinalSettlementText(string text, bool isArabic)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                return text;
+
+            string key = text.Trim();
+
+            var translations = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "Final Settlement", "التسوية النهائية" },
+                { "Basic Data", "البيانات الأساسية" },
+                { "Salary Information", "معلومات الراتب" },
+                { "Settlement No", "رقم التسوية" },
+                { "Date of Last Working Day", "تاريخ آخر يوم عمل" },
+                { "Additions", "الإضافات" },
+                { "Deductions", "الاستقطاعات" },
+                { "End Of Services Allowance", "مكافأة نهاية الخدمة" },
+                { "Leave Salary Allowance", "بدل راتب الإجازة" },
+                { "Save and New", "حفظ وإضافة جديد" },
+                { "Employee", "الموظف" },
+                { "Employee Name", "اسم الموظف" },
+                { "Employee Code", "رمز الموظف" },
+                { "Code", "الرمز" },
+                { "Date", "التاريخ" },
+                { "Start Date", "تاريخ البدء" },
+                { "Commencement Date", "تاريخ بدء العمل" },
+                { "Date of Commencement", "تاريخ بدء العمل" },
+                { "Last Working Day", "آخر يوم عمل" },
+                { "Last Work Day", "آخر يوم عمل" },
+                { "Last Working Date", "تاريخ آخر يوم عمل" },
+                { "Basic Salary", "الراتب الأساسي" },
+                { "Housing Allowance", "بدل السكن" },
+                { "Transportation Allowance", "بدل المواصلات" },
+                { "Other", "أخرى" },
+                { "Others", "أخرى" },
+                { "Total Salary", "إجمالي الراتب" },
+                { "Salary", "الراتب" },
+                { "Salaries", "الرواتب" },
+                { "Leave Salary", "راتب الإجازة" },
+                { "End Of Service", "مكافأة نهاية الخدمة" },
+                { "Employee Advances", "سلف الموظف" },
+                { "Advances", "السلف" },
+                { "Payments", "المدفوعات" },
+                { "Other Additions", "إضافات أخرى" },
+                { "Total Additions", "إجمالي الإضافات" },
+                { "Other Deductions", "استقطاعات أخرى" },
+                { "Total Deductions", "إجمالي الاستقطاعات" },
+                { "Net Accruals", "صافي المستحقات" },
+                { "Save", "حفظ" },
+                { "Save & Close", "حفظ وإغلاق" },
+                { "Save and Close", "حفظ وإغلاق" },
+                { "Save & New", "حفظ وإضافة جديد" },
+                { "Close", "إغلاق" },
+                { "Cancel", "إلغاء" },
+                { "Add New", "إضافة جديد" },
+                { "Please Chose Employee First.", "يرجى اختيار الموظف أولاً." },
+                { "Please Choose Employee First.", "يرجى اختيار الموظف أولاً." },
+                { "Error Check your data", "خطأ، يرجى التحقق من البيانات" }
+            };
+
+            foreach (var pair in translations)
+            {
+                if (string.Equals(key, pair.Key, StringComparison.OrdinalIgnoreCase))
+                    return isArabic ? pair.Value : pair.Key;
+            }
+
+            // Restore the English form title if the language is switched back.
+            if (!isArabic && key == "التسوية النهائية")
+                return "Final Settlement";
+
+            return text;
         }
 
         private void frmFinalSettlement_Click(object sender, EventArgs e)
         {
             this.BringToFront();
         }
-     
+
         private void frmFinalSettlement_Load(object sender, EventArgs e)
         {
             BindCombos.PopulateEmployees(cmbEmployeeName);
+            ApplyFinalSettlementLanguage();
             if (id != 0)
             {
                 bindFinalsettle();
@@ -137,7 +413,7 @@ namespace YamyProject
 
         private void Salaries()
         {
-            decimal totalSalary, calculatedValue1,  otherAdditions, totalAdditions, LeveSalary, EndOfServices;
+            decimal totalSalary, calculatedValue1, otherAdditions, totalAdditions, LeveSalary, EndOfServices;
             decimal.TryParse(txtTotalSalary.Text, out totalSalary);
             decimal.TryParse(txtOtherAdditions.Text, out otherAdditions);
             calculatedValue1 = (totalSalary / 31) * 29;
@@ -262,7 +538,7 @@ namespace YamyProject
             string code = "FS-0001";
             if (cmbEmployeeName.Text.Trim() == "")
             {
-                MessageBox.Show("Please Chose Employee First.");
+                MessageBox.Show(IsFinalSettlementArabic() ? "يرجى اختيار الموظف أولاً." : "Please Chose Employee First.");
                 return false;
             }
             using (MySqlDataReader reader = ClinicDatabase.ExecuteReader(@"SELECT code FROM tbl_final_settlement 
@@ -291,7 +567,7 @@ namespace YamyProject
             else
             {
                 string message = Utilities.LastLogError();
-                MessageBox.Show("Error Check your data" + message);
+                MessageBox.Show(IsFinalSettlementArabic() ? "خطأ، يرجى التحقق من البيانات: " + message : "Error Check your data" + message);
                 return false;
             }
         }

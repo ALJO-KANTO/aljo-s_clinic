@@ -555,11 +555,23 @@
     <Compile Include="Inventory\InventoryManagement\frmViewItem.designer.cs">
       <DependentUpon>frmViewItem.cs</DependentUpon>
     </Compile>
+    <Compile Include="Inventory\InventoryManagement\ItemCategory\frmUomCategory.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Inventory\InventoryManagement\ItemCategory\frmUomCategory.Designer.cs">
+      <DependentUpon>frmUomCategory.cs</DependentUpon>
+    </Compile>
     <Compile Include="Inventory\InventoryManagement\ItemCategory\frmViewCategory.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Inventory\InventoryManagement\ItemCategory\frmViewCategory.Designer.cs">
       <DependentUpon>frmViewCategory.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Inventory\InventoryManagement\ItemCategory\frmViewUomCategory.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Inventory\InventoryManagement\ItemCategory\frmViewUomCategory.Designer.cs">
+      <DependentUpon>frmViewUomCategory.cs</DependentUpon>
     </Compile>
     <Compile Include="Inventory\InventoryManagement\ItemCategory\MasterItemCategory.cs">
       <SubType>Form</SubType>
@@ -572,6 +584,12 @@
     </Compile>
     <Compile Include="Inventory\InventoryManagement\ItemUnit\frmAddUnitsToItem.designer.cs">
       <DependentUpon>frmAddUnitsToItem.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Inventory\InventoryManagement\ItemUnit\frmItemUOMList.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Inventory\InventoryManagement\ItemUnit\frmItemUOMList.Designer.cs">
+      <DependentUpon>frmItemUOMList.cs</DependentUpon>
     </Compile>
     <Compile Include="Inventory\InventoryManagement\ItemUnit\frmViewItemUnit.cs">
       <SubType>Form</SubType>
@@ -1257,8 +1275,14 @@
     <EmbeddedResource Include="Inventory\InventoryManagement\frmViewItem.resx">
       <DependentUpon>frmViewItem.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Inventory\InventoryManagement\ItemCategory\frmUomCategory.resx">
+      <DependentUpon>frmUomCategory.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Inventory\InventoryManagement\ItemCategory\frmViewCategory.resx">
       <DependentUpon>frmViewCategory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Inventory\InventoryManagement\ItemCategory\frmViewUomCategory.resx">
+      <DependentUpon>frmViewUomCategory.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Inventory\InventoryManagement\ItemCategory\MasterItemCategory.resx">
       <DependentUpon>MasterItemCategory.cs</DependentUpon>
