@@ -4,8 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Windows.Forms;
-//using YamyProject.DAL;
-//using YamyProject.Localization;
+using YamyProject.Localization;
 
 namespace YamyProject
 {
@@ -16,16 +15,16 @@ namespace YamyProject
         public MasterItemCategory()
         {
             InitializeComponent();
-           // LocalizationManager.LocalizeForm(this);
-            itemCategoryUpdatedHandler = (sender, args) => BindItems();
+            LocalizationManager.LocalizeForm(this);
             headerUC1.FormText = this.Text;
-            //.ItemCategory += itemCategoryUpdatedHandler;
+            itemCategoryUpdatedHandler = (sender, args) => BindItems();
+            EventHub.ItemCategory += itemCategoryUpdatedHandler;
         }
         private void MasterItemCategory_FormClosing(object sender, FormClosingEventArgs e)
         {
-            //.ItemCategory -= itemCategoryUpdatedHandler;
-            ////.SalesInv -= invoiceUpdatedHandler;
-            ////.PurchaseInv -= purchaseUpdatedHandler;
+            EventHub.ItemCategory -= itemCategoryUpdatedHandler;
+            //EventHub.SalesInv -= invoiceUpdatedHandler;
+            //EventHub.PurchaseInv -= purchaseUpdatedHandler;
         }
         private void btnNew_Click(object sender, EventArgs e)
         {

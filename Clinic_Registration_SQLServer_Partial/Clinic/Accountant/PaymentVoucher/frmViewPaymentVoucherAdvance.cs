@@ -1185,7 +1185,7 @@ namespace YamyProject
             }
             else if (cmbPaymentType.Text == "Employee")
             {
-                query = "select code,name from tbl_employee where state = 0 and code LIKE @search OR name LIKE @search LIMIT 20";
+                query = "select id, code,name from tbl_employee where state = 0 and code LIKE @search OR name LIKE @search LIMIT 20";
             }
 
             DataTable dt = ClinicDatabase.ExecuteDataTable(query, ClinicDatabase.CreateParameterNew("@search", "%" + input + "%"));

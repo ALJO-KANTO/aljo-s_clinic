@@ -312,7 +312,7 @@ namespace YamyProject
         {
             string option = Utilities.GeneralSettingsState("ALL ITEMS IN PURCHASE");
 
-            string query = "select code,name from tbl_items where state = 0 AND active = 0";
+            string query = "select id,code,name from tbl_items where state = 0 AND active = 0";
             var parameters = new List<MySqlParameter>();
 
             if (string.IsNullOrEmpty(option) || int.Parse(option) <= 0)
@@ -354,7 +354,7 @@ namespace YamyProject
         {
             string option = Utilities.GeneralSettingsState("ALL ITEMS IN PURCHASE");
 
-            string query = "select code,name from tbl_items where state = 0 AND active = 0";
+            string query = "select id, code, name from tbl_items where state = 0 AND active = 0";
             var parameters = new List<MySqlParameter>();
 
             if (string.IsNullOrEmpty(option) || int.Parse(option) <= 0)
@@ -412,7 +412,11 @@ namespace YamyProject
         string defaultTax = "";
         private void loadItemUnits()
         {
-            DataTable dt = ClinicDatabase.ExecuteDataTable("select id,name from tbl_unit");
+            DataTable units = GetItemUnits(0);
+            if (units == null)
+                return;
+
+            DataTable dt = units; // ClinicDatabase.ExecuteDataTable("select id,name from tbl_unit");
             DataGridViewComboBoxColumn col = (DataGridViewComboBoxColumn)dgvItems.Columns["unit_id"];
             col.DataSource = dt;
             col.DisplayMember = "name";
@@ -421,6 +425,45 @@ namespace YamyProject
             col.DisplayStyle = DataGridViewComboBoxDisplayStyle.DropDownButton;
             col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             col.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+        }
+        private DataTable GetItemUnits(int itemId)
+        {
+            return ClinicDatabase.ExecuteDataTable(@"
+                    SELECT
+                        u.id AS id,
+                        u.name AS name,
+                        CASE
+                            WHEN u.uom_type = 'reference'
+                                THEN 1
+                            ELSE IFNULL(u.ratio, 1)
+                        END AS factor,
+                        CASE
+                            WHEN u.id = i.unit_id
+                                THEN 1
+                            ELSE 0
+                        END AS is_default
+                    FROM tbl_items i
+                    INNER JOIN tbl_uom reference_uom
+                        ON reference_uom.id = i.unit_id
+                       AND reference_uom.state = 0
+                    INNER JOIN tbl_uom u
+                        ON u.category_id = reference_uom.category_id
+                       AND u.state = 0
+                       AND u.active = 1
+                    WHERE i.id = @itemId
+                    ORDER BY
+                        CASE
+                            WHEN u.id = i.unit_id THEN 0
+                            ELSE 1
+                        END,
+
+                        CASE
+                            WHEN u.uom_type = 'reference' THEN 0
+                            ELSE 1
+                        END,
+
+                        u.name;",
+                ClinicDatabase.CreateParameter("@itemId", itemId));
         }
         private void bindCombo()
         {
@@ -1064,7 +1107,7 @@ namespace YamyProject
                     lstAccountSuggestions.Visible = false;
                     return;
                 }
-                string query = @"SELECT code, name FROM tbl_vendor 
+                string query = @"SELECT id, code, name FROM tbl_vendor 
                          WHERE code LIKE @search OR name LIKE @search LIMIT 20";
 
                 DataTable dt = ClinicDatabase.ExecuteDataTable(query, ClinicDatabase.CreateParameterNew("@search", "%" + input + "%"));
@@ -1075,6 +1118,7 @@ namespace YamyProject
                 {
                     lstAccountSuggestions.Items.Add(new ItemSuggestion
                     {
+                        Id = Convert.ToInt32(row["id"]),
                         Code = row["code"].ToString(),
                         Name = row["name"].ToString()
                     });
@@ -1219,6 +1263,7 @@ namespace YamyProject
             {
                 lstAccountSuggestions.Items.Add(new ItemSuggestion
                 {
+                    Id = Convert.ToInt32(row["id"]),
                     Code = row["code"].ToString(),
                     Name = row["name"].ToString()
                 });
@@ -1267,6 +1312,7 @@ namespace YamyProject
             {
                 lstAccountSuggestions.Items.Add(new ItemSuggestion
                 {
+                    Id = Convert.ToInt32(row["id"]),
                     Code = row["code"].ToString(),
                     Name = row["name"].ToString()
                 });
@@ -1319,15 +1365,32 @@ namespace YamyProject
         }
         private decimal GetUnitFactor(int itemId, int unitId)
         {
-            object result = ClinicDatabase.ExecuteScalar(@"
-                                    SELECT factor
-                                    FROM tbl_items_unit
-                                    WHERE item_id = @itemId
-                                    AND unit_id = @unitId",
-                new MySqlParameter("@itemId", itemId),
-                new MySqlParameter("@unitId", unitId));
+            if (unitId <= 0)
+                return 1m;
 
-            return result != null ? Convert.ToDecimal(result) : 1;
+            object result = ClinicDatabase.ExecuteScalar(@"
+                    SELECT
+                        CASE
+                            WHEN LOWER(TRIM(uom_type)) = 'reference'
+                                THEN 1
+                            ELSE IFNULL(ratio, 1)
+                        END
+                    FROM tbl_uom
+                    WHERE id = @id AND IFNULL(state, 0) = 0 AND IFNULL(active, 1) = 1
+                    LIMIT 1;", ClinicDatabase.CreateParameter("@id", unitId)
+            );
+
+            if (result == null || result == DBNull.Value)
+                return 1m;
+
+            decimal factor;
+
+            if (!decimal.TryParse(result.ToString(), out factor))
+            {
+                return 1m;
+            }
+
+            return factor > 0 ? factor : 1m;
         }
         private void ComboBoxTax_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -2069,18 +2132,12 @@ namespace YamyProject
             if (lstAccountSuggestions.SelectedItem == null)
                 return;
 
-            //string selected = lstAccountSuggestions.SelectedItem.ToString();
+            if (!(lstAccountSuggestions.SelectedItem is ItemSuggestion item))
+                return;
 
-            //int separatorIndex = selected.IndexOf('-');
-            //if (separatorIndex == -1) return;
-
-            string selectedCode = ""; // selected.Substring(0, separatorIndex).Trim();
-            string selectedName = ""; // selected.Substring(separatorIndex + 1).Trim();
-            if (lstAccountSuggestions.SelectedItem is ItemSuggestion item)
-            {
-                selectedCode = item.Code;
-                selectedName = item.Name;
-            }
+            int selectedItemId = item.Id;
+            string selectedCode = item.Code;
+            string selectedName = item.Name;
 
 
             if (lstAccountSuggestions.Tag is Guna2TextBox gunaTextBox)

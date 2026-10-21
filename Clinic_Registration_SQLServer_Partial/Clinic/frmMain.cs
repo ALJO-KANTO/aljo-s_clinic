@@ -734,7 +734,8 @@ namespace Clinic
                     string translated = TranslateAdminNav(caption);
                     string symbol = caption == "Accounts" ? "▤" :
                         caption == "Vendors" ? "🛒" :
-                        caption == "Inventory" ? "⬡" : "♙";
+                        caption == "Inventory" ? "⬡" :
+                        caption == "Reports" ? "▥" : "♙";
                     header.Text = "   " + symbol + "    " + translated + "  ▾";
                     header.TextAlign = isArabic ? ContentAlignment.MiddleRight : ContentAlignment.MiddleLeft;
                     header.RightToLeft = isArabic ? RightToLeft.Yes : RightToLeft.No;
@@ -744,6 +745,15 @@ namespace Clinic
                 {
                     foreach (Control item in submenu.Controls)
                     {
+                        Label sectionHeading = item as Label;
+                        if (sectionHeading != null)
+                        {
+                            string headingKey = sectionHeading.Tag as string ?? sectionHeading.Text;
+                            sectionHeading.Text = TranslateAdminNav(headingKey);
+                            sectionHeading.TextAlign = isArabic ? ContentAlignment.MiddleRight : ContentAlignment.MiddleLeft;
+                            sectionHeading.RightToLeft = isArabic ? RightToLeft.Yes : RightToLeft.No;
+                            continue;
+                        }
                         Button b = item as Button;
                         if (b == null) continue;
                         string english = b.Tag as string ?? "";
@@ -760,6 +770,18 @@ namespace Clinic
             if (!isArabic) return english;
             switch (english)
             {
+                case "Accountant": return "المحاسبة";
+                case "Employee": return "الموظفون";
+                case "PettyCash": return "المصروفات النثرية";
+                //case "Purchase": return "المشتريات";
+                case "Vendor": return "الموردون";
+                case "Reports": return "التقارير";
+                case "Account Ledger": return "دفتر الأستاذ";
+                case "Cost Center Summary": return "ملخص مراكز التكلفة";
+                case "Trial Balance": return "ميزان المراجعة";
+                case "Profit and Loss": return "الأرباح والخسائر";
+                case "Purchase": return "المشتريات";
+                case "Purchase by Vendor Summary": return "ملخص المشتريات حسب المورد";
                 case "Accounts": return "الحسابات";
                 case "Account Center": return "مركز الحسابات";
                 case "Fixed Assets": return "الأصول الثابتة";
@@ -997,6 +1019,11 @@ namespace Clinic
 
             var forms = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
+                { "Account Ledger", "frmAccountLedger" },
+                { "Cost Center Summary", "frmCostCenterSummary" },
+                { "Trial Balance", "MasterTrialBalance" },
+                { "Profit and Loss", "ProfitandLossReport" },
+                { "Purchase by Vendor Summary", "frmPurchaseByVendorSummary" },
                 { "Account Center", "MasterChartOfAccount" },
                 { "Fixed Assets", "MasterFixedAssets" },
                 { "Voucher", "MasterJournalVoucher" },
@@ -1039,9 +1066,11 @@ namespace Clinic
                             Button button = item as Button;
                             if (button == null) continue;
                             string caption = button.Tag as string;
-                            string formName;
-                            if (caption == null || !forms.TryGetValue(caption, out formName) ||
-                                string.IsNullOrWhiteSpace(formName)) continue;
+                            string formName = button.AccessibleDescription;
+                            if (string.IsNullOrWhiteSpace(formName) &&
+                                (caption == null || !forms.TryGetValue(caption, out formName)))
+                                continue;
+                            if (string.IsNullOrWhiteSpace(formName)) continue;
 
                             string target = formName;
                             button.Click += (sender, args) => OpenMigratedAdminForm(target);
@@ -1092,7 +1121,20 @@ namespace Clinic
 
                     Type formType = matches[0];
 
-                    // First try a public parameterless constructor.
+                    // Profit and Loss requires a report type.
+                    if (formType.Name == "ProfitandLossReport")
+                    {
+                        using (Form report = (Form)Activator.CreateInstance(
+                            formType, new object[] { "standard" }))
+                        {
+                            report.StartPosition = FormStartPosition.CenterParent;
+                            report.ShowDialog(this);
+                        }
+
+                        return;
+                    }
+
+                    // Existing navigation logic remains unchanged.
                     var constructor = formType.GetConstructor(Type.EmptyTypes);
 
                     Form form = null;

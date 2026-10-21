@@ -16,9 +16,6 @@ namespace YamyProject
     {
 
         int id; string itemCode;
-        public List<int> unitIds = new List<int>();
-        public List<decimal> unitFactors = new List<decimal>();
-        public List<string> unitNames = new List<string>();
         private EventHandler itemCategoryUpdatedHandler;
         private EventHandler itemUnitUpdatedHandler;
         private EventHandler warehouseUpdatedHandler;
@@ -1797,14 +1794,6 @@ namespace YamyProject
                     MessageBox.Show("Default accounts for Item are not properly configured. Please check your settings.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return false;
                 }
-                foreach (int unit in unitIds)
-                {
-                    if (unit == (int)cmbMainUnit.SelectedValue)
-                    {
-                        MessageBox.Show("Main Unit Can't Be Included As Sub Unit");
-                        return false;
-                    }
-                }
             }
             if (txtMin.Text.Trim() == "")
                 txtMin.Text = "0";
@@ -2925,10 +2914,6 @@ namespace YamyProject
         {
             id = 0;
             itemCode = string.Empty;
-
-            unitIds.Clear();
-            unitFactors.Clear();
-            unitNames.Clear();
 
             txtcode.Clear();
             txtName.Clear();
