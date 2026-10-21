@@ -1,10 +1,11 @@
-﻿using Clinic_DataAccess;
+﻿using Clinic;
+using Clinic_DataAccess;
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Windows.Forms;
-//using YamyProject.Localization;
+using YamyProject.Localization;
 
 namespace YamyProject
 {
@@ -16,12 +17,12 @@ namespace YamyProject
         public frmViewCategory( int id=0)
         {
             InitializeComponent();
-           // LocalizationManager.LocalizeForm(this);
 
             this.id = id;
             if (id == 0)
                 this.Text = id == 0 ? "New Category" : "Edit Category";
             headerUC1.FormText = this.Text;
+            LocalizationManager.LocalizeForm(this);
         }
 
 
@@ -58,68 +59,19 @@ namespace YamyProject
                 ClinicDatabase.ExecuteNonQuery(@"INSERT INTO tbl_item_category (code, name) VALUES (@code, @name);",
                             ClinicDatabase.CreateParameterNew("@code", formattedId),
                             ClinicDatabase.CreateParameterNew("@name", txtName.Text));
-                ////Utilities.LogAudit(-1, "Add Item Category", "Item Category", nextId, "Added Item Category: " + txtName.Text);
+                Utilities.LogAudit(clsGlobal.CurrentUser.UserID, "Add Item Category", "Item Category", nextId, "Added Item Category: " + txtName.Text);
             }
             else
             {
                 ClinicDatabase.ExecuteNonQuery(@"UPDATE tbl_item_category SET  name = @name WHERE id = @id;",
                         ClinicDatabase.CreateParameterNew("@name", txtName.Text),
                         ClinicDatabase.CreateParameterNew("@id", id));
-                ////Utilities.LogAudit(-1, "Update Item Category", "Item Category", id, "Updated Item Category: " + txtName.Text);
+                Utilities.LogAudit(clsGlobal.CurrentUser.UserID, "Update Item Category", "Item Category", id, "Updated Item Category: " + txtName.Text);
             }
 
-            //.RefreshItemCategory();
+            EventHub.RefreshItemCategory();
 
             this.Close();
-            //if (txtName.Text.Trim() == "")
-            //{
-            //    MessageBox.Show("Please Enter Name First");
-            //    return;
-            //}
-
-            //string actionType = (id == 0) ? "save" : "edit";
-
-            //var parameters = new List<MySqlParameter>
-            //{
-            //    new MySqlParameter("p_action", actionType),
-            //    new MySqlParameter("p_id", id),
-            //    new MySqlParameter("p_name", txtName.Text.Trim()),
-            //    new MySqlParameter("p_new_id", MySqlDbType.Int32) { Direction = ParameterDirection.Output },
-            //    new MySqlParameter("p_code", MySqlDbType.VarChar, 10) { Direction = ParameterDirection.Output },
-            //    new MySqlParameter("p_duplicate", MySqlDbType.Bit) { Direction = ParameterDirection.Output }
-            //};
-
-            //try
-            //{
-            //    ClinicDatabase.ExecuteStoredProcedure("sp_item_category", parameters);
-
-            //    bool isDuplicate = Convert.ToBoolean(parameters.Find(p => p.ParameterName == "p_duplicate").Value);
-            //    if (isDuplicate)
-            //    {
-            //        MessageBox.Show("Name Already In Use. Enter Another Name.");
-            //        return;
-            //    }
-
-            //    int newId = Convert.ToInt32(parameters.Find(p => p.ParameterName == "p_new_id").Value);
-            //    string code = parameters.Find(p => p.ParameterName == "p_code").Value?.ToString();
-
-            //    string action = (id == 0) ? "Add" : "Update";
-            //    string logMessage = $"{action}d Item Category: {txtName.Text}";
-
-            //    ////Utilities.LogAudit(-1, $"{action} Item Category", "Item Category", newId, logMessage);
-
-            //    //.RefreshItemCategory();
-            //    this.Close();
-            //}
-            //catch (MySqlException ex)
-            //{
-            //    MessageBox.Show("MySQL Error: " + ex.Message);
-            //}
-            //catch (Exception ex)
-            //{
-            //    MessageBox.Show("General Error: " + ex.Message);
-            //}
-
         }
 
         private void frmViewCategory_Load(object sender, EventArgs e)
