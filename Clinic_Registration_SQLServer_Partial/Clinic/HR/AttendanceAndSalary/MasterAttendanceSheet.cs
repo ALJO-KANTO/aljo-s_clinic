@@ -9,7 +9,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-//using YamyProject.Localization;
+using YamyProject.Localization;
 
 namespace YamyProject
 {
@@ -35,7 +35,9 @@ namespace YamyProject
         {
             InitializeComponent();
             this.Resize += MasterAttendanceSheet_Resize;
-           // LocalizationManager.LocalizeForm(this);
+            // Reassert the custom title bar after all controls have been laid out.
+            this.Shown += MasterAttendanceSheet_Shown;
+            LocalizationManager.LocalizeForm(this);
 
             this.id = id;
 
@@ -48,351 +50,245 @@ namespace YamyProject
                     StringComparison.OrdinalIgnoreCase);
 
             ApplyLanguageLayout(isArabic);
+            ConfigureAttendanceClosingHeader(isArabic);
         }
-        public void ApplyLanguageLayout(bool isArabic)
+
+        // Keep the existing HeaderUC as the dark-blue title bar for this page.
+        // The control itself owns its minimize/maximize/close button behavior.
+
+        private void ConfigureAttendanceClosingHeader(bool isArabic)
         {
-            SuspendLayout();
+            if (headerUC1 == null || headerUC1.IsDisposed)
+                return;
 
-            try
+            // Change appearance only. Keep the existing designer layout.
+            headerUC1.BackColor = Color.FromArgb(29, 53, 84);
+            headerUC1.ForeColor = Color.White;
+
+            headerUC1.FormText = isArabic
+                ? "سجل الحضور الرئيسي"
+                : "Master Attendance Sheet";
+
+            headerUC1.RightToLeft = isArabic
+                ? RightToLeft.Yes
+                : RightToLeft.No;
+
+            headerUC1.Invalidate();
+            headerUC1.Refresh();
+        }
+
+
+        private void btnClose_Click(object sender, EventArgs e)
+        {
+            Form parentForm = this.FindForm();
+
+            if (parentForm != null)
+                parentForm.Close();
+        }
+
+        // Find the four toolbar buttons by their displayed text so this code
+        // does not depend on designer field names for the upload button.
+        private void SetAttendanceToolbarButtonsVisible()
+        {
+            // Intentionally do not reposition, resize, reparent, or restyle controls.
+            // The original WinForms Designer layout must remain unchanged.
+        }
+
+        // Restore the custom title bar and toolbar whenever the page is shown.
+        private void RestoreAttendanceHeader()
+        {
+            bool isArabic = IsArabicLanguage();
+            ConfigureAttendanceClosingHeader(isArabic);
+            ApplyModernHeaderLanguage(isArabic);
+
+            // Refresh only; do not change Parent, Dock, Location, Size, Anchor or Z-order.
+            if (headerUC1 != null && !headerUC1.IsDisposed)
+                headerUC1.Refresh();
+        }
+
+        private bool IsArabicLanguage()
+        {
+            string language = Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en";
+            return language.StartsWith("ar", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private string L(string english, string arabic)
+        {
+            return IsArabicLanguage() ? arabic : english;
+        }
+
+        // Translate visible captions only. No control bounds, sizes, anchors,
+        // colors, fonts, docking, parent containers, or positions are changed.
+        private void ApplyArabicAttendanceText(Control parent, bool isArabic)
+        {
+            if (parent == null) return;
+
+            var translations = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-                RightToLeft = RightToLeft.No;
-                RightToLeftLayout = false;
+                { "Master Attendance Sheet", "سجل الحضور الرئيسي" },
+                { "Import, review and manage employee attendance records.", "استيراد ومراجعة وإدارة سجلات حضور الموظفين" },
+                { "Attendance Saved Before", "الحضور المحفوظ سابقًا" },
+                { "Add Manual Attendance", "إضافة حضور يدوي" },
+                { "Download Sample Excel Sheet", "تنزيل نموذج ملف Excel" },
+                { "Save Attendance", "حفظ الحضور" },
+                { "Upload Current Employee", "رفع بيانات الموظف الحالي" },
+                { "Sheet", "الورقة" },
+                { "Employee Code", "رمز الموظف" },
+                { "Employee Name", "اسم الموظف" },
+                { "Emp ID", "رقم الموظف" },
+                { "Emp Name", "اسم الموظف" },
+                { "Work Date", "تاريخ العمل" },
+                { "Time In", "وقت الحضور" },
+                { "Time Out", "وقت الانصراف" },
+                { "Day Of Week", "يوم الأسبوع" },
+                { "Status", "الحالة" },
+                { "Employee", "الموظف" },
+                { "Month", "الشهر" },
+                { "Year", "السنة" },
+                { "Select Employee", "اختر الموظف" },
+                { "Select Month", "اختر الشهر" },
+                { "Records #", "عدد السجلات:" },
+                { "Manual Attendance", "الحضور اليدوي" },
+                { "Attendance", "الحضور" },
+                { "Payroll", "مسير الرواتب" },
+                { "Save", "حفظ" },
+                { "Cancel", "إلغاء" },
+                { "Close", "إغلاق" },
+                { "Browse", "استعراض" },
+                { "Upload", "رفع" },
+                { "Download", "تنزيل" },
+                { "Total", "الإجمالي" },
+                { "Present", "حاضر" },
+                { "Absent", "غائب" },
+                { "Late", "متأخر" }
+            };
 
+            foreach (Control control in parent.Controls)
+            {
+                string currentText = (control.Text ?? string.Empty).Trim();
                 if (isArabic)
                 {
-                    // =====================================================
-                    // ARABIC TEXT
-                    // =====================================================
-
-                    Text = "سجل الحضور الرئيسي";
-
-                    btnAttendanceReport.Text = "الحضور المحفوظ سابقاً";
-                    btnAddManualAttendance.Text = "إضافة حضور يدوي";
-
-                    // Keep your actual upload button name here if different.
-                    // btnBrowse.Text = "رفع ملف الحضور";
-
-                    DownloadExcelSheet.Text = "تنزيل نموذج ورقة Excel";
-
-                    btnSave.Text = "حفظ الحضور";
-
-
-                    // =====================================================
-                    // TOP BUTTONS
-                    //
-                    // RIGHT:
-                    // Previous | Manual | Upload
-                    //
-                    // LEFT:
-                    // Download Excel
-                    // =====================================================
-
-                    int margin = 30;
-                    int gap = 0;
-
-                    // ---------- RIGHT SIDE ----------
-                    btnAttendanceReport.Anchor =
-                        AnchorStyles.Top | AnchorStyles.Right;
-
-                    btnAttendanceReport.Location = new Point(
-                        ClientSize.Width
-                            - margin
-                            - btnAttendanceReport.Width,
-                        btnAttendanceReport.Top);
-
-
-                    btnAddManualAttendance.Anchor =
-                        AnchorStyles.Top | AnchorStyles.Right;
-
-                    btnAddManualAttendance.Location = new Point(
-                        btnAttendanceReport.Left
-                            - gap
-                            - btnAddManualAttendance.Width,
-                        btnAddManualAttendance.Top);
-
-
-                    // =====================================================
-                    // DOWNLOAD EXCEL -> LEFT
-                    // =====================================================
-
-                    DownloadExcelSheet.Anchor =
-                        AnchorStyles.Top | AnchorStyles.Left;
-
-                    DownloadExcelSheet.Location = new Point(
-                        margin,
-                        DownloadExcelSheet.Top);
-
-
-                    // =====================================================
-                    // SAVE BUTTON -> LEFT
-                    // =====================================================
-
-                    btnSave.Anchor =
-                        AnchorStyles.Left | AnchorStyles.Bottom;
-
-                    btnSave.Location = new Point(
-                        margin,
-                        btnSave.Parent.ClientSize.Height
-                            - btnSave.Height
-                            - 20);
-
-
-                    // =====================================================
-                    // GRIDS
-                    // =====================================================
-
-                    dgvAttendance.RightToLeft = RightToLeft.Yes;
-
-                    dgvAttendance.ColumnHeadersDefaultCellStyle.Alignment =
-                        DataGridViewContentAlignment.MiddleRight;
-
-                    dgvAttendance.DefaultCellStyle.Alignment =
-                        DataGridViewContentAlignment.MiddleRight;
-
-
-                    guna2DataGridView1.RightToLeft = RightToLeft.Yes;
-
-                    guna2DataGridView1.ColumnHeadersDefaultCellStyle.Alignment =
-                        DataGridViewContentAlignment.MiddleRight;
-
-                    guna2DataGridView1.DefaultCellStyle.Alignment =
-                        DataGridViewContentAlignment.MiddleRight;
-
-
-                    // =====================================================
-                    // HEADER -> RIGHT SIDE FOR ARABIC
-                    // =====================================================
-                    headerUC1.RightToLeft = RightToLeft.Yes;
-                    headerUC1.FormText = "سجل الحضور الرئيسي";
-
-                    headerUC1.Anchor =
-                        AnchorStyles.Top | AnchorStyles.Right;
-
-                    headerUC1.Location = new Point(
-                        ClientSize.Width
-                            - headerUC1.Width
-                            - 35,
-                        headerUC1.Top);
-
-                    headerUC1.BringToFront();
-                    headerUC1.Refresh();
-
-
+                    if (translations.TryGetValue(currentText, out string translated))
+                        control.Text = translated;
                 }
                 else
                 {
-                    // =====================================================
-                    // HEADER -> ORIGINAL LEFT SIDE FOR ENGLISH
-                    // =====================================================
-
-                    headerUC1.RightToLeft = RightToLeft.No;
-                    headerUC1.FormText = "Master Attendance Sheet";
-
-                    headerUC1.Anchor = AnchorStyles.Top | AnchorStyles.Left;
-
-                    // Back to LEFT
-                    headerUC1.Location = new Point(
-                        35,
-                        headerUC1.Top
-                    );
-
-                    headerUC1.BringToFront();
-                    headerUC1.Refresh();
-
-
-                    // =====================================================
-                    // ORIGINAL TOP POSITIONS
-                    // =====================================================
-
-                    btnAttendanceReport.Anchor =
-                        AnchorStyles.Top | AnchorStyles.Left;
-
-                    btnAddManualAttendance.Anchor =
-                        AnchorStyles.Top | AnchorStyles.Left;
-
-                    DownloadExcelSheet.Anchor =
-                        AnchorStyles.Top | AnchorStyles.Left;
-
-
-                    // =====================================================
-                    // SAVE -> ORIGINAL RIGHT SIDE
-                    // =====================================================
-
-                    btnSave.Anchor =
-                        AnchorStyles.Right | AnchorStyles.Bottom;
-
-                    btnSave.Location = new Point(
-                        btnSave.Parent.ClientSize.Width
-                            - btnSave.Width
-                            - 30,
-                        btnSave.Parent.ClientSize.Height
-                            - btnSave.Height
-                            - 20);
-
-
-                    // =====================================================
-                    // GRID
-                    // =====================================================
-
-                    dgvAttendance.RightToLeft = RightToLeft.No;
-
-                    dgvAttendance.ColumnHeadersDefaultCellStyle.Alignment =
-                        DataGridViewContentAlignment.MiddleLeft;
-
-                    dgvAttendance.DefaultCellStyle.Alignment =
-                        DataGridViewContentAlignment.MiddleLeft;
-
-
-                    guna2DataGridView1.RightToLeft = RightToLeft.No;
-
-                    guna2DataGridView1.ColumnHeadersDefaultCellStyle.Alignment =
-                        DataGridViewContentAlignment.MiddleLeft;
-
-                    guna2DataGridView1.DefaultCellStyle.Alignment =
-                        DataGridViewContentAlignment.MiddleLeft;
-
-
-                    // =====================================================
-                    // HEADER
-                    // =====================================================
-
-                    headerUC1.RightToLeft = RightToLeft.No;
-                    headerUC1.FormText = "Master Attendance Sheet";
-
-                    headerUC1.Refresh();
+                    foreach (var item in translations)
+                    {
+                        if (string.Equals(item.Value, currentText, StringComparison.OrdinalIgnoreCase))
+                        {
+                            control.Text = item.Key;
+                            break;
+                        }
+                    }
                 }
 
-                btnAttendanceReport.BringToFront();
-                btnAddManualAttendance.BringToFront();
-                DownloadExcelSheet.BringToFront();
-                btnSave.BringToFront();
-            }
-            finally
-            {
-                ResumeLayout(true);
-                PerformLayout();
+                if (control is Label || control is Button || control is TextBox || control is ComboBox)
+                    control.RightToLeft = isArabic ? RightToLeft.Yes : RightToLeft.No;
 
-                Invalidate(true);
-                Update();
+                if (control.HasChildren)
+                    ApplyArabicAttendanceText(control, isArabic);
+            }
+        }
+
+        private void TranslateAttendanceGridHeaders(bool isArabic)
+        {
+            TranslateGrid(dgvAttendance, isArabic);
+            TranslateGrid(guna2DataGridView1, isArabic);
+        }
+
+        private void TranslateGrid(DataGridView grid, bool isArabic)
+        {
+            if (grid == null) return;
+            var translations = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "Emp ID", "رقم الموظف" },
+                { "Emp Name", "اسم الموظف" },
+                { "Work Date", "تاريخ العمل" },
+                { "Time In", "وقت الحضور" },
+                { "Time Out", "وقت الانصراف" },
+                { "Day Of Week", "يوم الأسبوع" },
+                { "Status", "الحالة" },
+                { "Employee Code", "رمز الموظف" },
+                { "Employee Name", "اسم الموظف" },
+                { "Records #", "عدد السجلات" }
+            };
+            foreach (DataGridViewColumn column in grid.Columns)
+            {
+                string original = column.Name;
+                if (isArabic && translations.TryGetValue(original, out string arabic))
+                    column.HeaderText = arabic;
+                else if (!isArabic)
+                    column.HeaderText = original;
+            }
+        }
+
+        public void ApplyLanguageLayout(bool isArabic)
+        {
+            // Localization only. Do not modify the English designer layout.
+            RightToLeft = RightToLeft.No;
+            RightToLeftLayout = false;
+
+            Text = isArabic ? "سجل الحضور الرئيسي" : "Master Attendance Sheet";
+            btnAttendanceReport.Text = isArabic ? "الحضور المحفوظ سابقًا" : "Attendance Saved Before";
+            btnAddManualAttendance.Text = isArabic ? "إضافة حضور يدوي" : "Add Manual Attendance";
+            DownloadExcelSheet.Text = isArabic ? "تنزيل نموذج ملف Excel" : "Download Sample Excel Sheet";
+            btnSave.Text = isArabic ? "حفظ الحضور" : "Save Attendance";
+
+            ConfigureAttendanceClosingHeader(isArabic);
+            ApplyModernHeaderLanguage(isArabic);
+            ApplyArabicAttendanceText(this, isArabic);
+            TranslateAttendanceGridHeaders(isArabic);
+
+            // Change grid reading direction only; keep all columns and dimensions intact.
+            foreach (DataGridView grid in new[] { dgvAttendance, guna2DataGridView1 })
+            {
+                if (grid == null) continue;
+                grid.RightToLeft = isArabic ? RightToLeft.Yes : RightToLeft.No;
+                grid.ColumnHeadersDefaultCellStyle.Alignment = isArabic
+                    ? DataGridViewContentAlignment.MiddleRight
+                    : DataGridViewContentAlignment.MiddleLeft;
+                grid.DefaultCellStyle.Alignment = isArabic
+                    ? DataGridViewContentAlignment.MiddleRight
+                    : DataGridViewContentAlignment.MiddleLeft;
             }
         }
         private void ApplyModernHeaderLanguage(bool isArabic)
         {
-            const int margin = 48;
-            const int gap = 18;
-
-            pnlModernHeader.SuspendLayout();
-
-            try
+            // Text and reading direction only. Keep the designer's exact positions,
+            // sizes, anchors, icon placement, fonts and colors.
+            if (lblModernTitle != null)
             {
-                if (isArabic)
-                {
-                    lblModernTitle.Text =
-                        "سجل حضور الموظفين";
-
-                    lblModernSubtitle.Text =
-                        "استيراد ومراجعة وإدارة سجلات حضور الموظفين";
-
-                    pnlTitleIcon.Anchor =
-                        AnchorStyles.Top |
-                        AnchorStyles.Right;
-
-                    lblModernTitle.Anchor =
-                        AnchorStyles.Top |
-                        AnchorStyles.Right;
-
-                    lblModernSubtitle.Anchor =
-                        AnchorStyles.Top |
-                        AnchorStyles.Right;
-
-                    lblModernTitle.RightToLeft =
-                        RightToLeft.Yes;
-
-                    lblModernSubtitle.RightToLeft =
-                        RightToLeft.Yes;
-
-                    lblModernTitle.TextAlign =
-                        ContentAlignment.MiddleRight;
-
-                    lblModernSubtitle.TextAlign =
-                        ContentAlignment.MiddleRight;
-
-                    // Icon on far RIGHT
-                    pnlTitleIcon.Location = new Point(
-                        pnlModernHeader.ClientSize.Width
-                            - margin
-                            - pnlTitleIcon.Width,
-                        27);
-
-                    int titleWidth =
-                        lblModernTitle.PreferredSize.Width;
-
-                    int subtitleWidth =
-                        lblModernSubtitle.PreferredSize.Width;
-
-                    // Arabic text to LEFT of icon
-                    lblModernTitle.Location = new Point(
-                        pnlTitleIcon.Left
-                            - gap
-                            - titleWidth,
-                        22);
-
-                    lblModernSubtitle.Location = new Point(
-                        pnlTitleIcon.Left
-                            - gap
-                            - subtitleWidth,
-                        75);
-                }
-                else
-                {
-                    lblModernTitle.Text =
-                        "Master Attendance Sheet";
-
-                    lblModernSubtitle.Text =
-                        "Import, review and manage employee attendance records.";
-
-                    pnlTitleIcon.Anchor =
-                        AnchorStyles.Top |
-                        AnchorStyles.Left;
-
-                    lblModernTitle.Anchor =
-                        AnchorStyles.Top |
-                        AnchorStyles.Left;
-
-                    lblModernSubtitle.Anchor =
-                        AnchorStyles.Top |
-                        AnchorStyles.Left;
-
-                    lblModernTitle.RightToLeft =
-                        RightToLeft.No;
-
-                    lblModernSubtitle.RightToLeft =
-                        RightToLeft.No;
-
-                    lblModernTitle.TextAlign =
-                        ContentAlignment.MiddleLeft;
-
-                    lblModernSubtitle.TextAlign =
-                        ContentAlignment.MiddleLeft;
-
-                    // EXACT ORIGINAL DESIGNER POSITIONS
-                    pnlTitleIcon.Location =
-                        new Point(48, 27);
-
-                    lblModernTitle.Location =
-                        new Point(144, 22);
-
-                    lblModernSubtitle.Location =
-                        new Point(148, 75);
-                }
-
-                pnlTitleIcon.BringToFront();
-                lblModernTitle.BringToFront();
-                lblModernSubtitle.BringToFront();
+                lblModernTitle.Text = isArabic ? "سجل حضور الموظفين" : "Master Attendance Sheet";
+                lblModernTitle.RightToLeft = isArabic ? RightToLeft.Yes : RightToLeft.No;
+                lblModernTitle.TextAlign = isArabic ? ContentAlignment.MiddleRight : ContentAlignment.MiddleLeft;
             }
-            finally
+
+            if (lblModernSubtitle != null)
             {
-                pnlModernHeader.ResumeLayout(true);
+                lblModernSubtitle.Text = isArabic
+                    ? "استيراد ومراجعة وإدارة سجلات حضور الموظفين"
+                    : "Import, review and manage employee attendance records.";
+                lblModernSubtitle.RightToLeft = isArabic ? RightToLeft.Yes : RightToLeft.No;
+                lblModernSubtitle.TextAlign = isArabic ? ContentAlignment.MiddleRight : ContentAlignment.MiddleLeft;
+            }
+        }
+
+        private void MasterAttendanceSheet_Shown(object sender, EventArgs e)
+        {
+            // The Shown event runs after the designer and child panels have completed
+            // their initial layout, so the custom header is visible from first display.
+            RestoreAttendanceHeader();
+
+            // Run once more at the end of the current UI message to override any
+            // initial z-order changes made while the form was being displayed.
+            if (!IsDisposed && IsHandleCreated)
+            {
+                BeginInvoke((MethodInvoker)(() =>
+                {
+                    if (!IsDisposed)
+                        RestoreAttendanceHeader();
+                }));
             }
         }
 
@@ -409,22 +305,29 @@ namespace YamyProject
                     StringComparison.OrdinalIgnoreCase);
 
             ApplyModernHeaderLanguage(isArabic);
+            ConfigureAttendanceClosingHeader(isArabic);
         }
         private void btnBrowse_Click(object sender, EventArgs e)
         {
             panel5.Visible = false;
             pnlData.Visible = true;
             pnlAddData.Visible = false;
+
+            // Showing the upload/data panel can cover the custom title bar.
+            // Reassert the header after changing panel visibility.
+            RestoreAttendanceHeader();
+
             dgvAttendance.DataSource = null;
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
-                openFileDialog.Filter = "Excel Files (*.xlsx)|*.xlsx";
-                openFileDialog.Title = "Select Excel File";
+                openFileDialog.Filter = L("Excel Files (*.xlsx)|*.xlsx", "ملفات Excel (*.xlsx)|*.xlsx");
+                openFileDialog.Title = L("Select Excel File", "اختر ملف Excel");
 
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     string filePath = openFileDialog.FileName;
                     LoadExcelSheets(filePath);
+                    RestoreAttendanceHeader();
                     if (dgvAttendance.Rows.Count == 0)
                         isAllDataSucceed = false;
                     else if (!chkCorrectDataForEmpNameEmpCode())
@@ -440,7 +343,7 @@ namespace YamyProject
         {
             if (!File.Exists(filePath))
             {
-                MessageBox.Show("The selected file does not exist.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(L("The selected file does not exist.", "الملف المحدد غير موجود."), L("Error", "خطأ"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -494,16 +397,17 @@ namespace YamyProject
                         if (dgvAttendance.Rows.Count == 0)
                             return;
                         pnlData.Visible = true;
+                        RestoreAttendanceHeader();
                         lblCode.Text = dgvAttendance.Rows[0].Cells[0].Value.ToString();
                         lblName.Text = dgvAttendance.Rows[0].Cells[1].Value.ToString();
-                       // LocalizationManager.LocalizeDataGridViewHeaders(dgvAttendance);
+                        LocalizationManager.LocalizeDataGridViewHeaders(dgvAttendance);
                     }
                 }
 
                 if (cmbSheet.Items.Count > 0)
                     cmbSheet.SelectedIndex = 0;
                 else
-                    MessageBox.Show("No sheets found in the Excel file.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show(L("No sheets found in the Excel file.", "لم يتم العثور على أوراق في ملف Excel."), L("Warning", "تنبيه"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
         private void RemoveEmptyColumns(DataTable dt)
@@ -553,7 +457,7 @@ namespace YamyProject
             if (!allDaysIncluded)
             {
                 var missingDays = expectedDays.Except(daysInDgv);
-                MessageBox.Show($"Missing days for {month}/{year}: {string.Join(", ", missingDays)}");
+                MessageBox.Show(L($"Missing days for {month}/{year}: {string.Join(", ", missingDays)}", $"الأيام غير الموجودة للشهر {month}/{year}: {string.Join(", ", missingDays)}"));
                 return false;
             }
             return true;
@@ -566,7 +470,7 @@ namespace YamyProject
         {
             if (!isAllDataSucceed)
             {
-                MessageBox.Show("Check all required data first.");
+                MessageBox.Show(L("Check all required data first.", "يرجى التحقق من جميع البيانات المطلوبة أولاً."));
                 return;
             }
 
@@ -576,11 +480,11 @@ namespace YamyProject
             try
             {
                 SavePayrollMonth();
-                MessageBox.Show("Payroll saved successfully.");
+                MessageBox.Show(L("Payroll saved successfully.", "تم حفظ مسير الرواتب بنجاح."));
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(IsArabicLanguage() ? "حدث خطأ أثناء تنفيذ العملية." : ex.Message);
             }
         }
 
@@ -916,7 +820,7 @@ namespace YamyProject
         {
             if (!isAllDataSucceed)
             {
-                MessageBox.Show("Check All Data Required First...");
+                MessageBox.Show(L("Check All Data Required First...", "يرجى التحقق من جميع البيانات المطلوبة أولاً..."));
                 return;
             }
             using (MySqlDataReader reader = ClinicDatabase.ExecuteReader("select * from tbl_attendancesheet where code = @code and WorkDate=@date",
@@ -924,7 +828,7 @@ namespace YamyProject
                                              ClinicDatabase.CreateParameterNew("date", DateTime.Parse(dgvAttendance.Rows[0].Cells[2].Value.ToString()).ToString("yyyy-MM-dd"))))
                 if (reader.Read())
                 {
-                    MessageBox.Show("Employee Month already saved before");
+                    MessageBox.Show(L("Employee Month already saved before", "تم حفظ بيانات الموظف لهذا الشهر مسبقاً."));
                     return;
                 }
             for (int i = 0; i < dgvAttendance.Rows.Count; i++)
@@ -932,14 +836,14 @@ namespace YamyProject
 
                 if ((dgvAttendance.Rows[i].Cells["time in"].Value.ToString() == "" || dgvAttendance.Rows[i].Cells["time out"].Value.ToString() == "") && (dgvAttendance.Rows[i].Cells["status"].Value.ToString() == "p"))
                 {
-                    MessageBox.Show("Date " + dgvAttendance.Rows[i].Cells["work date"].Value.ToString() + " Does Not Contain Time, Please Check It.");
+                    MessageBox.Show(L("Date ", "التاريخ ") + dgvAttendance.Rows[i].Cells["work date"].Value.ToString() + L(" Does Not Contain Time, Please Check It.", " لا يحتوي على وقت. يرجى التحقق منه."));
                     return;
                 }
             }
             SaveMultipleAttendanceRows();
             SaveLSOld();
             SaveEOSOld();
-            MessageBox.Show("Employee Month Saved Successfully");
+            MessageBox.Show(L("Employee Month Saved Successfully", "تم حفظ بيانات الموظف لهذا الشهر بنجاح."));
         }
         private void SaveMultipleAttendanceRows()
         {
@@ -951,8 +855,8 @@ namespace YamyProject
                      ClinicDatabase.CreateParameterNew("@date", endOfMonthDate),
                      ClinicDatabase.CreateParameterNew("@created_by", -1),
                      ClinicDatabase.CreateParameterNew("@created_date", DateTime.Now.Date)).ToString());
-                     DateTime parseDateR = DateTime.Parse(dgvAttendance.Rows[0].Cells["Work Date"].Value.ToString());
-                     string refr = (parseDateR.Year % 100) + $"{parseDateR.Month:D2}";
+            DateTime parseDateR = DateTime.Parse(dgvAttendance.Rows[0].Cells["Work Date"].Value.ToString());
+            string refr = (parseDateR.Year % 100) + $"{parseDateR.Month:D2}";
             ////Utilities.LogAudit(-1, "Save Attendance", "Attendance", (int)attendanceSalaryId, "Saved Attendance for Employee: " + dgvAttendance.Rows[0].Cells["Emp ID"].Value.ToString() + " for Month: " + parseDateR.ToString("MMMM yyyy"));
             int _month = parseDateR.Month;
             int _year = parseDateR.Year;
@@ -982,19 +886,19 @@ namespace YamyProject
                 }
 
             decimal totalSalary = 0;
-            using(MySqlDataReader reader = ClinicDatabase.ExecuteReader(@"SELECT BasicSalary, HousingAllowance, TransportationAllowance, Other, WorkDays,contractIssueDate FROM tbl_employee WHERE code = @code",
+            using (MySqlDataReader reader = ClinicDatabase.ExecuteReader(@"SELECT BasicSalary, HousingAllowance, TransportationAllowance, Other, WorkDays,contractIssueDate FROM tbl_employee WHERE code = @code",
                       ClinicDatabase.CreateParameterNew("@code", dgvAttendance.Rows[0].Cells["Emp ID"].Value ?? 0)))
-            if (reader.Read())
-            {
-                workDays = int.Parse(reader["workDays"].ToString());
-                basicSalary = Convert.ToDecimal(reader["BasicSalary"]);
-                housingAllowance = Convert.ToDecimal(reader["HousingAllowance"]);
-                transportationAllowance = Convert.ToDecimal(reader["TransportationAllowance"]);
-                otherAllowance = Convert.ToDecimal(reader["Other"]);
-                ContractIssuse = DateTime.Parse(reader["contractIssueDate"].ToString());
-                totalSalary = basicSalary + housingAllowance + transportationAllowance + otherAllowance;
-                //dailyDeduction = Math.Round(totalSalary / Convert.ToInt32(reader["WorkDays"]), 3);
-            }
+                if (reader.Read())
+                {
+                    workDays = int.Parse(reader["workDays"].ToString());
+                    basicSalary = Convert.ToDecimal(reader["BasicSalary"]);
+                    housingAllowance = Convert.ToDecimal(reader["HousingAllowance"]);
+                    transportationAllowance = Convert.ToDecimal(reader["TransportationAllowance"]);
+                    otherAllowance = Convert.ToDecimal(reader["Other"]);
+                    ContractIssuse = DateTime.Parse(reader["contractIssueDate"].ToString());
+                    totalSalary = basicSalary + housingAllowance + transportationAllowance + otherAllowance;
+                    //dailyDeduction = Math.Round(totalSalary / Convert.ToInt32(reader["WorkDays"]), 3);
+                }
             int totalPrecentDays = 0;
             int workingDays = dgvAttendance.Rows
                                         .Cast<DataGridViewRow>()
@@ -1012,9 +916,9 @@ namespace YamyProject
                 else if (row.Cells["Status"].Value.ToString().ToUpper() == "P")
                 {
                     // check with settings
-                    
-                        string timeIn = TimeSpan.Parse(row.Cells["Time In"].Value.ToString() + ":00").ToString();
-                        string query = @"SELECT (SELECT latearrivaldeduction FROM tbl_setting_deduction_config ) deduction
+
+                    string timeIn = TimeSpan.Parse(row.Cells["Time In"].Value.ToString() + ":00").ToString();
+                    string query = @"SELECT (SELECT latearrivaldeduction FROM tbl_setting_deduction_config ) deduction
                                         FROM tbl_setting_attendance 
                                         WHERE DATE >= @date AND DATE <= @date AND state=1;";
                     using (MySqlDataReader settingsReader = ClinicDatabase.ExecuteReader(query, ClinicDatabase.CreateParameterNew("date", workDate)))
@@ -1057,12 +961,12 @@ namespace YamyProject
                 ClinicDatabase.CreateParameterNew("@DayOfWeek", row.Cells["Day Of Week"].Value.ToString()),
                 ClinicDatabase.CreateParameterNew("@Status", row.Cells["Status"].Value ?? ""),
                 ClinicDatabase.CreateParameterNew("@Reference", refr),
-                ClinicDatabase.CreateParameterNew("@Ref_Code",ref_no.ToString())
+                ClinicDatabase.CreateParameterNew("@Ref_Code", ref_no.ToString())
             ));
             }
             string dateValue = dgvAttendance.Rows[0].Cells["Work Date"].Value.ToString();
             DateTime parseDate = DateTime.Parse(dateValue);
-           
+
 
             var empId = dgvAttendance.Rows[0].Cells["Emp ID"].Value ?? DBNull.Value;
             int month = parseDate.Month;
@@ -1075,7 +979,7 @@ namespace YamyProject
             ClinicDatabase.CreateParameterNew("@month", month));
 
             int ss_no;
-            if (result != null && result != DBNull.Value && Convert.ToInt32(result)>0)
+            if (result != null && result != DBNull.Value && Convert.ToInt32(result) > 0)
             {
                 ss_no = Convert.ToInt32(result);
             }
@@ -1105,7 +1009,7 @@ namespace YamyProject
                     ClinicDatabase.CreateParameterNew("@created_date", DateTime.Now.Date)
                     );
 
-            insertJournals(netSalary,id);
+            insertJournals(netSalary, id);
             ////Utilities.LogAudit(-1, "Save Attendance Salary", "Attendance Salary", (int)attendanceSalaryId, "Saved Attendance Salary for Employee: " + dgvAttendance.Rows[0].Cells["Emp ID"].Value.ToString() + " for Month: " + parseDate.ToString("MMMM yyyy"));
         }
         private void MasterAttendanceSheet_Load(object sender, EventArgs e)
@@ -1133,6 +1037,33 @@ namespace YamyProject
                     StringComparison.OrdinalIgnoreCase);
 
             ApplyLanguageLayout(isArabic);
+            ConfigureAttendanceClosingHeader(isArabic);
+            RestoreAttendanceHeader();
+
+            // Ensure the top toolbar buttons remain visible after initial layout.
+            foreach (Control button in new Control[]
+            {
+                btnAttendanceReport,
+                btnAddManualAttendance,
+                DownloadExcelSheet
+            })
+            {
+                if (button != null && !button.IsDisposed)
+                {
+                    button.Visible = true;
+                    button.BringToFront();
+                }
+            }
+
+            // Reassert after the remaining Load/layout handlers have completed.
+            if (IsHandleCreated && !IsDisposed)
+            {
+                BeginInvoke((MethodInvoker)(() =>
+                {
+                    if (!IsDisposed)
+                        RestoreAttendanceHeader();
+                }));
+            }
         }
 
         private void guna2NumericUpDown1_ValueChanged(object sender, EventArgs e)
@@ -1179,7 +1110,7 @@ namespace YamyProject
 
         private void cmbmonth_SelectedIndexChanged(object sender, EventArgs e)
         {
-        
+
         }
 
         private void btnAddManualAttendance_Click(object sender, EventArgs e)
@@ -1233,7 +1164,7 @@ namespace YamyProject
             dgvAttendance.Columns.Add("Day Of Week", "Day of Week");
             dgvAttendance.Columns.Add("Status", "Status");
 
-           // LocalizationManager.LocalizeDataGridViewHeaders(dgvAttendance);
+            LocalizationManager.LocalizeDataGridViewHeaders(dgvAttendance);
             string selectedMonth = cmbMonths.SelectedItem.ToString();
             int monthNumber = DateTime.ParseExact(selectedMonth.Trim(), "MMMM", new CultureInfo("en-US")).Month;
             int year = DateTime.Now.Year;
@@ -1242,7 +1173,7 @@ namespace YamyProject
             int daysInMonth = DateTime.DaysInMonth(year, monthNumber);
             string query = @"SELECT id,date,day,timein,timeout FROM tbl_setting_attendance 
                                         WHERE DATE >= @date AND DATE <= @date AND state=1 order by id DESC limit 1;";
-            string actualTimeIn= "08:00", actualTimeOut= "18:00";
+            string actualTimeIn = "08:00", actualTimeOut = "18:00";
             using (MySqlDataReader settingsReader = ClinicDatabase.ExecuteReader(query, ClinicDatabase.CreateParameterNew("date", startDate)))
                 if (settingsReader.Read())
                 {
@@ -1287,9 +1218,9 @@ namespace YamyProject
         }
 
         public void GetData()
-        {   
-            string qry = @"SELECT WorkDate,TimeIn,TimeOut,DayOfWeek,Status FROM tbl_attendancesheet WHERE  MONTHNAME(WorkDate)  = '" + cmbmonth.Text + "' and YEAR(WorkDate) = '"+ guna2NumericUpDown1.Value.ToString() +"' and code = " + code + "  ";
-  
+        {
+            string qry = @"SELECT WorkDate,TimeIn,TimeOut,DayOfWeek,Status FROM tbl_attendancesheet WHERE  MONTHNAME(WorkDate)  = '" + cmbmonth.Text + "' and YEAR(WorkDate) = '" + guna2NumericUpDown1.Value.ToString() + "' and code = " + code + "  ";
+
             ListBox lb = new ListBox();
             lb.Items.Add(dgvdate);
             lb.Items.Add(dgvtimeIn);
@@ -1298,7 +1229,7 @@ namespace YamyProject
             lb.Items.Add(dgvStatus);
 
             DataTable dt = ClinicDatabase.ExecuteDataTable(qry);
-            if(dt!=null)
+            if (dt != null)
                 LoadDataGridView(dt, dgvAttendance, lb);
 
         }
@@ -1446,12 +1377,12 @@ namespace YamyProject
                     return 0;
         }
 
-        void insertJournals(decimal netSalary,int id)
+        void insertJournals(decimal netSalary, int id)
         {
             int accruedSalaryAccountId = GetAccountIdByCategory("Accrued Salaries");
-            if(accruedSalaryAccountId == 0)
+            if (accruedSalaryAccountId == 0)
             {
-                MessageBox.Show("No Default Account Set for 'Accrued Salaries' Please Add It", "Error", MessageBoxButtons.OK);
+                MessageBox.Show(L("No Default Account Set for 'Accrued Salaries' Please Add It", "لم يتم تعيين الحساب الافتراضي للرواتب المستحقة. يرجى إضافته."), L("Error", "خطأ"), MessageBoxButtons.OK);
                 return;
             }
 
@@ -1472,10 +1403,10 @@ namespace YamyProject
             string debitAccountId = accruedSalaryAccountId.ToString();
 
             CommonInsert.addTransactionEntry(
-            DateTime.Now.Date, empaccId, netSalary.ToString(), "0", id.ToString(), employeeId, description, "Salary", voucherNote, -1, DateTime.Now.Date,"");
+            DateTime.Now.Date, empaccId, netSalary.ToString(), "0", id.ToString(), employeeId, description, "Salary", voucherNote, -1, DateTime.Now.Date, "");
 
             CommonInsert.addTransactionEntry(
-            DateTime.Now.Date, debitAccountId, "0", netSalary.ToString(), id.ToString(), "0", description, "Salary", voucherNote, -1, DateTime.Now.Date,"");
+            DateTime.Now.Date, debitAccountId, "0", netSalary.ToString(), id.ToString(), "0", description, "Salary", voucherNote, -1, DateTime.Now.Date, "");
         }
         private bool chkCorrectDataForEmpNameEmpCode()
         {
@@ -1489,17 +1420,17 @@ namespace YamyProject
                 {
                     if (row.Cells[0].Value?.ToString() != empCode)
                     {
-                        MessageBox.Show("Employee Code has Different Values in Column 0 Please Correct it and Re Upload");
+                        MessageBox.Show(L("Employee Code has Different Values in Column 0 Please Correct it and Re Upload", "رمز الموظف يحتوي على قيم مختلفة في العمود 0. يرجى تصحيحها وإعادة الرفع."));
                         return false;
                     }
                     if (row.Cells[1].Value?.ToString().ToLower() != empName.ToLower())
                     {
-                        MessageBox.Show("Employee Name has Different Values in Column 1 Please Correct it and Re Upload");
+                        MessageBox.Show(L("Employee Name has Different Values in Column 1 Please Correct it and Re Upload", "اسم الموظف يحتوي على قيم مختلفة في العمود 1. يرجى تصحيحها وإعادة الرفع."));
                         return false;
                     }
                     if (DateTime.Parse(row.Cells[2].Value?.ToString()).Month != month)
                     {
-                        MessageBox.Show("Please Upload Only One Month.");
+                        MessageBox.Show(L("Please Upload Only One Month.", "يرجى رفع بيانات شهر واحد فقط."));
                         return false;
                     }
                 }
@@ -1519,13 +1450,13 @@ namespace YamyProject
 
                     if (dbName != excelName)
                     {
-                        MessageBox.Show($"Emp Name Does Not Belong To This Code. (DB: '{dbName}', Excel: '{excelName}')");
+                        MessageBox.Show(L($"Emp Name Does Not Belong To This Code. (DB: '{dbName}', Excel: '{excelName}')", $"اسم الموظف لا يتطابق مع هذا الرمز. (قاعدة البيانات: '{dbName}'، ملف Excel: '{excelName}')"));
                         return false;
                     }
                 }
                 else
                 {
-                    MessageBox.Show("No Data For this Code");
+                    MessageBox.Show(L("No Data For this Code", "لا توجد بيانات لهذا الرمز."));
                     return false;
                 }
             return true;
@@ -1555,17 +1486,17 @@ namespace YamyProject
                     worksheet.Cells[1, 6].Value = "Day of Week";
                     worksheet.Cells[1, 7].Value = "Status";
                     File.WriteAllBytes(filePath, package.GetAsByteArray());
-                    MessageBox.Show("Excel file created successfully at: " + filePath, "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show(L("Excel file created successfully at: ", "تم إنشاء ملف Excel بنجاح في: ") + filePath, L("Success", "نجاح"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
         }
-       
+
         private void cmbSheet_SelectedIndexChanged(object sender, EventArgs e)
         {
             isAllDataSucceed = true;
             string selectedSheet = cmbSheet.SelectedItem.ToString();
 
-                dgvAttendance.DataSource = loadedExcelTables[selectedSheet];
+            dgvAttendance.DataSource = loadedExcelTables[selectedSheet];
             if (dgvAttendance.Rows.Count == 0)
                 isAllDataSucceed = false;
             else if (!chkCorrectDataForEmpNameEmpCode())
@@ -1575,12 +1506,13 @@ namespace YamyProject
             else if (!CheckAllDaysIncluded(dgvAttendance, DateTime.Parse(dgvAttendance.Rows[0].Cells[2].Value.ToString()).Year, DateTime.Parse(dgvAttendance.Rows[0].Cells[2].Value.ToString()).Month))
                 isAllDataSucceed = false;
             if (dgvAttendance.Rows.Count > 0)
-                {
-                    pnlData.Visible = true;
-                    lblCode.Text = dgvAttendance.Rows[0].Cells[0].Value?.ToString() ?? "";
-                    lblName.Text = dgvAttendance.Rows[0].Cells[1].Value?.ToString() ?? "";
+            {
+                pnlData.Visible = true;
+                RestoreAttendanceHeader();
+                lblCode.Text = dgvAttendance.Rows[0].Cells[0].Value?.ToString() ?? "";
+                lblName.Text = dgvAttendance.Rows[0].Cells[1].Value?.ToString() ?? "";
             }
-           // LocalizationManager.LocalizeDataGridViewHeaders(dgvAttendance);
+            LocalizationManager.LocalizeDataGridViewHeaders(dgvAttendance);
         }
     }
 }

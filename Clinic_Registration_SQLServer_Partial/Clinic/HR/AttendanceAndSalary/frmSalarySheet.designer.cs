@@ -577,7 +577,7 @@
             this.lblFooterInfo.Font = new System.Drawing.Font("Segoe UI", 8.5F);
             this.lblFooterInfo.ForeColor = System.Drawing.Color.FromArgb(70, 100, 160);
             this.lblFooterInfo.Location = new System.Drawing.Point(42, 28);
-            this.lblFooterInfo.Text = "ⓘ   Salary sheet helps track employee payroll, allowances, deductions and net salary.";
+            //this.lblFooterInfo.Text = "ⓘ   Salary sheet helps track employee payroll, allowances, deductions and net salary.";
 
             this.btnSave.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
             this.btnSave.BorderRadius = 8;
