@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-//using YamyProject.Localization;
+using YamyProject.Localization;
 using System.Threading;
 using System.Threading.Tasks;
 using static System.Runtime.CompilerServices.RuntimeHelpers;
@@ -44,7 +44,7 @@ namespace YamyProject
 
             InitializeComponent();
 
-           // LocalizationManager.LocalizeForm(this);
+            LocalizationManager.LocalizeForm(this);
 
             empDept = (sender, args) =>
                 BindCombos.PopulateDepartments(cmbDepartments);
@@ -356,7 +356,7 @@ namespace YamyProject
         }
         private void btnClose_Click(object sender, EventArgs e)
         {
-            frmMain.openChildForm(new MasterEmployee());
+            this.Close();
         }
 
         private async void frmViewEmployee_Load(object sender, EventArgs e)
