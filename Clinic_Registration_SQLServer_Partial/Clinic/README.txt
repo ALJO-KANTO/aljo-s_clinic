@@ -1,1 +1,4 @@
-Replace the matching frmMain.cs and frmMain.ModernDesign.cs files after backing up your originals. Reports > Accounts includes Account Ledger (frmAccountLedger), Cost Center Summary (frmCostCenterSummery), and Trial Balance (MasterTrialBalance). Uses existing reflection-based form navigation. Admin-only report submenu; Cashier retains existing Reports entry. No designer or report forms modified. Forms must be present and have supported constructors. Not compiled against full solution.
+Replace the two corresponding files in your project after backing them up.
+Added Profit and Loss under Reports > Accounts, and Purchase by Vendor Summary under Reports > Purchase.
+Form classes: ProfitandLossReport and frmPurchaseByVendorSummery.
+Not compiled against your full solution.
