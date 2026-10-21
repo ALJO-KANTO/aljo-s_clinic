@@ -1,4 +1,4 @@
-
+﻿
 using Clinic.Appointment.AppointmentsType;
 using Clinic.Doctor;
 using Clinic.Login;
@@ -53,6 +53,7 @@ namespace Clinic
             if (LicenseManager.UsageMode != LicenseUsageMode.Designtime)
             {
                 BuildModernDashboardDesign();
+                RemoveProfitAndLossDetailMenu();
                 BindMigratedAdminSubmenus();
                 AddXRayDashboardButton();
                 AddTranslateButton();
@@ -1079,7 +1080,36 @@ namespace Clinic
                 }
             }
         }
+        private void RemoveProfitAndLossDetailMenu()
+        {
+            if (modernSidebar == null)
+                return;
 
+            foreach (Control container in modernSidebar.Controls)
+            {
+                foreach (Control menu in container.Controls)
+                {
+                    RemoveProfitAndLossDetailRecursive(menu);
+                }
+            }
+        }
+
+        private void RemoveProfitAndLossDetailRecursive(Control parent)
+        {
+            foreach (Control control in parent.Controls.Cast<Control>().ToList())
+            {
+                if (control is Button button &&
+                    (button.Tag as string == "Profit and Loss Detail" ||
+                     button.AccessibleDescription == "ProfitandLossDetailReport"))
+                {
+                    parent.Controls.Remove(button);
+                    button.Dispose();
+                    continue;
+                }
+
+                RemoveProfitAndLossDetailRecursive(control);
+            }
+        }
         private void OpenMigratedAdminForm(string className)
         {
             OpenIfAuthorized(() =>
@@ -1121,8 +1151,22 @@ namespace Clinic
 
                     Type formType = matches[0];
 
-                    // Profit and Loss requires a report type.
-                    if (formType.Name == "ProfitandLossReport")
+                    // Profit and Loss Detail requires report type and date parameters.
+                    if (formType.Name == "ProfitandLossDetailReport")
+                    {
+                        using (Form report = (Form)Activator.CreateInstance(
+                            formType, new object[] { "detail", "", "" }))
+                        {
+                            report.StartPosition = FormStartPosition.CenterParent;
+                            report.ShowDialog(this);
+                        }
+
+                        return;
+                    }
+
+                    // Profit and Loss and Balance Sheet require a report type.
+                    if (formType.Name == "ProfitandLossReport" ||
+                        formType.Name == "frmBalanceSheetReport")
                     {
                         using (Form report = (Form)Activator.CreateInstance(
                             formType, new object[] { "standard" }))

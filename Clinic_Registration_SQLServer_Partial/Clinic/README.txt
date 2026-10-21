@@ -1,3 +1,6 @@
-Replace the corresponding two existing partial frmMain files (back up originals).
-Report groups follow screenshot folders. Existing report opening and Admin authorization are preserved.
-Class names are inferred from Solution Explorer filenames. Verify the actual class declarations, especially PettyCash clipped names, frmCostCenterSummery, frmPurchaseByVendorSummery and frmVendorSummary. Some detail reports may require constructor arguments; the existing form-opening routine will show a constructor warning until those are supplied.
+Balance Sheet navigation fix
+============================
+Replace frmMain.cs with this updated file. frmMain.ModernDesign.cs is included unchanged for convenience.
+The existing OpenMigratedAdminForm method now opens frmBalanceSheetReport("standard"), just as it already did for ProfitandLossReport.
+No report calculation code has been changed.
+The fix has not been compiled against your full Visual Studio solution.
