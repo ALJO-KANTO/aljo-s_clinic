@@ -1,4 +1,4 @@
-﻿
+
 using Clinic.Appointment.AppointmentsType;
 using Clinic.Doctor;
 using Clinic.Login;
@@ -734,7 +734,7 @@ namespace Clinic
                     string translated = TranslateAdminNav(caption);
                     string symbol = caption == "Accounts" ? "▤" :
                         caption == "Vendors" ? "🛒" :
-                        caption == "Inventory Doc" ? "⬡" : "♙";
+                        caption == "Inventory" ? "⬡" : "♙";
                     header.Text = "   " + symbol + "    " + translated + "  ▾";
                     header.TextAlign = isArabic ? ContentAlignment.MiddleRight : ContentAlignment.MiddleLeft;
                     header.RightToLeft = isArabic ? RightToLeft.Yes : RightToLeft.No;
@@ -773,9 +773,11 @@ namespace Clinic
                 case "Receipts": return "الإيصالات";
                 case "Purchase Invoice": return "فاتورة الشراء";
                 case "Payment Voucher": return "سند صرف";
-                case "Inventory Doc": return "مستندات المخزون";
+                case "Inventory": return "المخزون";
                 case "Inventory Items": return "أصناف المخزون";
                 case "Add New Item": return "إضافة صنف جديد";
+                case "Item Category": return "فئات الأصناف";
+                case "Item Unit": return "وحدات الأصناف";
                 case "Inventory Center": return "مركز المخزون";
                 case "Stock": return "المخزون";
                 case "HR": return "الموارد البشرية";
@@ -1001,15 +1003,12 @@ namespace Clinic
                 { "Prepaid", "MasterAdvancePaymentVoucher" },
                 { "Petty Cash List", "MasterPettyCash" },
                 { "Vendor Center", "MasterVendor" },
-                { "Purchases Center", "" }, // No matching migrated form supplied
-                { "Locations", "frmInventoryLocations" },
-                { "Receipts", "" }, // No matching migrated form supplied
-                { "Purchase Invoice", "" }, // No matching migrated form supplied
+                { "Purchases Center", "MasterPurchases" },
                 { "Payment Voucher", "MasterPaymentVoucher" },
                 { "Inventory Items", "MasterInventory" },
                 { "Add New Item", "frmViewItem" },
-                { "Inventory Center", "MasterInventory" },
-                { "Stock", "MasterStockManagement" },
+                { "Item Category", "MasterItemCategory" },
+                { "Item Unit", "MasterItemUnit" },
                 { "Human Resource", "MasterEmployee" },
                 { "Attendance", "MasterAttendanceSheet" },
                 { "Salary Sheet", "frmSalarySheet" },
