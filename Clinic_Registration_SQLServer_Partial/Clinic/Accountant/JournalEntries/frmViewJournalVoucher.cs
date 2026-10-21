@@ -585,7 +585,7 @@ namespace YamyProject
                 return;
             }
 
-            string query = @"SELECT code, name FROM tbl_coa_level_4 
+            string query = @"SELECT id, code, name FROM tbl_coa_level_4 
                      WHERE code LIKE @search OR name LIKE @search LIMIT 20";
             DataTable dt = ClinicDatabase.ExecuteDataTable(query, ClinicDatabase.CreateParameterNew("@search", "%" + input + "%"));
 
@@ -594,6 +594,7 @@ namespace YamyProject
             {
                 lstAccountSuggestions.Items.Add(new ItemSuggestion
                 {
+                    Id = Convert.ToInt32(row["id"]),
                     Code = row["code"].ToString(),
                     Name = row["name"].ToString()
                 });
