@@ -309,7 +309,7 @@ public static class Utilities
 
     public static void LogAudit(object userId, string v1, string v2, int v3, string v4)
     {
-        throw new NotImplementedException();
+        string message = "insert system log";
     }
 
     //AreDefaultAccountsSet
