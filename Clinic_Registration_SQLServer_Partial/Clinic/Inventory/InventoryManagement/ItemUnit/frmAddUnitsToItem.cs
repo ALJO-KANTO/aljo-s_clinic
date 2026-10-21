@@ -1,547 +1,218 @@
-﻿using System;
+﻿using Clinic;
+using Clinic_DataAccess;
+using DocumentFormat.OpenXml.Office2010.Excel;
+using MySql.Data.MySqlClient;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
-//using YamyProject.DAL;
-//using YamyProject.Localization;
+using YamyProject.DAL;
+using YamyProject.Localization;
 
 namespace YamyProject
 {
     public partial class frmAddUnitsToItem : Form
     {
-        private int id;
-        private frmViewItem _item;
         private EventHandler itemUnitUpdatedHandler;
 
-        public frmAddUnitsToItem(
-            frmViewItem item,
-            int id = 0)
+        public List<int> unitIds = new List<int>();
+        public List<decimal> unitFactors = new List<decimal>();
+        public List<string> unitNames = new List<string>();
+        private int itemId;
+        private string itemCode;
+        private string itemName;
+        private int defaultUnitId;
+        private string defaultUnitName;
+
+        public frmAddUnitsToItem(int _itemId = 0, string _itemCode = "", string _itemName = "", int _defaultUnitId = 0, string _defaultUnitName = "")
         {
             InitializeComponent();
-
-           // LocalizationManager.LocalizeForm(this);
-
-            this._item = item;
-            this.id = id;
-
-            itemUnitUpdatedHandler =
-                delegate (object sender, EventArgs args)
-                {
-                    BindCombos.PopulateItemUnit(cmbUnit);
-                };
-
-            //.ItemUnit +=
-                ///itemUnitUpdatedHandler;
-
-            headerUC1.FormText =
-                id == 0
-                    ? "Add Item UOM"
-                    : "Edit Item UOM";
+            LocalizationManager.LocalizeForm(this);
+            itemUnitUpdatedHandler = (sender, args) => BindCombos.PopulateItemUnit(cmbUnit);
+            EventHub.ItemUnit += itemUnitUpdatedHandler;
+            this.itemId = _itemId;
+            this.itemCode = _itemCode;
+            this.itemName = _itemName;
+            this.defaultUnitId = _defaultUnitId;
+            this.defaultUnitName = _defaultUnitName;
+            //headerUC1.FormText = id == 0 ? "Add Item UOM" : "Edit Item UOM";
         }
 
-
-        private void frmAddUnitsToItem_FormClosing(
-            object sender,
-            FormClosingEventArgs e)
+        private void frmAddUnitsToItem_FormClosing(object sender, FormClosingEventArgs e)
         {
-            try
-            {
-                if (itemUnitUpdatedHandler != null)
-                {
-                    //.ItemUnit -=
-                        //itemUnitUpdatedHandler;
-                }
-            }
-            catch
-            {
-                // Do not block closing the form.
-            }
+            EventHub.ItemUnit -= itemUnitUpdatedHandler;
         }
 
-
-        private void btnClose_Click(
-            object sender,
-            EventArgs e)
+        private void btnClose_Click(object sender, EventArgs e)
         {
-            Close();
+            this.Close();
         }
 
-
-        private void frmAddUnitsToItem_Load(
-            object sender,
-            EventArgs e)
+        private void frmAddUnitsToItem_Load(object sender, EventArgs e)
         {
-            try
+            BindCombos.PopulateItemUnit(cmbUnit);
+            if (itemId != 0)
             {
-                //AppTheme.DefaultFont(
-                    //dgvLvl1);
-
-                BindCombos.PopulateItemUnit(
-                    cmbUnit);
-
-
-                if (_item == null)
+                using (MySqlDataReader reader = ClinicDatabase.ExecuteReader("select tbl_items_unit.* , tbl_unit.name from tbl_items_unit  inner join tbl_unit on tbl_items_unit.unit_id = tbl_unit.id where item_id =@id", ClinicDatabase.CreateParameterNew("id", itemId)))
                 {
-                    MessageBox.Show(
-                        "The Item form could not be found.",
-                        "Item Unit",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
-
-                    return;
-                }
-
-
-                if (id != 0)
-                {
-                    dgvLvl1.Rows.Clear();
-
-                    int count =
-                        Math.Min(
-                            _item.unitIds.Count,
-                            Math.Min(
-                                _item.unitNames.Count,
-                                _item.unitFactors.Count));
-
-
-                    for (int i = 0; i < count; i++)
+                    while (reader.Read())
                     {
-                        dgvLvl1.Rows.Add(
-                            _item.unitIds[i],
-                            _item.unitNames[i],
-                            _item.unitFactors[i]);
+                        if (int.Parse(reader["unit_id"].ToString()) == defaultUnitId)
+                            continue;
+                        unitIds.Add(int.Parse(reader["unit_id"].ToString()));
+                        unitFactors.Add(decimal.Parse(reader["factor"].ToString()));
+                        unitNames.Add(reader["name"].ToString());
+                    }
+                    for (int i = 0; i < unitIds.Count; i++)
+                    {
+                        dgvLvl1.Rows.Add(unitIds[i].ToString(), unitNames[i].ToString(), unitFactors[i].ToString());
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    "Item units could not be loaded.\n\n" +
-                    GetDeepestMessage(ex),
-                    "Item Unit",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-            }
         }
 
-
-        private void btnSave_Click(
-            object sender,
-            EventArgs e)
+        private void btnSave_Click(object sender, EventArgs e)
         {
-            try
-            {
-                if (_item == null)
-                {
-                    MessageBox.Show(
-                        "The Item form is not available.",
-                        "Item Unit",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
+            UpdateItemUnitLists(unitIds, unitFactors, unitNames);
+            ClinicDatabase.ExecuteNonQuery("delete from tbl_items_unit where item_id=@id", ClinicDatabase.CreateParameterNew("id", itemId));
+            insertItemUnits(itemId);
 
-                    return;
-                }
-
-
-                _item.unitIds.Clear();
-                _item.unitFactors.Clear();
-                _item.unitNames.Clear();
-
-
-                UpdateItemUnitLists(
-                    _item.unitIds,
-                    _item.unitFactors,
-                    _item.unitNames);
-
-
-                Close();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    "Item units could not be saved.\n\n" +
-                    GetDeepestMessage(ex),
-                    "Item Unit",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-            }
+            this.Close();
         }
+        void insertItemUnits(int id)
+        {
+            ClinicDatabase.ExecuteReader(@"insert into tbl_items_unit (item_id,unit_id,factor) values (@id,@unit_id,@factor)",
+                   ClinicDatabase.CreateParameterNew("id", id),
+                   ClinicDatabase.CreateParameterNew("unit_id", defaultUnitId),
+                   ClinicDatabase.CreateParameterNew("factor", 1));
+            Utilities.LogAudit(clsGlobal.CurrentUser.UserID, "Insert Item Unit", "Item Unit", id, "Inserted Main Unit: " + defaultUnitName + " for Item: " + itemName);
 
+            if (unitFactors != null)
+                for (int i = 0; i < unitFactors.Count; i++)
+                {
+                    ClinicDatabase.ExecuteReader(@"insert into tbl_items_unit (item_id,unit_id,factor) values (@id,@unit_id,@factor)",
+                        ClinicDatabase.CreateParameterNew("id", id),
+                        ClinicDatabase.CreateParameterNew("unit_id", unitIds[i]),
+                        ClinicDatabase.CreateParameterNew("factor", unitFactors[i]));
+                    Utilities.LogAudit(clsGlobal.CurrentUser.UserID, "Insert Item Unit", "Item Unit", id, "Inserted Sub Unit: " + unitNames[i] + " for Item: " + itemName);
+                }
+        }
 
         private void UpdateItemUnitLists(
             List<int> unitIds,
             List<decimal> unitFactors,
             List<string> unitNames)
         {
+            unitIds.Clear();
+            unitFactors.Clear();
+            unitNames.Clear();
+
             foreach (DataGridViewRow row in dgvLvl1.Rows)
             {
                 if (row.IsNewRow)
                     continue;
 
-
-                object unitIdValue =
-                    row.Cells["unitid"].Value;
-
-                object factorValue =
-                    row.Cells["factor"].Value;
-
-                object nameValue =
-                    row.Cells["name"].Value;
-
-
-                if (unitIdValue == null ||
-                    factorValue == null ||
-                    nameValue == null)
-                {
+                if (row.Cells["unitid"].Value == null ||
+                    row.Cells["factor"].Value == null ||
+                    row.Cells["name"].Value == null)
                     continue;
-                }
 
-
-                int unitId;
-
-                decimal factor;
-
-
-                if (!int.TryParse(
-                        unitIdValue.ToString(),
-                        out unitId))
-                {
-                    continue;
-                }
-
-
-                if (!decimal.TryParse(
-                        factorValue.ToString(),
-                        out factor))
-                {
-                    continue;
-                }
-
-
-                unitIds.Add(
-                    unitId);
-
-                unitFactors.Add(
-                    factor);
-
-                unitNames.Add(
-                    nameValue.ToString());
+                unitIds.Add(Convert.ToInt32(row.Cells["unitid"].Value));
+                unitFactors.Add(Convert.ToDecimal(row.Cells["factor"].Value));
+                unitNames.Add(row.Cells["name"].Value.ToString());
             }
         }
 
-
-        private void lnkNewUnit_LinkClicked(
-            object sender,
-            LinkLabelLinkClickedEventArgs e)
+        private void lnkNewUnit_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            try
-            {
-                using (frmViewItemUnit frm =
-                    new frmViewItemUnit())
-                {
-                    frm.ShowDialog(this);
-                }
-
-
-                BindCombos.PopulateItemUnit(
-                    cmbUnit);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    "The Unit page could not be opened.\n\n" +
-                    GetDeepestMessage(ex),
-                    "Item Unit",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-            }
+            new frmViewItemUnit().ShowDialog();
         }
 
-
-        private void btnAdd_Click(
-            object sender,
-            EventArgs e)
+        private void btnAdd_Click(object sender, EventArgs e)
         {
-            try
+            if (cmbUnit.SelectedValue == null || string.IsNullOrWhiteSpace(cmbUnit.Text))
             {
-                if (_item == null)
-                {
-                    MessageBox.Show(
-                        "The Item form is not available.",
-                        "Item Unit",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
-
-                    return;
-                }
-
-
-                if (cmbUnit.SelectedValue == null ||
-                    string.IsNullOrWhiteSpace(
-                        cmbUnit.Text))
-                {
-                    MessageBox.Show(
-                        "Choose Unit First",
-                        "Item Unit",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
-
-                    cmbUnit.Focus();
-
-                    return;
-                }
-
-
-                decimal factor;
-
-
-                if (!decimal.TryParse(
-                        txtFactor.Text,
-                        out factor))
-                {
-                    MessageBox.Show(
-                        "Please enter a valid factor value.",
-                        "Item Unit",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
-
-                    txtFactor.Focus();
-
-                    return;
-                }
-
-
-                if (factor <= 0)
-                {
-                    MessageBox.Show(
-                        "Factor must be greater than zero.",
-                        "Item Unit",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
-
-                    txtFactor.Focus();
-
-                    return;
-                }
-
-
-                string mainUnit =
-                    GetMainUnitName();
-
-                if (string.Equals(
-                        cmbUnit.Text.Trim(),
-                        mainUnit.Trim(),
-                        StringComparison.OrdinalIgnoreCase))
-                {
-                    MessageBox.Show(
-                        "Main Unit Can't Be Added As Sub Unit",
-                        "Item Unit",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
-
-                    return;
-                }
-
-                bool exists =
-                    dgvLvl1.Rows
-                        .Cast<DataGridViewRow>()
-                        .Where(
-                            row =>
-                                !row.IsNewRow)
-                        .Any(
-                            row =>
-                                row.Cells["name"].Value != null &&
-                                string.Equals(
-                                    row.Cells["name"].Value
-                                        .ToString()
-                                        .Trim(),
-                                    cmbUnit.Text.Trim(),
-                                    StringComparison.OrdinalIgnoreCase));
-
-
-                if (exists)
-                {
-                    MessageBox.Show(
-                        "Unit Already Exists",
-                        "Item Unit",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Information);
-
-                    return;
-                }
-
-
-                dgvLvl1.Rows.Add(
-                    cmbUnit.SelectedValue,
-                    cmbUnit.Text,
-                    factor);
-
-
-                cmbUnit.SelectedIndex =
-                    -1;
-
-                txtFactor.Clear();
+                MessageBox.Show("Choose Unit First");
+                return;
             }
-            catch (Exception ex)
+
+            if (!decimal.TryParse(txtFactor.Text, out decimal factor) || factor <= 0)
             {
-                MessageBox.Show(
-                    "The Unit could not be added.\n\n" +
-                    GetDeepestMessage(ex),
-                    "Item Unit",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
+                MessageBox.Show("Factor must be greater than zero.");
+                txtFactor.Focus();
+                return;
             }
+
+            int unitId = Convert.ToInt32(cmbUnit.SelectedValue);
+
+            // Don't compare unit by name if you can compare IDs
+            if (unitId == Convert.ToInt32(defaultUnitId))
+            {
+                MessageBox.Show("Main Unit Can't Be Added As Sub Unit");
+                return;
+            }
+
+            bool exists = dgvLvl1.Rows
+                .Cast<DataGridViewRow>()
+                .Where(r => !r.IsNewRow)
+                .Any(r =>
+                    r.Cells["unitid"].Value != null &&
+                    Convert.ToInt32(r.Cells["unitid"].Value) == unitId);
+
+            if (exists)
+            {
+                MessageBox.Show("Unit Already Exists");
+                return;
+            }
+
+            dgvLvl1.Rows.Add(
+                unitId,
+                cmbUnit.Text,
+                factor
+            );
+
+            cmbUnit.SelectedIndex = -1;
+            txtFactor.Clear();
         }
 
-
-        private void btnRemove_Click(
-            object sender,
-            EventArgs e)
+        private void btnRemove_Click(object sender, EventArgs e)
         {
-            try
+            if (dgvLvl1.SelectedRows.Count == 0)
             {
-                if (dgvLvl1.SelectedRows.Count == 0)
-                {
-                    MessageBox.Show(
-                        "Please select a row to remove.",
-                        "Item Unit",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Information);
-
-                    return;
-                }
-
-
-                DataGridViewRow row =
-                    dgvLvl1.SelectedRows[0];
-
-
-                if (!row.IsNewRow)
-                {
-                    dgvLvl1.Rows.Remove(
-                        row);
-                }
+                MessageBox.Show("Please select a row to remove.");
+                return;
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    "The Unit could not be removed.\n\n" +
-                    GetDeepestMessage(ex),
-                    "Item Unit",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-            }
+            dgvLvl1.Rows.Remove(dgvLvl1.SelectedRows[0]);
         }
 
-
-        private void LbHeader_Click(
-            object sender,
-            EventArgs e)
+        private void LbHeader_Click(object sender, EventArgs e)
         {
-            BringToFront();
+            this.BringToFront();
         }
 
-
-        private void guna2Button4_Click(
-            object sender,
-            EventArgs e)
+        private void guna2Button4_Click(object sender, EventArgs e)
         {
-            if (WindowState ==
-                FormWindowState.Maximized)
+            if (this.WindowState == FormWindowState.Maximized)
             {
-                WindowState =
-                    FormWindowState.Normal;
+                this.WindowState = FormWindowState.Normal; // Restore down
             }
             else
             {
-                WindowState =
-                    FormWindowState.Maximized;
+                this.WindowState = FormWindowState.Maximized; // Maximize
             }
         }
 
-
-        private void guna2Button1_Click(
-            object sender,
-            EventArgs e)
+        private void guna2Button1_Click(object sender, EventArgs e)
         {
-            WindowState =
-                FormWindowState.Minimized;
-        }
-
-
-        private string GetMainUnitName()
-        {
-            if (_item == null)
-            {
-                return string.Empty;
-            }
-
-            Control mainUnitControl =
-                FindControlRecursive(
-                    _item,
-                    "cmbMainUnit");
-
-            if (mainUnitControl == null)
-            {
-                return string.Empty;
-            }
-
-            return mainUnitControl.Text ?? string.Empty;
-        }
-
-
-        private static Control FindControlRecursive(
-            Control parent,
-            string controlName)
-        {
-            if (parent == null ||
-                string.IsNullOrWhiteSpace(controlName))
-            {
-                return null;
-            }
-
-            foreach (Control child in parent.Controls)
-            {
-                if (string.Equals(
-                        child.Name,
-                        controlName,
-                        StringComparison.Ordinal))
-                {
-                    return child;
-                }
-
-                Control found =
-                    FindControlRecursive(
-                        child,
-                        controlName);
-
-                if (found != null)
-                {
-                    return found;
-                }
-            }
-
-            return null;
-        }
-
-
-        private static string GetDeepestMessage(
-            Exception ex)
-        {
-            if (ex == null)
-            {
-                return "Unknown error.";
-            }
-
-
-            while (ex.InnerException != null)
-            {
-                ex =
-                    ex.InnerException;
-            }
-
-
-            return ex.Message;
+            this.WindowState = FormWindowState.Minimized;
         }
     }
+}
+
+public class ItemUnitOption
+{
+    public int UnitId { get; set; }
+    public string UnitName { get; set; }
+    public decimal Factor { get; set; }
+    public bool IsDefault { get; set; }
 }

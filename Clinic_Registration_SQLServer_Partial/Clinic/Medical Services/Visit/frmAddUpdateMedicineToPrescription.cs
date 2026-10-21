@@ -52,27 +52,55 @@ namespace Clinic.Medical_Services.Visit
           AND active = 0
         ORDER BY name;";
 
-            using (MySql.Data.MySqlClient.MySqlConnection connection =
-                Clinic_DataAccess.ClinicDatabase.GetConnection())
+            try
             {
-                using (MySql.Data.MySqlClient.MySqlDataAdapter adapter =
-                    new MySql.Data.MySqlClient.MySqlDataAdapter(query, connection))
+                using (MySql.Data.MySqlClient.MySqlConnection connection =
+                    Clinic_DataAccess.ClinicDatabase.GetConnection())
                 {
-                    adapter.Fill(dtMedicines);
+                    using (MySql.Data.MySqlClient.MySqlDataAdapter adapter =
+                        new MySql.Data.MySqlClient.MySqlDataAdapter(
+                            query, connection))
+                    {
+                        adapter.Fill(dtMedicines);
+                    }
+                }
+
+                cbMedicines.DataSource = null;
+                cbMedicines.DisplayMember = "MedicineName";
+                cbMedicines.ValueMember = "MedicineID";
+                cbMedicines.DataSource = dtMedicines;
+
+                if (dtMedicines.Rows.Count > 0)
+                {
+                    cbMedicines.SelectedIndex = 0;
+                }
+                else
+                {
+                    lblMedicinePrice.Text = "0.00";
+
+                    MessageBox.Show(
+                        "No medicines found.\n\n" +
+                        "Please register medicines in Item Master " +
+                        "and verify their item type and active status.",
+                        "Medicine List",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
                 }
             }
-
-            cbMedicines.DataSource = null;
-            cbMedicines.DisplayMember = "MedicineName";
-            cbMedicines.ValueMember = "MedicineID";
-            cbMedicines.DataSource = dtMedicines;
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Unable to load medicines:\n" + ex.Message,
+                    "Database Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
         }
-
         private void _ResetDefaultValues()
         {
             _FillMedicensInCheckBox();
-            if(cbMedicines.Items.Count>0)
-                cbMedicines.SelectedIndex = 1;
+            if (cbMedicines.Items.Count > 0)
+                cbMedicines.SelectedIndex = 0;
 
             NUDQuantity.Value = 1;
             txtDosage.Text = "";
@@ -151,6 +179,14 @@ namespace Clinic.Medical_Services.Visit
                     lblMedicinePrice.Text = totalPrice.ToString("F2");
                 }
             }
+            if (cbMedicines.DataSource == null ||
+    cbMedicines.SelectedValue == null)
+            {
+                _price = 0m;
+                _TaxRate = 0m;
+                lblMedicinePrice.Text = "0.00";
+                return;
+            }
         }
 
 
@@ -209,7 +245,7 @@ namespace Clinic.Medical_Services.Visit
                 // إنشاء صف جديد
                 DataRow newRow = _dtMedicines.NewRow();
                 newRow["MedicineID"] = selectedMedicineID;
-                newRow["PrescriptionID"] = _dtMedicines.Rows.Count > 0 ? _dtMedicines.Rows[0]["PrescriptionID"].ToString() : "0";
+                //newRow["PrescriptionID"] = _dtMedicines.Rows.Count > 0 ? _dtMedicines.Rows[0]["PrescriptionID"].ToString() : "0";
                 newRow["SavedMedicineName"] = cbMedicines.Text;
                 newRow["Quantity"] = requestedQuantity;
                 newRow["Frequency"] = nudFrequency.Value;
