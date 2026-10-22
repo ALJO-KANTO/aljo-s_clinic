@@ -543,7 +543,29 @@ namespace Clinic
 { "Balance", "الرصيد" },
 { "From Date", "من تاريخ" },
 { "To Date", "إلى تاريخ" },
-{ "View Ledger", "عرض دفتر الأستاذ" },        };
+{ "View Ledger", "عرض دفتر الأستاذ" },     
+        // Balance Sheet Report
+{ "Balance Sheet", "الميزانية العمومية" },
+{ "Balance Sheet Detail", "تفاصيل الميزانية العمومية" },
+{ "Total Liabilities & Equity", "إجمالي الالتزامات وحقوق الملكية" },
+{ "Customize Report", "تخصيص التقرير" },
+{ "Comment On Report", "إضافة تعليق على التقرير" },
+{ "Memorize", "حفظ إعدادات التقرير" },
+{ "Hide Header", "إخفاء الترويسة" },
+{ "Show Header", "إظهار الترويسة" },
+{ "Excel", "إكسل" },
+{ "Sort By", "ترتيب حسب" },
+{ "Unclassified", "غير مصنف" },
+{ "Num", "الرقم" },
+{ "Adj", "التعديل" },
+{ "Memo", "البيان" },
+{ "Clr", "التسوية" },
+{ "Split", "الحساب المقابل" },
+{ "Show_Columns", "إظهار الأعمدة" },
+{ "Show Columns", "إظهار الأعمدة" },
+{ "As of", "اعتبارًا من" },
+{ "Print ▼", "طباعة ▼" },
+};
         public static bool IsArabic { get; set; } = false;
 
 

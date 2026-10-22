@@ -33,25 +33,22 @@ namespace YamyProject.UI.Reports.Accountant
         // FORM LOAD
         // ============================================================
         private void frmAccountLedger_Load(
-            object sender,
-            EventArgs e)
+     object sender,
+     EventArgs e)
         {
             SetupGrid();
-
             LoadAccounts();
 
-            // Current month
-            dtpFrom.Value =
-                new DateTime(
-                    DateTime.Today.Year,
-                    DateTime.Today.Month,
-                    1);
+            dtpFrom.Value = new DateTime(
+                DateTime.Today.Year,
+                DateTime.Today.Month,
+                1);
 
-            dtpTo.Value =
-                DateTime.Today;
+            dtpTo.Value = DateTime.Today;
 
             ResetSummary();
-            //ApplyArabicProperties();
+
+            ApplyArabicProperties();
         }
 
 
@@ -483,8 +480,7 @@ namespace YamyProject.UI.Reports.Accountant
 
 
                         transactionCount++;
-                        //ApplyArabicProperties();
-                        //TranslateLedgerResultRows();
+                        ApplyArabicProperties();
                     }
                 }
 

@@ -46,7 +46,7 @@ namespace YamyProject
                 }
             }
             btnPrint.Text = "Print ▼";
-            if(type == "detail")
+            if (type == "detail")
             {
                 label1.Text = label1.Text + " Detail";
                 dateTimePicker2.Visible = true;
@@ -63,6 +63,8 @@ namespace YamyProject
             }
             //RetainedEarningsId = 17;
             LoadData();
+            ApplyBalanceSheetArabic();
+            ApplyBalanceSheetLayout();
         }
         private void LoadData()
         {
@@ -255,7 +257,7 @@ namespace YamyProject
                                 totalLandE += Convert.ToDecimal(reader["balance"]);
                             }
                         }
-                        else if(type == "Prev Year Comparison")
+                        else if (type == "Prev Year Comparison")
                         {
                             isStandard = false;
                             decimal bal1 = Convert.ToDecimal(reader["Balance1"]);
@@ -301,7 +303,8 @@ namespace YamyProject
                     {
                         // Set the label column (adjust index if needed)
                         int nameColumnIndex = 3;
-                        totalRow.Cells[nameColumnIndex].Value = "          Total Liabilities & Equity";
+                        totalRow.Cells[nameColumnIndex].Value =
+      "          " + ReportTranslate("Total Liabilities & Equity");
 
                         // Set value in the last column dynamically
                         int lastColumnIndex = dgvReport.Columns.Count - 1;
@@ -319,7 +322,7 @@ namespace YamyProject
 
                             int nameColumnIndex = 3;
                             totalRow.Cells[nameColumnIndex].Value =
-                                "          Total Liabilities & Equity";
+                                "          " + ReportTranslate("Total Liabilities & Equity");
 
                             totalRow.Cells[6].Value = Utilities.FormatDecimal(totalBal1.ToString());
                             totalRow.Cells[7].Value = Utilities.FormatDecimal(totalBal2.ToString());
@@ -331,7 +334,7 @@ namespace YamyProject
                         {
                             int nameColumnIndex = 3;
                             totalRow.Cells[nameColumnIndex].Value =
-                                "          Total Liabilities & Equity";
+                                "          " + ReportTranslate("Total Liabilities & Equity");
                             totalRow.Cells[6].Value = Utilities.FormatDecimal(totalBal1.ToString());
                             totalRow.Cells[7].Value = Utilities.FormatDecimal(totalBal2.ToString());
                         }
@@ -484,7 +487,7 @@ namespace YamyProject
                     {
                         // Set the label column (adjust index if needed)
                         int nameColumnIndex = 3;
-                        totalRow.Cells[nameColumnIndex].Value = "          Total Liabilities & Equity";
+                        totalRow.Cells[nameColumnIndex].Value = "          " + ReportTranslate("Total Liabilities & Equity");
 
                         // Set value in the last column dynamically
                         int lastColumnIndex = dgvReport.Columns.Count - 1;
@@ -502,7 +505,7 @@ namespace YamyProject
 
                             int nameColumnIndex = 3;
                             totalRow.Cells[nameColumnIndex].Value =
-                                "          Total Liabilities & Equity";
+                                "          " + ReportTranslate("Total Liabilities & Equity");
 
                             totalRow.Cells[6].Value = Utilities.FormatDecimal(totalBal1.ToString());
                             totalRow.Cells[7].Value = Utilities.FormatDecimal(totalBal2.ToString());
@@ -510,11 +513,11 @@ namespace YamyProject
                             totalRow.Cells[9].Value =
                                 Utilities.FormatDecimal(totalChangePerc.ToString()) + " %";
                         }
-                        else if(type == "by Class")
+                        else if (type == "by Class")
                         {
                             int nameColumnIndex = 3;
                             totalRow.Cells[nameColumnIndex].Value =
-                                "          Total Liabilities & Equity";
+                                "          " + ReportTranslate("Total Liabilities & Equity");
                             totalRow.Cells[6].Value = Utilities.FormatDecimal(totalBal1.ToString());
                             totalRow.Cells[7].Value = Utilities.FormatDecimal(totalBal2.ToString());
                         }
@@ -534,6 +537,17 @@ namespace YamyProject
 
 
             dateWords();
+            if (IsArabicReport())
+            {
+                foreach (DataGridViewColumn column in dgvReport.Columns)
+                {
+                    if (!string.IsNullOrWhiteSpace(column.HeaderText))
+                    {
+                        column.HeaderText =
+                            ReportTranslate(column.HeaderText);
+                    }
+                }
+            }
         }
 
         private bool CheckNameIsAssets(string name)
@@ -836,7 +850,7 @@ namespace YamyProject
         {
             MessageBox.Show("Exporting Report...");
         }
-        
+
         private void SavePDF_Click(object sender, EventArgs e)
         {
             string companyName = lblCompany.Text;
@@ -939,7 +953,8 @@ namespace YamyProject
                 totalRow.Cells[1].Format.Alignment = ParagraphAlignment.Right;
 
                 //section.Add(dataTable);
-            } else if(type == "detail")
+            }
+            else if (type == "detail")
             {
                 Table dataTable = section.AddTable();
                 dataTable.Borders.Width = 0;
@@ -959,7 +974,7 @@ namespace YamyProject
                 decimal totalDebit = 0;
                 decimal totalCredit = 0;
 
-                foreach(DataGridViewRow row in dgvReport.Rows)
+                foreach (DataGridViewRow row in dgvReport.Rows)
                 {
                     if (row.IsNewRow) continue;
 
@@ -967,7 +982,7 @@ namespace YamyProject
                     if (_account.ToUpper().Contains("TOTAL")) continue;
 
                     string _date = row.Cells["date"].Value?.ToString() ?? "";
-                    string _num = row.Cells["num"].Value?.ToString()??"";
+                    string _num = row.Cells["num"].Value?.ToString() ?? "";
                     string _adj = row.Cells["adj"].Value?.ToString() ?? "";
                     string _name = row.Cells["name"].Value?.ToString() ?? "";
                     string _memo = row.Cells["memo"].Value?.ToString() ?? "";
@@ -980,9 +995,9 @@ namespace YamyProject
                     decimal balance = 0;
                     decimal.TryParse(_balance, out balance);
                     decimal debit = 0;
-                    decimal.TryParse(_debit, out  debit);
+                    decimal.TryParse(_debit, out debit);
                     decimal credit = 0;
-                    decimal.TryParse(_credit, out  credit);
+                    decimal.TryParse(_credit, out credit);
 
                     Row tRow = dataTable.AddRow();
                     tRow.Cells[0].AddParagraph(_account);
@@ -997,7 +1012,7 @@ namespace YamyProject
                     tRow.Cells[9].AddParagraph(debit.ToString("N2")).Format.Alignment = ParagraphAlignment.Right;
                     tRow.Cells[10].AddParagraph(credit.ToString("N2")).Format.Alignment = ParagraphAlignment.Right;
                     tRow.Cells[11].AddParagraph(balance.ToString("N2")).Format.Alignment = ParagraphAlignment.Right;
-                    
+
                     totalDebit += debit;
                     totalCredit += credit;
                     totalBalance += balance;
@@ -1039,7 +1054,7 @@ namespace YamyProject
                     var workbook = excelApp.Workbooks.Add(Type.Missing);
                     var worksheet = (Excel.Worksheet)workbook.Sheets[1];
                     worksheet.Name = (type == "detail" ? "BalanceSheetDetail" : type == "Prev Year Comparison" ? "BalanceSheetPrevYearComparison" : type == "by Class" ? "BalanceSheetByClass" : "BalanceSheet");
-                    
+
                     Excel.Range headerRange0 = type == "detail" ? worksheet.Range["D1", "J1"] : type == "Prev Year Comparison" ? worksheet.Range["C1", "F1"] : worksheet.Range["A1", "B1"];
                     headerRange0.Merge();
                     headerRange0.Value = lblCompany.Text;
@@ -1267,7 +1282,7 @@ namespace YamyProject
             if (currLvl > 4) return;
             if (currLvl == 4)
             {
-               //frmMain.openChildForm(new MasterTransactionByAccount("Transactions By Account", int.Parse(dgvReport.Rows[e.RowIndex].Cells["id"].Value.ToString()), dateTimePicker1.Value.ToString(), dateTimePicker1.Value.ToString()));
+                //frmMain.openChildForm(new MasterTransactionByAccount("Transactions By Account", int.Parse(dgvReport.Rows[e.RowIndex].Cells["id"].Value.ToString()), dateTimePicker1.Value.ToString(), dateTimePicker1.Value.ToString()));
             }
 
             string state = dgvReport.Rows[e.RowIndex].Cells["state"].Value.ToString();
@@ -1415,7 +1430,7 @@ namespace YamyProject
             //}
 
             //object result0 = ClinicDatabase.ExecuteScalar("SELECT l1.id FROM tbl_coa_level_1 l1 Inner join tbl_coa_level_2 l2 ON l1.id = l2.main_id where category_code = 'EQUITY' and l2.id = @id", ClinicDatabase.CreateParameterNew("@id", id));
-            
+
             //if(result0 != null)
             //{
             //    if (retainedEarningsBalance != 0)
@@ -1898,7 +1913,7 @@ namespace YamyProject
         {
             for (int i = parentRowIndex + 1; i < dgvReport.Rows.Count; i++)
             {
-                int rowLevel = dgvReport.Rows[i].Cells["currLvl"].Value ==null ? 0 : int.Parse(dgvReport.Rows[i].Cells["currLvl"].Value.ToString());
+                int rowLevel = dgvReport.Rows[i].Cells["currLvl"].Value == null ? 0 : int.Parse(dgvReport.Rows[i].Cells["currLvl"].Value.ToString());
 
                 if (rowLevel > parentLevel)
                 {
@@ -1968,7 +1983,7 @@ namespace YamyProject
             {
                 string state = dgvReport.Rows[i].Cells["state"].Value.ToString();
                 string loadState = dgvReport.Rows[i].Cells["loadState"].Value.ToString();
-                int currLvl = int.Parse(dgvReport.Rows[i].Cells["currLvl"].Value.ToString()??"0");
+                int currLvl = int.Parse(dgvReport.Rows[i].Cells["currLvl"].Value.ToString() ?? "0");
 
                 if (state == "e")
                 {
@@ -1992,11 +2007,246 @@ namespace YamyProject
         {
             BindDGV();
         }
+        private bool IsArabicReport()
+        {
+            return Clinic.Properties.Settings.Default.ApplicationLanguage
+                ?.StartsWith("ar", StringComparison.OrdinalIgnoreCase) == true;
+        }
+
+        private string ReportTranslate(string english)
+        {
+            return TranslationClass.Translate(english, IsArabicReport());
+        }
+
+        private void ApplyBalanceSheetArabic()
+        {
+            bool isArabic = IsArabicReport();
+
+            string title = type == "detail"
+                ? "Balance Sheet Detail"
+                : "Balance Sheet";
+
+            headerUC1.FormText = ReportTranslate(title);
+
+            label1.Text = ReportTranslate("Balance Sheet");
+
+            if (type == "detail")
+                label1.Text += isArabic ? " - تفصيلي" : " Detail";
+            else if (type == "Prev Year Comparison")
+                label1.Text += isArabic
+                    ? " - مقارنة بالسنة السابقة"
+                    : " Prev Year Comparison";
+            else if (type == "by Class")
+                label1.Text += isArabic ? " - حسب الفئة" : " By Class";
+
+            btnPrint.Text = ReportTranslate("Print") + " ▼";
+
+            // Translate toolbar and other controls.
+            TranslateBalanceSheetControls(this);
+
+            // Translate the export context menu.
+            TranslateBalanceSheetMenu(contextMenuExport.Items);
+
+            // Translate dynamically created grid headers.
+            foreach (DataGridViewColumn column in dgvReport.Columns)
+            {
+                if (!string.IsNullOrWhiteSpace(column.HeaderText))
+                {
+                    column.HeaderText =
+                        ReportTranslate(column.HeaderText);
+                }
+
+                column.HeaderCell.Style.Alignment = isArabic
+                    ? DataGridViewContentAlignment.MiddleCenter
+                    : DataGridViewContentAlignment.MiddleCenter;
+            }
+        }
+
+        // Keep the existing designer geometry stable while applying Arabic alignment.
+        // The host application can be RTL; do not allow that to mirror this legacy report.
+        private readonly Dictionary<Control, Rectangle> _englishBounds =
+            new Dictionary<Control, Rectangle>();
+
+        private void ApplyBalanceSheetLayout()
+        {
+            bool arabic = IsArabicReport();
+
+            this.RightToLeft = RightToLeft.No;
+            this.RightToLeftLayout = false;
+
+            // Capture original designer positions.
+            CaptureEnglishPositions(this);
+
+            // Mirror control positions inside their parent containers.
+            ApplyArabicPositions(this, arabic);
+
+            // Keep numeric values and dates readable.
+            dgvReport.RightToLeft = RightToLeft.No;
+
+            if (dgvReport.Columns.Contains("lvl1"))
+            {
+                dgvReport.Columns["lvl1"].DefaultCellStyle.Alignment =
+                    arabic
+                        ? DataGridViewContentAlignment.MiddleRight
+                        : DataGridViewContentAlignment.MiddleLeft;
+            }
+
+            foreach (DataGridViewColumn column in dgvReport.Columns)
+            {
+                column.HeaderCell.Style.Alignment =
+                    DataGridViewContentAlignment.MiddleCenter;
+            }
+
+            label1.TextAlign = ContentAlignment.MiddleCenter;
+            lblCompany.TextAlign = ContentAlignment.MiddleCenter;
+        }
+
+        private void CaptureEnglishPositions(Control parent)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                if (!_englishBounds.ContainsKey(control))
+                    _englishBounds.Add(control, control.Bounds);
+
+                if (control.HasChildren)
+                    CaptureEnglishPositions(control);
+            }
+        }
+
+        private void ApplyArabicPositions(Control parent, bool arabic)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                if (!_englishBounds.TryGetValue(control, out Rectangle original))
+                    continue;
+
+                // Leave docked controls and structural containers in place.
+                if (control.Dock == DockStyle.None &&
+                    !(control is Panel) &&
+                    !(control is DataGridView) &&
+                    !(control is UserControl) &&
+                    !(control.Parent is FlowLayoutPanel) &&
+                    !(control.Parent is TableLayoutPanel))
+                {
+                    int newX = arabic
+                        ? parent.ClientSize.Width - original.Right
+                        : original.Left;
+
+                    control.Left = newX;
+                }
+
+                if (control is Label label &&
+                    control != label1 &&
+                    control != lblCompany)
+                {
+                    label.TextAlign = arabic
+                        ? ContentAlignment.MiddleRight
+                        : ContentAlignment.MiddleLeft;
+                }
+
+                if (control.HasChildren)
+                    ApplyArabicPositions(control, arabic);
+            }
+        }
+        private void ApplyReportLabelAlignment(Control parent, bool arabic)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                if (control is Label label && control != label1 && control != lblCompany)
+                {
+                    label.TextAlign = arabic
+                        ? ContentAlignment.MiddleRight
+                        : ContentAlignment.MiddleLeft;
+                }
+                if (control.HasChildren)
+                    ApplyReportLabelAlignment(control, arabic);
+            }
+        }
+
+        private readonly Dictionary<Control, string> _originalTexts =
+            new Dictionary<Control, string>();
+
+        private readonly Dictionary<ToolStripItem, string> _originalToolTexts =
+            new Dictionary<ToolStripItem, string>();
+
+        private void TranslateBalanceSheetControls(Control parent)
+        {
+            bool arabic = IsArabicReport();
+
+            foreach (Control control in parent.Controls)
+            {
+                // Do not translate the actual company name or report title.
+                if (control == lblCompany || control == label1)
+                    continue;
+
+                if (control is Label ||
+                    control is Button ||
+                    control is CheckBox ||
+                    control is GroupBox ||
+                    control is Guna.UI2.WinForms.Guna2HtmlLabel)
+                {
+                    if (!_originalTexts.ContainsKey(control))
+                        _originalTexts[control] = control.Text;
+
+                    string english = _originalTexts[control];
+
+                    control.Text = TranslationClass.Translate(
+                        english, arabic);
+
+                    if (control is Label label)
+                    {
+                        label.TextAlign = arabic
+                            ? ContentAlignment.MiddleRight
+                            : ContentAlignment.MiddleLeft;
+                    }
+                }
+
+                if (control is ToolStrip strip)
+                {
+                    foreach (ToolStripItem item in strip.Items)
+                    {
+                        if (!_originalToolTexts.ContainsKey(item))
+                            _originalToolTexts[item] = item.Text;
+
+                        item.Text = TranslationClass.Translate(
+                            _originalToolTexts[item], arabic);
+                    }
+                }
+
+                if (control.HasChildren)
+                    TranslateBalanceSheetControls(control);
+            }
+        }
+        private void TranslateBalanceSheetMenu(
+            ToolStripItemCollection items)
+        {
+            foreach (ToolStripItem item in items)
+            {
+                if (item.Tag == null)
+                    item.Tag = item.Text;
+
+                string english = item.Tag as string;
+
+                if (!string.IsNullOrWhiteSpace(english))
+                    item.Text = ReportTranslate(english);
+
+                if (item is ToolStripDropDownItem dropDown)
+                    TranslateBalanceSheetMenu(dropDown.DropDownItems);
+            }
+        }
         private void dateWords()
         {
-            string fromDate = dateTimePicker1.Value.ToString("MMMM dd, yyyy");
-            //string toDate = dateTimePicker2.Value.ToString("MMMM dd, yyyy");
-            guna2HtmlLabel10.Text = $"AS of {fromDate}";
+            bool isArabic = IsArabicReport();
+
+            string fromDate = dateTimePicker1.Value.ToString(
+                "MMMM dd, yyyy",
+                isArabic
+                    ? new System.Globalization.CultureInfo("ar-AE")
+                    : new System.Globalization.CultureInfo("en-US"));
+
+            guna2HtmlLabel10.Text = isArabic
+                ? $"اعتباراً من {fromDate}"
+                : $"As of {fromDate}";
         }
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {

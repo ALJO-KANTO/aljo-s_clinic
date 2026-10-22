@@ -993,6 +993,9 @@
     <Compile Include="Purchases\Invoices\MasterPurchases.designer.cs">
       <DependentUpon>MasterPurchases.cs</DependentUpon>
     </Compile>
+    <Compile Include="Report\Accountant\frmAccountLedger.Arabic.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Report\Accountant\frmAccountLedger.cs">
       <SubType>Form</SubType>
     </Compile>
