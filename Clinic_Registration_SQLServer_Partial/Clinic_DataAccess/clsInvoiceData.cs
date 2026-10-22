@@ -20,8 +20,8 @@ namespace Clinic_DataAccess
                                 SELECT (Subtotal+TotalDiscount) AS Subtotal,PaymentAmount ,TotalDiscount,Subtotal AS FinalTotal FROM View_BillSummaries WHERE BillID = @BillID;
                               Select  B.BillNumber As InvoiceNumber,
                                 B.BillDate As InvoiceDate,
-                                ISNULL(Per.FullName,'Pharmysy Sales')AS PatienName,
-                                ISNULL(Pat.PatientID,-1)AS PatientID
+                                IFNULL(Per.FullName,'Pharmysy Sales')AS PatienName,
+                                IFNULL(Pat.PatientID,-1)AS PatientID
                                 From Bills B
                                  Left JOIN Visits V ON B.VisitID=V.VisitID
                                  left Join Patients Pat ON V.PatientID=Pat.PatientID
@@ -122,8 +122,8 @@ namespace Clinic_DataAccess
                     // استدعاء الـ View بالكامل
                     string query = @"Select  Pay.PaymentID As InvoiceNumber,
                                         FORMAT(Pay.PaymentDate,'dd/mm/yyyy')As InvoiceDate,
-                                         ISNULL(Per.FullName,'Pharmysy Sales')AS PatienName,
-                                         ISNULL(Pat.PatientID,-1)AS PatientID
+                                         IFNULL(Per.FullName,'Pharmysy Sales')AS PatienName,
+                                         IFNULL(Pat.PatientID,-1)AS PatientID
                                          From Payments Pay JOIN Bills B ON Pay.BillID=B.BillID
                                           Left JOIN Visits V ON B.VisitID=V.VisitID
                                           left Join Patients Pat ON V.PatientID=Pat.PatientID

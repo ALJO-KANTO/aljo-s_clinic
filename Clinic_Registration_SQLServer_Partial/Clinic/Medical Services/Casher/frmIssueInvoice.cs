@@ -21,6 +21,7 @@ namespace Clinic.Medical_Services.Casher
         public frmIssueInvoice(int BillID)
         {
             InitializeComponent();
+            TranslationHelper.TranslateAnyForm(this, TranslationClass.IsArabic);
             lbCurrentUser.Text = clsGlobal.PersonName;
             _BillID = BillID;
             _FillForm();
@@ -52,7 +53,14 @@ namespace Clinic.Medical_Services.Casher
             _Invoice = clsInvoice.GetInvoice(_BillID);
             if (_Invoice == null)
             {
-                MessageBox.Show("الفاتورة غير موجودة أو لا توجد بيانات مرتبطة بها.", "خطأ", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(
+                    TranslationClass.IsArabic
+                        ? "الفاتورة غير موجودة أو لا توجد بيانات مرتبطة بها."
+                        : "The invoice does not exist or has no associated data.",
+                    TranslationClass.IsArabic ? "خطأ" : "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                ); 
                 _ResetForm();
                 return;
             }
