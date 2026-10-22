@@ -283,7 +283,7 @@ namespace Clinic.Medical_Services.Casher
                 }
             }
         }
-        private void btnCenerateAndFinalizeInVoice_Click(object sender, EventArgs e)
+        private void btnGenerateAndFinalizeInVoice_Click(object sender, EventArgs e)
         {
             if (_Invoice == null) return;
 
