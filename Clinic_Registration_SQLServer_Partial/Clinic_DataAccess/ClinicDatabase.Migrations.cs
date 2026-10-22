@@ -475,23 +475,6 @@ namespace Clinic_DataAccess
                         },
                         new DatabaseMigration
                         {
-                            Version = "20261015_BASE_026",
-                            Description = "Initial schema: salesreturns",
-                            Sql = @"CREATE TABLE IF NOT EXISTS `salesreturns` (
-                              `SalesReturnID` int NOT NULL AUTO_INCREMENT,
-                              `BillID` int NOT NULL,
-                              `ReturnDate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                              `TotalRefund` decimal(12,2) NOT NULL DEFAULT '0.00',
-                              `CashierID` int DEFAULT NULL,
-                              PRIMARY KEY (`SalesReturnID`),
-                              KEY `fk_salesreturns_bill` (`BillID`),
-                              KEY `fk_salesreturns_cashier` (`CashierID`),
-                              CONSTRAINT `fk_salesreturns_bill` FOREIGN KEY (`BillID`) REFERENCES `bills` (`BillID`),
-                              CONSTRAINT `fk_salesreturns_cashier` FOREIGN KEY (`CashierID`) REFERENCES `users` (`UserID`)
-                            ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
-                        },
-                        new DatabaseMigration
-                        {
                             Version = "20261022_CLINIC_00054",
                             Description = "Create salesreturndetails table with foreign keys",
                             Sql = @"
@@ -2841,6 +2824,23 @@ namespace Clinic_DataAccess
                             "
                         },
 
+                        new DatabaseMigration
+                        {
+                            Version = "20261015_BASE_026",
+                            Description = "Initial schema: salesreturns",
+                            Sql = @"CREATE TABLE IF NOT EXISTS `salesreturns` (
+                              `SalesReturnID` int NOT NULL AUTO_INCREMENT,
+                              `BillID` int NOT NULL,
+                              `ReturnDate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                              `TotalRefund` decimal(12,2) NOT NULL DEFAULT '0.00',
+                              `CashierID` int DEFAULT NULL,
+                              PRIMARY KEY (`SalesReturnID`),
+                              KEY `fk_salesreturns_bill` (`BillID`),
+                              KEY `fk_salesreturns_cashier` (`CashierID`),
+                              CONSTRAINT `fk_salesreturns_bill` FOREIGN KEY (`BillID`) REFERENCES `bills` (`BillID`),
+                              CONSTRAINT `fk_salesreturns_cashier` FOREIGN KEY (`CashierID`) REFERENCES `users` (`UserID`)
+                            ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
+                        },
                         // Optional reference seed migrations. Run only after schema migrations.
                         // tbl_city has no unique (country_id,name) constraint; do not rerun under a new version.
 
