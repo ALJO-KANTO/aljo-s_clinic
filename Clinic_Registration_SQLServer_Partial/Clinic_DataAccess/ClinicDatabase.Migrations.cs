@@ -475,37 +475,6 @@ namespace Clinic_DataAccess
                         },
                         new DatabaseMigration
                         {
-                            Version = "20261022_CLINIC_00054",
-                            Description = "Create salesreturndetails table with foreign keys",
-                            Sql = @"
-                                CREATE TABLE IF NOT EXISTS `salesreturndetails`
-                                (
-                                    `ReturnDetailsID` INT NOT NULL AUTO_INCREMENT,
-                                    `ReturnID` INT NOT NULL,
-                                    `PrescriptionDetailsID` INT NOT NULL,
-                                    `QtyReturned` INT NOT NULL,
-                                    `UnitPrice` DECIMAL(18,2) NOT NULL,
-
-                                    PRIMARY KEY (`ReturnDetailsID`),
-
-                                    KEY `fk_salesreturndetails_return` (`ReturnID`),
-                                    KEY `fk_salesreturndetails_prescription` (`PrescriptionDetailsID`),
-
-                                    CONSTRAINT `fk_salesreturndetails_return`
-                                        FOREIGN KEY (`ReturnID`)
-                                        REFERENCES `salesreturns` (`SalesReturnID`),
-
-                                    CONSTRAINT `fk_salesreturndetails_prescription`
-                                        FOREIGN KEY (`PrescriptionDetailsID`)
-                                        REFERENCES `prescriptiondetails` (`PrescriptionDetailID`)
-                                )
-                                ENGINE=InnoDB
-                                DEFAULT CHARSET=utf8mb4
-                                COLLATE=utf8mb4_0900_ai_ci;
-                            "
-                        },
-                        new DatabaseMigration
-                        {
                             Version = "20261015_BASE_027",
                             Description = "Initial schema: prescriptions",
                             Sql = @"CREATE TABLE IF NOT EXISTS `prescriptions` (
@@ -2823,7 +2792,6 @@ namespace Clinic_DataAccess
                                     REFERENCES tbl_items(id);
                             "
                         },
-
                         new DatabaseMigration
                         {
                             Version = "20261015_BASE_026",
@@ -2840,6 +2808,38 @@ namespace Clinic_DataAccess
                               CONSTRAINT `fk_salesreturns_bill` FOREIGN KEY (`BillID`) REFERENCES `bills` (`BillID`),
                               CONSTRAINT `fk_salesreturns_cashier` FOREIGN KEY (`CashierID`) REFERENCES `users` (`UserID`)
                             ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261022_CLINIC_00054",
+                            Description = "Create salesreturndetails table with foreign keys",
+                            Sql = @"
+                                CREATE TABLE IF NOT EXISTS `salesreturndetails`
+                                (
+                                    `ReturnDetailsID` INT NOT NULL AUTO_INCREMENT,
+                                    `ReturnID` INT NOT NULL,
+                                    `PrescriptionDetailsID` INT NOT NULL,
+                                    `QtyReturned` INT NOT NULL,
+                                    `UnitPrice` DECIMAL(18,2) NOT NULL,
+
+                                    PRIMARY KEY (`ReturnDetailsID`),
+
+                                    KEY `fk_salesreturndetails_return` (`ReturnID`),
+                                    KEY `fk_salesreturndetails_prescription` (`PrescriptionDetailsID`),
+
+                                    CONSTRAINT `fk_salesreturndetails_return`
+                                        FOREIGN KEY (`ReturnID`)
+                                        REFERENCES `salesreturns` (`SalesReturnID`),
+
+                                    CONSTRAINT `fk_salesreturndetails_prescription`
+                                        FOREIGN KEY (`PrescriptionDetailsID`)
+                                        REFERENCES `prescriptiondetails` (`PrescriptionDetailID`)
+                                )
+                                ENGINE=InnoDB
+                                DEFAULT CHARSET=utf8mb4
+                                COLLATE=utf8mb4_0900_ai_ci;
+                            "
                         },
                         // Optional reference seed migrations. Run only after schema migrations.
                         // tbl_city has no unique (country_id,name) constraint; do not rerun under a new version.
