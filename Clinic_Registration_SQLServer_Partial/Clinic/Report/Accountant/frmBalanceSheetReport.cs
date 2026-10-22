@@ -63,6 +63,7 @@ namespace YamyProject
             }
             //RetainedEarningsId = 17;
             LoadData();
+            ApplyBalanceSheetArabic();
         }
         private void LoadData()
         {
@@ -301,7 +302,8 @@ namespace YamyProject
                     {
                         // Set the label column (adjust index if needed)
                         int nameColumnIndex = 3;
-                        totalRow.Cells[nameColumnIndex].Value = "          Total Liabilities & Equity";
+                        totalRow.Cells[nameColumnIndex].Value =
+      "          " + ReportTranslate("Total Liabilities & Equity");
 
                         // Set value in the last column dynamically
                         int lastColumnIndex = dgvReport.Columns.Count - 1;
@@ -1992,11 +1994,112 @@ namespace YamyProject
         {
             BindDGV();
         }
+        private bool IsArabicReport()
+        {
+            return Clinic.Properties.Settings.Default.ApplicationLanguage
+                ?.StartsWith("ar", StringComparison.OrdinalIgnoreCase) == true;
+        }
+
+        private string ReportTranslate(string english)
+        {
+            return TranslationClass.Translate(english, IsArabicReport());
+        }
+
+        private void ApplyBalanceSheetArabic()
+        {
+            bool isArabic = IsArabicReport();
+
+            string title = type == "detail"
+                ? "Balance Sheet Detail"
+                : "Balance Sheet";
+
+            headerUC1.FormText = ReportTranslate(title);
+
+            label1.Text = ReportTranslate("Balance Sheet");
+
+            if (type == "detail")
+                label1.Text += isArabic ? " - تفصيلي" : " Detail";
+            else if (type == "Prev Year Comparison")
+                label1.Text += isArabic
+                    ? " - مقارنة بالسنة السابقة"
+                    : " Prev Year Comparison";
+            else if (type == "by Class")
+                label1.Text += isArabic ? " - حسب الفئة" : " By Class";
+
+            btnPrint.Text = ReportTranslate("Print") + " ▼";
+
+            // Translate toolbar and other controls.
+            TranslateBalanceSheetControls(this);
+
+            // Translate the export context menu.
+            TranslateBalanceSheetMenu(contextMenuExport.Items);
+
+            // Translate dynamically created grid headers.
+            foreach (DataGridViewColumn column in dgvReport.Columns)
+            {
+                if (!string.IsNullOrWhiteSpace(column.HeaderText))
+                {
+                    column.HeaderText =
+                        ReportTranslate(column.HeaderText);
+                }
+
+                column.HeaderCell.Style.Alignment = isArabic
+                    ? DataGridViewContentAlignment.MiddleCenter
+                    : DataGridViewContentAlignment.MiddleCenter;
+            }
+        }
+
+        private void TranslateBalanceSheetControls(Control parent)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                if (control is Button || control is Label ||
+                    control is CheckBox || control is GroupBox)
+                {
+                    if (control.Tag == null)
+                        control.Tag = control.Text;
+
+                    string english = control.Tag as string;
+
+                    if (!string.IsNullOrWhiteSpace(english))
+                        control.Text = ReportTranslate(english);
+                }
+
+                if (control.HasChildren)
+                    TranslateBalanceSheetControls(control);
+            }
+        }
+
+        private void TranslateBalanceSheetMenu(
+            ToolStripItemCollection items)
+        {
+            foreach (ToolStripItem item in items)
+            {
+                if (item.Tag == null)
+                    item.Tag = item.Text;
+
+                string english = item.Tag as string;
+
+                if (!string.IsNullOrWhiteSpace(english))
+                    item.Text = ReportTranslate(english);
+
+                if (item is ToolStripDropDownItem dropDown)
+                    TranslateBalanceSheetMenu(dropDown.DropDownItems);
+            }
+        }
         private void dateWords()
         {
-            string fromDate = dateTimePicker1.Value.ToString("MMMM dd, yyyy");
-            //string toDate = dateTimePicker2.Value.ToString("MMMM dd, yyyy");
-            guna2HtmlLabel10.Text = $"AS of {fromDate}";
+            bool isArabic = IsArabicReport();
+
+            string fromDate = dateTimePicker1.Value.ToString(
+                "MMMM dd, yyyy",
+                isArabic
+                    ? new System.Globalization.CultureInfo("ar-AE")
+                    : new System.Globalization.CultureInfo("en-US"));
+
+            guna2HtmlLabel10.Text = isArabic
+                ? $"اعتباراً من {fromDate}"
+                : $"As of {fromDate}";
         }
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
