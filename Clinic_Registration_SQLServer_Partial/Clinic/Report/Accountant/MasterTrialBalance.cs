@@ -62,8 +62,11 @@ namespace YamyProject
         private void MasterTrialBalance_Load(object sender, EventArgs e)
         {
             comboBox1.SelectedIndex = 1;
+
             bindDGVTrial();
             loadCompany();
+
+            ApplyTrialBalanceArabic();
         }
         private void bindDGVTrial()
         {
@@ -266,6 +269,7 @@ namespace YamyProject
             }
 
             LocalizationManager.LocalizeDataGridViewHeaders(dgvCustomer);
+            ApplyTrialBalanceArabic();
         }
 
         private void chkDate_CheckedChanged(object sender, EventArgs e)
@@ -491,7 +495,9 @@ namespace YamyProject
         private void btnHideHeader_Click(object sender, EventArgs e)
         {
             pnlHeader.Visible = !pnlHeader.Visible;
-            btnHideHeader.Text = pnlHeader.Visible ? "Hide Header" : "Show Header";
+
+            btnHideHeader.Text = TrialTranslate(
+                pnlHeader.Visible ? "Hide Header" : "Show Header");
         }
 
         private void btnToWord_Click(object sender, EventArgs e)
@@ -695,7 +701,239 @@ namespace YamyProject
             //    exporter.ExportToExcel(saveFileDialog.FileName);
             //}
         }
+        private readonly Dictionary<Control, string> _trialOriginalTexts =
+    new Dictionary<Control, string>();
 
+        private readonly Dictionary<Control, Rectangle> _trialOriginalBounds =
+            new Dictionary<Control, Rectangle>();
+
+        private bool IsArabicTrial()
+        {
+            return TranslationClass.IsArabic;
+        }
+
+        private string TrialTranslate(string english)
+        {
+            return TranslationClass.Translate(english, IsArabicTrial());
+        }
+
+        private void TranslateTrialControls(Control parent)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                bool textControl =
+                    control is Label ||
+                    control is Button ||
+                    control is CheckBox ||
+                    control is GroupBox ||
+                    control is Guna2Button ||
+                    control is Guna2HtmlLabel ||
+                    control is Guna2CheckBox;
+
+                if (textControl &&
+                    control != label3 &&
+                    control != headerUC1)
+                {
+                    if (!_trialOriginalTexts.ContainsKey(control))
+                        _trialOriginalTexts[control] = control.Text ?? "";
+
+                    string english = _trialOriginalTexts[control].Trim();
+
+                    if (!string.IsNullOrWhiteSpace(english))
+                        control.Text = TrialTranslate(english);
+
+                    if (control is Label label)
+                    {
+                        label.TextAlign = IsArabicTrial()
+                            ? ContentAlignment.MiddleRight
+                            : ContentAlignment.MiddleLeft;
+                    }
+                }
+
+                if (control.HasChildren)
+                    TranslateTrialControls(control);
+            }
+        }
+
+        private void MirrorTrialRow(Control parent, int minTop, int maxTop)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                if (control.Dock != DockStyle.None ||
+                    control == headerUC1 ||
+                    control == dgvCustomer ||
+                    control == pnlHeader)
+                    continue;
+
+                if (!_trialOriginalBounds.ContainsKey(control))
+                    _trialOriginalBounds[control] = control.Bounds;
+
+                Rectangle original = _trialOriginalBounds[control];
+
+                if (original.Top < minTop || original.Top > maxTop)
+                    continue;
+
+                if (IsArabicTrial())
+                {
+                    control.Left =
+                        parent.ClientSize.Width -
+                        original.Right;
+                }
+                else
+                {
+                    control.Left = original.Left;
+                }
+            }
+        }
+
+        private void ApplyTrialBalanceArabic()
+        {
+            bool isArabic = IsArabicTrial();
+
+            // Window title
+            this.Text = TrialTranslate("Trial Balance");
+            headerUC1.FormText = this.Text;
+
+            // Toolbar and filters
+            TranslateTrialControls(this);
+
+            // Report headings
+            label2.Text = TrialTranslate("Trial Balance");
+
+            // label3 contains the actual company name.
+            // Do not overwrite it.
+
+            // Hide/show header
+            btnHideHeader.Text = TrialTranslate(
+                pnlHeader.Visible ? "Hide Header" : "Show Header");
+
+            // Translate Type combobox without changing its item indexes.
+            if (comboBox1.Items.Count > 0)
+            {
+                int selected = comboBox1.SelectedIndex;
+
+                // Avoid triggering SelectedIndexChanged while changing text.
+                comboBox1.SelectedIndexChanged -= comboBox1_SelectedIndexChanged;
+
+                try
+                {
+                    for (int i = 0; i < comboBox1.Items.Count; i++)
+                    {
+                        string value = comboBox1.Items[i]?.ToString() ?? "";
+
+                        // Translate only known display values.
+                        if (value == "Summary" || value == "ملخص")
+                            comboBox1.Items[i] = isArabic ? "ملخص" : "Summary";
+                        else if (value == "Detail" || value == "تفصيلي")
+                            comboBox1.Items[i] = isArabic ? "تفصيلي" : "Detail";
+                        else if (value == "Detailed")
+                            comboBox1.Items[i] = isArabic ? "تفصيلي" : "Detailed";
+                    }
+
+                    comboBox1.SelectedIndex = selected;
+                }
+                finally
+                {
+                    comboBox1.SelectedIndexChanged += comboBox1_SelectedIndexChanged;
+                }
+            }
+
+            // Translate displayed grid headings.
+            foreach (DataGridViewColumn column in dgvCustomer.Columns)
+            {
+                switch (column.Name)
+                {
+                    case "Account Name":
+                        column.HeaderText = TrialTranslate("Account Name");
+                        break;
+
+                    case "Debit":
+                        column.HeaderText = TrialTranslate("Debit");
+                        break;
+
+                    case "Credit":
+                        column.HeaderText = TrialTranslate("Credit");
+                        break;
+
+                    case "Opening":
+                        column.HeaderText = TrialTranslate("Opening");
+                        break;
+
+                    case "Balance":
+                        column.HeaderText = TrialTranslate("Balance");
+                        break;
+                }
+
+                column.HeaderCell.Style.Alignment =
+                    DataGridViewContentAlignment.MiddleCenter;
+            }
+
+            // Mirror visible grid columns.
+            // Keep column.Name and DataPropertyName unchanged.
+            dgvCustomer.RightToLeft =
+                isArabic ? RightToLeft.Yes : RightToLeft.No;
+
+            if (dgvCustomer.Columns.Contains("Account Name"))
+            {
+                dgvCustomer.Columns["Account Name"]
+                    .DefaultCellStyle.Alignment =
+                        isArabic
+                            ? DataGridViewContentAlignment.MiddleRight
+                            : DataGridViewContentAlignment.MiddleLeft;
+            }
+
+            // Numeric columns remain right aligned.
+            foreach (string name in new[]
+            {
+        "Opening", "Debit", "Credit", "Balance"
+    })
+            {
+                if (dgvCustomer.Columns.Contains(name))
+                {
+                    dgvCustomer.Columns[name]
+                        .DefaultCellStyle.Alignment =
+                            DataGridViewContentAlignment.MiddleRight;
+                }
+            }
+
+            // Translate TOTAL display only, not SQL/data keys.
+            foreach (DataGridViewRow row in dgvCustomer.Rows)
+            {
+                if (row.IsNewRow)
+                    continue;
+
+                object value = row.Cells["Account Name"].Value;
+
+                if (value?.ToString().Trim() == "TOTAL")
+                {
+                    // Keep the underlying value unchanged.
+                    // Display translation is handled by CellFormatting.
+                    row.DefaultCellStyle.BackColor =
+                        Color.FromArgb(238, 244, 247);
+                }
+            }
+
+            // Mirror top toolbar/filter controls.
+            // These coordinates refer to the control's immediate parent.
+            // Adjust the range if your toolbar uses a different container.
+            MirrorTrialRow(this, 40, 135);
+        }
+        private void dgvCustomer_CellFormatting(
+    object sender,
+    DataGridViewCellFormattingEventArgs e)
+        {
+            if (e.RowIndex < 0 || e.ColumnIndex < 0)
+                return;
+
+            if (dgvCustomer.Columns[e.ColumnIndex].Name != "Account Name")
+                return;
+
+            if (e.Value?.ToString().Trim() == "TOTAL")
+            {
+                e.Value = TrialTranslate("TOTAL");
+                e.FormattingApplied = true;
+            }
+        }
         private void dgvCustomer_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             if (dgvCustomer.SelectedRows[0].Cells["id"].Value.ToString() == "")

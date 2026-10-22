@@ -7,6 +7,7 @@ using MigraDoc.DocumentObjectModel.Tables;
 using MigraDoc.Rendering;
 using MySql.Data.MySqlClient;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -20,24 +21,39 @@ namespace YamyProject
         public frmCostCenterSummary()
         {
             InitializeComponent();
+
             LocalizationManager.LocalizeForm(this);
+
             headerUC1.FormText = this.Text;
         }
 
         private void frmCostCenterSummary_Load(object sender, EventArgs e)
         {
             btnPrint.Text = "Print ▼";
+
             dtFrom.Value = dtTo.Value = DateTime.Now;
-            using (MySqlDataReader reader = ClinicDatabase.ExecuteReader("SELECT name FROM tbl_company LIMIT 1"))
+
+            using (MySqlDataReader reader =
+                ClinicDatabase.ExecuteReader(
+                    "SELECT name FROM tbl_company LIMIT 1"))
+            {
                 if (reader.Read())
                 {
                     lblCompany.Text = reader["name"].ToString();
                 }
+            }
+
             lblDate.Text = DateTime.Now.Date.ToString("dd/MM/yyyy");
             lblTime.Text = DateTime.Now.ToString("hh:mm:tt");
+
             BindCombos.PopulateCostCenter(comboBox1);
+
             comboBox1.SelectedIndex = -1;
+
             LoadData();
+
+            // Translate after loading the grid and report data.
+            ApplyCostCenterArabic();
         }
         private void btnPrint_Click(object sender, EventArgs e)
         {
@@ -320,7 +336,219 @@ namespace YamyProject
         {
             LoadData();
         }
+        private bool IsArabicReport()
+        {
+            return TranslationClass.IsArabic;
+        }
 
+        private string ReportTranslate(string english)
+        {
+            return TranslationClass.Translate(english, IsArabicReport());
+        }
+
+        private void ApplyCostCenterArabic()
+        {
+            bool isArabic = IsArabicReport();
+
+            // Report title
+            string title = ReportTranslate("Cost Center Summary");
+            this.Text = title;
+            headerUC1.FormText = title;
+
+            // Translate every eligible control.
+            TranslateCostCenterControls(this);
+
+            // Explicit translations for important report text.
+            btnPrint.Text = ReportTranslate("Print") + " ▼";
+
+            // Translate export menu.
+            TranslateCostCenterMenu(contextMenuExport.Items);
+
+            // Translate grid headers.
+            foreach (DataGridViewColumn column in dgvSales.Columns)
+            {
+                string englishHeader;
+
+                switch (column.Name)
+                {
+                    case "name":
+                        englishHeader = "Description";
+                        break;
+                    case "VoucherNo":
+                        englishHeader = "Voucher No";
+                        break;
+                    case "debit":
+                        englishHeader = "Debit";
+                        break;
+                    case "credit":
+                        englishHeader = "Credit";
+                        break;
+                    case "balance":
+                        englishHeader = "Balance";
+                        break;
+                    default:
+                        englishHeader = column.HeaderText;
+                        break;
+                }
+
+                column.HeaderText = ReportTranslate(englishHeader);
+                column.HeaderCell.Style.Alignment =
+                    DataGridViewContentAlignment.MiddleCenter;
+            }
+
+            // Mirror grid column display without changing underlying data.
+            dgvSales.RightToLeft = isArabic
+                ? RightToLeft.Yes
+                : RightToLeft.No;
+
+            dgvSales.ColumnHeadersDefaultCellStyle.Alignment =
+                DataGridViewContentAlignment.MiddleCenter;
+
+            if (dgvSales.Columns.Contains("name"))
+            {
+                dgvSales.Columns["name"].DefaultCellStyle.Alignment =
+                    isArabic
+                        ? DataGridViewContentAlignment.MiddleRight
+                        : DataGridViewContentAlignment.MiddleLeft;
+            }
+
+            // Mirror toolbar/filter control positions.
+            ApplyCostCenterLayout(isArabic);
+            FixCostCenterCheckboxLayout(isArabic);
+        }
+        private void FixCostCenterCheckboxLayout(bool isArabic)
+        {
+            guna2CheckBox1.RightToLeft =
+                isArabic ? RightToLeft.Yes : RightToLeft.No;
+
+            chkDate.RightToLeft =
+                isArabic ? RightToLeft.Yes : RightToLeft.No;
+
+            guna2CheckBox1.TextAlign =
+                ContentAlignment.MiddleCenter;
+
+            chkDate.TextAlign =
+                ContentAlignment.MiddleCenter;
+        }
+        private readonly Dictionary<Control, string> _costCenterEnglishText =
+    new Dictionary<Control, string>();
+        private void TranslateCostCenterControls(Control parent)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                if (!(control is TextBox) &&
+                    !(control is ComboBox) &&
+                    !(control is DateTimePicker) &&
+                    !(control is DataGridView) &&
+                    control != lblCompany &&
+                    control != lblDate &&
+                    control != lblTime)
+                {
+                    if (!_costCenterEnglishText.ContainsKey(control))
+                    {
+                        _costCenterEnglishText[control] = control.Text ?? "";
+                    }
+
+                    string english = _costCenterEnglishText[control].Trim();
+
+                    if (!string.IsNullOrWhiteSpace(english))
+                    {
+                        control.Text = ReportTranslate(english);
+                    }
+
+                    if (control is Label label)
+                    {
+                        label.TextAlign = IsArabicReport()
+                            ? ContentAlignment.MiddleRight
+                            : ContentAlignment.MiddleLeft;
+                    }
+                }
+
+                if (control.HasChildren)
+                {
+                    TranslateCostCenterControls(control);
+                }
+            }
+        }
+        private readonly Dictionary<Control, Rectangle> _originalBounds =
+       new Dictionary<Control, Rectangle>();
+
+        private void ApplyCostCenterLayout(bool isArabic)
+        {
+            // Keep the report body and title bar unchanged.
+            // Only reposition toolbar and filter controls.
+
+            int toolbarTop = headerUC1.Bottom;
+            int filterBottom = dgvSales.Top;
+
+            foreach (Control parent in GetAllContainers(this))
+            {
+                if (parent == dgvSales || parent == headerUC1)
+                    continue;
+
+                foreach (Control control in parent.Controls)
+                {
+                    if (control == dgvSales ||
+                        control == headerUC1 ||
+                        control.Dock != DockStyle.None)
+                        continue;
+
+                    if (!_originalBounds.ContainsKey(control))
+                        _originalBounds[control] = control.Bounds;
+
+                    Rectangle original = _originalBounds[control];
+
+                    // Convert control position to form coordinates.
+                    Point formPoint = this.PointToClient(
+                        parent.PointToScreen(original.Location));
+
+                    // Only mirror toolbar and filter rows.
+                    if (formPoint.Y < toolbarTop ||
+                        formPoint.Y >= filterBottom)
+                        continue;
+
+                    control.Left = isArabic
+                        ? parent.ClientSize.Width - original.Right
+                        : original.Left;
+
+                    if (control is Label label)
+                    {
+                        label.TextAlign = isArabic
+                            ? ContentAlignment.MiddleRight
+                            : ContentAlignment.MiddleLeft;
+                    }
+                }
+            }
+        }
+
+        private IEnumerable<Control> GetAllContainers(Control root)
+        {
+            yield return root;
+
+            foreach (Control child in root.Controls)
+            {
+                if (child.HasChildren)
+                {
+                    foreach (Control nested in GetAllContainers(child))
+                        yield return nested;
+                }
+            }
+        }
+        private void TranslateCostCenterMenu(ToolStripItemCollection items)
+        {
+            foreach (ToolStripItem item in items)
+            {
+                if (!string.IsNullOrWhiteSpace(item.Text))
+                {
+                    item.Text = ReportTranslate(item.Text.Trim());
+                }
+
+                if (item is ToolStripDropDownItem dropDown)
+                {
+                    TranslateCostCenterMenu(dropDown.DropDownItems);
+                }
+            }
+        }
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (comboBox1.SelectedItem != null)

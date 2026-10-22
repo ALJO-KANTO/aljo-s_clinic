@@ -565,6 +565,29 @@ namespace Clinic
 { "Show Columns", "إظهار الأعمدة" },
 { "As of", "اعتبارًا من" },
 { "Print ▼", "طباعة ▼" },
+// Cost Center Summary Report
+{ "Cost Center Summary", "ملخص مراكز التكلفة" },
+{ "All Transaction", "جميع المعاملات" },
+{ "All Transactions", "جميع المعاملات" },
+{ "Company Name", "اسم الشركة" },
+{ "Voucher No", "رقم السند" },
+{ "Name", "الاسم" },
+{ "From", "من" },
+{ "To", "إلى" },
+// Trial Balance Report
+{ "Trial Balance", "ميزان المراجعة" },
+{ "Account Name", "اسم الحساب" },
+{ "TOTAL", "الإجمالي" },
+{ "Type", "النوع" },
+{ "Detail", "تفصيلي" },
+{ "Detailed", "تفصيلي" },
+{ "Opening", "الرصيد الافتتاحي" },
+{ "Export To Word", "تصدير إلى وورد" },
+{ "Export To Excel", "تصدير إلى إكسل" },
+{ "Share Template", "مشاركة القالب" },
+{ "Comme_nt_On_Report", "إضافة تعليق على التقرير" },
+{ "Memor_ize", "حفظ إعدادات التقرير" },
+{ "Prin", "طباعة" }
 };
         public static bool IsArabic { get; set; } = false;
 
