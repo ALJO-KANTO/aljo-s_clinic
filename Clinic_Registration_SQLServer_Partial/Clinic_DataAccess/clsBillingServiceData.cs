@@ -208,10 +208,7 @@ namespace Clinic_DataAccess
                    2,                                      -- PaymentStatus
                    @UserID,
                    NOW(),
-                   COALESCE(
-                       SUM( (vs.SavedServicePrice * vs.Quantity) - IFNULL(vs.Discount, 0) ), 
-                       0
-                   ) AS TotalAmount,
+                   @Amount,
                    CONCAT('INV-', YEAR(NOW()), '-', LPAD(
                        (SELECT IFNULL(MAX(CAST(SUBSTRING(BillNumber, 10) AS UNSIGNED)), 0) + 1 
                         FROM Bills 
@@ -230,6 +227,7 @@ namespace Clinic_DataAccess
                         {
                             cmdBill.Parameters.AddWithValue("@VisitID", VisitID);
                             cmdBill.Parameters.AddWithValue("@UserID", UserID);
+                            cmdBill.Parameters.AddWithValue("@Amount", Fees);
 
                             BillID = Convert.ToInt32(cmdBill.ExecuteScalar());
                         }

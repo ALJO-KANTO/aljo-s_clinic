@@ -1413,8 +1413,29 @@ AND active = 0        ORDER BY name;";
 
             _FillVitalsInfo();
 
+            // Enable the consultation panels.
             SetFormControlsState(true);
 
+            // Explicitly enable Services.
+            tpServices.Enabled = true;
+            pnlServicesInfo.Enabled = true;
+            btnAddService.Enabled = true;
+            btnNewService.Enabled = true;
+            cmbServices.Enabled = true;
+            nudQuality.Enabled = true;
+
+            // Explicitly enable Prescription.
+            tpPrescriptionInfo.Enabled = true;
+
+            bool canEditPrescription =
+                _Visit.PrescriptionInfo == null ||
+                _Visit.PrescriptionInfo.PrescriptionID <= 0 ||
+                _Visit.PrescriptionInfo.IsPrescriptionPending();
+
+            pnlPrescriptionInfo.Enabled = canEditPrescription;
+            btnAddMedicen.Enabled = canEditPrescription;
+
+            // Refresh queue without resetting the consultation controls.
             _RefreshQueueData();
 
             tcVisitInfo.SelectedIndex = 0;

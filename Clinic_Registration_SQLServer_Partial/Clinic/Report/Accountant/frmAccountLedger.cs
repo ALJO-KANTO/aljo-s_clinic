@@ -25,7 +25,7 @@ namespace YamyProject.UI.Reports.Accountant
         {
             InitializeComponent();
 
-            //LocalizationManager.LocalizeForm(this);
+            //ApplyArabicProperties();
         }
 
 
@@ -51,6 +51,7 @@ namespace YamyProject.UI.Reports.Accountant
                 DateTime.Today;
 
             ResetSummary();
+            //ApplyArabicProperties();
         }
 
 
@@ -482,6 +483,8 @@ namespace YamyProject.UI.Reports.Accountant
 
 
                         transactionCount++;
+                        //ApplyArabicProperties();
+                        //TranslateLedgerResultRows();
                     }
                 }
 

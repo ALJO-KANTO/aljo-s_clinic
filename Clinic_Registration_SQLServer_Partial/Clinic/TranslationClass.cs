@@ -531,7 +531,19 @@ namespace Clinic
 
 
             {"✚  CLINIC\n     MANAGEMENT SYSTEM", "✚  نظام إدارة\n     العيادة" },
-        };
+{ "Account Ledger", "دفتر الأستاذ" },
+{ "Opening Balance", "الرصيد الافتتاحي" },
+{ "Closing Balance", "الرصيد الختامي" },
+{ "Period Total", "إجمالي الفترة" },
+{ "Reference", "المرجع" },
+{ "Transaction", "المعاملة" },
+{ "Description", "الوصف" },
+{ "Debit", "مدين" },
+{ "Credit", "دائن" },
+{ "Balance", "الرصيد" },
+{ "From Date", "من تاريخ" },
+{ "To Date", "إلى تاريخ" },
+{ "View Ledger", "عرض دفتر الأستاذ" },        };
         public static bool IsArabic { get; set; } = false;
 
 

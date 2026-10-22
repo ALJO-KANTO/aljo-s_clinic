@@ -429,8 +429,8 @@ namespace Clinic_DataAccess
 
 
         public static DataTable GetPatientsWaitingForDoctors(
-            int DoctorPersonID,
-            DateTime? date = null)
+       int DoctorPersonID,
+       DateTime? date = null)
         {
             DataTable dt = new DataTable();
 
@@ -440,30 +440,38 @@ namespace Clinic_DataAccess
                     new MySqlConnection(clsDataAccessSettings.ConnectionString))
                 {
                     string query = @"
-            SELECT
-                VisitID,
-                AppointmentID,
-                PatientName,
-                CheckInTime,
-                StatusText,
-                IsCalled
-            FROM View_PatientsWaitingForDoctors
-            WHERE
-                (@DoctorPersonID = 0
-                 OR DoctorPersonID = @DoctorPersonID)
+                SELECT
+                    VisitID,
+                    AppointmentID,
+                    PatientName,
+                    CheckInTime,
+                    StatusText,
+                    IsCalled
+                FROM View_PatientsWaitingForDoctors
+                WHERE
+                    (
+                        @DoctorPersonID = 0
+                        OR DoctorPersonID = @DoctorPersonID
+                    )
 
-              AND DATE(CheckInTime) = @Date
+                    AND
+                    (
+                        DATE(CheckInTime) = @Date
+                        OR CheckInTime IS NULL
+                    )
 
-              AND StatusText IN
-            (
-                'InQueue' ,
-               -- 'Waiting_For_Vitals',
-                'Ready_For_Doctor',
-                'Progress',
-                 'InProgress',
-                'In-Progress'
-            )
-            ORDER BY CheckInTime;";
+                    AND StatusText IN
+                    (
+                        'InQueue',
+                        'Ready_For_Doctor',
+                        'Progress',
+                        'InProgress',
+                        'In-Progress'
+                    )
+
+                ORDER BY
+                    CheckInTime,
+                    AppointmentID;";
 
                     using (MySqlCommand cmd =
                         new MySqlCommand(query, connection))
@@ -471,7 +479,6 @@ namespace Clinic_DataAccess
                         cmd.Parameters.AddWithValue(
                             "@DoctorPersonID", DoctorPersonID);
 
-                        // If date is null, use today's date.
                         cmd.Parameters.AddWithValue(
                             "@Date", (date ?? DateTime.Today).Date);
 

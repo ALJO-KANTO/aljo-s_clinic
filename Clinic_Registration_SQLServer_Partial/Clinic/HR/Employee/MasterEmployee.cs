@@ -44,7 +44,14 @@ namespace YamyProject
             StartMasterEmployeeLoading();
 
             InitializeComponent();
+            this.Resize += (s, e) =>
+            {
+                if (headerUC1 == null || headerUC1.IsDisposed)
+                    return;
 
+                headerUC1.Left = 0;
+                headerUC1.Width = ClientSize.Width;
+            };
             // Employee page stays invisible during construction.
             Opacity = 0;
             ShowInTaskbar = false;
@@ -984,75 +991,56 @@ namespace YamyProject
         }
         private void ApplyHeaderDirection(bool arabic)
         {
-            // =========================================================
-            // HEADER
-            //
-            // ENGLISH:
-            // [ Employee Center ]                 [ Menus ]
-            //
-            // ARABIC:
-            // [ Menus ]                 [ مركز الموظفين ]
-            // =========================================================
+            if (headerUC1 == null)
+                return;
 
-            if (arabic)
+            SuspendLayout();
+
+            try
             {
-                // -------------------------------
-                // TITLE -> RIGHT
-                // -------------------------------
+                // Keep the custom title bar fixed and visible.
+                // Do not move the whole header for Arabic.
                 headerUC1.Anchor =
                     AnchorStyles.Top |
+                    AnchorStyles.Left |
                     AnchorStyles.Right;
 
-                headerUC1.Left =
-                    ClientSize.Width -
-                    headerUC1.Width -
-                    35;
+                headerUC1.Left = 0;
+                headerUC1.Top = 0;
+                headerUC1.Width = ClientSize.Width;
 
-                headerUC1.RightToLeft =
-                    RightToLeft.Yes;
+                // Preserve the original arrangement of the
+                // minimize, maximize and close buttons.
+                headerUC1.RightToLeft = RightToLeft.No;
 
+                // Translate only the header caption.
+                headerUC1.FormText = arabic
+                    ? "مركز الموظفين"
+                    : "Employee Center";
 
-                // -------------------------------
-                // MENU -> LEFT
-                // -------------------------------
-                menuStrip1.Anchor =
-                    AnchorStyles.Top |
-                    AnchorStyles.Left;
+                // Keep the menu positioning language-aware.
+                if (menuStrip1 != null)
+                {
+                    menuStrip1.Anchor = arabic
+                        ? AnchorStyles.Top | AnchorStyles.Left
+                        : AnchorStyles.Top | AnchorStyles.Right;
 
-                menuStrip1.Left = 35;
+                    menuStrip1.Left = arabic
+                        ? 35
+                        : Math.Max(0,
+                            ClientSize.Width - menuStrip1.Width - 35);
 
-                menuStrip1.RightToLeft =
-                    RightToLeft.Yes;
+                    menuStrip1.RightToLeft = arabic
+                        ? RightToLeft.Yes
+                        : RightToLeft.No;
+                }
+
+                headerUC1.Visible = true;
+                headerUC1.BringToFront();
             }
-            else
+            finally
             {
-                // -------------------------------
-                // TITLE -> LEFT
-                // -------------------------------
-                headerUC1.Anchor =
-                    AnchorStyles.Top |
-                    AnchorStyles.Left;
-
-                headerUC1.Left = 35;
-
-                headerUC1.RightToLeft =
-                    RightToLeft.No;
-
-
-                // -------------------------------
-                // MENU -> RIGHT
-                // -------------------------------
-                menuStrip1.Anchor =
-                    AnchorStyles.Top |
-                    AnchorStyles.Right;
-
-                menuStrip1.Left =
-                    ClientSize.Width -
-                    menuStrip1.Width -
-                    35;
-
-                menuStrip1.RightToLeft =
-                    RightToLeft.No;
+                ResumeLayout(true);
             }
         }
         private void ApplyEmployeeListDirection(bool arabic)

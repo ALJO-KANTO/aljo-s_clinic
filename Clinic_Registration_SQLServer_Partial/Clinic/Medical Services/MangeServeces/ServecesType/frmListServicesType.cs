@@ -28,22 +28,37 @@ namespace Clinic.Serveces.ServecesType
         private void frmListServicesType_Load(object sender, EventArgs e)
         {
             dgvServicesType.DataSource = _dtListServices;
-            lblRecordsCount.Text=_dtListServices.Rows.Count.ToString();
-            if (dgvServicesType.Rows.Count == 0)
-                return;
-            dgvServicesType.Columns["ServiceID"].HeaderText= "Service ID";
-            dgvServicesType.Columns["ServiceID"].Width = 150;
 
-            dgvServicesType.Columns["ServiceName"].HeaderText = "Service Name";
-            dgvServicesType.Columns["ServiceName"].Width = 200;
+            lblRecordsCount.Text = _dtListServices.Rows.Count.ToString();
 
-            dgvServicesType.Columns["Description"].HeaderText = "Description";
-            dgvServicesType.Columns["Description"].Width = 400;
+            // Service ID
+            if (dgvServicesType.Columns.Contains("ServiceID"))
+            {
+                dgvServicesType.Columns["ServiceID"].HeaderText = "Service ID";
+                dgvServicesType.Columns["ServiceID"].Width = 150;
+            }
 
-            dgvServicesType.Columns["ServiceFees"].HeaderText = "Service Fees";
-            dgvServicesType.Columns["ServiceFees"].Width = 100;
+            // Service Name
+            if (dgvServicesType.Columns.Contains("ServiceName"))
+            {
+                dgvServicesType.Columns["ServiceName"].HeaderText = "Service Name";
+                dgvServicesType.Columns["ServiceName"].Width = 200;
+            }
+
+            // Description
+            if (dgvServicesType.Columns.Contains("Description"))
+            {
+                dgvServicesType.Columns["Description"].HeaderText = "Description";
+                dgvServicesType.Columns["Description"].Width = 400;
+            }
+
+            // Service Fees
+            if (dgvServicesType.Columns.Contains("ServiceFees"))
+            {
+                dgvServicesType.Columns["ServiceFees"].HeaderText = "Service Fees";
+                dgvServicesType.Columns["ServiceFees"].Width = 100;
+            }
         }
-
         private void btnClose_Click(object sender, EventArgs e)
         {
             this.Close();
