@@ -42,7 +42,7 @@ namespace Clinic_Business
                 invoice.InvoiceNumber = rowHeader["InvoiceNumber"].ToString();
                 invoice.InvoiceDate = (DateTime)rowHeader["InvoiceDate"];
                 invoice.PatientName = rowHeader["PatienName"].ToString();
-                invoice.PatientID = (int)rowHeader["PatientID"];
+                invoice.PatientID = Convert.ToInt32(rowHeader["PatientID"]);
             }
 
             // تعبئة الأصناف (Table 2)

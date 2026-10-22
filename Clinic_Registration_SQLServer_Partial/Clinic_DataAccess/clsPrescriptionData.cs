@@ -381,10 +381,10 @@ namespace Clinic_DataAccess
                 {
                     string query = @"SELECT 
                                         P.PrescriptionID,
-                                        ISNULL(P.VisitID, -1) AS VisitID,
-                                        ISNULL(V.AppointmentID, -1) AS AppointmentID, 
-                                        ISNULL(PP.FullName, 'Not Found') AS PatientName,
-                                        ISNULL(PD.FullName, 'Pharmacy') AS DoctorName,
+                                        IFNULL(P.VisitID, -1) AS VisitID,
+                                        IFNULL(V.AppointmentID, -1) AS AppointmentID, 
+                                        IFNULL(PP.FullName, 'Not Found') AS PatientName,
+                                        IFNULL(PD.FullName, 'Pharmacy') AS DoctorName,
                                        FORMAT(P.PrescriptionDate, 'HH:mm') AS PrescriptionTime,
                                         CASE P.PrescriptionStatus
                                             WHEN 1 THEN 'Pending'

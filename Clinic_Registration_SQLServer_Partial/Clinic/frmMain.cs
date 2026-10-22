@@ -188,6 +188,20 @@ namespace Clinic
                     MessageBoxIcon.Error);
             }
         }
+        private void IssueInvoiceToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenIfAuthorized(
+                () =>
+                {
+                    using (frmIssueInvoice frm = new frmIssueInvoice())
+                    {
+                        frm.ShowDialog(this);
+                    }
+                },
+                clsGlobal.UserRole.Receptionist,
+                clsGlobal.UserRole.Cashier
+            );
+        }
         private void frmMain_Load(object sender, EventArgs e)
         {
             timer1.Start();

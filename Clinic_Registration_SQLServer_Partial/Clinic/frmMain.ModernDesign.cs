@@ -184,6 +184,10 @@ namespace Clinic
             {
                 menu.Controls.Add(MakeNav("▣", "Billing & Payments", () => OpenManageBills()));
             }
+            if (CanAccessMenu(clsGlobal.UserRole.Cashier))
+            {
+                menu.Controls.Add(MakeNav("🧾", "Invoices", () => IssueInvoiceToolStripMenuItem_Click(this, EventArgs.Empty)));
+            }
             if (CanAccessMenu(clsGlobal.UserRole.Doctor, clsGlobal.UserRole.Pharmacist))
             {
                 menu.Controls.Add(MakeNav("✚", "Prescriptions", () => listPrescriptionToolStripMenuItem_Click(this, EventArgs.Empty)));
@@ -552,7 +556,7 @@ namespace Clinic
                      {
                         () => OpenManageBills(),
                         () => OpenManageBills(),
-                        () => OpenManageBills(),
+                        () => IssueInvoiceToolStripMenuItem_Click(this, EventArgs.Empty),
                         () => appointmentsToolStripMenuItem_Click(this, EventArgs.Empty)
                      }
                  ), 1, 0);
