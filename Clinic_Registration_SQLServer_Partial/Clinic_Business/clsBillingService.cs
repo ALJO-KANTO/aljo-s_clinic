@@ -16,6 +16,10 @@ namespace Clinic_Business
             string status = clsAppointment.enAppointmentStatus.Waiting_For_Vitals.ToString();
             return clsBillingServiceData.CheckInPatient(Appointment.AppointmentID, Appointment.DoctorID, Appointment.PatientID, Appointment.AppointmentFees, UserID, PaymentMethod,status);
         }
+        public static bool InsertBill(int VisitorID,int UserID,decimal Fees,string Type,string PaymentMethod,int AppointmentID)
+        {
+            return clsBillingServiceData.InsertBill(VisitorID, UserID,Fees,Type,PaymentMethod,AppointmentID);
+        }
 
         public enum enPaymetnStatus:byte
         {

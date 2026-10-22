@@ -848,6 +848,40 @@ AND active = 0        ORDER BY name;";
                         "Your entries have been kept.");
                     return;
                 }
+                else
+                {
+                    //Calculate total fees for billing from service and prescription datatables
+
+                    decimal TotalFees = 0;
+
+                    if (_Visit.dtServices != null)
+                    {
+                        foreach (DataRow row in _Visit.dtServices.Rows)
+                        {
+                            decimal servicePrice = Convert.ToDecimal(row["SavedServicePrice"]);
+                            decimal quantity = Convert.ToDecimal(row["Quantity"]);
+                            decimal discount = Convert.ToDecimal(row["Discount"]);
+                            TotalFees += (servicePrice * quantity) - discount;
+                        }
+                    }
+                    if (_Visit.PrescriptionInfo != null && _Visit.PrescriptionInfo.dtMedicines != null)
+                    {
+                        foreach (DataRow row in _Visit.PrescriptionInfo.dtMedicines.Rows)
+                        {
+                            decimal medicinePrice = Convert.ToDecimal(row["SavedMedicinePrice"]);
+                            decimal quantity = Convert.ToDecimal(row["Quantity"]);
+                            TotalFees += medicinePrice * quantity;
+                        }
+                    }
+
+                    clsBillingService.InsertBill(
+                        _Visit.VisitID,
+                        clsGlobal.CurrentUser.UserID,
+                        TotalFees,
+                        "Doctor Visit",
+                        "Cash",
+                        _Visit.AppointmentID);
+                }
 
                 if (_Visit.PrescriptionInfo != null)
                 {
