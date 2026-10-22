@@ -489,7 +489,7 @@ namespace Clinic_DataAccess
                               CONSTRAINT `fk_prescriptions_visit` FOREIGN KEY (`VisitID`) REFERENCES `visits` (`VisitID`)
                             ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
                         },
-                        new DatabaseMigration
+                          new DatabaseMigration
                         {
                             Version = "20261015_BASE_028",
                             Description = "Initial schema: prescriptiondetails",
@@ -511,6 +511,71 @@ namespace Clinic_DataAccess
                               CONSTRAINT `fk_prescriptiondetails_medicine` FOREIGN KEY (`MedicineID`) REFERENCES `medicines` (`MedicineID`)
                             ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
                         },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_034",
+                            Description = "Create tbl_items",
+                            Sql = @"
+                        CREATE TABLE IF NOT EXISTS `tbl_items` (
+	                                            `id` INT(10) NOT NULL AUTO_INCREMENT,
+	                                            `code` VARCHAR(50) NOT NULL DEFAULT '0' COLLATE 'utf8mb4_general_ci',
+	                                            `type` VARCHAR(50) NOT NULL DEFAULT '0' COLLATE 'utf8mb4_general_ci',
+	                                            `warehouse_id` INT(10) NOT NULL DEFAULT '0',
+	                                            `name` VARCHAR(500) NOT NULL DEFAULT '0' COLLATE 'utf8mb4_general_ci',
+	                                            `unit_id` INT(10) NOT NULL DEFAULT '0',
+	                                            `barcode` VARCHAR(70) NOT NULL DEFAULT '0' COLLATE 'utf8mb4_general_ci',
+	                                            `cost_price` DECIMAL(20,4) NOT NULL DEFAULT '0.000',
+	                                            `cogs_account_id` INT(10) NOT NULL DEFAULT '0',
+	                                            `vendor_id` INT(10) NOT NULL DEFAULT '0',
+	                                            `sales_price` DECIMAL(20,4) NOT NULL DEFAULT '0.000',
+	                                            `tax_code_id` INT(10) NOT NULL DEFAULT '0',
+	                                            `income_account_id` INT(10) NOT NULL DEFAULT '0',
+	                                            `asset_account_id` INT(10) NOT NULL DEFAULT '0',
+	                                            `min_amount` DECIMAL(20,4) NOT NULL DEFAULT '0.000',
+	                                            `max_amount` DECIMAL(20,4) NOT NULL DEFAULT '0.000',
+	                                            `on_hand` DECIMAL(20,4) NOT NULL DEFAULT '0.000',
+	                                            `total_value` DECIMAL(20,6) NOT NULL DEFAULT '0.000000',
+	                                            `date` DATE NOT NULL,
+	                                            `img` BLOB NULL DEFAULT NULL,
+                                                `ItemImg` LONGBLOB NULL DEFAULT NULL,
+	                                            `active` INT(10) NOT NULL DEFAULT '0',
+	                                            `method` VARCHAR(50) NOT NULL DEFAULT '0' COLLATE 'utf8mb4_general_ci',
+	                                            `state` INT(10) NOT NULL DEFAULT '0',
+	                                            `created_By` INT(10) NOT NULL DEFAULT '0',
+	                                            `created_date` DATE NOT NULL,
+	                                            `deleted_by` INT(10) NOT NULL DEFAULT '0',
+	                                            `category_id` INT(10) NULL DEFAULT NULL,
+	                                            `posItem` INT(10) NULL DEFAULT NULL,
+                                                `item_type` VARCHAR(50) NOT NULL DEFAULT '0' COLLATE 'utf8mb4_general_ci',
+                        `GlobalId` varchar(36) NOT NULL DEFAULT '0',
+                          `DeviceId` varchar(50) DEFAULT NULL,
+                          `LastModified` datetime DEFAULT CURRENT_TIMESTAMP,
+                          `SyncStatus` tinyint NOT NULL DEFAULT 0,
+	                                            PRIMARY KEY (`id`) USING BTREE
+                                            )
+                                            COLLATE='utf8mb4_general_ci' ENGINE=InnoDB ;
+                            "
+                        },
+
+                       new DatabaseMigration
+{
+    Version = "20261022_CLINIC_00053",
+    Description = "Link prescriptiondetails MedicineID to tbl_items",
+    Sql = @"
+        ALTER TABLE prescriptiondetails
+            DROP FOREIGN KEY fk_prescriptiondetails_medicine;
+
+        ALTER TABLE prescriptiondetails
+            DROP INDEX fk_prescriptiondetails_medicine;
+
+        ALTER TABLE prescriptiondetails
+            ADD CONSTRAINT fk_prescriptiondetails_item
+            FOREIGN KEY (MedicineID)
+            REFERENCES tbl_items(id);
+    "
+},
+
                         new DatabaseMigration
                         {
                             Version = "20261015_BASE_029",
@@ -528,6 +593,19 @@ namespace Clinic_DataAccess
                               CONSTRAINT `fk_inventory_medicine` FOREIGN KEY (`MedicineID`) REFERENCES `medicines` (`MedicineID`),
                               CONSTRAINT `fk_inventory_user` FOREIGN KEY (`UserID`) REFERENCES `users` (`UserID`)
                             ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
+                        },
+                         new DatabaseMigration
+                        {
+                            Version = "20261013_001",
+                            Description = "Create laboratory tests table",
+                            Sql = @"
+                                CREATE TABLE IF NOT EXISTS laboratorytests
+                                (
+                                    TestID INT AUTO_INCREMENT PRIMARY KEY,
+                                    TestName VARCHAR(200) NOT NULL,
+                                    TestPrice DECIMAL(18,2) NOT NULL DEFAULT 0,
+                                    IsActive TINYINT(1) NOT NULL DEFAULT 1
+                                ) ENGINE=InnoDB;"
                         },
                         new DatabaseMigration
 {
@@ -1308,19 +1386,7 @@ namespace Clinic_DataAccess
                             Description = "Initial view: view_patientswaitingfordoctors",
                             Sql = @"CREATE OR REPLACE VIEW `view_patientswaitingfordoctors` AS select `v`.`VisitID` AS `VisitID`,`v`.`AppointmentID` AS `AppointmentID`,`p`.`FullName` AS `PatientName`,`a`.`AppointmentDate` AS `CheckInTime`,`a`.`AppointmentStatus` AS `StatusText`,0 AS `IsCalled`,`d`.`PersonID` AS `DoctorPersonID` from ((((`visits` `v` join `appointments` `a` on((`a`.`AppointmentID` = `v`.`AppointmentID`))) join `patients` `pt` on((`pt`.`PatientID` = `v`.`PatientID`))) join `persons` `p` on((`p`.`PersonID` = `pt`.`PersonID`))) join `doctors` `d` on((`d`.`DoctorID` = `v`.`DoctorID`)));"
                         },
-                        new DatabaseMigration
-                        {
-                            Version = "20261013_001",
-                            Description = "Create laboratory tests table",
-                            Sql = @"
-                                CREATE TABLE IF NOT EXISTS laboratorytests
-                                (
-                                    TestID INT AUTO_INCREMENT PRIMARY KEY,
-                                    TestName VARCHAR(200) NOT NULL,
-                                    TestPrice DECIMAL(18,2) NOT NULL DEFAULT 0,
-                                    IsActive TINYINT(1) NOT NULL DEFAULT 1
-                                ) ENGINE=InnoDB;"
-                        },
+                       
                         // Paste these entries into your existing List<DatabaseMigration>.
                         // Generated from the supplied ERP createDataBase source.
                         // Schema only; seed data provided separately.
@@ -2178,52 +2244,6 @@ namespace Clinic_DataAccess
 
                         new DatabaseMigration
                         {
-                            Version = "20261019_ERP_034",
-                            Description = "Create tbl_items",
-                            Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_items` (
-	                                            `id` INT(10) NOT NULL AUTO_INCREMENT,
-	                                            `code` VARCHAR(50) NOT NULL DEFAULT '0' COLLATE 'utf8mb4_general_ci',
-	                                            `type` VARCHAR(50) NOT NULL DEFAULT '0' COLLATE 'utf8mb4_general_ci',
-	                                            `warehouse_id` INT(10) NOT NULL DEFAULT '0',
-	                                            `name` VARCHAR(500) NOT NULL DEFAULT '0' COLLATE 'utf8mb4_general_ci',
-	                                            `unit_id` INT(10) NOT NULL DEFAULT '0',
-	                                            `barcode` VARCHAR(70) NOT NULL DEFAULT '0' COLLATE 'utf8mb4_general_ci',
-	                                            `cost_price` DECIMAL(20,4) NOT NULL DEFAULT '0.000',
-	                                            `cogs_account_id` INT(10) NOT NULL DEFAULT '0',
-	                                            `vendor_id` INT(10) NOT NULL DEFAULT '0',
-	                                            `sales_price` DECIMAL(20,4) NOT NULL DEFAULT '0.000',
-	                                            `tax_code_id` INT(10) NOT NULL DEFAULT '0',
-	                                            `income_account_id` INT(10) NOT NULL DEFAULT '0',
-	                                            `asset_account_id` INT(10) NOT NULL DEFAULT '0',
-	                                            `min_amount` DECIMAL(20,4) NOT NULL DEFAULT '0.000',
-	                                            `max_amount` DECIMAL(20,4) NOT NULL DEFAULT '0.000',
-	                                            `on_hand` DECIMAL(20,4) NOT NULL DEFAULT '0.000',
-	                                            `total_value` DECIMAL(20,6) NOT NULL DEFAULT '0.000000',
-	                                            `date` DATE NOT NULL,
-	                                            `img` BLOB NULL DEFAULT NULL,
-                                                `ItemImg` LONGBLOB NULL DEFAULT NULL,
-	                                            `active` INT(10) NOT NULL DEFAULT '0',
-	                                            `method` VARCHAR(50) NOT NULL DEFAULT '0' COLLATE 'utf8mb4_general_ci',
-	                                            `state` INT(10) NOT NULL DEFAULT '0',
-	                                            `created_By` INT(10) NOT NULL DEFAULT '0',
-	                                            `created_date` DATE NOT NULL,
-	                                            `deleted_by` INT(10) NOT NULL DEFAULT '0',
-	                                            `category_id` INT(10) NULL DEFAULT NULL,
-	                                            `posItem` INT(10) NULL DEFAULT NULL,
-                                                `item_type` VARCHAR(50) NOT NULL DEFAULT '0' COLLATE 'utf8mb4_general_ci',
-                        `GlobalId` varchar(36) NOT NULL DEFAULT '0',
-                          `DeviceId` varchar(50) DEFAULT NULL,
-                          `LastModified` datetime DEFAULT CURRENT_TIMESTAMP,
-                          `SyncStatus` tinyint NOT NULL DEFAULT 0,
-	                                            PRIMARY KEY (`id`) USING BTREE
-                                            )
-                                            COLLATE='utf8mb4_general_ci' ENGINE=InnoDB ;
-                            "
-                        },
-
-                        new DatabaseMigration
-                        {
                             Version = "20261019_ERP_035",
                             Description = "Create tbl_item_category",
                             Sql = @"
@@ -2779,19 +2799,7 @@ namespace Clinic_DataAccess
                             ADD COLUMN qty_display decimal(20,4) DEFAULT 0;
                             "
                         },
-                        new DatabaseMigration {
-                            Version = "20261022_CLINIC_00053",
-                            Description = "Link prescriptiondetails MedicineID to tbl_items",
-                            Sql = @"
-                                ALTER TABLE prescriptiondetails
-                                    DROP INDEX fk_prescriptiondetails_medicine;
-
-                                ALTER TABLE prescriptiondetails
-                                    ADD CONSTRAINT fk_prescriptiondetails_item
-                                    FOREIGN KEY (MedicineID)
-                                    REFERENCES tbl_items(id);
-                            "
-                        },
+                       
                         new DatabaseMigration
                         {
                             Version = "20261015_BASE_026",
