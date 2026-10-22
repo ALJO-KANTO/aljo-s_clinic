@@ -7,8 +7,8 @@ using System.Drawing.Printing;
 using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Windows.Forms;
-//using YamyProject.DAL;
-//using YamyProject.Localization;
+using YamyProject.DAL;
+using YamyProject.Localization;
 using Excel = Microsoft.Office.Interop.Excel;
 using System.Threading;
 using System.Threading.Tasks;
@@ -49,7 +49,7 @@ namespace YamyProject
             Opacity = 0;
             ShowInTaskbar = false;
 
-           // LocalizationManager.LocalizeForm(this);
+            LocalizationManager.LocalizeForm(this);
 
             ApplyPageLanguage();
 
@@ -146,7 +146,7 @@ namespace YamyProject
                         ? "جاري تطبيق اللغة..."
                         : "Applying language...");
 
-               // LocalizationManager.LocalizeForm(this);
+                LocalizationManager.LocalizeForm(this);
 
                // LocalizationManager.LocalizeDataGridViewHeaders(
                     //
@@ -1543,7 +1543,7 @@ namespace YamyProject
                 ClearEmployeerDetails();
             }
 
-           // LocalizationManager.LocalizeDataGridViewHeaders(dgvCustomer);
+           LocalizationManager.LocalizeDataGridViewHeaders(dgvCustomer);
         }
         private void HideUnusedColumns()
         {

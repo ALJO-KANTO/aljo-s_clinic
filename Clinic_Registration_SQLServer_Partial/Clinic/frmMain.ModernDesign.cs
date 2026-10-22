@@ -214,7 +214,7 @@ namespace Clinic
                 {
                     "Accountant|Account Ledger|frmAccountLedger",
                     "Accountant|Balance Sheet|frmBalanceSheetReport",
-                    "Accountant|Cost Center Summary|frmCostCenterSummery",
+                    "Accountant|Cost Center Summary|frmCostCenterSummary",
                     "Accountant|Trial Balance|MasterTrialBalance",
                     "Accountant|Profit and Loss Detail|ProfitandLossDetailReport",
                     "Accountant|Profit and Loss|ProfitandLossReport",
@@ -224,9 +224,9 @@ namespace Clinic
                     "Inventory|Physical Inventory Worksheet|frmPhysicalInventoryWorksheet",
                     "PettyCash|Petty Cash Balance Detail EMP|frmPettyCashBalanceDetailEMP",
                     "PettyCash|Petty Cash Balance Details|frmPettyCashBalanceDetails",
-                    "PettyCash|Petty Cash Detail EMP Transaction|frmPettyCashDetailEMPTransaction",
+                    "PettyCash|Petty Cash Detail EMP Transaction|frmPettyCashDetailEMPTransactions",
                     "Purchase|Purchase by Vendor Details|frmPurchaseByVendorDetails",
-                    "Purchase|Purchase by Vendor Summary|frmPurchaseByVendorSummery",
+                    "Purchase|Purchase by Vendor Summary|frmPurchaseByVendorSummary",
                     "Vendor|Vendor Balance Details|frmVendorBalanceDetails",
                     "Vendor|Vendor Summary|frmVendorSummary"
                 });

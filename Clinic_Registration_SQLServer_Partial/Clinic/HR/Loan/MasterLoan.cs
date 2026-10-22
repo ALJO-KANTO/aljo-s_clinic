@@ -25,7 +25,9 @@ namespace YamyProject
             employeeUpdateHandler = (sender, args) => BindEmployee();
             //.Employee += employeeUpdateHandler;
 
-            headerUC1.FormText = Text;
+            // Explicitly set the custom header title; it may not refresh from Form.Text alone.
+            this.Text = IsArabicLanguage() ? "مركز قروض الموظفين" : "Employee Loan Center";
+            headerUC1.FormText = this.Text;
         }
 
         private void MasterLoan_Load(object sender, EventArgs e)
@@ -37,7 +39,10 @@ namespace YamyProject
             btnExpand.Text = IsArabicLanguage() ? "المزيد" : "More";
             ApplyMasterLoanLocalization(this);
             LocalizeLoanGridHeaders();
-            headerUC1.FormText = Text;
+
+            // Reapply after Load because other localization routines can reset the title.
+            this.Text = IsArabicLanguage() ? "مركز قروض الموظفين" : "Employee Loan Center";
+            headerUC1.FormText = this.Text;
         }
         private void MasterLoan_FormClosing(object sender, FormClosingEventArgs e)
         {
