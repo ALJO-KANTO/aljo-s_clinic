@@ -2252,13 +2252,12 @@ namespace Clinic_DataAccess
                                                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
                             "
                         },
-
                         new DatabaseMigration
                         {
                             Version = "20261019_ERP_036",
                             Description = "Create tbl_unit",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_unit` (
+                            CREATE TABLE IF NOT EXISTS `tbl_unit` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
                                                   PRIMARY KEY (`id`)
@@ -2271,7 +2270,7 @@ namespace Clinic_DataAccess
                             Version = "20261019_ERP_037",
                             Description = "Create tbl_warehouse",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_warehouse` (
+                            CREATE TABLE IF NOT EXISTS `tbl_warehouse` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `code` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
                                                   `name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -2292,7 +2291,7 @@ namespace Clinic_DataAccess
                             Version = "20261019_ERP_042",
                             Description = "Create tbl_item_warehouse_transaction",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_item_warehouse_transaction` (
+                            CREATE TABLE IF NOT EXISTS `tbl_item_warehouse_transaction` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `date` date DEFAULT NULL,
                                                   `warehouse_from` int DEFAULT NULL,
@@ -2605,6 +2604,63 @@ namespace Clinic_DataAccess
                         },
                         new DatabaseMigration
                         {
+                            Version = "20261019_ERP_0051",
+                            Description = "add columns to purchase_details",
+                            Sql = @"
+                            ALTER TABLE `tbl_purchase_details`
+                            ADD COLUMN `item_unit_id` int DEFAULT 0,
+                              ADD COLUMN `factor` decimal(20,4) DEFAULT 0,
+                              ADD COLUMN `batch_no` VARCHAR(100),
+                              ADD COLUMN `expiry_date` DATE;
+                            "
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261019_ERP_0052",
+                            Description = "add columns to purchase_return_details",
+                            Sql = @"
+                            ALTER TABLE `tbl_purchase_return_details`
+                            ADD COLUMN `item_unit_id` int DEFAULT 0,
+                              ADD COLUMN `factor` decimal(20,4) DEFAULT 0,
+                              ADD COLUMN `batch_no` VARCHAR(100),
+                              ADD COLUMN `expiry_date` DATE;
+                            "
+                        },
+                        new DatabaseMigration {
+                            Version = "20261020_ERP_00052",
+                            Description = "add column to tbl_purchase",
+                            Sql = @"
+                            ALTER TABLE tbl_purchase
+                                ADD COLUMN cost_center_id int default 0;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261021_ERP_00035",
+                            Description = "create table tbl_item_batches",
+                            Sql = @"
+                            CREATE TABLE IF NOT EXISTS tbl_item_batches (
+                                id INT AUTO_INCREMENT PRIMARY KEY,
+                                item_id INT NOT NULL DEFAULT 0,
+                                batch_no VARCHAR(100) NOT NULL DEFAULT '0',
+                                expiry_date DATE NOT NULL DEFAULT '2000-01-01',
+                                manufacture_date DATE,
+                                cost_price DECIMAL(20,4) NOT NULL DEFAULT 0,
+                                sale_price DECIMAL(20,4) NOT NULL DEFAULT 0,
+                                warehouse_id INT NOT NULL DEFAULT 0,
+                                qty_in DECIMAL(20,4) NOT NULL DEFAULT 0,
+                                qty_out DECIMAL(20,4) NOT NULL DEFAULT 0,
+                                factor DECIMAL(20,4) NOT NULL DEFAULT 0,
+                                base_cost decimal(20,4) NOT NULL DEFAULT 0,
+                                created_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+                            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+                            CREATE INDEX idx_expiry_item ON tbl_item_batches(item_id, expiry_date);
+                            "
+                        },
+                        new DatabaseMigration
+                        {
                             Version = "20261019_ERP_052",
                             Description = "Create tbl_vendor",
                             Sql = @"
@@ -2726,6 +2782,18 @@ namespace Clinic_DataAccess
                                                 COLLATE='utf8mb4_general_ci'
                                                 ENGINE=InnoDB
                                                 ;
+                            "
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261021_ERP_trans_001",
+                            Description = "add columns to table tbl_item_transaction",
+                            Sql = @"
+                            ALTER TABLE tbl_item_transaction
+                            ADD COLUMN batch_id INT NOT NULL DEFAULT 0,
+                            ADD COLUMN unit_id INT NOT NULL DEFAULT 0,
+                            ADD COLUMN factor decimal(20,4) DEFAULT 0,
+                            ADD COLUMN qty_display decimal(20,4) DEFAULT 0;
                             "
                         },
                         // Optional reference seed migrations. Run only after schema migrations.

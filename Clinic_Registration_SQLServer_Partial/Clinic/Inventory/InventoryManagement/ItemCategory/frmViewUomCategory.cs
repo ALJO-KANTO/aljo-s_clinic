@@ -1119,13 +1119,7 @@ namespace YamyProject
                     (
                         (SELECT COUNT(*)
                          FROM tbl_purchase_details
-                         WHERE unit_id = @unitId)
-
-                        +
-
-                        (SELECT COUNT(*)
-                         FROM tbl_sales_details
-                         WHERE unit_id = @unitId)
+                         WHERE item_unit_id = @unitId)
                     );",
                 ClinicDatabase.CreateParameterNew(
                     "@unitId",

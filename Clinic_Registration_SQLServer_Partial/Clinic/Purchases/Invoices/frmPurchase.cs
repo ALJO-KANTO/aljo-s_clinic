@@ -8,6 +8,7 @@ using System.Data;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using YamyProject;
 using YamyProject.Localization;
@@ -84,7 +85,7 @@ namespace YamyProject
                 BindCombos.PopulateWarehouse(cmbWarehouse, false, true);
             }
             loadVat();
-            loadItemUnits();
+            //loadItemUnits();
             cmbPaymentMethod.SelectedIndex = 0;
             bindCombo();
             txtNextCode.Text = GenerateNextSalesCode();
@@ -283,31 +284,268 @@ namespace YamyProject
                                                             ClinicDatabase.CreateParameterNew("id", id)))
                 while (reader.Read())
                 {
-                    dgvItems.Rows.Add(reader["item_id"].ToString(), "", reader["code"].ToString(), reader["name"].ToString(), Utilities.FormatDecimal(reader["qty"]), null, Utilities.FormatDecimal(reader["factor"]), Utilities.FormatDecimal(Convert.ToDecimal(reader["factor"]) * Convert.ToDecimal(reader["qty"])), reader["batch_no"], Convert.ToDateTime(reader["expiry_date"]),
-                        Utilities.FormatDecimal(reader["cost_price"]), Utilities.FormatDecimal(reader["price"]), Utilities.FormatDecimal(reader["discount"]));
-                    DataGridViewComboBoxCell comboCell = dgvItems.Rows[dgvItems.Rows.Count - 2].Cells["vat"] as DataGridViewComboBoxCell;
+                    int rowIndex = dgvItems.Rows.Add(reader["item_id"].ToString(), "", reader["code"].ToString(), reader["name"].ToString(), Utilities.FormatDecimal(reader["qty"]), null, Utilities.FormatDecimal(reader["factor"]), Utilities.FormatDecimal(Convert.ToDecimal(reader["factor"]) * Convert.ToDecimal(reader["qty"])), reader["batch_no"], Convert.ToDateTime(reader["expiry_date"]),
+                                                    Utilities.FormatDecimal(reader["cost_price"]), Utilities.FormatDecimal(reader["price"]), Utilities.FormatDecimal(reader["discount"]));
+                    
+                    DataGridViewRow row = dgvItems.Rows[rowIndex];
+                    DataGridViewComboBoxCell comboCell = row.Cells["vat"] as DataGridViewComboBoxCell;
                     if (comboCell != null && reader["vat"].ToString() != "0")
                     {
                         comboCell.Value = int.Parse(reader["vat"].ToString());
-                        dgvItems.Rows[dgvItems.Rows.Count - 2].Cells["vatp"].Value = decimal.Parse(reader["vatP"].ToString());
+                        row.Cells["vatp"].Value = decimal.Parse(reader["vatP"].ToString());
                     }
-                    DataGridViewComboBoxCell comboCellItemUnit = dgvItems.Rows[dgvItems.Rows.Count - 2].Cells["unit_id"] as DataGridViewComboBoxCell;
-                    if (comboCellItemUnit != null && reader["item_unit_id"].ToString() != "0")
-                    {
-                        comboCellItemUnit.Value = int.Parse(reader["item_unit_id"].ToString());
-                    }
-                    //net_price
-                    decimal netPrice = (decimal.Parse(dgvItems.Rows[dgvItems.Rows.Count - 2].Cells["qty"].Value.ToString()) * decimal.Parse(dgvItems.Rows[dgvItems.Rows.Count - 2].Cells["cost"].Value.ToString())
-                        - decimal.Parse(dgvItems.Rows[dgvItems.Rows.Count - 2].Cells["discount"].Value.ToString()));
-                    dgvItems.Rows[dgvItems.Rows.Count - 2].Cells["net_price"].Value = netPrice;
-                    dgvItems.Rows[dgvItems.Rows.Count - 2].Cells["total"].Value = netPrice
-                      + decimal.Parse(dgvItems.Rows[dgvItems.Rows.Count - 2].Cells["vatp"].Value == null ? "0" : dgvItems.Rows[dgvItems.Rows.Count - 2].Cells["vatp"].Value.ToString());
+                    int itemId = Convert.ToInt32(reader["item_id"]);
+                    int savedUnitId =
+                            reader["item_unit_id"] == DBNull.Value
+                                ? 0
+                                : Convert.ToInt32(reader["item_unit_id"]);
 
-                    dgvItems.Rows[dgvItems.Rows.Count - 2].Cells["method"].Value = reader["method"].ToString();
-                    dgvItems.Rows[dgvItems.Rows.Count - 2].Cells["type"].Value = reader["type"].ToString();
+                    decimal savedUnitFactor =
+                        reader["factor"] == DBNull.Value
+                            ? 1m
+                            : Convert.ToDecimal(reader["factor"]);
+
+                    if (savedUnitFactor <= 0)
+                        savedUnitFactor = 1m;
+                    LoadUnitsForExistingRow(
+                            row,
+                            itemId,
+                            savedUnitId,
+                            savedUnitFactor
+                        );
+                    //DataGridViewComboBoxCell comboCellItemUnit = dgvItems.Rows[dgvItems.Rows.Count - 2].Cells["unit_id"] as DataGridViewComboBoxCell;
+                    //if (comboCellItemUnit != null && reader["item_unit_id"].ToString() != "0")
+                    //{
+                    //    comboCellItemUnit.Value = int.Parse(reader["item_unit_id"].ToString());
+                    //}
+                    //net_price
+                    decimal netPrice = 
+                        (decimal.Parse(row.Cells["qty"].Value.ToString()) 
+                        * decimal.Parse(row.Cells["cost"].Value.ToString())
+                        - decimal.Parse(row.Cells["discount"].Value.ToString()));
+                    row.Cells["net_price"].Value = netPrice;
+                    row.Cells["total"].Value = netPrice 
+                        + decimal.Parse(row.Cells["vatp"].Value == null ? "0" : row.Cells["vatp"].Value.ToString());
+                    row.Cells["method"].Value = reader["method"].ToString();
+                    row.Cells["type"].Value = reader["type"].ToString();
                 }
         }
+        private void LoadUnitsForExistingRow(
+              DataGridViewRow row,
+              int itemId,
+              int savedUnitId,
+              decimal savedUnitFactor)
+        {
+            if (row == null)
+                return;
 
+            if (!(row.Cells["unit_id"]
+                is DataGridViewComboBoxCell unitCell))
+                return;
+
+            DataTable units = GetItemUnits(itemId);
+
+            // =========================================================
+            // If an old invoice contains a UOM that is no longer active,
+            // temporarily add it so the old invoice can still display.
+            // =========================================================
+            if (savedUnitId > 0)
+            {
+                bool exists = units.AsEnumerable().Any(r =>
+                    Convert.ToInt32(r["id"]) == savedUnitId);
+
+                if (!exists)
+                {
+                    DataTable oldUnit = ClinicDatabase.ExecuteDataTable(@"
+                        SELECT
+                            id AS unit_id,
+                            name AS unit_name,
+                            @factor AS factor,
+                            0 AS is_default
+                        FROM tbl_uom
+                        WHERE id = @unitId
+                        LIMIT 1;",
+                        ClinicDatabase.CreateParameterNew(
+                            "@unitId",
+                            savedUnitId),
+                        ClinicDatabase.CreateParameterNew(
+                            "@factor",
+                            savedUnitFactor > 0
+                                ? savedUnitFactor
+                                : 1m));
+
+                    if (oldUnit.Rows.Count > 0)
+                    {
+                        DataRow newRow = units.NewRow();
+
+                        newRow["id"] =
+                            oldUnit.Rows[0]["unit_id"];
+
+                        newRow["name"] =
+                            oldUnit.Rows[0]["unit_name"];
+
+                        newRow["factor"] =
+                            oldUnit.Rows[0]["factor"];
+
+                        newRow["is_default"] = 0;
+
+                        units.Rows.Add(newRow);
+                    }
+                }
+            }
+
+            unitCell.DataSource = null;
+
+            unitCell.DisplayMember = "name";
+            unitCell.ValueMember = "id";
+            unitCell.DataSource = units;
+
+            if (units.Rows.Count == 0)
+            {
+                unitCell.Value = null;
+
+                row.Cells["unit_id"].Value = 0;
+                row.Cells["unit_factor"].Value = 1m;
+
+                return;
+            }
+
+            DataRow selectedUnit = null;
+
+            // =========================================================
+            // First preference:
+            // previously saved invoice UOM
+            // =========================================================
+            if (savedUnitId > 0)
+            {
+                selectedUnit = units.AsEnumerable()
+                    .FirstOrDefault(r =>
+                        Convert.ToInt32(r["id"])
+                            == savedUnitId);
+            }
+
+            // =========================================================
+            // Second preference:
+            // item's reference/default UOM
+            // =========================================================
+            if (selectedUnit == null)
+            {
+                selectedUnit = units.AsEnumerable()
+                    .FirstOrDefault(r =>
+                        Convert.ToInt32(r["is_default"]) == 1);
+            }
+
+            // =========================================================
+            // Final fallback
+            // =========================================================
+            if (selectedUnit == null)
+                selectedUnit = units.Rows[0];
+
+            int selectedUnitId =
+                Convert.ToInt32(
+                    selectedUnit["id"]);
+
+            decimal factor;
+
+            // Keep the historical factor from the invoice.
+            if (savedUnitId == selectedUnitId &&
+                savedUnitFactor > 0)
+            {
+                factor = savedUnitFactor;
+            }
+            else
+            {
+                factor =
+                    selectedUnit["factor"] == DBNull.Value
+                        ? 1m
+                        : Convert.ToDecimal(
+                            selectedUnit["factor"]);
+            }
+
+            if (factor <= 0)
+                factor = 1m;
+
+            unitCell.Value = selectedUnitId;
+
+            row.Cells["unit_id"].Value =
+                selectedUnitId;
+
+            row.Cells["factor"].Value =
+                factor;
+        }
+        private string GetUnitName(int unitId)
+        {
+            if (unitId <= 0)
+                return "";
+
+            object result = ClinicDatabase.ExecuteScalar(@"
+        SELECT name
+        FROM tbl_uom
+        WHERE id = @id
+        LIMIT 1;",
+                ClinicDatabase.CreateParameter(
+                    "@id",
+                    unitId));
+
+            if (result == null ||
+                result == DBNull.Value)
+            {
+                return "";
+            }
+
+            return result.ToString();
+        }
+        private void UpdateSelectedUnitFactor(
+        DataGridViewRow row,
+        int unitId)
+        {
+            if (row == null ||
+                row.IsNewRow ||
+                unitId <= 0)
+                return;
+
+            object result = ClinicDatabase.ExecuteScalar(@"
+        SELECT
+            CASE
+                WHEN uom_type = 'reference'
+                    THEN 1
+                ELSE IFNULL(ratio, 1)
+            END
+        FROM tbl_uom
+        WHERE id = @id
+          AND state = 0
+        LIMIT 1;",
+                ClinicDatabase.CreateParameter(
+                    "@id",
+                    unitId));
+
+            decimal factor = 1m;
+
+            if (result != null &&
+                result != DBNull.Value)
+            {
+                factor =
+                    Convert.ToDecimal(result);
+            }
+
+            if (factor <= 0)
+                factor = 1m;
+
+            row.Cells["unit_id"].Value =
+                unitId;
+
+            row.Cells["unit_factor"].Value =
+                factor;
+
+            decimal qty =
+                GetDecimalValue(row, "qty");
+
+            if (dgvItems.Columns.Contains("base_qty"))
+            {
+                row.Cells["base_qty"].Value =
+                    qty * factor;
+            }
+        }
         private DataTable GetFilteredProductsByName(string name = "")
         {
             string option = Utilities.GeneralSettingsState("ALL ITEMS IN PURCHASE");
@@ -410,21 +648,47 @@ namespace YamyProject
             }
         }
         string defaultTax = "";
-        private void loadItemUnits()
+        private void loadItemUnits(int itemId)
         {
-            DataTable units = GetItemUnits(0);
-            if (units == null)
+            if (dgvItems.CurrentRow == null)
                 return;
 
-            DataTable dt = units; // ClinicDatabase.ExecuteDataTable("select id,name from tbl_unit");
-            DataGridViewComboBoxColumn col = (DataGridViewComboBoxColumn)dgvItems.Columns["unit_id"];
-            col.DataSource = dt;
-            col.DisplayMember = "name";
-            col.ValueMember = "id";
-            col.FlatStyle = FlatStyle.Popup;
-            col.DisplayStyle = DataGridViewComboBoxDisplayStyle.DropDownButton;
-            col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            col.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            DataGridViewRow row = dgvItems.CurrentRow;
+            DataTable units = GetItemUnits(itemId);
+            DataGridViewComboBoxCell unitCell = row.Cells["unit_id"] as DataGridViewComboBoxCell;
+
+            if (unitCell == null)
+                return;
+
+            unitCell.Value = null;
+            unitCell.DataSource = null;
+
+            if (units == null || units.Rows.Count == 0)
+                return;
+
+            unitCell.DataSource = units;
+            unitCell.DisplayMember = "name";
+            unitCell.ValueMember = "id";
+            unitCell.FlatStyle = FlatStyle.Popup;
+            unitCell.DisplayStyle = DataGridViewComboBoxDisplayStyle.DropDownButton;
+            unitCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+
+            DataRow[] defaultUnits = units.Select("is_default = 1");
+
+            if (defaultUnits.Length > 0)
+            {
+                unitCell.Value = defaultUnits[0]["id"];
+            }
+            else
+            {
+                unitCell.Value = units.Rows[0]["id"];
+            }
+
+            if (dgvItems.Columns.Contains("unit_factor"))
+            {
+                row.Cells["unit_factor"].Value =
+                    units.Select("id = " + Convert.ToInt32(unitCell.Value))[0]["factor"];
+            }
         }
         private DataTable GetItemUnits(int itemId)
         {
@@ -2159,13 +2423,17 @@ namespace YamyProject
             }
             else if (lstAccountSuggestions.Tag is TextBox textBox)
             {
-                if (dgvItems.CurrentCell != null && dgvItems.CurrentCell.ColumnIndex == dgvItems.Columns["code"].Index)
+                if (dgvItems.CurrentCell != null && dgvItems.CurrentCell.OwningColumn.Name == "code")
                 {
-                    dgvItems.CurrentCell.Value = selectedCode;
+                    DataGridViewRow row = dgvItems.CurrentRow;
+                    row.Cells["code"].Value = selectedCode;
+                    loadItemUnits(selectedItemId);
                 }
-                else if (dgvItems.CurrentCell != null && dgvItems.CurrentCell.ColumnIndex == dgvItems.Columns["name"].Index)
+                else if (dgvItems.CurrentCell != null && dgvItems.CurrentCell.OwningColumn.Name == "name")
                 {
-                    dgvItems.CurrentCell.Value = selectedName;
+                    DataGridViewRow row = dgvItems.CurrentRow;
+                    row.Cells["name"].Value = selectedName;
+                    loadItemUnits(selectedItemId);
                 }
             }
 
@@ -2187,6 +2455,14 @@ namespace YamyProject
             if ((columnName == "code" || columnName == "name") && lstAccountSuggestions.Items.Count <= 0)
             {
                 ItemNotFoundMessage(inputText);
+            }
+        }
+
+        private void dgvItems_DataError(object sender, DataGridViewDataErrorEventArgs e)
+        {
+            if (e.ColumnIndex >= 0 && dgvItems.Columns[e.ColumnIndex].Name == "unit_id")
+            {
+                e.ThrowException = false;
             }
         }
 

@@ -1796,17 +1796,17 @@ public static class AttachmentManager
 {
     public static bool HasAttachment(int purchaseId, string v)
     {
-        throw new NotImplementedException();
+        return false;
     }
 
     public static void OpenAttachmentByType(int purchaseId, string v)
     {
-        throw new NotImplementedException();
+        string a = "";
     }
 
     public static void SaveAttachment(string v, int fId, string fileName)
     {
-        throw new NotImplementedException();
+        string a = "";
     }
 }
 public static class AmountToWordsHelper
