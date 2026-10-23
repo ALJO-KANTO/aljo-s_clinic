@@ -436,7 +436,7 @@ namespace Clinic_DataAccess
                                     SELECT 
                                         P.PrescriptionStatus,
                                         PD.PrescriptionID,
-                                        PD.PrescriptionDetailsID,
+                                        PD.PrescriptionDetailID,
                                         PD.SavedMedicineName AS MedicineName,
                                         PD.Dosage,
                                         M.TaxRate,
@@ -487,15 +487,24 @@ namespace Clinic_DataAccess
                                     FROM PrescriptionDetails PD
                                     LEFT JOIN Prescriptions P
                                         ON PD.PrescriptionID = P.PrescriptionID
-                                    LEFT JOIN Medicines M
-                                        ON PD.SavedMedicineName = M.MedicineName;";
+                                    LEFT JOIN
+                                    (
+                                        SELECT
+                                            MedicineName,
+                                            MAX(TaxRate) AS TaxRate,
+                                            MAX(CurrentStock) AS CurrentStock
+                                        FROM Medicines
+                                        GROUP BY MedicineName
+                                    ) M
+                                        ON PD.SavedMedicineName COLLATE utf8mb4_0900_ai_ci
+                                         = M.MedicineName COLLATE utf8mb4_0900_ai_ci";
 
                     using (MySqlCommand command = new MySqlCommand(query, connection))
                     {
                         connection.Open();
                         using (MySqlDataReader reader = command.ExecuteReader())
                         {
-                            if (reader.HasRows) dt.Load(reader);
+                            dt.Load(reader);
                         }
                     }
                 }

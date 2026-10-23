@@ -19,6 +19,10 @@ namespace Clinic.Medical_Services.Pharmaciy
         public enum enMode { AddNew = 0, Update = 1 }
         public enMode Mode = enMode.AddNew;
 
+        int IncomeAccount = 0;
+        int AssetAccount = 0;
+        int COGSAccount = 0;
+
         private void ShowSuccess(string message) => MessageBox.Show(T(message), T("✅ Success"), MessageBoxButtons.OK, MessageBoxIcon.Information);
         private void ShowError(string message) => MessageBox.Show(T(message), T("❌ Error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
         private void ShowWarning(string message) => MessageBox.Show(T(message), T("⚠️ Warning"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -35,6 +39,13 @@ namespace Clinic.Medical_Services.Pharmaciy
             lbCurrentUser.Text = clsGlobal.CurrentUser.PersonInfo.Name;
             dgMedicines.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 14, FontStyle.Bold);
             ApplyArabicProperties();
+
+            BindCombos.PopulateWarehouse(cmbWarehouse);
+            BindCombos.PopulateItemTax(nudTaxRate);
+
+            IncomeAccount = BindCombos.SelectDefaultLevelAccount("Sales");
+            AssetAccount = BindCombos.SelectDefaultLevelAccount("Inventory");
+            COGSAccount = BindCombos.SelectDefaultLevelAccount("COGS");
         }
 
         private string T(string text)
@@ -252,10 +263,12 @@ namespace Clinic.Medical_Services.Pharmaciy
         private void _ResetFaild()
         {
             txtMedicinePrice.Text = string.Empty;
+            txtMedicineCost.Text = string.Empty;
             txtMedicneName.Text = string.Empty;
             nudCurrentStock.Value = 1;
             nudReorderLevel.Value = 5;
-            nudTaxRate.Value = 0;
+            nudTaxRate.SelectedValue = 0;
+            txtBatchNo.Text = string.Empty;
             _RefreshMedicinesList();
 
 
@@ -272,14 +285,25 @@ namespace Clinic.Medical_Services.Pharmaciy
             {
                 _Medicine = new clsMedicine();
             }
+            if(cmbWarehouse.SelectedValue==null)
+            {
+                MessageBox.Show("Please add Warehouse");
+                return;
+            }    
 
-            _Medicine.MedicineName = txtMedicneName.Text;
+            _Medicine.MedicineName = txtMedicneName.Text.Trim();
             _Medicine.MedicinePrice = Convert.ToDecimal(txtMedicinePrice.Text);
+            _Medicine.MedicineCost = Convert.ToDecimal(txtMedicineCost.Text);
 
             _Medicine.CurrentStock = nudCurrentStock.Value;
-            _Medicine.ReorderLevel = nudReorderLevel.Value; ;
-
-            _Medicine.TaxRate = nudTaxRate.Value;
+            _Medicine.ReorderLevel = nudReorderLevel.Value;
+            _Medicine.TaxRate = Convert.ToInt32(nudTaxRate.SelectedValue);
+            _Medicine.IncomeAccount = IncomeAccount;
+            _Medicine.AssetAccount = AssetAccount;
+            _Medicine.COGSAccount = COGSAccount;
+            _Medicine.WarehouseId = Convert.ToInt32(cmbWarehouse.SelectedValue);
+            _Medicine.BatchNo = txtBatchNo.Text.Trim();
+            _Medicine.ExpiryDate = dtpExpiryDate.Value;
 
             if (_Medicine.Save())
             {
@@ -296,6 +320,7 @@ namespace Clinic.Medical_Services.Pharmaciy
                 ShowError("Failed to save medicine.");
             }
         }
+
         private void btnExit_Click(object sender, EventArgs e)
         {
             this.Close();
@@ -326,10 +351,49 @@ namespace Clinic.Medical_Services.Pharmaciy
 
             txtMedicneName.Text = _Medicine.MedicineName;
             txtMedicinePrice.Text = _Medicine.MedicinePrice.ToString();
+            txtMedicineCost.Text = _Medicine.MedicineCost.ToString();
 
             nudCurrentStock.Value = _Medicine.CurrentStock;
             nudReorderLevel.Value = _Medicine.ReorderLevel;
-            nudTaxRate.Value = _Medicine.TaxRate;
+            nudTaxRate.SelectedValue = _Medicine.TaxRate;
+
+            if (_Medicine.WarehouseId != 0)
+            {
+                cmbWarehouse.SelectedValue = _Medicine.WarehouseId;
+            }
+            if (_Medicine.IncomeAccount != 0)
+            {
+                IncomeAccount = _Medicine.IncomeAccount;
+            }
+            if (_Medicine.AssetAccount != 0)
+            {
+                AssetAccount = _Medicine.AssetAccount;
+            }
+            if (_Medicine.COGSAccount != 0)
+            {
+                COGSAccount = _Medicine.COGSAccount;
+            }
+            if(_Medicine.TaxRate !=0)
+            {
+                nudTaxRate.SelectedValue = Convert.ToInt32(_Medicine.TaxRate);
+            }
+            if (_Medicine.BatchNo != null)
+            {
+                txtBatchNo.Text = _Medicine.BatchNo;
+            }
+            if (_Medicine.ExpiryDate != DateTime.MinValue)
+            {
+                dtpExpiryDate.Value = _Medicine.ExpiryDate;
+            }
+            if (clsMedicine.IsUsedInTransactions(MedicineId) && _Medicine.CurrentStock > 0)
+            {
+                nudCurrentStock.Enabled =  txtBatchNo.Enabled =  dtpExpiryDate.Enabled = false;
+            }
+            else
+            {
+                nudCurrentStock.Enabled = txtBatchNo.Enabled = dtpExpiryDate.Enabled = true;
+            }
+
         }
         private void dgMedicines_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -348,13 +412,26 @@ namespace Clinic.Medical_Services.Pharmaciy
                 }
                 else if (result == DialogResult.No)
                 {
+                    // Block deletion if the medicine has inventory transactions
+                    if (clsMedicine.IsUsedInTransactions(medicineID))
+                    {
+                        ShowWarning(
+                            "This medicine cannot be deleted because it has inventory transactions."
+                        );
+                        return;
+                    }
+
                     if (ConfirmAction("Are you sure you want to delete this medicine?")
-                                     == DialogResult.Yes)
+                        == DialogResult.Yes)
                     {
                         if (clsMedicine.DeleteMedicine(medicineID))
                         {
                             ShowSuccess("Deleted Successfully");
                             _RefreshMedicinesList();
+                        }
+                        else
+                        {
+                            ShowError("Failed to delete medicine.");
                         }
                     }
                 }
@@ -419,5 +496,34 @@ namespace Clinic.Medical_Services.Pharmaciy
             }
         }
 
+        private void txtMedicineCost_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // السماح بالأرقام، ومفتاح الرجوع (Backspace)، والفاصلة العشرية
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && e.KeyChar != '.')
+            {
+                e.Handled = true;
+            }
+
+            // السماح بفاصلة عشرية واحدة فقط
+            if (e.KeyChar == '.' && (sender as TextBox).Text.IndexOf('.') > -1)
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void txtMedicineCost_Validating(object sender, CancelEventArgs e)
+        {
+            decimal price;
+            if (string.IsNullOrWhiteSpace(txtMedicineCost.Text) || !decimal.TryParse(txtMedicineCost.Text, out price) || price <= 0)
+            {
+                e.Cancel = true;
+                errorProvider1.SetError(txtMedicineCost, T("Please enter a valid cost greater than 0!"));
+            }
+            else
+            {
+                e.Cancel = false;
+                errorProvider1.SetError(txtMedicineCost, "");
+            }
+        }
     }
 }

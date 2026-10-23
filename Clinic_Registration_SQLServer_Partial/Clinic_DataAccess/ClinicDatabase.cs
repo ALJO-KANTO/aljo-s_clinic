@@ -316,7 +316,159 @@ public static class Utilities
 }
 public static class CommonInsert
 {
+    public static void InsertItemTransactionWithTransaction(
+    MySqlConnection connection,
+    MySqlTransaction transaction,
+    DateTime date,
+    string type,
+    string reference,
+    string itemId,
+    string costPrice,
+    string qtyIn,
+    string salesPrice,
+    string qtyOut,
+    string qtyInc,
+    string description,
+    string warehouseId,
+    string batchId,
+    string unitId,
+    string factor,
+    string qtyDisplay)
+    {
+        using (MySqlCommand cmd = new MySqlCommand(@"
+        INSERT INTO tbl_item_transaction
+        (
+            date, type, reference, item_id, cost_price,
+            qty_in, sales_price, qty_out, qty_inc, description,
+            warehouse_id, unit_id, factor, qty_display, batch_id
+        )
+        VALUES
+        (
+            @date, @type, @reference, @itemId, @costPrice,
+            @qtyIn, @salesPrice, @qtyOut, @qtyInc, @description,
+            @warehouseId, @unitId, @factor, @qtyDisplay, @batchId
+        );", connection, transaction))
+        {
+            cmd.Parameters.AddWithValue("@date", date);
+            cmd.Parameters.AddWithValue("@type", type);
+            cmd.Parameters.AddWithValue("@reference", reference);
+            cmd.Parameters.AddWithValue("@itemId", itemId);
+            cmd.Parameters.AddWithValue("@costPrice", costPrice);
+            cmd.Parameters.AddWithValue("@qtyIn", qtyIn);
+            cmd.Parameters.AddWithValue("@salesPrice", salesPrice);
+            cmd.Parameters.AddWithValue("@qtyOut", qtyOut);
+            cmd.Parameters.AddWithValue("@qtyInc", qtyInc);
+            cmd.Parameters.AddWithValue("@description", description);
+            cmd.Parameters.AddWithValue("@warehouseId", warehouseId);
+            cmd.Parameters.AddWithValue("@unitId", unitId);
+            cmd.Parameters.AddWithValue("@factor", factor);
+            cmd.Parameters.AddWithValue("@qtyDisplay", qtyDisplay);
+            cmd.Parameters.AddWithValue("@batchId", batchId);
 
+            cmd.ExecuteNonQuery();
+        }
+
+        // Update stock using the same connection and transaction.
+        using (MySqlCommand cmd = new MySqlCommand(@"
+        UPDATE tbl_items
+        SET on_hand = (
+            SELECT COALESCE(SUM(qty_in - qty_out), 0)
+            FROM tbl_item_transaction
+            WHERE item_id = @itemId
+        )
+        WHERE id = @itemId;", connection, transaction))
+        {
+            cmd.Parameters.AddWithValue("@itemId", itemId);
+            cmd.ExecuteNonQuery();
+        }
+
+        // Insert inventory card details in the same transaction.
+        InsertItemCardDetailsWithTransaction(
+            connection,
+            transaction,
+            date, type, reference, itemId,
+            costPrice, qtyIn, salesPrice, qtyOut,
+            qtyInc, description, warehouseId);
+    }
+    private static void InsertItemCardDetailsWithTransaction(
+    MySqlConnection connection,
+    MySqlTransaction transaction,
+    DateTime date,
+    string type,
+    string reference,
+    string itemId,
+    string costPrice,
+    string qtyIn,
+    string salesPrice,
+    string qtyOut,
+    string qtyInc,
+    string description,
+    string warehouseId)
+    {
+        string invoiceNo = "INV-" + reference;
+
+        decimal price = Convert.ToDecimal(costPrice);
+        decimal inQty = Convert.ToDecimal(qtyIn);
+        decimal outQty = Convert.ToDecimal(qtyOut);
+
+        decimal debit = inQty * price;
+        decimal credit = outQty * price;
+
+        decimal previousQtyBalance;
+        decimal previousBalance;
+
+        using (MySqlCommand cmd = new MySqlCommand(@"
+        SELECT
+            COALESCE(SUM(qty_in - qty_out), 0),
+            COALESCE(SUM(debit - credit), 0)
+        FROM tbl_item_card_details
+        WHERE itemId = @itemId;", connection, transaction))
+        {
+            cmd.Parameters.AddWithValue("@itemId", itemId);
+
+            using (MySqlDataReader reader = cmd.ExecuteReader())
+            {
+                reader.Read();
+                previousQtyBalance = Convert.ToDecimal(reader[0]);
+                previousBalance = Convert.ToDecimal(reader[1]);
+            }
+        }
+
+        decimal qtyBalance = previousQtyBalance + inQty - outQty;
+        decimal balance = previousBalance + debit - credit;
+
+        using (MySqlCommand cmd = new MySqlCommand(@"
+        INSERT INTO tbl_item_card_details
+        (
+            itemId, date, wharehouse_id, inv_no, trans_no,
+            trans_type, description, price, qty_in, qty_out,
+            qty_balance, debit, credit, balance, fifo_qty, fifo_cost
+        )
+        VALUES
+        (
+            @itemId, @date, @warehouseId, @invoiceNo, @reference,
+            @type, @description, @price, @qtyIn, @qtyOut,
+            @qtyBalance, @debit, @credit, @balance, 0, 0
+        );", connection, transaction))
+        {
+            cmd.Parameters.AddWithValue("@itemId", itemId);
+            cmd.Parameters.AddWithValue("@date", date);
+            cmd.Parameters.AddWithValue("@warehouseId", warehouseId);
+            cmd.Parameters.AddWithValue("@invoiceNo", invoiceNo);
+            cmd.Parameters.AddWithValue("@reference", reference);
+            cmd.Parameters.AddWithValue("@type", type);
+            cmd.Parameters.AddWithValue("@description", description);
+            cmd.Parameters.AddWithValue("@price", price);
+            cmd.Parameters.AddWithValue("@qtyIn", inQty);
+            cmd.Parameters.AddWithValue("@qtyOut", outQty);
+            cmd.Parameters.AddWithValue("@qtyBalance", qtyBalance);
+            cmd.Parameters.AddWithValue("@debit", debit);
+            cmd.Parameters.AddWithValue("@credit", credit);
+            cmd.Parameters.AddWithValue("@balance", balance);
+
+            cmd.ExecuteNonQuery();
+        }
+    }
     public static void InsertItemTransaction(DateTime date, string type, string reference, string itemId,
                                   string costPrice, string qtyIn, string salesPrice, string qtyOut, string qtyInc,
                                   string description, string warehouseId, string batchId, string unitId, string factor, string qtyDisplay)
@@ -446,6 +598,73 @@ public static class CommonInsert
                                             INNER JOIN tbl_sales_details sd ON i.id = sd.item_id
                                             SET i.on_hand = i.on_hand + sd.qty
                                             WHERE sd.sales_id = @id;", ClinicDatabase.CreateParameter("id", reference));
+        }
+    }
+    public static void InsertTransactionEntryWithTransaction(
+    MySqlConnection connection,
+    MySqlTransaction transaction,
+    DateTime date,
+    string accountId,
+    string debit,
+    string credit,
+    string transactionId,
+    string humId,
+    string type,
+    string description,
+    int createdBy,
+    DateTime createdDate)
+    {
+        using (MySqlCommand cmd = new MySqlCommand(@"
+        INSERT INTO tbl_transaction
+        (
+            date,
+            account_id,
+            debit,
+            credit,
+            transaction_id,
+            hum_id,
+            t_type,
+            type,
+            description,
+            created_by,
+            created_date,
+            state,
+            GlobalId,
+            DeviceId
+        )
+        VALUES
+        (
+            @date,
+            @accountId,
+            @debit,
+            @credit,
+            @transactionId,
+            @hum_id,
+            @tType,
+            @type,
+            @description,
+            @createdBy,
+            @createdDate,
+            0,
+            @GlobalId,
+            @DeviceId
+        );", connection, transaction))
+        {
+            cmd.Parameters.AddWithValue("@date", date);
+            cmd.Parameters.AddWithValue("@accountId", accountId);
+            cmd.Parameters.AddWithValue("@debit", debit);
+            cmd.Parameters.AddWithValue("@credit", credit);
+            cmd.Parameters.AddWithValue("@transactionId", transactionId);
+            cmd.Parameters.AddWithValue("@hum_id", humId);
+            cmd.Parameters.AddWithValue("@tType", "");
+            cmd.Parameters.AddWithValue("@type", type.Trim());
+            cmd.Parameters.AddWithValue("@description", description);
+            cmd.Parameters.AddWithValue("@createdBy", createdBy);
+            cmd.Parameters.AddWithValue("@createdDate", createdDate);
+            cmd.Parameters.AddWithValue("@GlobalId", Guid.NewGuid().ToString());
+            cmd.Parameters.AddWithValue("@DeviceId", Utilities.MachineName);
+
+            cmd.ExecuteNonQuery();
         }
     }
     public static void InsertTransactionEntry(DateTime date, string accountId, string debit, string credit,
