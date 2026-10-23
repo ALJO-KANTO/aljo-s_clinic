@@ -100,7 +100,7 @@ namespace Clinic
             { "Clinic Management System", "نظام إدارة العيادة" },//patient list
             { "Manage Patients","إدارة المرضى" },
             { "View, search, add, update and manage patients in the clinic","عرض المرضى والبحث عنهم وإضافتهم وتحديث بياناتهم وإدارتهم في العيادة"},
-          
+
 
 { "Filter By", "تصفية حسب" },
 
@@ -386,7 +386,7 @@ namespace Clinic
 { "Refunded", "مستردة" },
 { "Fully Paid", "مدفوعة بالكامل" },
  { "PROCESS PAYMENTS - System View", "معالجة المدفوعات - عرض النظام" },
-        
+
         { "BillNumber", "رقم الفاتورة" },
         { "PatientName", "اسم المريض" },
         { "TotalAmount", "المبلغ الإجمالي" },
@@ -643,6 +643,8 @@ namespace Clinic
 { "Today's Revenue", "إيرادات اليوم" },
 { "Administrator", "مدير النظام" },
 { "Administrator Dashboard", "لوحة تحكم مدير النظام" },
+            { "Manage Services Type",
+     "إدارة أنواع الخدمات" },
 };
         public static bool IsArabic { get; set; } = false;
 
