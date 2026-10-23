@@ -37,6 +37,105 @@ namespace YamyProject
             guna2HtmlLabel11.Text = dated.Date.ToShortDateString();
             loadCompany();
             LoadData();
+            ApplyPurchaseVendorArabicUI();
+        }
+
+
+        // UI localization only. Transaction values, TOTAL marker, queries,
+        // row navigation, calculations, PDF and Excel routines remain unchanged.
+        private bool IsPurchaseVendorArabic()
+        {
+            return (Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en")
+                .StartsWith("ar", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private string PurchaseVendorCaption(string text)
+        {
+            if (!IsPurchaseVendorArabic() || string.IsNullOrWhiteSpace(text))
+                return text;
+
+            switch (text.Trim())
+            {
+                case "Purchase By Vendor Details":
+                case "Purchase by Vendor Details":
+                case "Purchase By Vendor Detail":
+                    return "تفاصيل المشتريات حسب المورد";
+                case "All Transaction":
+                case "All Transactions": return "جميع المعاملات";
+                case "Company Name": return "اسم الشركة";
+                case "Print": case "Print ▼": return "طباعة";
+                case "Print ": return "طباعة";
+                case "Customize Report": return "تخصيص التقرير";
+                case "Comment On Report": return "إضافة تعليق على التقرير";
+                case "Memorize": return "حفظ التقرير";
+                case "Excel": return "إكسل";
+                case "Vendor": return "المورد";
+                case "Vendor Name": return "اسم المورد";
+                case "Type": return "النوع";
+                case "Date": return "التاريخ";
+                case "Num": return "الرقم";
+                case "Name": return "الاسم";
+                case "Item": return "الصنف";
+                case "Qty": return "الكمية";
+                case "Sales Price": return "سعر البيع";
+                case "Amount": return "المبلغ";
+                case "CostCenter": case "Cost Center": return "مركز التكلفة";
+                case "From": return "من";
+                case "To": return "إلى";
+                default: return Clinic.TranslationClass.Translate(text.Trim(), true);
+            }
+        }
+
+        private void ApplyPurchaseVendorArabicUI()
+        {
+            if (!IsPurchaseVendorArabic()) return;
+
+            // The title inside HeaderUC is independent from Form.Text.
+            this.Text = PurchaseVendorCaption(this.Text);
+            headerUC1.FormText = "تفاصيل المشتريات حسب المورد";
+            headerUC1.ArabicLayout = true;
+
+            TranslatePurchaseVendorControls(this);
+            TranslatePurchaseVendorMenu(contextMenuExport.Items);
+
+            // Headers only: never translate row data or column Name keys.
+            dgvSales.RightToLeft = RightToLeft.Yes;
+            foreach (DataGridViewColumn column in dgvSales.Columns)
+                column.HeaderText = PurchaseVendorCaption(column.HeaderText);
+        }
+
+        private void TranslatePurchaseVendorControls(Control parent)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                if (control == headerUC1 || control == dgvSales ||
+                    control == guna2HtmlLabel8 || control == guna2HtmlLabel11)
+                    continue;
+
+                // Do not modify input values or selections.
+                if (!(control is TextBoxBase) && !(control is ComboBox) &&
+                    !(control is DateTimePicker) && !(control is ListBox))
+                {
+                    if (!string.IsNullOrWhiteSpace(control.Text))
+                        control.Text = PurchaseVendorCaption(control.Text);
+                }
+
+                if (control.HasChildren)
+                    TranslatePurchaseVendorControls(control);
+            }
+        }
+
+        private void TranslatePurchaseVendorMenu(ToolStripItemCollection items)
+        {
+            foreach (ToolStripItem item in items)
+            {
+                if (!string.IsNullOrWhiteSpace(item.Text))
+                    item.Text = PurchaseVendorCaption(item.Text);
+
+                ToolStripDropDownItem dropdown = item as ToolStripDropDownItem;
+                if (dropdown != null && dropdown.HasDropDownItems)
+                    TranslatePurchaseVendorMenu(dropdown.DropDownItems);
+            }
         }
 
         private void loadCompany()
@@ -204,7 +303,7 @@ namespace YamyProject
                 dgvSales.Rows[dgvSales.Rows.Count - 1].DefaultCellStyle.BackColor = System.Drawing.Color.Gainsboro;
             }
         }
-        
+
         private void dgvSales_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0 && e.ColumnIndex >= 0)

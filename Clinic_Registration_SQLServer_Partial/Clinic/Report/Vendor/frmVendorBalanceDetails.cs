@@ -21,7 +21,7 @@ namespace YamyProject
     public partial class frmVendorBalanceDetails : Form
     {
         int id;
-        public frmVendorBalanceDetails(int _id=0)
+        public frmVendorBalanceDetails(int _id = 0)
         {
             InitializeComponent();
             LocalizationManager.LocalizeForm(this);
@@ -38,7 +38,90 @@ namespace YamyProject
             guna2HtmlLabel11.Text = dated.Date.ToShortDateString();
             loadCompany();
             LoadSalesData();
+            ApplyVendorArabicUI();
         }
+        // UI localization only. Column names and transaction values remain in English
+        // because navigation and export routines use them as internal identifiers.
+        private bool VendorArabicEnabled()
+        {
+            string language = Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en";
+            return language.StartsWith("ar", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private void ApplyVendorArabicUI()
+        {
+            bool arabic = VendorArabicEnabled();
+            headerUC1.ArabicLayout = arabic;
+            if (!arabic) return;
+
+            this.Text = "تفاصيل أرصدة الموردين";
+            headerUC1.FormText = this.Text;
+            TranslateVendorControls(this);
+
+            // The company name comes from the database. Translate only the
+            // literal placeholder, never an actual registered company name.
+            if (string.Equals(guna2HtmlLabel8.Text.Trim(), "Company Name",
+                StringComparison.OrdinalIgnoreCase))
+                guna2HtmlLabel8.Text = "اسم الشركة";
+
+            btnPrint.Text = Clinic.TranslationClass.Translate("Print ▼", true);
+            ApplyVendorGridHeaders();
+        }
+
+        private void TranslateVendorControls(Control parent)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                if (control == headerUC1 || control == guna2HtmlLabel11) continue;
+
+                if (control is Label || control is Button || control is CheckBox ||
+                    control is RadioButton || control is GroupBox ||
+                    control is Guna.UI2.WinForms.Guna2HtmlLabel ||
+                    control is Guna.UI2.WinForms.Guna2Button)
+                {
+                    string english = control.Text;
+                    if (!string.IsNullOrWhiteSpace(english))
+                    {
+                        string key = english.Trim();
+                        string translated;
+                        switch (key)
+                        {
+                            case "Vendor Balance Detail":
+                            case "Vendor Balance Details":
+                                translated = "تفاصيل أرصدة الموردين";
+                                break;
+                            case "Company Name":
+                                translated = "اسم الشركة";
+                                break;
+                            default:
+                                translated = Clinic.TranslationClass.Translate(key, true);
+                                break;
+                        }
+                        if (translated != key) control.Text = translated;
+                    }
+                    // Keep the Designer's centered heading alignment unchanged.
+                    control.RightToLeft = RightToLeft.Yes;
+                }
+                if (control.HasChildren) TranslateVendorControls(control);
+            }
+        }
+
+        private void ApplyVendorGridHeaders()
+        {
+            bool arabic = VendorArabicEnabled();
+            dgvSales.RightToLeft = arabic ? RightToLeft.Yes : RightToLeft.No;
+            if (!arabic) return;
+
+            foreach (DataGridViewColumn column in dgvSales.Columns)
+            {
+                string key = column.Name;
+                string caption = key == "Account" ? "الحساب" :
+                    Clinic.TranslationClass.Translate(key, true);
+                column.HeaderText = caption;
+                column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            }
+        }
+
         private void loadCompany()
         {
             using (var reader = ClinicDatabase.ExecuteReader("SELECT name FROM tbl_company"))
@@ -283,6 +366,7 @@ namespace YamyProject
             dgvSales.Rows[totalRow].DefaultCellStyle.ForeColor = System.Drawing.Color.Black;
             dgvSales.Rows[totalRow].Cells[1].Style.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dgvSales.Rows[totalRow].Cells[2].Style.Alignment = DataGridViewContentAlignment.MiddleRight;
+            ApplyVendorGridHeaders();
         }
         private void dgvSales_CellClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -307,7 +391,7 @@ namespace YamyProject
                     }
                     else if (_type == "Vendor Opening Balance")
                     {
-                       frmMain.openChildForm(new frmTransactionJournal(_id, _type, _id.ToString()));
+                        frmMain.openChildForm(new frmTransactionJournal(_id, _type, _id.ToString()));
                     }
                 }
             }

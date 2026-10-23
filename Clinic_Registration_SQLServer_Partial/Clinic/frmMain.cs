@@ -218,9 +218,9 @@
                 // Modern dashboard header
                 if (modernUser != null)
                 {
-                    modernUser.Text =
-                        "●  " + roleName + "\n     " + roleName;
-                }
+                modernUser.Text = roleName;
+                modernAccountRole.Text = roleName;
+            }
 
                 // Modern dashboard welcome message
                 //if (modernGreeting != null)
@@ -852,7 +852,24 @@
                     isArabic
                         ? ContentAlignment.MiddleRight
                         : ContentAlignment.MiddleLeft;
-            }
+
+            modernGreeting.Font = new Font(
+    "Segoe UI",
+    isArabic ? 16F : 16F,
+    FontStyle.Bold
+);
+
+            modernGreeting.Top = 44;
+            modernGreeting.Height = 60;
+
+            modernGreeting.RightToLeft =
+                isArabic ? RightToLeft.Yes : RightToLeft.No;
+
+            modernGreeting.TextAlign =
+                isArabic
+                    ? ContentAlignment.MiddleRight
+                    : ContentAlignment.MiddleLeft;
+        }
 
             private void TranslateRoleDashboard()
             {
@@ -934,10 +951,11 @@
                     string translatedRole =
                         TranslationClass.Translate(roleName, isArabic);
 
-                    modernUser.Text =
-                        "●  " + translatedRole +
-                        "\n     " + translatedRole;
-                }
+                modernUser.Text = translatedRole;
+
+                modernAccountRole.Text =
+                    TranslationClass.Translate("Admin", isArabic);
+            }
             }
 
             private void ApplyDashboardLanguageLayout()
@@ -1375,6 +1393,7 @@
         private void ApplyModernHeaderLayout()
         {
             PositionTranslateButton();
+            PositionAccountHeader();
         }
         private void OpenMigratedAdminForm(string className)
             {

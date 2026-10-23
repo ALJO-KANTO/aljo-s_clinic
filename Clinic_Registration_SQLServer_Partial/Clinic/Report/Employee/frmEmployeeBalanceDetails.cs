@@ -17,7 +17,7 @@ namespace YamyProject
     public partial class frmEmployeeBalanceDetails : Form
     {
         int id;
-        public frmEmployeeBalanceDetails(int _id=0)
+        public frmEmployeeBalanceDetails(int _id = 0)
         {
             InitializeComponent();
             LocalizationManager.LocalizeForm(this);
@@ -33,7 +33,169 @@ namespace YamyProject
             lblDate.Text = DateTime.Now.Date.ToString("dd/MM/yyyy");
             lblTime.Text = DateTime.Now.ToString("hh:mm:tt");
             loadCompany();
+            ApplyEmployeeBalanceLanguage();
         }
+        // Presentation only: never change transaction values or column names.
+        private void ApplyEmployeeBalanceLanguage()
+        {
+            bool arabic = (Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en")
+                .StartsWith("ar", StringComparison.OrdinalIgnoreCase);
+
+            if (!arabic) return; // Original English UI remains unchanged.
+
+            headerUC1.ArabicLayout = true;
+
+            this.Text = "تفاصيل أرصدة الموظفين";
+            headerUC1.FormText = this.Text;
+            btnPrint.Text = "طباعة ▼";
+
+            // Translate only display text. Do not alter Tag, Name, or event handlers.
+            TranslateEmployeeControls(this);
+            TranslateEmployeeMenu(contextMenuExport.Items);
+            TranslateReportHtmlLabels(this);
+            PositionReportToolbarArabic();
+
+            dgvSales.RightToLeft = RightToLeft.Yes;
+            dgvSales.ColumnHeadersDefaultCellStyle.Alignment =
+                DataGridViewContentAlignment.MiddleRight;
+            dgvSales.DefaultCellStyle.Alignment =
+                DataGridViewContentAlignment.MiddleRight;
+
+            SetEmployeeHeader("Type", "النوع");
+            SetEmployeeHeader("Date", "التاريخ");
+            SetEmployeeHeader("Num", "الرقم");
+            SetEmployeeHeader("Account", "الحساب");
+            SetEmployeeHeader("Amount", "المبلغ");
+            SetEmployeeHeader("Balance", "الرصيد");
+
+            // Keep TOTAL unchanged because the existing PDF export checks for it.
+
+        }
+
+        // Translate Guna2HtmlLabel controls without touching company data or report values.
+        private void TranslateReportHtmlLabels(Control parent)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                if (control.GetType().Name == "Guna2HtmlLabel" &&
+                    control != guna2HtmlLabel8)
+                {
+                    string original = control.Text == null ? "" : control.Text.Trim();
+                    string translated = Clinic.TranslationClass.Translate(original, true);
+                    if (translated == original)
+                    {
+                        switch (original)
+                        {
+                            case "Employee Balance Detail": translated = "تفاصيل أرصدة الموظفين"; break;
+                            case "All Transaction": translated = "جميع المعاملات"; break;
+                            case "All Transactions": translated = "جميع المعاملات"; break;
+                            case "From": translated = "من"; break;
+                            case "To": translated = "إلى"; break;
+                        }
+                    }
+                    if (translated != original) control.Text = translated;
+                    control.RightToLeft = RightToLeft.Yes;
+                }
+                if (control.HasChildren) TranslateReportHtmlLabels(control);
+            }
+        }
+
+        // Keep the report action buttons in their existing parent and order,
+        // but align the group to the right when there is enough space.
+        private void PositionReportToolbarArabic()
+        {
+            Control parent = btnPrint.Parent;
+            if (parent == null) return;
+            var buttons = new List<Control>();
+            foreach (Control control in parent.Controls)
+            {
+                if (control is Button && control.Visible &&
+                    control.Top >= btnPrint.Top - 12 &&
+                    control.Top <= btnPrint.Bottom + 12)
+                    buttons.Add(control);
+            }
+            if (buttons.Count == 0) return;
+            buttons.Sort((a, b) => a.Left.CompareTo(b.Left));
+            int totalWidth = 0;
+            foreach (Control button in buttons) totalWidth += button.Width;
+            totalWidth += (buttons.Count - 1) * 7;
+            if (totalWidth > parent.ClientSize.Width - 20) return;
+            int right = parent.ClientSize.Width - 10;
+            foreach (Control button in buttons)
+            {
+                button.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+                button.Left = right - button.Width;
+                right = button.Left - 7;
+            }
+        }
+
+        private void SetEmployeeHeader(string columnName, string arabicCaption)
+        {
+            if (dgvSales.Columns.Contains(columnName))
+                dgvSales.Columns[columnName].HeaderText = arabicCaption;
+        }
+
+        private void TranslateEmployeeControls(Control parent)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                // Exclude user-entered data and values from translation.
+                if (control is Label || control is Button ||
+                    control is CheckBox || control is GroupBox ||
+                    control is RadioButton)
+                {
+                    string original = control.Text;
+                    if (!string.IsNullOrWhiteSpace(original))
+                    {
+                        string translated = Clinic.TranslationClass.Translate(original, true);
+                        if (translated == original)
+                        {
+                            switch (original.Trim())
+                            {
+                                case "Print": translated = "طباعة"; break;
+                                case "Print ▼": translated = "طباعة ▼"; break;
+                                case "From": translated = "من"; break;
+                                case "To": translated = "إلى"; break;
+                                case "All Dates": translated = "جميع التواريخ"; break;
+                                case "Employee Balance Details": translated = "تفاصيل أرصدة الموظفين"; break;
+                                case "Employee Balance Detail": translated = "تفاصيل أرصدة الموظفين"; break;
+                            }
+                        }
+                        control.Text = translated;
+                    }
+                    if (control is Label)
+                        ((Label)control).TextAlign = ContentAlignment.MiddleRight;
+                    if (control is CheckBox)
+                        ((CheckBox)control).CheckAlign = ContentAlignment.MiddleRight;
+                }
+                if (control.HasChildren)
+                    TranslateEmployeeControls(control);
+            }
+        }
+
+        private void TranslateEmployeeMenu(ToolStripItemCollection items)
+        {
+            foreach (ToolStripItem item in items)
+            {
+                string original = item.Text;
+                string translated = Clinic.TranslationClass.Translate(original, true);
+                if (translated == original)
+                {
+                    switch (original.Trim())
+                    {
+                        case "Print": translated = "طباعة"; break;
+                        case "Export to PDF": translated = "تصدير إلى PDF"; break;
+                        case "Export to Excel": translated = "تصدير إلى Excel"; break;
+                        case "PDF": translated = "ملف PDF"; break;
+                        case "Excel": translated = "ملف Excel"; break;
+                    }
+                }
+                item.Text = translated;
+                if (item is ToolStripDropDownItem)
+                    TranslateEmployeeMenu(((ToolStripDropDownItem)item).DropDownItems);
+            }
+        }
+
         private void loadCompany()
         {
             using (var reader = ClinicDatabase.ExecuteReader("SELECT name FROM tbl_company"))
@@ -186,7 +348,7 @@ namespace YamyProject
                     var _type = dgvSales.Rows[e.RowIndex].Cells["Type"].Value.ToString();
                     if (_type == "Employee Loan Payment" || _type == "Employee Salary Payment" || _type == "Employee Petty Cash Payment")
                     {
-                        frmMain.openChildForm(new frmViewPaymentVoucher(_id,id));
+                        frmMain.openChildForm(new frmViewPaymentVoucher(_id, id));
                     }
 
                 }

@@ -18,7 +18,7 @@ namespace YamyProject
     public partial class frmEmployeeSalaryReport : Form
     {
         int id;
-        public frmEmployeeSalaryReport(int _id=0)
+        public frmEmployeeSalaryReport(int _id = 0)
         {
             InitializeComponent();
             LocalizationManager.LocalizeForm(this);
@@ -34,6 +34,7 @@ namespace YamyProject
             lblDate.Text = DateTime.Now.Date.ToString("dd/MM/yyyy");
             lblTime.Text = DateTime.Now.ToString("hh:mm:tt");
             loadCompany();
+            ApplyEmployeeSalaryLanguage();
         }
         private void loadCompany()
         {
@@ -45,6 +46,145 @@ namespace YamyProject
                 }
             }
         }
+
+        // Presentation only: preserve salary calculations, filtering, and exports.
+        private void ApplyEmployeeSalaryLanguage()
+        {
+            bool arabic = (Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en")
+                .StartsWith("ar", StringComparison.OrdinalIgnoreCase);
+
+            headerUC1.ArabicLayout = arabic;
+            if (!arabic) return;
+
+            this.Text = "تقرير رواتب الموظفين";
+            headerUC1.FormText = this.Text;
+            btnPrint.Text = "طباعة ▼";
+
+            TranslateSalaryControls(this);
+            TranslateSalaryMenus(this);
+            PositionSalaryToolbarArabic();
+
+            dgvSales.RightToLeft = RightToLeft.Yes;
+            dgvSales.ColumnHeadersDefaultCellStyle.Alignment =
+                DataGridViewContentAlignment.MiddleRight;
+            SetSalaryColumn("SN", "الرقم");
+            SetSalaryColumn("EmployeeName", "اسم الموظف");
+            SetSalaryColumn("BasicSalary", "الراتب الأساسي");
+            SetSalaryColumn("WorkingHours", "ساعات العمل");
+            SetSalaryColumn("WorkingDays", "أيام العمل");
+            SetSalaryColumn("DailyWage", "الأجر اليومي");
+            SetSalaryColumn("LoanAmount", "مبلغ السلفة");
+            SetSalaryColumn("Balance", "الرصيد");
+            // Keep TOTAL row value intact for exports and existing logic.
+        }
+
+        private void SetSalaryColumn(string name, string caption)
+        {
+            if (dgvSales.Columns.Contains(name))
+                dgvSales.Columns[name].HeaderText = caption;
+        }
+
+        private string TranslateSalaryText(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return text;
+            string key = text.Trim();
+            string translated = Clinic.TranslationClass.Translate(key, true);
+            if (translated != key) return translated;
+            switch (key)
+            {
+                case "Employee Salary Report": return "تقرير رواتب الموظفين";
+                case "Employee Name": return "اسم الموظف";
+                case "Basic Salary": return "الراتب الأساسي";
+                case "Working Hours": return "ساعات العمل";
+                case "Work Days": return "أيام العمل";
+                case "Daily Wage": return "الأجر اليومي";
+                case "Loan Amount": return "مبلغ السلفة";
+                case "Print ▼": return "طباعة ▼";
+                case "Print": return "طباعة";
+                case "From": return "من";
+                case "To": return "إلى";
+                case "All Dates": return "جميع التواريخ";
+                case "Export to PDF": return "تصدير إلى PDF";
+                case "Export to Excel": return "تصدير إلى Excel";
+                default: return text;
+            }
+        }
+
+        private void TranslateSalaryControls(Control parent)
+        {
+            foreach (Control c in parent.Controls)
+            {
+                // Do not alter dynamic company names, date/time, or grid values.
+                if (c != guna2HtmlLabel8 && c != lblDate && c != lblTime &&
+                    (c is Label || c is Button || c is CheckBox ||
+                     c is GroupBox || c is RadioButton ||
+                     c.GetType().Name == "Guna2HtmlLabel"))
+                {
+                    c.Text = TranslateSalaryText(c.Text);
+                    if (c is Label)
+                        ((Label)c).TextAlign = ContentAlignment.MiddleRight;
+                    if (c is CheckBox)
+                        ((CheckBox)c).CheckAlign = ContentAlignment.MiddleRight;
+                    if (c.GetType().Name == "Guna2HtmlLabel")
+                        c.RightToLeft = RightToLeft.Yes;
+                }
+                if (c.HasChildren) TranslateSalaryControls(c);
+            }
+        }
+
+        private void TranslateSalaryMenus(Control parent)
+        {
+            foreach (Control c in parent.Controls)
+            {
+                if (c is ToolStrip)
+                    TranslateSalaryMenuItems(((ToolStrip)c).Items);
+                if (c.ContextMenuStrip != null)
+                    TranslateSalaryMenuItems(c.ContextMenuStrip.Items);
+                if (c.HasChildren) TranslateSalaryMenus(c);
+            }
+            // This report opens its export menu directly from btnPrint.
+            if (parent == this && contextMenuExport != null)
+                TranslateSalaryMenuItems(contextMenuExport.Items);
+        }
+
+        private void TranslateSalaryMenuItems(ToolStripItemCollection items)
+        {
+            foreach (ToolStripItem item in items)
+            {
+                item.Text = TranslateSalaryText(item.Text);
+                if (item is ToolStripDropDownItem)
+                    TranslateSalaryMenuItems(((ToolStripDropDownItem)item).DropDownItems);
+            }
+        }
+
+        private void PositionSalaryToolbarArabic()
+        {
+            Control parent = btnPrint.Parent;
+            if (parent == null || parent.ClientSize.Width <= 0) return;
+
+            var buttons = new List<Control>();
+            foreach (Control c in parent.Controls)
+            {
+                if (c is Button && c.Visible && c.Dock == DockStyle.None &&
+                    c.Top >= btnPrint.Top - 12 && c.Top <= btnPrint.Bottom + 12)
+                    buttons.Add(c);
+            }
+            if (buttons.Count == 0) return;
+            buttons.Sort((a, b) => a.Left.CompareTo(b.Left));
+
+            int required = 20 + (buttons.Count - 1) * 7;
+            foreach (Control b in buttons) required += b.Width;
+            if (required > parent.ClientSize.Width) return;
+
+            int right = parent.ClientSize.Width - 10;
+            foreach (Control b in buttons)
+            {
+                b.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+                b.Left = right - b.Width;
+                right = b.Left - 7;
+            }
+        }
+
         private void btnPrint_Click(object sender, EventArgs e)
         {
             contextMenuExport.Show(btnPrint, new Point(0, btnPrint.Height));

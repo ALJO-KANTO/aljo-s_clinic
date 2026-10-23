@@ -37,7 +37,101 @@ namespace YamyProject
             lblTime.Text = DateTime.Now.ToString("hh:mm:tt");
 
             CmbType.Text = "All";
+            ApplyVendorSummaryArabicUI();
         }
+        // UI-only Arabic localization. Keep ComboBox values, SQL, and grid data unchanged.
+        private bool IsVendorSummaryArabic()
+        {
+            string language = Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en";
+            return language.StartsWith("ar", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private string VendorSummaryCaption(string english)
+        {
+            if (string.IsNullOrWhiteSpace(english)) return english;
+            string key = english.Trim();
+            switch (key)
+            {
+                case "Vendor Summary": return "ملخص الموردين";
+                case "Subcontractor Summary": return "ملخص مقاولي الباطن";
+                case "Company Name": return "اسم الشركة";
+                case "All Transaction":
+                case "All Transactions": return "جميع المعاملات";
+                case "SN": return "م";
+                case "Print ▼": return "طباعة ▼";
+            }
+            return Clinic.TranslationClass.Translate(key, true);
+        }
+
+        private void ApplyVendorSummaryArabicUI()
+        {
+            bool arabic = IsVendorSummaryArabic();
+            headerUC1.ArabicLayout = arabic;
+            if (!arabic) return;
+
+            this.Text = VendorSummaryCaption("Vendor Summary");
+            headerUC1.FormText = this.Text;
+            TranslateVendorSummaryControls(this);
+            btnPrint.Text = VendorSummaryCaption("Print ▼");
+            UpdateVendorSummaryTitle();
+            ApplyVendorSummaryGridHeaders();
+        }
+
+        private void TranslateVendorSummaryControls(Control parent)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                if (control == headerUC1 || control == lblDate || control == lblTime)
+                    continue;
+
+                // Database company name is data, not a caption.
+                if (control == lblCompany)
+                {
+                    if (string.Equals(lblCompany.Text.Trim(), "Company Name", StringComparison.OrdinalIgnoreCase))
+                        lblCompany.Text = "اسم الشركة";
+                    continue;
+                }
+
+                if (control is Label || control is Button || control is CheckBox ||
+                    control is RadioButton || control is GroupBox ||
+                    control is Guna.UI2.WinForms.Guna2HtmlLabel ||
+                    control is Guna.UI2.WinForms.Guna2Button)
+                {
+                    string caption = VendorSummaryCaption(control.Text);
+                    if (!string.IsNullOrWhiteSpace(caption)) control.Text = caption;
+                    control.RightToLeft = RightToLeft.Yes;
+                }
+                if (control.HasChildren) TranslateVendorSummaryControls(control);
+            }
+        }
+
+        private void UpdateVendorSummaryTitle()
+        {
+            // Do not translate CmbType.Text: SQL filtering relies on its English value.
+            string englishTitle = CmbType.Text == "All" || CmbType.Text == "Vendor"
+                ? "Vendor Summary" : CmbType.Text + " Summary";
+            guna2HtmlLabel7.Text = IsVendorSummaryArabic()
+                ? VendorSummaryCaption(englishTitle) : englishTitle;
+        }
+
+        private void ApplyVendorSummaryGridHeaders()
+        {
+            bool arabic = IsVendorSummaryArabic();
+            dgvSales.RightToLeft = arabic ? RightToLeft.Yes : RightToLeft.No;
+            if (!arabic) return;
+            foreach (DataGridViewColumn column in dgvSales.Columns)
+            {
+                if (column.Name == "id") continue;
+                string english = column.Name == "sn" ? "SN" :
+                    column.Name == "name" ? "Name" :
+                    column.Name == "debit" ? "Debit" :
+                    column.Name == "credit" ? "Credit" :
+                    column.Name == "balance" ? "Balance" : column.HeaderText;
+                column.HeaderText = VendorSummaryCaption(english);
+                column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            }
+        }
+
         private void btnPrint_Click(object sender, EventArgs e)
         {
             contextMenuExport.Show(btnPrint, new Point(0, btnPrint.Height));
@@ -170,7 +264,8 @@ namespace YamyProject
                                 {dateFilter}
                             AND v.type='Subcontractor' 
                             GROUP BY v.id, v.code, v.name;";
-            } else if (CmbType.Text == "All")
+            }
+            else if (CmbType.Text == "All")
             {
                 query = $@"
                             SELECT 
@@ -206,7 +301,7 @@ namespace YamyProject
                             GROUP BY v.id, v.code, v.name;";
             }
 
-                using (MySqlDataReader reader = ClinicDatabase.ExecuteReader(query, parameters.ToArray()))
+            using (MySqlDataReader reader = ClinicDatabase.ExecuteReader(query, parameters.ToArray()))
             {
                 while (reader.Read())
                 {
@@ -232,6 +327,7 @@ namespace YamyProject
             dgvSales.Rows[totalRow].DefaultCellStyle.BackColor = System.Drawing.Color.Gainsboro;
             dgvSales.Rows[totalRow].DefaultCellStyle.ForeColor = System.Drawing.Color.Black;
             dgvSales.Rows[totalRow].Cells[4].Style.Alignment = DataGridViewContentAlignment.MiddleRight;
+            ApplyVendorSummaryGridHeaders();
         }
 
         private void SavePDF_Click(object sender, EventArgs e)
@@ -472,7 +568,7 @@ namespace YamyProject
             //if (Utilities.UserPermissionCheck("VendorSummary"))
             //{
             int id = int.Parse(dgvSales.CurrentRow.Cells["id"].Value.ToString());
-               frmMain.openChildForm(new frmVendorBalanceDetails(id));
+            frmMain.openChildForm(new frmVendorBalanceDetails(id));
             //}
         }
 
@@ -494,14 +590,7 @@ namespace YamyProject
 
         private void CmbType_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (CmbType.Text == "All" || CmbType.Text == "Vendor")
-            {
-                guna2HtmlLabel7.Text = "Vendor Summary";
-            }
-            else
-            {
-                guna2HtmlLabel7.Text = CmbType.Text + " Summary";
-            }
+            UpdateVendorSummaryTitle();
             LoadSalesData();
         }
 

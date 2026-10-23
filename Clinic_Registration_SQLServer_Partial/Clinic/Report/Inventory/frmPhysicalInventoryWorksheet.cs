@@ -1,4 +1,5 @@
 ﻿using Clinic.global_classes;
+using Clinic;
 using Clinic_DataAccess;
 using MigraDoc.DocumentObjectModel;
 using MigraDoc.DocumentObjectModel.Tables;
@@ -24,12 +25,14 @@ namespace YamyProject
             InitializeComponent();
             LocalizationManager.LocalizeForm(this);
             headerUC1.FormText = this.Text;
+            this.Shown += (s, e) => ApplyWorksheetLanguage();
         }
 
         private void frmValuationStockStatusByItem_Load(object sender, EventArgs e)
         {
             btnPrint.Text = "Print ▼";
             LoadData();
+            ApplyWorksheetLanguage();
             using (MySqlDataReader reader = ClinicDatabase.ExecuteReader("SELECT name FROM tbl_company LIMIT 1"))
                 if (reader.Read())
                 {
@@ -69,6 +72,7 @@ namespace YamyProject
                 ClinicDatabase.CreateParameterNew("eDate", dtpTo.Value.Date));
 
             LoadInventoryValuationSummary(dt);
+            ApplyWorksheetLanguage();
 
         }
         private void LoadInventoryValuationSummary(DataTable dt)
@@ -453,8 +457,8 @@ namespace YamyProject
         {
             //if (Utilities.UserPermissionCheck("CustomerBalanceSummary"))
             //{
-                //int id = int.Parse(dgvPurchase.CurrentRow.Cells["id"].Value.ToString());
-                //frmLogin.frmMain.openChildForm(new frmPurchaseOrderDetails(id));
+            //int id = int.Parse(dgvPurchase.CurrentRow.Cells["id"].Value.ToString());
+            //frmLogin.frmMain.openChildForm(new frmPurchaseOrderDetails(id));
             //}
         }
 
@@ -481,5 +485,67 @@ namespace YamyProject
         {
             LoadData();
         }
+        // UI localization only. No database or export behavior is changed.
+        private void ApplyWorksheetLanguage()
+        {
+            bool arabic = TranslationClass.IsArabic;
+            // The shared HeaderUC handles the close/maximize/minimize mirroring.
+            headerUC1.ArabicLayout = arabic;
+            string englishTitle = "Physical Inventory Worksheet";
+            string title = arabic ? "ورقة عمل الجرد الفعلي" : englishTitle;
+            this.Text = title;
+            headerUC1.FormText = title;
+            guna2HtmlLabel7.Text = title;
+            btnPrint.Text = arabic ? "طباعة ▼" : "Print ▼";
+
+            string[] english = {
+                "Item", "Description", "Category", "Preferred Vendor",
+                "Quantity on Hand", "Physical Count"
+            };
+            string[] translated = {
+                "الصنف", "الوصف", "الفئة", "المورد المفضل",
+                "الكمية المتوفرة", "الجرد الفعلي"
+            };
+            for (int i = 0; i < dgvReport.Columns.Count && i < english.Length; i++)
+            {
+                dgvReport.Columns[i].HeaderText = arabic ? translated[i] : english[i];
+                dgvReport.Columns[i].HeaderCell.Style.Alignment = arabic
+                    ? DataGridViewContentAlignment.MiddleRight
+                    : DataGridViewContentAlignment.MiddleLeft;
+            }
+            dgvReport.RightToLeft = arabic ? RightToLeft.Yes : RightToLeft.No;
+
+            // Localize visible filter captions without changing ComboBox values,
+            // because DateRangeHelper depends on their original English text.
+            foreach (Control control in this.Controls)
+                LocalizeWorksheetCaptions(control, arabic);
+        }
+
+        private void LocalizeWorksheetCaptions(Control parent, bool arabic)
+        {
+            foreach (Control c in parent.Controls)
+            {
+                if (c == headerUC1 || c == dgvReport)
+                    continue;
+                if (c is Label || c is Button || c is GroupBox ||
+                    c is CheckBox || c is Guna.UI2.WinForms.Guna2HtmlLabel)
+                {
+                    if (c == guna2HtmlLabel7 || c == btnPrint)
+                        continue;
+                    string original = c.Tag as string;
+                    if (string.IsNullOrEmpty(original))
+                    {
+                        original = c.Text;
+                        c.Tag = original;
+                    }
+                    string translated = TranslationClass.Translate(original, arabic);
+                    c.Text = translated;
+                    c.RightToLeft = arabic ? RightToLeft.Yes : RightToLeft.No;
+                }
+                if (c.HasChildren)
+                    LocalizeWorksheetCaptions(c, arabic);
+            }
+        }
+
     }
 }
