@@ -6,11 +6,25 @@ namespace YamyProject
 {
     public partial class HeaderUC : UserControl
     {
+        private string _originalHeaderText = "";
+
+        private readonly Dictionary<Control, Rectangle> _originalBounds =
+            new Dictionary<Control, Rectangle>();
+
+        private int _originalHeaderWidth = 0;
         private Random random = new Random();
         private Point previousLocation;
         public HeaderUC()
         {
             InitializeComponent();
+
+            _originalHeaderText = lblFormName.Text;
+
+            this.Load += (s, e) =>
+            {
+                CaptureHeaderLayout();
+                ApplyLanguage();
+            };
 
             this.Resize += (s, e) =>
             {
@@ -31,22 +45,52 @@ namespace YamyProject
                     this.ParentForm.Dock = DockStyle.Fill;
             }
         }
+        private void ApplyLanguage()
+        {
+            bool arabic = _arabicLayout;
+
+            string english = _originalHeaderText;
+
+            if (string.IsNullOrWhiteSpace(english))
+                english = lblFormName.Text;
+
+            string translated = Clinic.TranslationClass.Translate(
+                english.Trim(),
+                arabic);
+
+            lblFormName.Text = translated;
+
+            lblFormName.RightToLeft = arabic
+                ? RightToLeft.Yes
+                : RightToLeft.No;
+
+            lblFormName.TextAlign = HorizontalAlignment.Center;
+
+            ApplyHeaderDirection();
+        }
         public string FormText
         {
             get { return lblFormName.Text; }
-            set { lblFormName.Text = value; }
+            set
+            {
+                _originalHeaderText = value;
+                ApplyLanguage();
+            }
         }
 
-        public string HeaderText {
+        public string HeaderText
+        {
             get { return lblFormName.Text; }
-            set { lblFormName.Text = value; }
+            set
+            {
+                _originalHeaderText = value;
+                ApplyLanguage();
+            }
         }
 
         private bool _arabicLayout = false;
-        private readonly Dictionary<Control, int> _originalHeaderPositions =
-    new Dictionary<Control, int>();
-        private readonly Dictionary<Control, Rectangle> _headerOriginalBounds =
-            new Dictionary<Control, Rectangle>();
+     
+       
 
         public bool ArabicLayout
         {
@@ -56,10 +100,28 @@ namespace YamyProject
                 _arabicLayout = value;
 
                 if (IsHandleCreated)
-                    ApplyHeaderDirection();
+                    ApplyLanguage();
             }
         }
+        private void CaptureHeaderLayout()
+        {
+            if (_originalBounds.Count > 0)
+                return;
 
+            _originalHeaderWidth = ClientSize.Width;
+
+            Control[] buttons =
+            {
+        btnClose,
+        btnMaximize,
+        btnMinimize
+    };
+
+            foreach (Control button in buttons)
+            {
+                _originalBounds[button] = button.Bounds;
+            }
+        }
         private int GetHeaderX(Control control)
         {
             int x = control.Left;
@@ -98,51 +160,74 @@ namespace YamyProject
             if (ClientSize.Width <= 0)
                 return;
 
-            Control[] buttons =
+            CaptureHeaderLayout();
+
+            SuspendLayout();
+
+            try
             {
-        btnClose,
-        btnMaximize,
-        btnMinimize
-    };
+                Control[] buttons =
+                {
+            btnClose,
+            btnMaximize,
+            btnMinimize
+        };
 
-            foreach (Control button in buttons)
-            {
-                if (!_headerOriginalBounds.ContainsKey(button))
-                    _headerOriginalBounds[button] = button.Bounds;
+                foreach (Control button in buttons)
+                {
+                    Rectangle original = _originalBounds[button];
 
-                if (button.Dock != DockStyle.None)
-                    continue;
+                    if (button.Dock != DockStyle.None)
+                        continue;
 
-                Rectangle original = _headerOriginalBounds[button];
+                    int originalRightMargin =
+                        _originalHeaderWidth - original.Right;
 
-                // Determine original position relative to HeaderUC.
-                // Store it once, using the original English layout.
-                if (!_originalHeaderPositions.ContainsKey(button))
-                    _originalHeaderPositions[button] = GetHeaderX(button);
+                    int targetX;
 
-                int originalX = _originalHeaderPositions[button];
+                    if (_arabicLayout)
+                    {
+                        // Mirror buttons to the opposite side.
+                        targetX = originalRightMargin;
+                        button.Anchor =
+                            AnchorStyles.Top | AnchorStyles.Left;
+                    }
+                    else
+                    {
+                        // Preserve the original right-side spacing.
+                        targetX = ClientSize.Width
+                            - originalRightMargin
+                            - original.Width;
 
-                int targetX = _arabicLayout
-                    ? ClientSize.Width - originalX - original.Width
-                    : originalX;
+                        button.Anchor =
+                            AnchorStyles.Top | AnchorStyles.Right;
+                    }
 
-                button.Anchor = AnchorStyles.Top |
-                    (_arabicLayout ? AnchorStyles.Left : AnchorStyles.Right);
+                    button.Left = Math.Max(0, targetX);
+                    button.Top = original.Top;
+                }
 
-                SetHeaderX(button, targetX);
+                // Keep title centered in both languages.
+                lblFormName.RightToLeft = _arabicLayout
+                    ? RightToLeft.Yes
+                    : RightToLeft.No;
+
+                lblFormName.TextAlign = HorizontalAlignment.Center;
             }
-
-            lblFormName.RightToLeft = _arabicLayout
-                ? RightToLeft.Yes
-                : RightToLeft.No;
-
-            lblFormName.TextAlign = HorizontalAlignment.Center;
+            finally
+            {
+                ResumeLayout(true);
+            }
         }
         protected override void OnHandleCreated(EventArgs e)
         {
             base.OnHandleCreated(e);
 
-            BeginInvoke(new Action(ApplyHeaderDirection));
+            BeginInvoke(new Action(() =>
+            {
+                CaptureHeaderLayout();
+                ApplyLanguage();
+            }));
         }
         private void btnMinimize_Click(object sender, EventArgs e)
         {
