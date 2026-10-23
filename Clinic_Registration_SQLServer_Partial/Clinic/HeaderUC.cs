@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
-
+using System.Collections.Generic;
 namespace YamyProject
 {
     public partial class HeaderUC : UserControl
@@ -11,7 +11,12 @@ namespace YamyProject
         public HeaderUC()
         {
             InitializeComponent();
-            this.MouseClick += (s, e) => { MessageBox.Show("Mouse clicked on header!"); };
+
+            this.Resize += (s, e) =>
+            {
+                if (IsHandleCreated)
+                    ApplyHeaderDirection();
+            };
         }
         private void HeaderUC_MouseDoubleClick(object sender, MouseEventArgs e)
         {
@@ -37,8 +42,108 @@ namespace YamyProject
             set { lblFormName.Text = value; }
         }
 
-        public bool ArabicLayout { get; internal set; }
+        private bool _arabicLayout = false;
+        private readonly Dictionary<Control, int> _originalHeaderPositions =
+    new Dictionary<Control, int>();
+        private readonly Dictionary<Control, Rectangle> _headerOriginalBounds =
+            new Dictionary<Control, Rectangle>();
 
+        public bool ArabicLayout
+        {
+            get { return _arabicLayout; }
+            set
+            {
+                _arabicLayout = value;
+
+                if (IsHandleCreated)
+                    ApplyHeaderDirection();
+            }
+        }
+
+        private int GetHeaderX(Control control)
+        {
+            int x = control.Left;
+            Control parent = control.Parent;
+
+            while (parent != null && parent != this)
+            {
+                x += parent.Left;
+                parent = parent.Parent;
+            }
+
+            return x;
+        }
+
+        private void SetHeaderX(Control control, int targetX)
+        {
+            Control parent = control.Parent;
+
+            if (parent == null)
+                return;
+
+            int parentX = 0;
+            Control current = parent;
+
+            while (current != null && current != this)
+            {
+                parentX += current.Left;
+                current = current.Parent;
+            }
+
+            control.Left = targetX - parentX;
+        }
+
+        private void ApplyHeaderDirection()
+        {
+            if (ClientSize.Width <= 0)
+                return;
+
+            Control[] buttons =
+            {
+        btnClose,
+        btnMaximize,
+        btnMinimize
+    };
+
+            foreach (Control button in buttons)
+            {
+                if (!_headerOriginalBounds.ContainsKey(button))
+                    _headerOriginalBounds[button] = button.Bounds;
+
+                if (button.Dock != DockStyle.None)
+                    continue;
+
+                Rectangle original = _headerOriginalBounds[button];
+
+                // Determine original position relative to HeaderUC.
+                // Store it once, using the original English layout.
+                if (!_originalHeaderPositions.ContainsKey(button))
+                    _originalHeaderPositions[button] = GetHeaderX(button);
+
+                int originalX = _originalHeaderPositions[button];
+
+                int targetX = _arabicLayout
+                    ? ClientSize.Width - originalX - original.Width
+                    : originalX;
+
+                button.Anchor = AnchorStyles.Top |
+                    (_arabicLayout ? AnchorStyles.Left : AnchorStyles.Right);
+
+                SetHeaderX(button, targetX);
+            }
+
+            lblFormName.RightToLeft = _arabicLayout
+                ? RightToLeft.Yes
+                : RightToLeft.No;
+
+            lblFormName.TextAlign = HorizontalAlignment.Center;
+        }
+        protected override void OnHandleCreated(EventArgs e)
+        {
+            base.OnHandleCreated(e);
+
+            BeginInvoke(new Action(ApplyHeaderDirection));
+        }
         private void btnMinimize_Click(object sender, EventArgs e)
         {
             var parentForm = this.ParentForm;
