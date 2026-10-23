@@ -432,82 +432,63 @@ namespace Clinic_DataAccess
             {
                 using (MySqlConnection connection = new MySqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    string query = @"SELECT 
-                                            P.PrescriptionStatus,
-                                            PD.PrescriptionID,
-                                            PD.PrescriptionDetailsID,
-                                            PD.SavedMedicineName AS MedicineName,
-                                            PD.Dosage,
-                                            M.TaxRate,
-                                            PD.SavedMedicinePrice,
-                                            PD.Frequency,
-                                            PD.Quantity AS RequiredQuantity,
-                                            PD.Instructions,
-                                            PD.DiscountAmount,
+                    string query = @"
+                                    SELECT 
+                                        P.PrescriptionStatus,
+                                        PD.PrescriptionID,
+                                        PD.PrescriptionDetailsID,
+                                        PD.SavedMedicineName AS MedicineName,
+                                        PD.Dosage,
+                                        M.TaxRate,
+                                        PD.SavedMedicinePrice,
+                                        PD.Frequency,
+                                        PD.Quantity AS RequiredQuantity,
+                                        PD.Instructions,
+                                        PD.DiscountAmount,
 
-                                            -- منطق ذكي للكمية المصروفة
-                                            CASE 
-                                                WHEN P.PrescriptionStatus = 1 THEN 
-                                                    (CASE 
-                                                        WHEN M.CurrentStock IS NULL OR M.CurrentStock <= 0 THEN 0
-                                                        WHEN M.CurrentStock >= PD.Quantity THEN PD.Quantity
-                                                        ELSE M.CurrentStock 
-                                                    END)
-                                                ELSE PD.DispensedQuantity 
-                                            END AS DispensedQuantity,
+                                        -- Smart dispensed quantity
+                                        CASE 
+                                            WHEN P.PrescriptionStatus = 1 THEN 
+                                                CASE 
+                                                    WHEN M.CurrentStock IS NULL OR M.CurrentStock <= 0 THEN 0
+                                                    WHEN M.CurrentStock >= PD.Quantity THEN PD.Quantity
+                                                    ELSE M.CurrentStock 
+                                                END
+                                            ELSE PD.DispensedQuantity 
+                                        END AS DispensedQuantity,
 
-                                            -- منطق ذكي للـ CheckBox
-                                            CASE 
-                                                WHEN P.PrescriptionStatus = 1 THEN 
-                                                    (CASE 
-                                                        WHEN M.CurrentStock IS NULL OR M.CurrentStock <= 0 THEN 0
-                                                        ELSE 1 
-                                                    END)
-                                                ELSE PD.IsDispensed 
-                                            END AS IsDispensed,
+                                        -- Smart checkbox state
+                                        CASE 
+                                            WHEN P.PrescriptionStatus = 1 THEN 
+                                                CASE 
+                                                    WHEN M.CurrentStock IS NULL OR M.CurrentStock <= 0 THEN 0
+                                                    ELSE 1 
+                                                END
+                                            ELSE PD.IsDispensed 
+                                        END AS IsDispensed,
 
-                                            -- منطق ذكي لحالة التوفر
-                                            CASE 
-                                                WHEN P.PrescriptionStatus = 1 THEN
-                                                    (CASE 
-                                                        WHEN M.CurrentStock IS NULL OR M.CurrentStock <= 0 THEN 'Out of Stock'
-                                                        WHEN M.CurrentStock >= PD.Quantity THEN 'Fully Available'
-                                                        ELSE 'Partially Available (' + CAST(M.CurrentStock AS VARCHAR) + ')'
-                                                    END)
-                                                ELSE 'Finalized'
-                                            END AS AvailableStatus
+                                        -- Availability status
+                                        CASE 
+                                            WHEN P.PrescriptionStatus = 1 THEN
+                                                CASE 
+                                                    WHEN M.CurrentStock IS NULL OR M.CurrentStock <= 0
+                                                        THEN 'Out of Stock'
+                                                    WHEN M.CurrentStock >= PD.Quantity
+                                                        THEN 'Fully Available'
+                                                    ELSE CONCAT(
+                                                        'Partially Available (',
+                                                        CAST(M.CurrentStock AS CHAR),
+                                                        ')'
+                                                    )
+                                                END
+                                            ELSE 'Finalized'
+                                        END AS AvailableStatus
 
-                                        FROM PrescriptionDetails PD
-                                        LEFT JOIN Prescriptions P ON PD.PrescriptionID = P.PrescriptionID
-                                        LEFT JOIN Medicines M ON PD.SavedMedicineName = M.MedicineName;";
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                                    FROM PrescriptionDetails PD
+                                    LEFT JOIN Prescriptions P
+                                        ON PD.PrescriptionID = P.PrescriptionID
+                                    LEFT JOIN Medicines M
+                                        ON PD.SavedMedicineName = M.MedicineName;";
 
                     using (MySqlCommand command = new MySqlCommand(query, connection))
                     {
