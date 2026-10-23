@@ -1623,7 +1623,8 @@ namespace YamyProject
                 if (isUpdateOpening())
                 {
                     insertItemTransaction();
-                    insertItemJournal();
+                    if(Convert.ToDecimal(txtTotalValue.Text)>0)
+                        insertItemJournal();
                 }
             }
             ////Utilities.LogAudit(-1, "Update Item", "Item", id, "Updated Item: " + txtName.Text + " with Code: " + itemCode);

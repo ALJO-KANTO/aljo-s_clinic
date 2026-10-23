@@ -3280,6 +3280,29 @@ namespace Clinic_DataAccess
                                 DEFAULT CHARSET=utf8mb4
                                 COLLATE=utf8mb4_general_ci;"
                         },
+                        new DatabaseMigration
+                        {
+                            Version = "20261023_CLINIC_Col_01",
+                            Description = "Add dispensing fields to prescription details",
+                            Sql = @"
+                                ALTER TABLE `PrescriptionDetails`
+                                    ADD COLUMN `DispensedQuantity`
+                                        DECIMAL(12,3) NOT NULL DEFAULT 0.000,
+                                    ADD COLUMN `IsDispensed`
+                                        TINYINT(1) NOT NULL DEFAULT 0;
+                            "
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261023_CLINIC_insert_tax_01",
+                            Description = "Insert data to table tbl_tax",
+                            Sql = @"INSERT INTO tbl_tax(name,value,description) 
+                                    VALUES
+                                        ('0 %', 0, ''),
+                                        ('5 %', 5, ''),
+                                        ('15 %', 15, ''),
+                                        ('18 %', 18, '')"
+                        },
 
 /*************************************Table Views************************************************/
 
@@ -4140,6 +4163,53 @@ namespace Clinic_DataAccess
                                     ON P.PersonID = Pe.PersonID
                                 INNER JOIN doctors D
                                     ON A.DoctorID = D.DoctorID;
+                            "
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261023_CLINIC_01",
+                            Description = "Replace medicines table with tbl_items view",
+                            Sql = @"
+                                DROP TABLE IF EXISTS `medicines`;
+
+                                CREATE OR REPLACE VIEW `medicines` AS
+                                SELECT
+                                    i.`id` AS `MedicineID`,
+                                    i.`Name` AS `MedicineName`,
+                                    COALESCE(i.`sales_price`, 0) AS `MedicinePrice`,
+                                    COALESCE(i.`cost_price`, 0) AS `MedicineCost`,
+                                    COALESCE(i.`on_hand`, 0) AS `CurrentStock`,
+                                    0.000 AS `ReorderLevel`,
+                                    0.000 AS `TaxRate`
+                                FROM `tbl_items` i WHERE i.`type` = '11 - Inventory Part';
+                            "
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261023_CLINIC_View_03",
+                            Description = "Replace services table with tbl_items view",
+                            Sql = @"
+                                ALTER TABLE `billservices`
+                                    DROP FOREIGN KEY `fk_billservices_service`;
+
+                                DROP TABLE `services`;
+
+                                CREATE OR REPLACE VIEW `services` AS
+                                SELECT
+                                    i.`id` AS `ServiceID`,
+                                    i.`Name` AS `ServiceName`,
+                                    COALESCE(i.`sales_price`, 0.00) AS `ServicePrice`,
+                                    CASE
+                                        WHEN i.`active` = 0 THEN 1
+                                        ELSE 0
+                                    END AS `IsActive`
+                                FROM `tbl_items` i
+                                WHERE i.`type` = '12 - Service';
+
+                                ALTER TABLE `billservices`
+                                    ADD CONSTRAINT `fk_billservices_item`
+                                    FOREIGN KEY (`ServiceID`)
+                                    REFERENCES `tbl_items` (`id`);
                             "
                         },
                   };
