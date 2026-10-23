@@ -17,7 +17,7 @@ namespace YamyProject
     public partial class frmPettyCashBalanceDetails : Form
     {
         int id;
-        public frmPettyCashBalanceDetails(int _id=0)
+        public frmPettyCashBalanceDetails(int _id = 0)
         {
             InitializeComponent();
             LocalizationManager.LocalizeForm(this);
@@ -45,7 +45,105 @@ namespace YamyProject
 
             loadCompany();
             LoadData();
+            ApplyPettyCashArabicUI();
         }
+
+        // UI localization only. Transaction values and report calculations stay unchanged.
+        private void ApplyPettyCashArabicUI()
+        {
+            bool isArabic = (Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en")
+                .StartsWith("ar", StringComparison.OrdinalIgnoreCase);
+
+            headerUC1.ArabicLayout = isArabic;
+            if (!isArabic) return;
+
+            // Translate the actual form title and the independent HeaderUC title.
+            this.Text = PettyCashCaption(this.Text);
+            headerUC1.FormText = PettyCashCaption(headerUC1.FormText);
+            TranslatePettyCashControls(this);
+
+            // Change visual reading direction, not DataGridView column names or cell values.
+            dgvSales.RightToLeft = RightToLeft.Yes;
+            dgvSales.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            foreach (DataGridViewColumn column in dgvSales.Columns)
+            {
+                if (column.Name == "id") continue;
+                column.HeaderText = PettyCashCaption(column.Name);
+                column.HeaderCell.Style.Alignment =
+                    (column.Name == "Amount" || column.Name == "Balance" ||
+                     column.Name == "Total" || column.Name == "Vat")
+                    ? DataGridViewContentAlignment.MiddleRight
+                    : DataGridViewContentAlignment.MiddleCenter;
+            }
+        }
+
+        private void ApplyPettyCashGridHeaders()
+        {
+            bool isArabic = (Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en")
+                .StartsWith("ar", StringComparison.OrdinalIgnoreCase);
+            if (!isArabic) return;
+            dgvSales.RightToLeft = RightToLeft.Yes;
+            foreach (DataGridViewColumn column in dgvSales.Columns)
+                if (column.Name != "id") column.HeaderText = PettyCashCaption(column.Name);
+        }
+
+        private static string PettyCashCaption(string english)
+        {
+            if (string.IsNullOrWhiteSpace(english)) return english;
+            string translated = Clinic.TranslationClass.Translate(english, true);
+            if (translated != english) return translated;
+            switch (english.Trim())
+            {
+                case "Petty Cash Balance Detail": return "تفاصيل رصيد المصروفات النثرية";
+                case "Petty Cash Detail": return "تفاصيل المصروفات النثرية";
+                case "Company Name": return "اسم الشركة";
+                case "All Transaction": return "جميع المعاملات";
+                case "All Transactions": return "جميع المعاملات";
+                case "Petty Cash Report": return "تقرير المصروفات النثرية";
+                case "Petty Cash Summary": return "ملخص المصروفات النثرية";
+                case "Petty Cash Balance Details": return "تفاصيل أرصدة المصروفات النثرية";
+                case "Profit & loss": return "الأرباح والخسائر";
+                case "Show Columns ": return "إظهار الأعمدة";
+                case "Vat": return "ضريبة القيمة المضافة";
+                case "VAT": return "ضريبة القيمة المضافة";
+                case "Comment On Report": return "إضافة تعليق على التقرير";
+                case "Customize Report": return "تخصيص التقرير";
+                case "Memorize": return "حفظ التقرير";
+                case "Dates": return "التواريخ";
+                case "Sort By": return "ترتيب حسب";
+                case "From": return "من";
+                case "To": return "إلى";
+                default: return english;
+            }
+        }
+
+        private static void TranslatePettyCashControls(Control parent)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                // HeaderUC handles its own layout and title.
+                if (control is HeaderUC) continue;
+                if (control is Label || control is Button || control is CheckBox ||
+                    control is RadioButton || control is GroupBox || control is LinkLabel ||
+                    control is Guna.UI2.WinForms.Guna2HtmlLabel ||
+                    control is Guna.UI2.WinForms.Guna2Button)
+                {
+                    // Do not translate dynamic date/time or actual company data.
+                    // A design-time "Company Name" placeholder can be localized.
+                    if (control.Name != "lblDate" && control.Name != "lblTime" &&
+                        (control.Name != "guna2HtmlLabel8" ||
+                         string.Equals(control.Text.Trim(), "Company Name", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        control.Text = PettyCashCaption(control.Text);
+                        // Preserve Designer alignment for report headings. RTL text only.
+                        if (control is Label label)
+                            label.RightToLeft = RightToLeft.Yes;
+                    }
+                }
+                if (control.HasChildren) TranslatePettyCashControls(control);
+            }
+        }
+
         private void loadCompany()
         {
             using (var reader = ClinicDatabase.ExecuteReader("SELECT name FROM tbl_company"))
@@ -410,6 +508,7 @@ namespace YamyProject
                 dgvSales.Rows[totalRow].Cells[2].Style.Alignment = DataGridViewContentAlignment.MiddleRight;
 
             }
+            ApplyPettyCashGridHeaders();
         }
 
         private void dgvSales_CellClick(object sender, DataGridViewCellEventArgs e)

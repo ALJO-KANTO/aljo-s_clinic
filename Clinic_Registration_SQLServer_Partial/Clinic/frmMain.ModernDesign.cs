@@ -9,6 +9,9 @@ namespace Clinic
 {
     public partial class frmMain
     {
+        private Label modernBrand;
+        private Button modernAccount;
+        private TextBox modernSearch;
         private Panel modernRoot;
         private Panel modernSidebar;
         private Panel modernHeader;
@@ -106,48 +109,34 @@ namespace Clinic
             Controls.Add(modernRoot);
             modernRoot.BringToFront();
 
-            modernHeader = new Panel { Dock = DockStyle.Top, Height = 88, BackColor = Color.FromArgb(5, 94, 116) };
-            modernRoot.Controls.Add(modernHeader);
-            Label brand = TextLabel("✚  CLINIC\n     MANAGEMENT SYSTEM", 15, Color.White, true);
-            Place(modernHeader, brand, 30, 12, 290, 62);
-            modernUser = TextLabel("", 11, Color.White, true);
-            modernUser.Anchor = AnchorStyles.Right | AnchorStyles.Top;
-            Place(modernHeader, modernUser, 1130, 15, 235, 60);
-            Button account = new Button
+            // Small toolbar for the Translate button only.
+            // No clinic title, search box, Account button or user label.
+            modernHeader = new Panel
             {
-                Text = "⚙  Account",
-                Tag = "⚙  Account",
-                FlatStyle = FlatStyle.Flat,
-                ForeColor = Color.White,
-                BackColor = Color.FromArgb(6, 108, 128),
-                Font = new Font("Segoe UI", 10),
-                Anchor = AnchorStyles.Right | AnchorStyles.Top
-            };
-            account.FlatAppearance.BorderSize = 0;
-            Place(modernHeader, account, 1010, 24, 115, 38);
-            account.Click += (s, e) => {
-                ContextMenuStrip menuOptions = new ContextMenuStrip();
-                menuOptions.Items.Add("Current User Info", null, (a, b) => currentUserInfoToolStripMenuItem1_Click(this, EventArgs.Empty));
-                menuOptions.Items.Add("Change Password", null, (a, b) => Password32ToolStripMenuItem_Click(this, EventArgs.Empty));
-                menuOptions.Items.Add("Sign Out", null, (a, b) => signOutToolStripMenuItem_Click(this, EventArgs.Empty));
-                menuOptions.Show(account, new Point(0, account.Height));
-            };
-            TextBox search = new TextBox
-            {
-                Font = new Font("Segoe UI", 11),
-                Text = "",
-                BorderStyle = BorderStyle.FixedSingle,
-                Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right
-            };
-            Place(modernHeader, search, 340, 27, 620, 34);
-            search.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) { btnFindPatient_Click(s, e); e.SuppressKeyPress = true; } };
-            modernHeader.Resize += (s, e) => {
-                modernUser.Left = modernHeader.Width - 245;
-                account.Left = modernHeader.Width - 365;
-                search.Width = Math.Max(150, account.Left - search.Left - 25);
+                Name = "modernHeader",
+                Dock = DockStyle.Top,
+                Height = 64,
+                BackColor = Color.White
             };
 
-            modernSidebar = new Panel { Dock = DockStyle.Left, Width = 266, BackColor = navy, AutoScroll = true };
+            modernRoot.Controls.Add(modernHeader);
+
+            modernHeader.Resize += (s, e) =>
+            {
+                PositionTranslateButton();
+                PositionAccountHeader();
+            };
+            BuildAccountHeader();
+            // Create the sidebar before accessing it
+            modernSidebar = new Panel
+            {
+                Name = "modernSidebar",
+                Dock = DockStyle.Left,
+                Width = 266,
+                BackColor = navy,
+                AutoScroll = true
+            };
+
             modernRoot.Controls.Add(modernSidebar);
             modernSidebar.BringToFront();
             // The header spans the whole window, including the sidebar.
@@ -270,7 +259,212 @@ namespace Clinic
             modernDashboard.Resize += (s, e) => ResizeDashboardRows();
             ResumeLayout(true);
         }
+        private ContextMenuStrip modernAccountMenu;
+        private Label modernAccountRole;
 
+        private string HeaderTranslate(string text)
+        {
+            return TranslationClass.Translate(
+                text,
+                TranslationClass.IsArabic);
+        }
+
+        private void BuildAccountHeader()
+        {
+            modernAccount = new Button
+            {
+                Name = "modernAccount",
+                Text = "Account  ▼",
+                Tag = "Account",
+                Width = 145,
+                Height = 38,
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(235, 247, 254),
+                ForeColor = ink,
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
+
+            modernAccount.FlatAppearance.BorderSize = 0;
+
+            modernHeader.Controls.Add(modernAccount);
+
+            modernUser = new Label
+            {
+                Name = "modernUser",
+                AutoSize = false,
+                Width = 200,
+                Height = 22,
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                ForeColor = ink,
+                TextAlign = ContentAlignment.MiddleRight
+            };
+
+            modernAccountRole = new Label
+            {
+                Name = "modernAccountRole",
+                AutoSize = false,
+                Width = 200,
+                Height = 18,
+                Font = new Font("Segoe UI", 8F),
+                ForeColor = Color.Gray,
+                TextAlign = ContentAlignment.MiddleRight
+            };
+
+            modernHeader.Controls.Add(modernUser);
+            modernHeader.Controls.Add(modernAccountRole);
+
+            modernAccountMenu = new ContextMenuStrip
+            {
+                Font = new Font("Segoe UI", 10F),
+                ShowImageMargin = false
+            };
+
+            modernAccount.Click += (s, e) =>
+            {
+                RefreshAccountHeader();
+
+                modernAccountMenu.Show(
+                    modernAccount,
+                    new Point(0, modernAccount.Height));
+            };
+
+            RefreshAccountHeader();
+            PositionAccountHeader();
+        }
+
+        private void RefreshAccountHeader()
+        {
+            string userName = clsGlobal.CurrentUser == null
+                ? "Unknown"
+                : clsGlobal.CurrentUser.UserName;
+
+            string role = clsGlobal.CurrentUser == null
+                ? ""
+                : Enum.GetName(
+                    typeof(clsGlobal.UserRole),
+                    clsGlobal.CurrentUser.RoleID) ?? "";
+
+            modernUser.Text = userName;
+            modernAccountRole.Text = HeaderTranslate(role);
+
+            modernAccount.Text =
+                HeaderTranslate("Account") + "  ▼";
+
+            modernAccountMenu.Items.Clear();
+
+            ToolStripMenuItem profileItem =
+                new ToolStripMenuItem(HeaderTranslate("My Account"));
+
+            profileItem.Click += (s, e) =>
+            {
+                MessageBox.Show(
+                    "Username: " + userName +
+                    "\nRole: " + role,
+                    HeaderTranslate("My Account"),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            };
+
+            ToolStripMenuItem passwordItem =
+                new ToolStripMenuItem(
+                    HeaderTranslate("Change Password"));
+
+            // Connect this to your existing password-change form.
+            passwordItem.Enabled = false;
+
+            ToolStripMenuItem logoutItem =
+                new ToolStripMenuItem(HeaderTranslate("Logout"));
+
+            logoutItem.Click += (s, e) =>
+            {
+                signOutToolStripMenuItem_Click(
+                    this,
+                    EventArgs.Empty);
+            };
+
+            modernAccountMenu.Items.Add(profileItem);
+            modernAccountMenu.Items.Add(passwordItem);
+            modernAccountMenu.Items.Add(
+                new ToolStripSeparator());
+            modernAccountMenu.Items.Add(logoutItem);
+        }
+
+        private void PositionAccountHeader()
+        {
+            if (modernHeader == null ||
+                modernAccount == null ||
+                modernUser == null ||
+                modernAccountRole == null)
+                return;
+
+            bool arabic = TranslationClass.IsArabic;
+
+            modernAccount.Size = new Size(145, 38);
+            modernAccount.Top = 13;
+
+            modernUser.AutoSize = false;
+            modernUser.Size = new Size(170, 22);
+            modernUser.Font = new Font(
+                "Segoe UI", 10F, FontStyle.Bold);
+
+            modernAccountRole.AutoSize = false;
+            modernAccountRole.Size = new Size(170, 18);
+            modernAccountRole.Font = new Font(
+                "Segoe UI", 8.5F, FontStyle.Regular);
+
+            modernUser.AutoEllipsis = true;
+            modernAccountRole.AutoEllipsis = true;
+
+            modernUser.Top = 12;
+            modernAccountRole.Top = 35;
+
+            int spacing = 14;
+            int translateWidth = btnTranslate != null
+                ? btnTranslate.Width
+                : 115;
+
+            if (arabic)
+            {
+                modernAccount.Left = translateWidth + 35;
+
+                modernUser.Left =
+                    modernAccount.Right + spacing;
+
+                modernAccountRole.Left = modernUser.Left;
+
+                modernUser.TextAlign =
+                    ContentAlignment.MiddleLeft;
+
+                modernAccountRole.TextAlign =
+                    ContentAlignment.MiddleLeft;
+            }
+            else
+            {
+                modernAccount.Left =
+                    modernHeader.ClientSize.Width
+                    - translateWidth
+                    - modernAccount.Width
+                    - 35;
+
+                modernUser.Left =
+                    modernAccount.Left
+                    - modernUser.Width
+                    - spacing;
+
+                modernAccountRole.Left = modernUser.Left;
+
+                modernUser.TextAlign =
+                    ContentAlignment.MiddleRight;
+
+                modernAccountRole.TextAlign =
+                    ContentAlignment.MiddleRight;
+            }
+
+            modernUser.BringToFront();
+            modernAccountRole.BringToFront();
+            modernAccount.BringToFront();
+        }
         private static void AddMenuHeading(FlowLayoutPanel menu, string heading)
         {
             Label label = TextLabel(heading, 9.5f, Color.FromArgb(159, 204, 220));
@@ -445,16 +639,34 @@ namespace Clinic
         private void BuildDashboardRows()
         {
             Panel welcome = Rounded(Color.FromArgb(214, 237, 251));
-            welcome.Height = 166; welcome.Margin = new Padding(0, 0, 0, 16);
-            modernGreeting = TextLabel("", 25, ink, true);
-            Place(welcome, modernGreeting, 28, 18, 550, 91);
-            Place(welcome, TextLabel("Here's what's happening in your clinic today.", 11,
-                Color.FromArgb(67, 111, 155)), 30, 114, 600, 35);
+            welcome.Height = 166;
+            welcome.Margin = new Padding(0, 0, 0, 16);
+
+            modernGreeting = TextLabel("", 16F, ink, true);
+            modernGreeting.AutoSize = false;
+            modernGreeting.AutoEllipsis = false;
+
+            Place(welcome, modernGreeting, 28, 44, 550, 60);
+            Label welcomeDescription = TextLabel(
+     "Here's what's happening in your clinic today.",
+     11,
+     Color.FromArgb(67, 111, 155));
+
+            Place(welcome, welcomeDescription, 30, 112, 600, 32);
             Label medical = TextLabel("✚  ♡  🩺", 40, Color.FromArgb(18, 145, 192));
             medical.TextAlign = ContentAlignment.MiddleCenter;
             medical.Anchor = AnchorStyles.Right | AnchorStyles.Top;
             Place(welcome, medical, 720, 28, 250, 95);
-            welcome.Resize += (s, e) => medical.Left = Math.Max(520, welcome.Width - 285);
+            welcome.Resize += (s, e) =>
+            {
+                medical.Left = isArabic
+                    ? 28
+                    : Math.Max(520, welcome.Width - 285);
+
+                modernGreeting.Left = isArabic
+                    ? Math.Max(28, welcome.Width - modernGreeting.Width - 28)
+                    : 28;
+            };
             modernDashboard.Controls.Add(welcome);
 
             TableLayoutPanel stats = new TableLayoutPanel
@@ -625,11 +837,28 @@ namespace Clinic
             Label valueLabel = TextLabel(value, 23, Color.FromArgb(9, 38, 77), true);
             valueLabel.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top;
             Place(card, valueLabel, 85, 55, 135, 45);
-            card.Resize += (s, e) => {
-                titleLabel.Width = Math.Max(70, card.Width - 95);
-                valueLabel.Width = Math.Max(70, card.Width - 95);
-            };
-            row.Controls.Add(card, index, 0);
+            card.Resize += (s, e) =>
+            {
+                bool arabic = TranslationClass.IsArabic;
+
+                icon.Left = arabic
+                    ? card.Width - icon.Width - 12
+                    : 12;
+
+                titleLabel.Left = arabic ? 12 : 85;
+                valueLabel.Left = arabic ? 12 : 85;
+
+                titleLabel.Width = Math.Max(70, card.Width - 100);
+                valueLabel.Width = Math.Max(70, card.Width - 100);
+
+                titleLabel.TextAlign = arabic
+                    ? ContentAlignment.MiddleRight
+                    : ContentAlignment.MiddleLeft;
+
+                valueLabel.TextAlign = arabic
+                    ? ContentAlignment.MiddleRight
+                    : ContentAlignment.MiddleLeft;
+            }; row.Controls.Add(card, index, 0);
         }
 
         private Panel RoleCard(string symbol, string title, Color accent, string[] labels, Action[] actions)
@@ -681,7 +910,7 @@ namespace Clinic
             buttons.BringToFront();
             return card;
         }
-
+        
         private static void QuickButton(FlowLayoutPanel container, string title, Action action)
         {
             Button b = new Button

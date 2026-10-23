@@ -54,6 +54,7 @@ namespace YamyProject
 
             // Translate after loading the grid and report data.
             ApplyCostCenterArabic();
+            headerUC1.ArabicLayout = TranslationClass.IsArabic;
         }
         private void btnPrint_Click(object sender, EventArgs e)
         {
@@ -415,6 +416,10 @@ namespace YamyProject
             // Mirror toolbar/filter control positions.
             ApplyCostCenterLayout(isArabic);
             FixCostCenterCheckboxLayout(isArabic);
+
+            // Mirror minimize, maximize and close buttons.
+            // Apply title-bar direction through HeaderUC itself.
+            headerUC1.ArabicLayout = isArabic;
         }
         private void FixCostCenterCheckboxLayout(bool isArabic)
         {
@@ -425,10 +430,18 @@ namespace YamyProject
                 isArabic ? RightToLeft.Yes : RightToLeft.No;
 
             guna2CheckBox1.TextAlign =
-                ContentAlignment.MiddleCenter;
+                isArabic
+                    ? ContentAlignment.MiddleRight
+                    : ContentAlignment.MiddleLeft;
 
             chkDate.TextAlign =
-                ContentAlignment.MiddleCenter;
+                isArabic
+                    ? ContentAlignment.MiddleRight
+                    : ContentAlignment.MiddleLeft;
+
+            // Ensure the Arabic label has enough space.
+            guna2CheckBox1.AutoSize = true;
+            chkDate.AutoSize = true;
         }
         private readonly Dictionary<Control, string> _costCenterEnglishText =
     new Dictionary<Control, string>();
@@ -546,6 +559,32 @@ namespace YamyProject
                 if (item is ToolStripDropDownItem dropDown)
                 {
                     TranslateCostCenterMenu(dropDown.DropDownItems);
+                }
+            }
+        }
+        private void ApplyArabicHeaderLayout(bool isArabic)
+        {
+            // Only mirror controls inside the custom header.
+            // Do not change the entire form's RightToLeftLayout.
+
+            foreach (Control control in headerUC1.Controls)
+            {
+                if (control is Button ||
+                    control.GetType().Name.Contains("Button"))
+                {
+                    // Store the original position once.
+                    if (!_originalBounds.ContainsKey(control))
+                        _originalBounds[control] = control.Bounds;
+
+                    Rectangle original = _originalBounds[control];
+
+                    control.Left = isArabic
+                        ? headerUC1.ClientSize.Width - original.Right
+                        : original.Left;
+
+                    control.Anchor = isArabic
+                        ? AnchorStyles.Top | AnchorStyles.Left
+                        : AnchorStyles.Top | AnchorStyles.Right;
                 }
             }
         }

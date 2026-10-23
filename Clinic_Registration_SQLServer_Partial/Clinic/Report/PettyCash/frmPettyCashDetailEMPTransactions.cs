@@ -22,7 +22,7 @@ namespace YamyProject
     public partial class frmPettyCashDetailEMPTransactions : Form
     {
         int id;
-        public frmPettyCashDetailEMPTransactions(int _id=0)
+        public frmPettyCashDetailEMPTransactions(int _id = 0)
         {
             InitializeComponent();
             LocalizationManager.LocalizeForm(this);
@@ -49,7 +49,96 @@ namespace YamyProject
             }
             loadCompany();
             LoadData();
+            ApplyPettyCashArabicUI();
         }
+        // UI translation only: never change grid cell values, employee selections,
+        // transaction types, SQL, financial calculations, or export logic.
+        private bool IsPettyCashArabic()
+        {
+            return (Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en")
+                .StartsWith("ar", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private string PettyCashCaption(string english)
+        {
+            if (!IsPettyCashArabic()) return english;
+            switch ((english ?? "").Trim())
+            {
+                case "Petty Cash Transaction": return "معاملات العهدة النقدية";
+                case "Petty Cash Transactions": return "معاملات العهدة النقدية";
+                case "Petty Cash Detail EMP Transaction":
+                case "Petty Cash Detail EMP Transactions":
+                    return "تفاصيل معاملات المصروفات النثرية للموظف";
+                case "Petty Cash Balance Detail EMP":
+                    return "تفاصيل رصيد العهدة النقدية للموظف";
+                case "Petty Cash Summary": return "ملخص المصروفات النثرية";
+                case "Petty Cash Balance Detail": return "تفاصيل رصيد المصروفات النثرية";
+                case "All Transaction":
+                case "All Transactions": return "جميع المعاملات";
+                case "Company Name": return "اسم الشركة";
+                case "Employee": return "الموظف";
+                case "Employee Code": return "رمز الموظف";
+                case "Employee Name": return "اسم الموظف";
+                case "Employee Name:": return "اسم الموظف:";
+                case "Voucher No": return "رقم السند";
+                case "Type": return "النوع";
+                case "Description": return "الوصف";
+                case "Debit": return "مدين";
+                case "Credit": return "دائن";
+                case "Balance": return "الرصيد";
+                case "SN": return "م";
+                case "SN#": return "م";
+                case "Inv Id": return "رقم الفاتورة";
+                case "Id": return "الرقم";
+                case "Excel": return "إكسل";
+                case "Print": return "طباعة";
+                default: return Clinic.TranslationClass.Translate(english, true);
+            }
+        }
+
+        private void ApplyPettyCashArabicUI()
+        {
+            if (!IsPettyCashArabic()) return;
+
+            // Form and reusable HeaderUC title are separate controls.
+            string originalTitle = this.Text;
+            this.Text = PettyCashCaption(originalTitle);
+            headerUC1.FormText = PettyCashCaption(originalTitle);
+            // The report has a separate heading inside the form.
+            // Translate it through the recursive UI control pass below.
+            headerUC1.ArabicLayout = true;
+
+            TranslatePettyCashControls(this);
+            ApplyPettyCashGridLanguage();
+        }
+
+        private void TranslatePettyCashControls(Control parent)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                if (control == headerUC1) continue;
+                if (control == dgvSales) continue;
+                if (control == guna2HtmlLabel8) continue; // company name from database
+                if (control == lblDate || control == lblTime) continue;
+                if (control is TextBoxBase || control is ComboBox ||
+                    control is DateTimePicker || control is ListBox) continue;
+
+                if (!string.IsNullOrWhiteSpace(control.Text))
+                    control.Text = PettyCashCaption(control.Text);
+
+                // Preserve centered report headings and existing control positions.
+                TranslatePettyCashControls(control);
+            }
+        }
+
+        private void ApplyPettyCashGridLanguage()
+        {
+            if (!IsPettyCashArabic()) return;
+            dgvSales.RightToLeft = RightToLeft.Yes;
+            foreach (DataGridViewColumn column in dgvSales.Columns)
+                column.HeaderText = PettyCashCaption(column.HeaderText);
+        }
+
         private void loadCompany()
         {
             using (var reader = ClinicDatabase.ExecuteReader("SELECT name FROM tbl_company"))
@@ -120,8 +209,8 @@ namespace YamyProject
                                 ";
 
             // Fetch data
-            DataTable dt = ClinicDatabase.ExecuteDataTable(query, 
-                ClinicDatabase.CreateParameterNew("@empId", empId), 
+            DataTable dt = ClinicDatabase.ExecuteDataTable(query,
+                ClinicDatabase.CreateParameterNew("@empId", empId),
                 ClinicDatabase.CreateParameterNew("@sDate", dateTimePicker1.Value.Date),
                 ClinicDatabase.CreateParameterNew("@eDate", dateTimePicker2.Value.Date)
                 );
@@ -166,6 +255,7 @@ namespace YamyProject
             dgvSales.CellBorderStyle = DataGridViewCellBorderStyle.None;
             dgvSales.RowHeadersVisible = false;
             LocalizationManager.LocalizeDataGridViewHeaders(dgvSales);
+            ApplyPettyCashGridLanguage();
         }
 
         private void dgvSales_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -1097,7 +1187,8 @@ namespace YamyProject
 
         private void cmbEmployee_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (cmbEmployee.SelectedValue != null && cmbEmployee.SelectedValue is int empId) {
+            if (cmbEmployee.SelectedValue != null && cmbEmployee.SelectedValue is int empId)
+            {
                 if (cmbEmployee.Focused || txtEmployeeCode.Text.Trim() != "")
                 {
                     int eId = cmbEmployee.SelectedValue is int id ? id : 0;

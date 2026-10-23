@@ -42,7 +42,79 @@ namespace YamyProject
                 }
             lblDate.Text = DateTime.Now.Date.ToString("dd/MM/yyyy");
             lblTime.Text = DateTime.Now.ToString("hh:mm:tt");
+            ApplyArabicReportUI();
         }
+        // UI localization only. No database, filtering, totals, navigation or export logic changes.
+        private void ApplyArabicReportUI()
+        {
+            bool arabic = (Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en")
+                .StartsWith("ar", StringComparison.OrdinalIgnoreCase);
+
+            headerUC1.ArabicLayout = arabic;
+            if (!arabic) return;
+
+            string title = isSubcontractors
+                ? "ملخص المشتريات حسب المقاول الفرعي"
+                : "ملخص المشتريات حسب المورد";
+            this.Text = title;
+            headerUC1.FormText = title;
+            guna2HtmlLabel7.Text = title;
+            btnPrint.Text = "طباعة ▼";
+
+            TranslateReportControls(this);
+            TranslateExportMenu(contextMenuExport.Items);
+
+            dgvPurchase.RightToLeft = RightToLeft.Yes;
+            dgvPurchase.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            foreach (DataGridViewColumn column in dgvPurchase.Columns)
+            {
+                if (column.Name == "sn") column.HeaderText = "الرقم";
+                else if (column.Name == "name") column.HeaderText = "الاسم";
+                else if (column.Name == "debit") column.HeaderText = "صافي المشتريات";
+            }
+            // Keep the debit numeric values right-aligned, as before.
+            if (dgvPurchase.Columns.Contains("debit"))
+                dgvPurchase.Columns["debit"].DefaultCellStyle.Alignment =
+                    DataGridViewContentAlignment.MiddleRight;
+
+            // Do NOT translate row values such as TOTAL: PDF and Excel exports check them.
+        }
+
+        private void TranslateReportControls(Control parent)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                // Do not modify HeaderUC's own buttons, title, or its positioning.
+                if (control == headerUC1) continue;
+                if (control is Label || control is Button || control is CheckBox ||
+                    control is GroupBox || control is Guna2HtmlLabel)
+                {
+                    string original = control.Text;
+                    if (!string.IsNullOrWhiteSpace(original))
+                    {
+                        string translated = Clinic.TranslationClass.Translate(original.Trim(), true);
+                        control.Text = translated;
+                    }
+                    if (control is Label)
+                        ((Label)control).TextAlign = ContentAlignment.MiddleRight;
+                    if (control is Guna2HtmlLabel)
+                        ((Guna2HtmlLabel)control).TextAlignment = ContentAlignment.MiddleRight;
+                }
+                if (control.HasChildren) TranslateReportControls(control);
+            }
+        }
+
+        private void TranslateExportMenu(ToolStripItemCollection items)
+        {
+            foreach (ToolStripItem item in items)
+            {
+                if (!string.IsNullOrWhiteSpace(item.Text))
+                    item.Text = Clinic.TranslationClass.Translate(item.Text.Trim(), true);
+                ToolStripDropDownItem dropDown = item as ToolStripDropDownItem;
+                if (dropDown != null) TranslateExportMenu(dropDown.DropDownItems);
+            }
+        }
+
         private void btnPrint_Click(object sender, EventArgs e)
         {
             contextMenuExport.Show(btnPrint, new Point(0, btnPrint.Height));
@@ -386,8 +458,8 @@ namespace YamyProject
         {
             //if (Utilities.UserPermissionCheck("CustomerBalanceSummary"))
             //{
-                int id = int.Parse(dgvPurchase.CurrentRow.Cells["id"].Value.ToString());
-                frmMain.openChildForm(new frmPurchaseByVendorDetails(id));
+            int id = int.Parse(dgvPurchase.CurrentRow.Cells["id"].Value.ToString());
+            frmMain.openChildForm(new frmPurchaseByVendorDetails(id));
             //}
         }
 

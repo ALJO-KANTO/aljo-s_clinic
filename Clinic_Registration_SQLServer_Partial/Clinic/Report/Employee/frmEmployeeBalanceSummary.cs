@@ -34,7 +34,148 @@ namespace YamyProject
                 }
             lblDate.Text = DateTime.Now.Date.ToString("dd/MM/yyyy");
             lblTime.Text = DateTime.Now.ToString("hh:mm:tt");
+            ApplyEmployeeSummaryLanguage();
         }
+        // Apply Arabic presentation without changing accounting or export logic.
+        private void ApplyEmployeeSummaryLanguage()
+        {
+            bool arabic = (Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en")
+                .StartsWith("ar", StringComparison.OrdinalIgnoreCase);
+
+            headerUC1.ArabicLayout = arabic;
+            if (!arabic) return; // Preserve original English designer layout.
+
+            Text = "ملخص أرصدة الموظفين";
+            headerUC1.FormText = Text;
+            btnPrint.Text = "طباعة ▼";
+
+            TranslateSummaryControls(this);
+            TranslateSummaryHtmlLabels(this);
+            TranslateSummaryToolStrips(this);
+            PositionSummaryToolbarArabic();
+
+            dgvSales.RightToLeft = RightToLeft.Yes;
+            dgvSales.ColumnHeadersDefaultCellStyle.Alignment =
+                DataGridViewContentAlignment.MiddleRight;
+            SetSummaryHeader("SN", "الرقم");
+            SetSummaryHeader("Account", "الموظف");
+            SetSummaryHeader("Credit", "دائن");
+            SetSummaryHeader("Debit", "مدين");
+            SetSummaryHeader("Balance", "الرصيد");
+            // Leave the TOTAL cell value in English: exports rely on it.
+        }
+
+        private void SetSummaryHeader(string name, string caption)
+        {
+            if (dgvSales.Columns.Contains(name))
+                dgvSales.Columns[name].HeaderText = caption;
+        }
+
+        private string TranslateSummaryText(string original)
+        {
+            if (string.IsNullOrWhiteSpace(original)) return original;
+            string text = original.Trim();
+            string translated = Clinic.TranslationClass.Translate(text, true);
+            if (translated != text) return translated;
+            switch (text)
+            {
+                case "Employee Balance Summary": return "ملخص أرصدة الموظفين";
+                case "Employee": return "الموظف";
+                case "All Transaction":
+                case "All Transactions": return "جميع المعاملات";
+                case "Print ▼": return "طباعة ▼";
+                case "Print": return "طباعة";
+                case "From": return "من";
+                case "To": return "إلى";
+                case "All Dates": return "جميع التواريخ";
+                case "Export to PDF": return "تصدير إلى PDF";
+                case "Export to Excel": return "تصدير إلى Excel";
+                default: return original;
+            }
+        }
+
+        private void TranslateSummaryControls(Control parent)
+        {
+            foreach (Control c in parent.Controls)
+            {
+                // Never translate company name, time, date, or grid cell values.
+                if (c != lblCompany && c != lblDate && c != lblTime &&
+                    (c is Label || c is Button || c is CheckBox ||
+                     c is GroupBox || c is RadioButton))
+                {
+                    c.Text = TranslateSummaryText(c.Text);
+                    if (c is Label)
+                        ((Label)c).TextAlign = ContentAlignment.MiddleRight;
+                    if (c is CheckBox)
+                        ((CheckBox)c).CheckAlign = ContentAlignment.MiddleRight;
+                }
+                if (c.HasChildren) TranslateSummaryControls(c);
+            }
+        }
+
+        private void TranslateSummaryHtmlLabels(Control parent)
+        {
+            foreach (Control c in parent.Controls)
+            {
+                if (c.GetType().Name == "Guna2HtmlLabel" &&
+                    c != lblCompany && c != lblDate && c != lblTime)
+                {
+                    c.Text = TranslateSummaryText(c.Text);
+                    c.RightToLeft = RightToLeft.Yes;
+                }
+                if (c.HasChildren) TranslateSummaryHtmlLabels(c);
+            }
+        }
+
+        private void TranslateSummaryToolStrips(Control parent)
+        {
+            foreach (Control c in parent.Controls)
+            {
+                if (c is ToolStrip)
+                    TranslateSummaryMenuItems(((ToolStrip)c).Items);
+                if (c.ContextMenuStrip != null)
+                    TranslateSummaryMenuItems(c.ContextMenuStrip.Items);
+                if (c.HasChildren) TranslateSummaryToolStrips(c);
+            }
+        }
+
+        private void TranslateSummaryMenuItems(ToolStripItemCollection items)
+        {
+            foreach (ToolStripItem item in items)
+            {
+                item.Text = TranslateSummaryText(item.Text);
+                if (item is ToolStripDropDownItem)
+                    TranslateSummaryMenuItems(((ToolStripDropDownItem)item).DropDownItems);
+            }
+        }
+
+        private void PositionSummaryToolbarArabic()
+        {
+            Control parent = btnPrint.Parent;
+            if (parent == null || parent.ClientSize.Width <= 0) return;
+            var buttons = new List<Control>();
+            foreach (Control c in parent.Controls)
+            {
+                if (c is Button && c.Visible && c.Dock == DockStyle.None &&
+                    c.Top >= btnPrint.Top - 12 && c.Top <= btnPrint.Bottom + 12)
+                    buttons.Add(c);
+            }
+            if (buttons.Count == 0) return;
+            buttons.Sort((a, b) => a.Left.CompareTo(b.Left));
+            int required = 0;
+            foreach (Control b in buttons) required += b.Width;
+            required += (buttons.Count - 1) * 7 + 20;
+            if (required > parent.ClientSize.Width) return;
+
+            int right = parent.ClientSize.Width - 10;
+            foreach (Control b in buttons)
+            {
+                b.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+                b.Left = right - b.Width;
+                right = b.Left - 7;
+            }
+        }
+
         private void btnPrint_Click(object sender, EventArgs e)
         {
             string companyName = lblCompany.Text;
@@ -504,10 +645,10 @@ namespace YamyProject
         {
             if (dgvSales.CurrentRow.Cells["id"].Value == null || dgvSales.CurrentRow.Cells["id"].Value.ToString() == "")
                 return;
-            
-                int id = int.Parse(dgvSales.CurrentRow.Cells["id"].Value.ToString());
-                frmMain.openChildForm(new frmEmployeeBalanceDetails(id));
-            
+
+            int id = int.Parse(dgvSales.CurrentRow.Cells["id"].Value.ToString());
+            frmMain.openChildForm(new frmEmployeeBalanceDetails(id));
+
         }
 
         private void chkDate_CheckedChanged(object sender, EventArgs e)

@@ -790,6 +790,9 @@ namespace YamyProject
         {
             bool isArabic = IsArabicTrial();
 
+            // Move header window buttons to the opposite side.
+            headerUC1.ArabicLayout = isArabic;
+
             // Window title
             this.Text = TrialTranslate("Trial Balance");
             headerUC1.FormText = this.Text;

@@ -1,4 +1,5 @@
-﻿using Clinic.global_classes;
+﻿using Clinic;
+using Clinic.global_classes;
 using Clinic_DataAccess;
 using MigraDoc.DocumentObjectModel;
 using MigraDoc.DocumentObjectModel.Tables;
@@ -14,7 +15,7 @@ using System.Linq;
 using System.Windows.Forms;
 using YamyProject.Localization;
 using Excel = Microsoft.Office.Interop.Excel;
-
+using Clinic;
 namespace YamyProject
 {
     public partial class ProfitandLossReport : Form
@@ -23,9 +24,16 @@ namespace YamyProject
         public ProfitandLossReport(string _type)
         {
             InitializeComponent();
-            LocalizationManager.LocalizeForm(this);
+
             this.reportType = _type;
-            headerUC1.FormText = this.Text;
+
+            LocalizationManager.LocalizeForm(this);
+
+            headerUC1.ArabicLayout =
+                TranslationClass.IsArabic;
+
+            headerUC1.FormText =
+                ReportTranslate("Profit and Loss");
         }
 
         void Dates(DateTime d)
@@ -36,23 +44,82 @@ namespace YamyProject
             dtFrom.Value = sDateOfY;
             dtTo.Value = eDateOfY;
         }
-
-        private void ProfitandLossReport_Load(object sender, EventArgs e)
+        private void FixProfitLossGridPosition()
         {
-            Dates(DateTime.Now);
-            using (var reader = ClinicDatabase.ExecuteReader("SELECT name FROM tbl_company"))
+            Control container = dgvCustomer.Parent;
+
+            if (container == null)
+                return;
+
+            container.SuspendLayout();
+
+            try
             {
-                if (reader.Read() && reader["name"] != DBNull.Value)
+                dgvCustomer.Dock = DockStyle.Fill;
+                dgvCustomer.Margin = Padding.Empty;
+
+                dgvCustomer.AutoSizeColumnsMode =
+                    DataGridViewAutoSizeColumnsMode.None;
+
+                if (dgvCustomer.Columns.Contains("lvl1"))
                 {
-                    lblCompany.Text = reader["name"].ToString();
+                    dgvCustomer.Columns["lvl1"].AutoSizeMode =
+                        DataGridViewAutoSizeColumnMode.Fill;
+
+                    dgvCustomer.Columns["lvl1"].MinimumWidth = 220;
+                }
+
+                foreach (DataGridViewColumn column
+                         in dgvCustomer.Columns)
+                {
+                    if (!column.Visible ||
+                        column.Name == "lvl1")
+                        continue;
+
+                    column.AutoSizeMode =
+                        DataGridViewAutoSizeColumnMode.None;
+
+                    column.Width = 125;
                 }
             }
-            dgvCustomer.Font = new System.Drawing.Font("Segoe UI", 7, FontStyle.Bold);
+            finally
+            {
+                container.ResumeLayout(true);
+            }
+        }
+        private void ProfitandLossReport_Load(
+     object sender,
+     EventArgs e)
+        {
+            Dates(DateTime.Now);
+
+            using (var reader = ClinicDatabase.ExecuteReader(
+                "SELECT name FROM tbl_company"))
+            {
+                if (reader.Read() &&
+                    reader["name"] != DBNull.Value)
+                {
+                    lblCompany.Text =
+                        reader["name"].ToString();
+                }
+            }
+
+            dgvCustomer.Font = new System.Drawing.Font(
+                "Segoe UI", 8, FontStyle.Bold);
+
             btnPrint.Text = "Print ▼";
+
             dateChangeTo();
 
             BindDGV_Data();
+
             DateWords();
+
+            // Apply localization after dynamic report content is created.
+            ApplyProfitLossLayout();
+
+            // Fix report body positioning.
+            FixProfitLossGridPosition();
         }
         DateTime prevFrom;
         DateTime prevTo;
@@ -2337,7 +2404,200 @@ namespace YamyProject
                 DateWords();
             }
         }
+        private bool IsArabicReport()
+        {
+            return TranslationClass.IsArabic;
+        }
 
+        private string ReportTranslate(string english)
+        {
+            return TranslationClass.Translate(
+                english ?? "",
+                IsArabicReport());
+        }
+
+        private readonly Dictionary<Control, string> _originalReportTexts =
+            new Dictionary<Control, string>();
+
+        private void TranslateReportControls(Control parent)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                if (control is HeaderUC)
+                    continue;
+
+                bool translatable =
+                    control is ButtonBase ||
+                    control is Label ||
+                    control is GroupBox ||
+                    control.GetType().Name == "Guna2Button" ||
+                    control.GetType().Name == "Guna2HtmlLabel" ||
+                    control.GetType().Name == "Guna2CheckBox" ||
+                    control.GetType().Name == "Guna2RadioButton";
+
+                if (translatable)
+                {
+                    if (!_originalReportTexts.ContainsKey(control))
+                        _originalReportTexts[control] = control.Text;
+
+                    string english = _originalReportTexts[control];
+
+                    control.Text = ReportTranslate(english.Trim());
+
+                    control.RightToLeft = IsArabicReport()
+                        ? RightToLeft.Yes
+                        : RightToLeft.No;
+                }
+
+                if (control.HasChildren)
+                    TranslateReportControls(control);
+            }
+        }
+        private void TranslateExportMenu(ToolStripItemCollection items)
+        {
+            foreach (ToolStripItem item in items)
+            {
+                string english = item.Text;
+
+                if (IsArabicReport())
+                {
+                    item.Text = ReportTranslate(english);
+                }
+
+                if (item is ToolStripDropDownItem dropDown)
+                    TranslateExportMenu(dropDown.DropDownItems);
+            }
+        }
+
+        private string TranslateReportRow(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value) || !IsArabicReport())
+                return value;
+
+            string text = value.Trim();
+
+            string arrow = "";
+
+            if (text.StartsWith("►") ||
+                text.StartsWith("▼") ||
+                text.StartsWith("▲"))
+            {
+                arrow = text.Substring(0, 1) + " ";
+                text = text.Substring(1).Trim();
+            }
+
+            string translated = ReportTranslate(text);
+
+            if (translated == text)
+            {
+                int separator = text.LastIndexOf(" - ");
+
+                if (separator > 0)
+                {
+                    string first = text.Substring(0, separator).Trim();
+                    string second = text.Substring(separator + 3).Trim();
+
+                    translated =
+                        ReportTranslate(first) + " - " +
+                        ReportTranslate(second);
+                }
+            }
+
+            return arrow + translated;
+        }
+        private void TranslateReportGrid()
+        {
+            foreach (DataGridViewColumn column in dgvCustomer.Columns)
+            {
+                if (!string.IsNullOrWhiteSpace(column.HeaderText))
+                {
+                    column.HeaderText =
+                        ReportTranslate(column.HeaderText.Trim());
+                }
+
+                column.HeaderCell.Style.Alignment =
+                    DataGridViewContentAlignment.MiddleCenter;
+            }
+
+            if (!IsArabicReport())
+                return;
+
+            foreach (DataGridViewRow row in dgvCustomer.Rows)
+            {
+                if (row.IsNewRow)
+                    continue;
+
+                if (dgvCustomer.Columns.Contains("lvl1"))
+                {
+                    DataGridViewCell cell = row.Cells["lvl1"];
+
+                    if (cell.Value != null)
+                    {
+                        cell.Value = TranslateReportRow(
+                            cell.Value.ToString());
+                    }
+
+                    cell.Style.Alignment =
+                        DataGridViewContentAlignment.MiddleRight;
+                }
+            }
+        }
+
+        private void ApplyProfitLossLayout()
+        {
+            bool arabic = IsArabicReport();
+
+            SuspendLayout();
+
+            try
+            {
+                // Header
+                headerUC1.ArabicLayout = arabic;
+
+                string title = ReportTranslate("Profit and Loss");
+
+                headerUC1.FormText = title;
+
+                // Report heading
+                guna2HtmlLabel7.Text =
+                    ReportTranslate("Profit & Loss");
+
+                guna2HtmlLabel7.TextAlignment =
+      ContentAlignment.MiddleCenter;
+
+                lblCompany.TextAlignment =
+                    ContentAlignment.MiddleCenter;
+
+                guna2HtmlLabel10.TextAlignment =
+                    ContentAlignment.MiddleCenter;
+
+                // Print button
+                btnPrint.Text =
+                    ReportTranslate("Print") + " ▼";
+
+                // Translate existing controls
+                TranslateReportControls(this);
+
+                // Export context menu
+                TranslateExportMenu(contextMenuExport.Items);
+
+                // Report grid
+                TranslateReportGrid();
+
+                dgvCustomer.RightToLeft = arabic
+                    ? RightToLeft.Yes
+                    : RightToLeft.No;
+
+                dgvCustomer.ColumnHeadersDefaultCellStyle.Alignment =
+                    DataGridViewContentAlignment.MiddleCenter;
+
+                dgvCustomer.RowHeadersVisible = false;
+            }
+            finally
+            {
+                ResumeLayout(true);
+            }
+        }
         private void dtFrom_ValueChanged(object sender, EventArgs e)
         {
             //dateChangeTo();
@@ -2357,12 +2617,36 @@ namespace YamyProject
             dateChangeTo();
             BindDGV_Data();
             DateWords();
+
+            ApplyProfitLossLayout();
+            FixProfitLossGridPosition();
         }
         private void DateWords()
         {
-            string fromDate = dtFrom.Value.ToString("MMMM dd, yyyy");
-            string toDate = dtTo.Value.ToString("MMMM dd, yyyy");
-            guna2HtmlLabel10.Text = $"{fromDate} through {toDate}";
+            if (IsArabicReport())
+            {
+                var culture = new System.Globalization.CultureInfo("ar-AE");
+
+                string fromDate =
+                    dtFrom.Value.ToString("dd MMMM yyyy", culture);
+
+                string toDate =
+                    dtTo.Value.ToString("dd MMMM yyyy", culture);
+
+                guna2HtmlLabel10.Text =
+                    $"من {fromDate} إلى {toDate}";
+            }
+            else
+            {
+                string fromDate =
+                    dtFrom.Value.ToString("MMMM dd, yyyy");
+
+                string toDate =
+                    dtTo.Value.ToString("MMMM dd, yyyy");
+
+                guna2HtmlLabel10.Text =
+                    $"{fromDate} through {toDate}";
+            }
         }
     }
 }

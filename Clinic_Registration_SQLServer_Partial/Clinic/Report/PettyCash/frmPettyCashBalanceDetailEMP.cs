@@ -19,7 +19,7 @@ namespace YamyProject
     public partial class frmPettyCashBalanceDetailEMP : Form
     {
         int id;
-        public frmPettyCashBalanceDetailEMP(int _id=0)
+        public frmPettyCashBalanceDetailEMP(int _id = 0)
         {
             InitializeComponent();
             LocalizationManager.LocalizeForm(this);
@@ -46,7 +46,119 @@ namespace YamyProject
             }
             loadCompany();
             LoadData();
+            ApplyPettyCashArabicUI();
         }
+        // UI-only Arabic translation and positioning. No transaction values or logic are changed.
+        private void ApplyPettyCashArabicUI()
+        {
+            bool arabic = (Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en")
+                .StartsWith("ar", StringComparison.OrdinalIgnoreCase);
+
+            headerUC1.ArabicLayout = arabic;
+            if (!arabic) return; // Leave the Designer's English layout untouched.
+
+            this.Text = "تفاصيل رصيد العهدة النقدية للموظف";
+            headerUC1.FormText = this.Text;
+
+            TranslatePettyCashCaptions(this);
+
+            // Change visual order and headings, never column Names or cell Values.
+            dgvSales.RightToLeft = RightToLeft.Yes;
+            dgvSales.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            foreach (DataGridViewColumn col in dgvSales.Columns)
+            {
+                if (col.Name == "id") continue;
+                col.HeaderText = PettyCashArabicCaption(col.Name);
+            }
+
+            // Mirror only the ordinary, fixed-position toolbar controls.
+            // Avoid changing Dock, Anchor, event handlers or input values.
+            MirrorPettyCashToolbar(this);
+        }
+
+        private static string PettyCashArabicCaption(string english)
+        {
+            switch ((english ?? "").Trim())
+            {
+                case "Petty Cash Balance Detail EMP": return "تفاصيل رصيد العهدة النقدية للموظف";
+                case "Petty Cash Summary": return "ملخص العهدة النقدية";
+                case "All Transactions": return "جميع المعاملات";
+                case "All Transaction": return "جميع المعاملات";
+                case "Customize Report": return "تخصيص التقرير";
+                case "Comment On Report": return "التعليق على التقرير";
+                case "Petty Cash Report": return "تقرير العهدة النقدية";
+                case "Dates": return "التواريخ";
+                case "Sort By": return "ترتيب حسب";
+                case "Show Columns": return "إظهار الأعمدة";
+                case "Show Columns ": return "إظهار الأعمدة";
+                case "Comment On": return "إضافة تعليق";
+                case "Memorize": return "حفظ التقرير";
+                case "Print": return "طباعة";
+                case "Print ▼": return "طباعة ▼";
+                case "Excel": return "إكسل";
+                case "From": return "من";
+                case "To": return "إلى";
+                case "From:": return "من:";
+                case "To:": return "إلى:";
+                case "Employee": return "الموظف";
+                case "Employee Code": return "رمز الموظف";
+                case "Type": return "النوع";
+                case "Date": return "التاريخ";
+                case "Num": return "الرقم";
+                case "Reference": return "المرجع";
+                case "Ref": return "المرجع";
+                case "Description": return "الوصف";
+                case "Account": return "الحساب";
+                case "Amount": return "المبلغ";
+                case "Balance": return "الرصيد";
+                case "Vat": return "ضريبة القيمة المضافة";
+                case "Total": return "الإجمالي";
+                case "Status": return "الحالة";
+                case "Company Name": return "اسم الشركة";
+                case "Search": return "بحث";
+                case "Refresh": return "تحديث";
+                default: return Clinic.TranslationClass.Translate(english, true);
+            }
+        }
+
+        private static void TranslatePettyCashCaptions(Control parent)
+        {
+            foreach (Control c in parent.Controls)
+            {
+                // Keep company/employee names, dates, user inputs and dropdown
+                // selection values exactly as supplied by the database.
+                if (c is Label || c is Button || c is CheckBox ||
+                    c is GroupBox || c is RadioButton ||
+                    c is Guna2HtmlLabel || c is Guna2Button)
+                {
+                    if (c != null && !string.IsNullOrWhiteSpace(c.Text))
+                    {
+                        string translated = PettyCashArabicCaption(c.Text);
+                        if (translated != c.Text) c.Text = translated;
+                    }
+                    c.RightToLeft = RightToLeft.Yes;
+                }
+                if (c.HasChildren && !(c is DataGridView))
+                    TranslatePettyCashCaptions(c);
+            }
+        }
+
+        private static void MirrorPettyCashToolbar(Control parent)
+        {
+            // Only mirror controls inside a top toolbar-type container, not the
+            // whole report: prevents the large report body from being displaced.
+            foreach (Control child in parent.Controls)
+            {
+                if (child is FlowLayoutPanel || child is TableLayoutPanel)
+                {
+                    child.RightToLeft = RightToLeft.Yes;
+                    continue;
+                }
+                if (child.HasChildren && !(child is HeaderUC))
+                    MirrorPettyCashToolbar(child);
+            }
+        }
+
         private void loadCompany()
         {
             using (var reader = ClinicDatabase.ExecuteReader("SELECT name FROM tbl_company"))
@@ -448,7 +560,7 @@ namespace YamyProject
                     query += " e.id = @empId AND";
                     parameters.Add(ClinicDatabase.CreateParameterNew("empId", empId.ToString()));
                 }
-                query +=@" p.voucher_date >= @startDate AND p.voucher_date <= @endDate
+                query += @" p.voucher_date >= @startDate AND p.voucher_date <= @endDate
                         ORDER BY p.voucher_date, p.id
                     ";
 
@@ -789,7 +901,8 @@ namespace YamyProject
 
         private void cmbEmployee_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (cmbEmployee.SelectedValue != null && cmbEmployee.SelectedValue is int empId) {
+            if (cmbEmployee.SelectedValue != null && cmbEmployee.SelectedValue is int empId)
+            {
                 if (cmbEmployee.Focused || txtEmployeeCode.Text.Trim() != "")
                 {
                     int eId = cmbEmployee.SelectedValue is int id ? id : 0;
