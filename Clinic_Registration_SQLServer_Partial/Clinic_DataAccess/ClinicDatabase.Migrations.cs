@@ -3303,6 +3303,118 @@ namespace Clinic_DataAccess
                                         ('15 %', 15, ''),
                                         ('18 %', 18, '')"
                         },
+                        new DatabaseMigration
+                        {
+                            Version = "20261024_CLINIC_PatientBlacklist_01",
+                            Description = "add new table PatientBlacklist",
+                            Sql = @"
+                                    CREATE TABLE IF NOT EXISTS PatientBlacklist(
+	                                    BlacklistID INT NOT NULL AUTO_INCREMENT,
+	                                    PatientID int NOT NULL,
+	                                    BlockedUserID int NOT NULL,
+	                                    BlacklistReason varchar(255) NULL,
+	                                    BlacklistDate datetime NULL,
+	                                    UnbanDate datetime NULL,
+                                        PRIMARY KEY (`BlacklistID`)
+                                    )
+                                    ENGINE=InnoDB
+                                    DEFAULT CHARSET=utf8mb4
+                                    COLLATE=utf8mb4_general_ci;
+                                    "
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261024_CLINIC_RoleDiscountLimits_01",
+                            Description = "Create RoleDiscountLimits table and insert default role discount limits",
+                            Sql = @"
+                                CREATE TABLE IF NOT EXISTS RoleDiscountLimits (
+                                    RoleID INT NOT NULL,
+                                    MaxDiscountLimit DECIMAL(5,2) NOT NULL,
+                                    PRIMARY KEY (RoleID)
+                                ) ENGINE=InnoDB
+                                DEFAULT CHARSET=utf8mb4
+                                COLLATE=utf8mb4_general_ci;
+
+                                INSERT INTO RoleDiscountLimits (RoleID, MaxDiscountLimit)
+                                VALUES
+                                    (1, 50.00),
+                                    (2, 15.00),
+                                    (3, 5.00),
+                                    (4, 5.00),
+                                    (1004, 2.00),
+                                    (1005, 2.00)
+                                ON DUPLICATE KEY UPDATE
+                                    MaxDiscountLimit = VALUES(MaxDiscountLimit);
+                            "
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261024_CLINIC_DiscountPolicies_01",
+                            Description = "Create DiscountPolicies table and insert default discount policies",
+                            Sql = @"
+                                CREATE TABLE IF NOT EXISTS DiscountPolicies
+                                (
+                                    DiscountID INT NOT NULL AUTO_INCREMENT,
+                                    DiscountName VARCHAR(100) NOT NULL,
+                                    MaxPercentage DECIMAL(5,2) NOT NULL,
+                                    TargetType INT NOT NULL,
+                                    IsActive BIT NULL DEFAULT b'1',
+                                    CreatedDate DATETIME NULL,
+                                    PRIMARY KEY (DiscountID)
+                                ) ENGINE=InnoDB
+                                DEFAULT CHARSET=utf8mb4
+                                COLLATE=utf8mb4_general_ci;
+
+                                INSERT INTO DiscountPolicies
+                                (
+                                    DiscountID,
+                                    DiscountName,
+                                    MaxPercentage,
+                                    TargetType,
+                                    IsActive,
+                                    CreatedDate
+                                )
+                                VALUES
+                                (
+                                    1,
+                                    'General Visit Discount',
+                                    5.00,
+                                    1,
+                                    b'1',
+                                    '2026-06-14 00:06:17.217'
+                                ),
+                                (
+                                    2,
+                                    'Medical Service Discount',
+                                    10.00,
+                                    2,
+                                    b'1',
+                                    '2026-06-14 00:06:17.217'
+                                ),
+                                (
+                                    3,
+                                    'Laboratory Discount',
+                                    15.00,
+                                    3,
+                                    b'1',
+                                    '2026-06-14 00:06:17.217'
+                                ),
+                                (
+                                    4,
+                                    'Medicine Discount',
+                                    20.00,
+                                    4,
+                                    b'1',
+                                    '2026-06-14 00:06:17.217'
+                                )
+                                ON DUPLICATE KEY UPDATE
+                                    DiscountName = VALUES(DiscountName),
+                                    MaxPercentage = VALUES(MaxPercentage),
+                                    TargetType = VALUES(TargetType),
+                                    IsActive = VALUES(IsActive),
+                                    CreatedDate = VALUES(CreatedDate);
+                            "
+                        },
 
 /*************************************Table Views************************************************/
 

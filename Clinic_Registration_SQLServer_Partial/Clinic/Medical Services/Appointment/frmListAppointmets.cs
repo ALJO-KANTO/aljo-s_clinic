@@ -4,12 +4,12 @@ using Clinic.Medical_Services.Visit;
 using Clinic.Patient;
 using Clinic.Person;
 using Clinic_Business;
+using Clinic_Common;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Windows.Forms;
-using static Clinic_Business.clsDoctor;
 
 namespace Clinic.Medical_Services.Appointment
 {
@@ -206,7 +206,7 @@ namespace Clinic.Medical_Services.Appointment
         }
         private void frmListAppointmets_Load(object sender, EventArgs e)
         {
-            if (clsGlobal.CurrentUser.RoleID == (int)clsGlobal.UserRole.Cashier)
+            if (clsGlobal.CurrentUser.RoleID == (int)UserRole.Cashier)
                 dgvAppointments.ContextMenuStrip = cmsAppointmentCasher;
             else
                 dgvAppointments.ContextMenuStrip = cmsAppointmentRecption;
@@ -435,7 +435,7 @@ namespace Clinic.Medical_Services.Appointment
             }
         }
 
-        private void _ProcessAppointmentStatus(clsAppointment.enAppointmentStatus newStatus, string actionName)
+        private void _ProcessAppointmentStatus(enAppointmentStatus newStatus, string actionName)
         {
             if (dgvAppointments.CurrentRow == null) return;
 
@@ -448,7 +448,7 @@ namespace Clinic.Medical_Services.Appointment
             {
                 if (clsAppointment.UpdateAppointmentStatus(currentAppointmentID, newStatus, clsGlobal.CurrentUser.UserID))
                 {
-                    if (newStatus == clsAppointment.enAppointmentStatus.InQueue)
+                    if (newStatus == enAppointmentStatus.InQueue)
                     {
                         if (dgvAppointments.CurrentRow == null) return;
                         int appointmentID = (int)dgvAppointments.CurrentRow.Cells["AppointmentID"].Value;
@@ -469,12 +469,18 @@ namespace Clinic.Medical_Services.Appointment
 
         private void dgvAppointments_SelectionChanged(object sender, EventArgs e)
         {
-            if (dgvAppointments.CurrentRow == null) return;
+            if (dgvAppointments.CurrentRow == null)
+            {
+                checkINToolStripMenuItem.Enabled = false;
+                return;
+            }
 
-            string currentStatus = dgvAppointments.CurrentRow.Cells["AppointmentStatusText"].Value.ToString();
+            string currentStatus = Convert.ToString(dgvAppointments.CurrentRow.Cells["AppointmentStatusText"].Value);
 
-            checkINToolStripMenuItem.Enabled = (currentStatus == "Scheduled");
-
+            checkINToolStripMenuItem.Enabled = string.Equals(currentStatus, "Scheduled", StringComparison.OrdinalIgnoreCase);
+            //if (dgvAppointments.CurrentRow == null) return;
+            //string currentStatus = dgvAppointments.CurrentRow.Cells["AppointmentStatusText"].Value.ToString();
+            //checkINToolStripMenuItem.Enabled = (currentStatus == "Scheduled");
             rescheduleToolStripMenuItem.Enabled = (currentStatus == "Scheduled" || currentStatus == "Postponed");
 
             deleteToolStripMenuItem.Enabled = (currentStatus != "Completed");
@@ -521,49 +527,51 @@ namespace Clinic.Medical_Services.Appointment
             decimal appointmentFees = Convert.ToDecimal(
                 dgvAppointments.CurrentRow.Cells["AppointmentFees"].Value);
 
-            string patientName =
-                dgvAppointments.CurrentRow.Cells["PatientName"].Value.ToString();
+            string patientName = Convert.ToString(
+                dgvAppointments.CurrentRow.Cells["PatientName"].Value);
 
+            // 1. Find appointment
+            clsAppointment appointment = clsAppointment.Find(appointmentID);
+
+            if (appointment == null)
+            {
+                MessageBox.Show(
+                    Tr("Appointment not found."),
+                    Tr("Check-in Error"),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+
+                return;
+            }
+
+            // 2. Prevent duplicate check-in
+            if (appointment.AppointmentStatus != (byte)enAppointmentStatus.Scheduled)
+            {
+                MessageBox.Show(
+                    Tr("This appointment has already been checked in or is no longer scheduled."),
+                    Tr("Check-in Not Allowed"),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
+                return;
+            }
+
+            // 3. Open payment dialog
             using (frmCheckInDialog frm =
                 new frmCheckInDialog(
                     appointmentID,
                     appointmentFees,
                     patientName))
             {
-                DialogResult result = frm.ShowDialog();
-
-                if (result != DialogResult.OK)
-                {
-                    MessageBox.Show(
-                        Tr("Check-in dialog did not return OK.\n") +
-                        "Dialog result: " + result,
-                        Tr("Check-in Debug"),
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
-
+                if (frm.ShowDialog() != DialogResult.OK)
                     return;
-                }
 
                 try
                 {
                     string paymentMethod = frm.SelectedPaymentMethod;
-
                     int userID = clsGlobal.CurrentUser.UserID;
 
-                    clsAppointment appointment =
-                        clsAppointment.Find(appointmentID);
-
-                    if (appointment == null)
-                    {
-                        MessageBox.Show(
-                            Tr("Appointment not found."),
-                            Tr("Check-in Error"),
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Error);
-
-                        return;
-                    }
-
+                    // 4. Perform check-in
                     bool success = clsBillingService.CheckInPatient(
                         appointment,
                         userID,
@@ -572,20 +580,19 @@ namespace Clinic.Medical_Services.Appointment
                     if (!success)
                     {
                         MessageBox.Show(
-                            Tr("CheckInPatient returned FALSE.\n\n") +
-                            "Appointment ID: " + appointmentID +
-                            Tr("\nPayment Method: ") + paymentMethod +
-                            Tr("\n\nCheck the billing service logic."),
+                            Tr("The patient could not be checked in. The appointment may already have been checked in."),
                             Tr("Check-in Failed"),
                             MessageBoxButtons.OK,
-                            MessageBoxIcon.Error);
+                            MessageBoxIcon.Warning);
 
                         return;
                     }
 
+                    // 5. Refresh doctor's queue
                     clsAppointment.RefreshQueueForDoctor(
                         appointment.DoctorID);
 
+                    // 6. Notify user
                     MessageBox.Show(
                         Tr("Patient checked in successfully."),
                         Tr("Success"),
@@ -597,7 +604,7 @@ namespace Clinic.Medical_Services.Appointment
                 catch (Exception ex)
                 {
                     MessageBox.Show(
-                        ex.ToString(),
+                        ex.Message,
                         Tr("Check-in Error"),
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
@@ -659,7 +666,7 @@ namespace Clinic.Medical_Services.Appointment
             frm.ShowDialog();
         }
         private void CancelToolStripMenuItem_Click(object sender, EventArgs e)
-                    => _ProcessAppointmentStatus(clsAppointment.enAppointmentStatus.Cancelled, "cancel this appointment");
+                    => _ProcessAppointmentStatus(enAppointmentStatus.Cancelled, "cancel this appointment");
 
         private void btnClose_Click(object sender, EventArgs e)
         {

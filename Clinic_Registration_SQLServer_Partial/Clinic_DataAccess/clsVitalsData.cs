@@ -2,6 +2,7 @@
 using System;
 using System.Data;
 using MySql.Data.MySqlClient;
+using Clinic_Common;
 namespace Clinic_DataAccess
 {
     public class clsVitalsData
@@ -37,7 +38,7 @@ namespace Clinic_DataAccess
                             // استدعاء تحديث حالة الموعد باستخدام نفس الـ transaction
                             clsAppointmentData.UpdateAppointmentStatus(
                                 AppointmentID,
-                                "In_Billing",
+                                enAppointmentStatus.In_Billing,
                                 CreatedByUserID,
                                 transaction);
                             if (result != null && int.TryParse(result.ToString(), out int newVitalID))

@@ -4,6 +4,7 @@ using Clinic.Medical_Services.Appointment;
 using Clinic.Properties;
 using Clinic.Serveces.ServecesType;
 using Clinic.User;
+using Clinic_Common;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -56,7 +57,7 @@ namespace Clinic
 
             station.Visible = false;
 
-            if (roleId == (int)clsGlobal.UserRole.Admin)
+            if (roleId == (int)UserRole.Admin)
             {
                 station.Dock = DockStyle.Fill;
                 // استدعاء التحميل (الآن هو متزامن وسينتهي قبل إكمال الكود)
@@ -81,19 +82,19 @@ namespace Clinic
         // دالة منفصلة لإنشاء الكائنات (Factory Pattern)
         private UserControl CreateStation(int roleId)
         {
-            switch ((clsGlobal.UserRole)roleId)
+            switch ((UserRole)roleId)
             {
-                case clsGlobal.UserRole.Admin:
+                case UserRole.Admin:
                     return new ucAdminStation();
-                case clsGlobal.UserRole.Doctor:
+                case UserRole.Doctor:
                     return new ucDoctorStation();
-                case clsGlobal.UserRole.Receptionist:
+                case UserRole.Receptionist:
                     return new ucReceptionistStation();
-                case clsGlobal.UserRole.Nurse:
+                case UserRole.Nurse:
                     return new ucNurseStation();
-                case clsGlobal.UserRole.Cashier:
+                case UserRole.Cashier:
                     return new ucCasherStation();
-                case clsGlobal.UserRole.Pharmacist:
+                case UserRole.Pharmacist:
                     return new ucPharmacistStation();
                 default:
                     return null;

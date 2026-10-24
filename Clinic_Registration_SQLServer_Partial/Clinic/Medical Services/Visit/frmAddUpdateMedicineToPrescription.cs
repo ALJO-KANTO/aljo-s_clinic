@@ -1,4 +1,5 @@
 ﻿using Clinic_Business;
+using Clinic_Common;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -220,7 +221,7 @@ namespace Clinic.Medical_Services.Visit
             }
 
             // 4. التحقق من توفر الكمية في المخزن (للصيدلاني)
-            if (clsGlobal.CurrentUser.RoleID == (int)clsGlobal.UserRole.Pharmacist)
+            if (clsGlobal.CurrentUser.RoleID == (int)UserRole.Pharmacist)
             {
                 if (!clsMedicine.IsMedicineAvailable(selectedMedicineID, requestedQuantity))
                 {

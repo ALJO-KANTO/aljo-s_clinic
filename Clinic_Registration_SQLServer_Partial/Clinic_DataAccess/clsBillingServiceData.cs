@@ -7,11 +7,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
+using Clinic_Common;
+
 namespace Clinic_DataAccess
 {
     public class clsBillingServiceData
     {
-
         public static bool CheckInPatient(
             int AppointmentID,
             int DoctorID,
@@ -19,40 +20,69 @@ namespace Clinic_DataAccess
             decimal Fees,
             int UserID,
             string PaymentMethod,
-            string status)
+            enAppointmentStatus status)
         {
             using (MySqlConnection connection =
                 new MySqlConnection(clsDataAccessSettings.ConnectionString))
             {
                 connection.Open();
 
-                using (MySqlTransaction transaction =
-                    connection.BeginTransaction())
+                using (MySqlTransaction transaction = connection.BeginTransaction())
                 {
                     try
                     {
-                        // 1. Create visit
-                        string queryVisit = @"
-                    INSERT INTO visits
-                    (
-                        PatientID,
-                        AppointmentID,
-                        DoctorID,
-                        VisitDate,
-                        VisitStatus,
-                        CreatedByUserID
-                    )
-                    VALUES
-                    (
-                        @PatientID,
-                        @AppointmentID,
-                        @DoctorID,
-                        NOW(),
-                        1,
-                        @UserID
-                    );
+                        // 0. Verify appointment is still Scheduled
+                        string queryCheckAppointment = @"
+                                SELECT AppointmentStatus
+                                FROM appointments
+                                WHERE AppointmentID = @AppointmentID
+                                FOR UPDATE;";
 
-                    SELECT LAST_INSERT_ID();";
+                        using (MySqlCommand cmdCheck = new MySqlCommand(
+                            queryCheckAppointment, connection, transaction))
+                        {
+                            cmdCheck.Parameters.AddWithValue(
+                                "@AppointmentID", AppointmentID);
+
+                            object result = cmdCheck.ExecuteScalar();
+
+                            if (result == null || result == DBNull.Value)
+                            {
+                                throw new InvalidOperationException(
+                                    "Appointment not found.");
+                            }
+
+                            byte currentStatus = Convert.ToByte(result);
+
+                            if (currentStatus != (byte)enAppointmentStatus.Scheduled)
+                            {
+                                transaction.Rollback();
+                                return false;
+                            }
+                        }
+
+                        // 1. Create Visit
+                        string queryVisit = @"
+                                INSERT INTO visits
+                                (
+                                    PatientID,
+                                    AppointmentID,
+                                    DoctorID,
+                                    VisitDate,
+                                    VisitStatus,
+                                    CreatedByUserID
+                                )
+                                VALUES
+                                (
+                                    @PatientID,
+                                    @AppointmentID,
+                                    @DoctorID,
+                                    NOW(),
+                                    1,
+                                    @UserID
+                                );
+
+                                SELECT LAST_INSERT_ID();";
 
                         int VisitID;
 
@@ -67,8 +97,77 @@ namespace Clinic_DataAccess
                             VisitID = Convert.ToInt32(cmdVisit.ExecuteScalar());
                         }
 
-                 
-                        // 4. Update appointment status
+                        // 2. Create Bill
+                        string queryBill = @"
+                                INSERT INTO Bills
+                                (
+                                    VisitID,
+                                    PaymentStatus,
+                                    CreatedByUserID,
+                                    BillDate,
+                                    TotalAmount
+                                )
+                                VALUES
+                                (
+                                    @VisitID,
+                                    2,
+                                    @UserID,
+                                    NOW(),
+                                    @Amount
+                                );
+
+                                SELECT LAST_INSERT_ID();";
+
+                        int BillID;
+
+                        using (MySqlCommand cmdBill =
+                            new MySqlCommand(queryBill, connection, transaction))
+                        {
+                            cmdBill.Parameters.AddWithValue("@VisitID", VisitID);
+                            cmdBill.Parameters.AddWithValue("@UserID", UserID);
+                            cmdBill.Parameters.AddWithValue("@Amount", Fees);
+
+                            BillID = Convert.ToInt32(cmdBill.ExecuteScalar());
+                        }
+
+                        // 3. Generate Bill Number
+                        if (!UpdateBillNumber(BillID, transaction))
+                        {
+                            throw new InvalidOperationException(
+                                "Unable to generate the bill number.");
+                        }
+
+                        // 4. Record Payment
+                        string queryPayment = @"
+                                INSERT INTO Payments
+                                (
+                                    BillID,
+                                    PaymentAmount,
+                                    PaymentDate,
+                                    PaymentMethod,
+                                    CreatedByUserID
+                                )
+                                VALUES
+                                (
+                                    @BillID,
+                                    @Amount,
+                                    NOW(),
+                                    @Method,
+                                    @UserID
+                                );";
+
+                        using (MySqlCommand cmdPayment =
+                            new MySqlCommand(queryPayment, connection, transaction))
+                        {
+                            cmdPayment.Parameters.AddWithValue("@BillID", BillID);
+                            cmdPayment.Parameters.AddWithValue("@Amount", Fees);
+                            cmdPayment.Parameters.AddWithValue("@Method", PaymentMethod);
+                            cmdPayment.Parameters.AddWithValue("@UserID", UserID);
+
+                            cmdPayment.ExecuteNonQuery();
+                        }
+
+                        // 5. Update Appointment Status
                         if (!clsAppointmentData.UpdateAppointmentStatus(
                             AppointmentID,
                             status,
@@ -79,6 +178,7 @@ namespace Clinic_DataAccess
                                 "Unable to update appointment status.");
                         }
 
+                        // 6. Commit all operations together
                         transaction.Commit();
 
                         return true;
@@ -92,8 +192,7 @@ namespace Clinic_DataAccess
                         catch (Exception rollbackEx)
                         {
                             System.Diagnostics.Debug.WriteLine(
-                                "Check-in rollback failed: " +
-                                rollbackEx.ToString());
+                                "Check-in rollback failed: " + rollbackEx);
                         }
 
                         if (ex is MySqlException)
@@ -105,7 +204,7 @@ namespace Clinic_DataAccess
 
                         System.Diagnostics.Debug.WriteLine(
                             "Check-in failed for Appointment ID " +
-                            AppointmentID + ": " + ex.ToString());
+                            AppointmentID + ": " + ex);
 
                         throw new InvalidOperationException(
                             "Patient check-in failed for Appointment ID " +
@@ -115,20 +214,17 @@ namespace Clinic_DataAccess
                 }
             }
         }
-
-        public static bool UpdateBillNumber(
-      int BillID,
-      MySqlTransaction transaction)
+        public static bool UpdateBillNumber(int BillID, MySqlTransaction transaction)
         {
             string query = @"
-        UPDATE Bills
-        SET BillNumber = CONCAT(
-            'INV-',
-            YEAR(NOW()),
-            '-',
-            LPAD(@BillID, 4, '0')
-        )
-        WHERE BillID = @BillID;";
+                    UPDATE Bills
+                    SET BillNumber = CONCAT(
+                        'INV-',
+                        YEAR(NOW()),
+                        '-',
+                        LPAD(@BillID, 4, '0')
+                    )
+                    WHERE BillID = @BillID;";
 
             using (MySqlCommand cmd = new MySqlCommand(
                 query,
@@ -137,9 +233,145 @@ namespace Clinic_DataAccess
             {
                 cmd.Parameters.AddWithValue("@BillID", BillID);
 
-                return cmd.ExecuteNonQuery() > 0;
+                bool updated = cmd.ExecuteNonQuery() > 0;
+
+                if (!updated)
+                {
+                    throw new InvalidOperationException(
+                        "Unable to generate the bill number for Bill ID: " + BillID);
+                }
+
+                return true;
             }
         }
+        //public static bool CheckInPatientOld(
+        //    int AppointmentID,
+        //    int DoctorID,
+        //    int PatientID,
+        //    decimal Fees,
+        //    int UserID,
+        //    string PaymentMethod,
+        //    string status)
+        //{
+        //    using (MySqlConnection connection =
+        //        new MySqlConnection(clsDataAccessSettings.ConnectionString))
+        //    {
+        //        connection.Open();
+
+        //        using (MySqlTransaction transaction =
+        //            connection.BeginTransaction())
+        //        {
+        //            try
+        //            {
+        //                // 1. Create visit
+        //                string queryVisit = @"
+        //            INSERT INTO visits
+        //            (
+        //                PatientID,
+        //                AppointmentID,
+        //                DoctorID,
+        //                VisitDate,
+        //                VisitStatus,
+        //                CreatedByUserID
+        //            )
+        //            VALUES
+        //            (
+        //                @PatientID,
+        //                @AppointmentID,
+        //                @DoctorID,
+        //                NOW(),
+        //                1,
+        //                @UserID
+        //            );
+
+        //            SELECT LAST_INSERT_ID();";
+
+        //                int VisitID;
+
+        //                using (MySqlCommand cmdVisit =
+        //                    new MySqlCommand(queryVisit, connection, transaction))
+        //                {
+        //                    cmdVisit.Parameters.AddWithValue("@PatientID", PatientID);
+        //                    cmdVisit.Parameters.AddWithValue("@AppointmentID", AppointmentID);
+        //                    cmdVisit.Parameters.AddWithValue("@DoctorID", DoctorID);
+        //                    cmdVisit.Parameters.AddWithValue("@UserID", UserID);
+
+        //                    VisitID = Convert.ToInt32(cmdVisit.ExecuteScalar());
+        //                }
+
+
+        //                // 4. Update appointment status
+        //                if (!clsAppointmentData.UpdateAppointmentStatus(
+        //                    AppointmentID,
+        //                    status,
+        //                    UserID,
+        //                    transaction))
+        //                {
+        //                    throw new InvalidOperationException(
+        //                        "Unable to update appointment status.");
+        //                }
+
+        //                transaction.Commit();
+
+        //                return true;
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                try
+        //                {
+        //                    transaction.Rollback();
+        //                }
+        //                catch (Exception rollbackEx)
+        //                {
+        //                    System.Diagnostics.Debug.WriteLine(
+        //                        "Check-in rollback failed: " +
+        //                        rollbackEx.ToString());
+        //                }
+
+        //                if (ex is MySqlException)
+        //                {
+        //                    clsGlobalLogger.LogMySqlException(
+        //                        (MySqlException)ex,
+        //                        clsGlobalLogger.LogLevel.Error);
+        //                }
+
+        //                System.Diagnostics.Debug.WriteLine(
+        //                    "Check-in failed for Appointment ID " +
+        //                    AppointmentID + ": " + ex.ToString());
+
+        //                throw new InvalidOperationException(
+        //                    "Patient check-in failed for Appointment ID " +
+        //                    AppointmentID + ". " + ex.Message,
+        //                    ex);
+        //            }
+        //        }
+        //    }
+        //}
+
+        //public static bool UpdateBillNumber(
+        //  int BillID,
+        //  MySqlTransaction transaction)
+        //{
+        //    string query = @"
+        //UPDATE Bills
+        //SET BillNumber = CONCAT(
+        //    'INV-',
+        //    YEAR(NOW()),
+        //    '-',
+        //    LPAD(@BillID, 4, '0')
+        //)
+        //WHERE BillID = @BillID;";
+
+        //    using (MySqlCommand cmd = new MySqlCommand(
+        //        query,
+        //        transaction.Connection,
+        //        transaction))
+        //    {
+        //        cmd.Parameters.AddWithValue("@BillID", BillID);
+
+        //        return cmd.ExecuteNonQuery() > 0;
+        //    }
+        //}
 
         public static bool UpdatePaymentStatus(int VisitID, byte PaymentStatus, MySqlTransaction transaction)
         {
@@ -178,98 +410,98 @@ namespace Clinic_DataAccess
             }
 
         }
-        public static bool InsertBill(int VisitID,int UserID, decimal Fees,string Type,string PaymentMethod,
-            int AppointmentID
-            )
-        {
-            using (MySqlConnection connection =
-                new MySqlConnection(clsDataAccessSettings.ConnectionString))
-            {
-                connection.Open();
+        //public static bool InsertBillOld(int VisitID,int UserID, decimal Fees,string Type,string PaymentMethod,
+        //    int AppointmentID
+        //    )
+        //{
+        //    using (MySqlConnection connection =
+        //        new MySqlConnection(clsDataAccessSettings.ConnectionString))
+        //    {
+        //        connection.Open();
 
-                using (MySqlTransaction transaction =
-                    connection.BeginTransaction())
-                {
-                    try
-                    {
-                        // 2. Create bill
-                        string queryBill = @"
-                            INSERT INTO Bills
-                               (
-                                   VisitID,
-                                   PaymentStatus,
-                                   CreatedByUserID,
-                                   BillDate,
-                                   TotalAmount,
-                                   BillNumber
-                               )
-                               SELECT 
-                                   @VisitID,
-                                   2,                                      -- PaymentStatus
-                                   @UserID,
-                                   NOW(),
-                                   @Amount,
-                                   CONCAT('INV-', YEAR(NOW()), '-', LPAD(
-                                       (SELECT IFNULL(MAX(CAST(SUBSTRING(BillNumber, 10) AS UNSIGNED)), 0) + 1 
-                                        FROM Bills 
-                                        WHERE BillNumber LIKE CONCAT('INV-', YEAR(NOW()), '-%')), 
-                                       4, '0')
-                                   ) AS BillNumber
-                               FROM visitservices vs
-                               WHERE vs.VisitID = @VisitID;
+        //        using (MySqlTransaction transaction =
+        //            connection.BeginTransaction())
+        //        {
+        //            try
+        //            {
+        //                // 2. Create bill
+        //                string queryBill = @"
+        //                    INSERT INTO Bills
+        //                       (
+        //                           VisitID,
+        //                           PaymentStatus,
+        //                           CreatedByUserID,
+        //                           BillDate,
+        //                           TotalAmount,
+        //                           BillNumber
+        //                       )
+        //                       SELECT 
+        //                           @VisitID,
+        //                           2,                                      -- PaymentStatus
+        //                           @UserID,
+        //                           NOW(),
+        //                           @Amount,
+        //                           CONCAT('INV-', YEAR(NOW()), '-', LPAD(
+        //                               (SELECT IFNULL(MAX(CAST(SUBSTRING(BillNumber, 10) AS UNSIGNED)), 0) + 1 
+        //                                FROM Bills 
+        //                                WHERE BillNumber LIKE CONCAT('INV-', YEAR(NOW()), '-%')), 
+        //                               4, '0')
+        //                           ) AS BillNumber
+        //                       FROM visitservices vs
+        //                       WHERE vs.VisitID = @VisitID;
 
-                               SELECT LAST_INSERT_ID();";
+        //                       SELECT LAST_INSERT_ID();";
 
-                        int BillID;
+        //                int BillID;
 
-                        using (MySqlCommand cmdBill =
-                            new MySqlCommand(queryBill, connection, transaction))
-                        {
-                            cmdBill.Parameters.AddWithValue("@VisitID", VisitID);
-                            cmdBill.Parameters.AddWithValue("@UserID", UserID);
-                            cmdBill.Parameters.AddWithValue("@Amount", Fees);
+        //                using (MySqlCommand cmdBill =
+        //                    new MySqlCommand(queryBill, connection, transaction))
+        //                {
+        //                    cmdBill.Parameters.AddWithValue("@VisitID", VisitID);
+        //                    cmdBill.Parameters.AddWithValue("@UserID", UserID);
+        //                    cmdBill.Parameters.AddWithValue("@Amount", Fees);
 
-                            BillID = Convert.ToInt32(cmdBill.ExecuteScalar());
-                        }
+        //                    BillID = Convert.ToInt32(cmdBill.ExecuteScalar());
+        //                }
 
-                        UpdateBillNumber(BillID, transaction);
+        //                UpdateBillNumber(BillID, transaction);
 
-                        transaction.Commit();
+        //                transaction.Commit();
 
-                        return true;
-                    }
-                    catch (Exception ex)
-                    {
-                        try
-                        {
-                            transaction.Rollback();
-                        }
-                        catch (Exception rollbackEx)
-                        {
-                            System.Diagnostics.Debug.WriteLine(
-                                "Bill rollback failed: " +
-                                rollbackEx.ToString());
-                        }
+        //                return true;
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                try
+        //                {
+        //                    transaction.Rollback();
+        //                }
+        //                catch (Exception rollbackEx)
+        //                {
+        //                    System.Diagnostics.Debug.WriteLine(
+        //                        "Bill rollback failed: " +
+        //                        rollbackEx.ToString());
+        //                }
 
-                        if (ex is MySqlException)
-                        {
-                            clsGlobalLogger.LogMySqlException(
-                                (MySqlException)ex,
-                                clsGlobalLogger.LogLevel.Error);
-                        }
+        //                if (ex is MySqlException)
+        //                {
+        //                    clsGlobalLogger.LogMySqlException(
+        //                        (MySqlException)ex,
+        //                        clsGlobalLogger.LogLevel.Error);
+        //                }
 
-                        System.Diagnostics.Debug.WriteLine(
-                            "Bill failed for Appointment ID " +
-                            AppointmentID + ": " + ex.ToString());
+        //                System.Diagnostics.Debug.WriteLine(
+        //                    "Bill failed for Appointment ID " +
+        //                    AppointmentID + ": " + ex.ToString());
 
-                        throw new InvalidOperationException(
-                            "Patient Bill failed for Appointment ID " +
-                            AppointmentID + ". " + ex.Message,
-                            ex);
-                    }
-                }
-            }
-        }
+        //                throw new InvalidOperationException(
+        //                    "Patient Bill failed for Appointment ID " +
+        //                    AppointmentID + ". " + ex.Message,
+        //                    ex);
+        //            }
+        //        }
+        //    }
+        //}
         public static DataTable GetAllBills()
         {
             DataTable dt = new DataTable();

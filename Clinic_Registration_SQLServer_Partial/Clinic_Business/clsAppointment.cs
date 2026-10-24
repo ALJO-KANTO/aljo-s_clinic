@@ -1,4 +1,5 @@
-﻿using Clinic_DataAccess;
+﻿using Clinic_Common;
+using Clinic_DataAccess;
 using System;
 using System.Data;
 
@@ -8,18 +9,6 @@ namespace Clinic_Business
     {
         public enum enMode { AddNew = 0, Update = 1 };
         private enMode _Mode = enMode.AddNew;
-        public enum enAppointmentStatus
-        {
-            Scheduled = 1, 
-            InQueue = 2,
-            Progress = 3, 
-            Postponed = 4,
-            Completed = 5, 
-            Cancelled = 6,
-            Waiting_For_Vitals= 7,
-            Ready_For_Doctor=8,
-            In_Billing = 9
-        }
 
         public int AppointmentID { get; set; }
         public int PatientID { get; set; }
@@ -75,6 +64,7 @@ namespace Clinic_Business
             this.AppointmentTypeInfo = clsAppointmentType.Find(AppointmentTypeID);
             this.AppointmentFees = AppointmentFees;
             this.AppointmentDate = AppointmentDate;
+            this.CreatedDate = CreatedDate;
             _Mode = enMode.Update;
         }
 
@@ -198,7 +188,7 @@ namespace Clinic_Business
         {
             return clsAppointmentData.UpdateAppointmentStatus(
                 AppointmentID,
-                Status.ToString(),
+                Status,
                 UserID);
         }
 

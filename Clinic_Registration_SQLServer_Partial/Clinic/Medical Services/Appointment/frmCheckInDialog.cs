@@ -18,7 +18,7 @@ namespace Clinic.Medical_Services.Appointment
             _Fees = fees;
 
             lblPatientInfo.Text = $"Patient Name: {patientName}";
-            lblFees.Text = $"Consultation Fees: {_Fees:C}"; // التنسيق كعملة
+            lblFees.Text = $"Consultation Fees: {_Fees}"; // التنسيق كعملة
         }
 
         private void btnConfirm_Click(object sender, EventArgs e)

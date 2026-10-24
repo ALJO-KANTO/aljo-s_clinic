@@ -1689,6 +1689,10 @@
       <Project>{e9c52c97-1b60-4551-82fc-b2941f22ebae}</Project>
       <Name>Clinic_Business</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Clinic_Common\Clinic_Common.csproj">
+      <Project>{e529530d-cacc-432f-8bb5-8c54bb75b7bf}</Project>
+      <Name>Clinic_Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Clinic_DataAccess\Clinic_DataAccess.csproj">
       <Project>{4bb65931-586d-45ee-8a8e-5fb60a76bb66}</Project>
       <Name>Clinic_DataAccess</Name>

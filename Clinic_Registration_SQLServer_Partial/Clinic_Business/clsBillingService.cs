@@ -1,4 +1,5 @@
-﻿using Clinic_DataAccess;
+﻿using Clinic_Common;
+using Clinic_DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -13,13 +14,12 @@ namespace Clinic_Business
     {
         public static bool CheckInPatient(clsAppointment Appointment, int UserID, string PaymentMethod)
         {
-            string status = clsAppointment.enAppointmentStatus.Waiting_For_Vitals.ToString();
-            return clsBillingServiceData.CheckInPatient(Appointment.AppointmentID, Appointment.DoctorID, Appointment.PatientID, Appointment.AppointmentFees, UserID, PaymentMethod,status);
+            return clsBillingServiceData.CheckInPatient(Appointment.AppointmentID, Appointment.DoctorID, Appointment.PatientID, Appointment.AppointmentFees, UserID, PaymentMethod, enAppointmentStatus.Waiting_For_Vitals);
         }
-        public static bool InsertBill(int VisitorID,int UserID,decimal Fees,string Type,string PaymentMethod,int AppointmentID)
-        {
-            return clsBillingServiceData.InsertBill(VisitorID, UserID,Fees,Type,PaymentMethod,AppointmentID);
-        }
+        //public static bool InsertBill(int VisitorID,int UserID,decimal Fees,string Type,string PaymentMethod,int AppointmentID)
+        //{
+        //    return clsBillingServiceData.InsertBill(VisitorID, UserID,Fees,Type,PaymentMethod,AppointmentID);
+        //}
 
         public enum enPaymetnStatus:byte
         {

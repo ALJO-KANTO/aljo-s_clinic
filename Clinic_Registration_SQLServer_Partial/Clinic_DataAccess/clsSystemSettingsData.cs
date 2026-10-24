@@ -17,7 +17,7 @@ namespace Clinic_DataAccess
                 using (MySqlConnection connection = new MySqlConnection(clsDataAccessSettings.ConnectionString))
                 {
                     // افترضنا أن الجدول يحتوي على صف واحد فقط للإعدادات
-                    string query = "SELECT TOP 1 TaxPercentage FROM SystemSettings";
+                    string query = "SELECT value TaxPercentage FROM tbl_tax LIMIT 1";
 
                     using (MySqlCommand cmd = new MySqlCommand(query, connection))
                     {

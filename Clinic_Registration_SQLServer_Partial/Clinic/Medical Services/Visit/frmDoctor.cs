@@ -4,6 +4,7 @@ using Clinic.Doctor;
 using Clinic.Patient;
 using Clinic.Serveces.ServecesType;
 using Clinic_Business;
+using Clinic_Common;
 using System;
 using System.ComponentModel;
 using System.Data;
@@ -874,13 +875,13 @@ AND active = 0        ORDER BY name;";
                         }
                     }
 
-                    clsBillingService.InsertBill(
-                        _Visit.VisitID,
-                        clsGlobal.CurrentUser.UserID,
-                        TotalFees,
-                        "Doctor Visit",
-                        "Cash",
-                        _Visit.AppointmentID);
+                    //clsBillingService.InsertBill(
+                    //    _Visit.VisitID,
+                    //    clsGlobal.CurrentUser.UserID,
+                    //    TotalFees,
+                    //    "Doctor Visit",
+                    //    "Cash",
+                    //    _Visit.AppointmentID);
                 }
 
                 if (_Visit.PrescriptionInfo != null)
@@ -1169,7 +1170,7 @@ AND active = 0        ORDER BY name;";
 
                     if (ConfirmAction("The Patient IS Called Are youe Update Status To Postpone and Call Next Patient") == DialogResult.Yes)
                     {
-                        clsAppointment.UpdateAppointmentStatus(AppointmentID, clsAppointment.enAppointmentStatus.Postponed, clsGlobal.CurrentUser.UserID);
+                        clsAppointment.UpdateAppointmentStatus(AppointmentID, enAppointmentStatus.Postponed, clsGlobal.CurrentUser.UserID);
                         _CallNextPatientInQueue();
 
                     }
@@ -1328,7 +1329,7 @@ AND active = 0        ORDER BY name;";
         {
             DeleteRowFromGrid(dgvServices, _Visit.dtServices, e, "Are you sure you want to delete this Service?");
         }
-        private bool _ProcessAppointmentStatus(clsAppointment.enAppointmentStatus newStatus, string actionName)
+        private bool _ProcessAppointmentStatus(enAppointmentStatus newStatus, string actionName)
         {
             if (dgvDoctorQueue.CurrentRow == null) return false;
             int appointmentId;
@@ -1392,7 +1393,7 @@ AND active = 0        ORDER BY name;";
 
             bool updated = clsAppointment.UpdateAppointmentStatus(
                 appointmentID,
-                clsAppointment.enAppointmentStatus.Progress,
+                enAppointmentStatus.Progress,
                 clsGlobal.CurrentUser.UserID);
 
             if (!updated)
@@ -1443,14 +1444,14 @@ AND active = 0        ORDER BY name;";
         }
         private void btnPostpone_Click(object sender, EventArgs e)
         {
-            if (_ProcessAppointmentStatus(clsAppointment.enAppointmentStatus.Postponed,
+            if (_ProcessAppointmentStatus(enAppointmentStatus.Postponed,
                 "postpone this appointment"))
                 _CallNextPatientInQueue();
         }
 
         private void btnCalnceVisit_Click(object sender, EventArgs e)
         {
-            if (_ProcessAppointmentStatus(clsAppointment.enAppointmentStatus.Cancelled,
+            if (_ProcessAppointmentStatus(enAppointmentStatus.Cancelled,
                 "cancel this appointment"))
                 _CallNextPatientInQueue();
         }

@@ -3,6 +3,7 @@ using System;
 using System.Data;
 using System.Runtime.InteropServices;
 using MySql.Data.MySqlClient;
+using Clinic_Common;
 namespace Clinic_DataAccess
 {
     public class clsAppointmentData
@@ -419,11 +420,11 @@ namespace Clinic_DataAccess
                 using (MySqlConnection connection = new MySqlConnection(clsDataAccessSettings.ConnectionString))
                 {
                     string query = @"
-                                SELECT TOP 1 1 
+                                SELECT * 
                                 FROM Appointments 
                                 WHERE PatientID = @PatientID 
                                 AND AppointmentStatus != 6
-                                AND AppointmentDate BETWEEN @StartRange AND @EndRange";
+                                AND AppointmentDate BETWEEN @StartRange AND @EndRange LIMIT 1";
 
                     using (MySqlCommand command = new MySqlCommand(query, connection))
                     {
@@ -542,8 +543,7 @@ namespace Clinic_DataAccess
             }
         }
         public static bool UpdateAppointmentStatus(
-          int AppointmentID,
-          string Status,
+          int AppointmentID, enAppointmentStatus Status,
           int UserID)
         {
             try
@@ -575,31 +575,47 @@ namespace Clinic_DataAccess
                 return false;
             }
         }
+
         public static bool UpdateAppointmentStatus(
-    int AppointmentID,
-    string Status,
-    int UserID,
-    MySqlTransaction transaction)
+            int AppointmentID,
+            enAppointmentStatus Status,
+            int UserID,
+            MySqlTransaction transaction)
         {
             if (transaction == null)
                 throw new ArgumentNullException(nameof(transaction));
 
+            if (!Enum.IsDefined(typeof(enAppointmentStatus), Status))
+            {
+                throw new ArgumentException("Invalid appointment status.", nameof(Status));
+            }
+
             string query = @"
-        UPDATE appointments
-        SET AppointmentStatus = @Status
-        WHERE AppointmentID = @AppointmentID;";
+                    UPDATE appointments
+                    SET AppointmentStatus = @Status
+                    WHERE AppointmentID = @AppointmentID
+                      AND AppointmentStatus = @ExpectedStatus;";
 
             using (MySqlCommand command = new MySqlCommand(
                 query,
                 transaction.Connection,
                 transaction))
             {
-                command.Parameters.AddWithValue("@AppointmentID", AppointmentID);
-                command.Parameters.AddWithValue("@Status", Status);
+                command.Parameters.AddWithValue(
+                    "@AppointmentID", AppointmentID);
+
+                command.Parameters.AddWithValue(
+                    "@Status", (byte)Status);
+
+                command.Parameters.AddWithValue(
+                    "@ExpectedStatus",
+                    (byte)enAppointmentStatus.Scheduled
+                );
 
                 return command.ExecuteNonQuery() > 0;
             }
         }
+
         public static DataTable GetWaitingPatients(int DoctorID)
         {
             DataTable dt = new DataTable();
@@ -684,23 +700,29 @@ namespace Clinic_DataAccess
                     // التحديث الذكي: ترقية أول (Count) مريض من الحالة (2) إلى (7)
                     // ملاحظة: نستخدم الترتيب حسب وقت الوصول (CheckInTime) لضمان العدالة
                     string query = @"
-                UPDATE Appointments 
-                SET AppointmentStatus = 7 
-                WHERE AppointmentID IN (
-                    SELECT TOP (@Count) AppointmentID 
-                    FROM Appointments 
-                    WHERE AppointmentStatus = 2 
-                    AND DoctorID = @DoctorID 
-                    ORDER BY CheckInTime ASC
-                );";
+                                    UPDATE Appointments
+                                    SET AppointmentStatus = 'Waiting_For_Vitals'
+                                    WHERE AppointmentID IN (
+                                        SELECT AppointmentID
+                                        FROM (
+                                            SELECT AppointmentID
+                                            FROM Appointments
+                                            WHERE AppointmentStatus = 'InQueue'
+                                              AND DoctorID = @DoctorID
+                                            ORDER BY CheckInTime ASC
+                                            LIMIT @Count
+                                        ) AS SelectedAppointments
+                                    );";
+
                     using (MySqlCommand command = new MySqlCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@Count", Count);
                         command.Parameters.AddWithValue("@DoctorID", DoctorID);
 
                         connection.Open();
+
                         int rowsAffected = command.ExecuteNonQuery();
-                        IsPromoted = (rowsAffected > 0);
+                        IsPromoted = rowsAffected > 0;
                     }
                 }
             }
@@ -823,6 +845,5 @@ namespace Clinic_DataAccess
             }
             return AppointmentFees;
         }
-
     }
 }

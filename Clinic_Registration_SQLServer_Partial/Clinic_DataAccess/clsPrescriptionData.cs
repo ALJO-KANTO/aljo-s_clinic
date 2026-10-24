@@ -883,7 +883,7 @@ namespace Clinic_DataAccess
                     if (VisitID.HasValue && VisitID.Value != -1)
                     {
                         // ابحث هل توجد فاتورة غير ملغاة لهذه الزيارة
-                        string selectBill = "SELECT TOP 1 BillID FROM Bills WHERE VisitID = @VisitID AND PaymentStatus != 4";
+                        string selectBill = "SELECT BillID FROM Bills WHERE VisitID = @VisitID AND PaymentStatus != 4 LIMIT 1";
                         using (MySqlCommand cmdSelect = new MySqlCommand(selectBill, conn, transaction))
                         {
                             cmdSelect.Parameters.AddWithValue("@VisitID", VisitID);

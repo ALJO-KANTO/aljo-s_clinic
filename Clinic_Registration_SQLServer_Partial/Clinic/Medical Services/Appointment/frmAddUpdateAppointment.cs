@@ -1,4 +1,5 @@
 ﻿using Clinic_Business;
+using Clinic_Common;
 using System;
 using System.Data;
 using System.Drawing;
@@ -157,7 +158,7 @@ namespace Clinic.Medical_Services.Appointment
             _Appointment.AppointmentFees = Convert.ToDecimal(lblTotalAppointmentFees.Text);
             _Appointment.AppointmentDate = dtpAppointmentDate.Value;
             if (_Mode == enMode.AddNew)
-                _Appointment.AppointmentStatus = (byte)clsAppointment.enAppointmentStatus.Scheduled;
+                _Appointment.AppointmentStatus = (byte)enAppointmentStatus.Scheduled;
         }
 
         private void _TotalAppointment()

@@ -22,7 +22,8 @@
     using System.Windows.Forms;
     using Clinic.Medical_Services.Radiology;
     using YamyProject;
-    namespace Clinic
+using Clinic_Common;
+namespace Clinic
     {
         public partial class frmMain : Form
         {
@@ -139,9 +140,9 @@
                             frm.ShowDialog(this);
                         }
                     },
-                    clsGlobal.UserRole.Admin,
-                    clsGlobal.UserRole.Doctor,
-                    clsGlobal.UserRole.Nurse
+                    UserRole.Admin,
+                    UserRole.Doctor,
+                    UserRole.Nurse
                 );
             }
             private void OpenLaboratory()
@@ -154,14 +155,14 @@
                             frm.ShowDialog(this);
                         }
                     },
-                    clsGlobal.UserRole.Admin,
-                    clsGlobal.UserRole.Doctor,
-                    clsGlobal.UserRole.Nurse
+                    UserRole.Admin,
+                    UserRole.Doctor,
+                    UserRole.Nurse
                 );
             }
             private void OpenManageBills()
             {
-                if (!CanAccessMenu(clsGlobal.UserRole.Cashier))
+                if (!CanAccessMenu(UserRole.Cashier))
                 {
                     MessageBox.Show(
                         "You do not have permission to access Billing & Payments.",
@@ -198,8 +199,8 @@
                             frm.ShowDialog(this);
                         }
                     },
-                    clsGlobal.UserRole.Receptionist,
-                    clsGlobal.UserRole.Cashier
+                    UserRole.Receptionist,
+                    UserRole.Cashier
                 );
             }
             private void frmMain_Load(object sender, EventArgs e)
@@ -307,7 +308,7 @@
                             frm.ShowDialog(this);
                         }
                     },
-                    clsGlobal.UserRole.Admin
+                    UserRole.Admin
                 );
             }
 
@@ -321,9 +322,9 @@
                             frm.ShowDialog(this);
                         }
                     },
-                    clsGlobal.UserRole.Doctor,
-                    clsGlobal.UserRole.Nurse,
-                    clsGlobal.UserRole.Receptionist
+                    UserRole.Doctor,
+                    UserRole.Nurse,
+                    UserRole.Receptionist
                 );
             }
 
@@ -359,9 +360,9 @@
                             frm.ShowDialog(this);
                         }
                     },
-                    clsGlobal.UserRole.Doctor,
-                    clsGlobal.UserRole.Nurse,
-                    clsGlobal.UserRole.Receptionist
+                    UserRole.Doctor,
+                    UserRole.Nurse,
+                    UserRole.Receptionist
                 );
             }
 
@@ -375,9 +376,9 @@
                             frm.ShowDialog(this);
                         }
                     },
-                    clsGlobal.UserRole.Doctor,
-                    clsGlobal.UserRole.Nurse,
-                    clsGlobal.UserRole.Receptionist
+                    UserRole.Doctor,
+                    UserRole.Nurse,
+                    UserRole.Receptionist
                 );
             }
 
@@ -391,7 +392,7 @@
                             frm.ShowDialog(this);
                         }
                     },
-                    clsGlobal.UserRole.Admin
+                    UserRole.Admin
                 );
             }
 
@@ -411,7 +412,7 @@
                             frm.ShowDialog(this);
                         }
                     },
-                    clsGlobal.UserRole.Admin
+                    UserRole.Admin
                 );
             }
 
@@ -425,10 +426,10 @@
                             frm.ShowDialog(this);
                         }
                     },
-                    clsGlobal.UserRole.Doctor,
-                    clsGlobal.UserRole.Nurse,
-                    clsGlobal.UserRole.Receptionist,
-                    clsGlobal.UserRole.Cashier
+                    UserRole.Doctor,
+                    UserRole.Nurse,
+                    UserRole.Receptionist,
+                    UserRole.Cashier
                 );
             }
 
@@ -443,10 +444,10 @@
                             frm.ShowDialog(this);
                         }
                     },
-                    clsGlobal.UserRole.Doctor,
-                    clsGlobal.UserRole.Nurse,
-                    clsGlobal.UserRole.Receptionist,
-                    clsGlobal.UserRole.Cashier
+                    UserRole.Doctor,
+                    UserRole.Nurse,
+                    UserRole.Receptionist,
+                    UserRole.Cashier
                 );
             }
 
@@ -460,8 +461,8 @@
                             frm.ShowDialog(this);
                         }
                     },
-                    clsGlobal.UserRole.Doctor,
-                    clsGlobal.UserRole.Nurse
+                    UserRole.Doctor,
+                    UserRole.Nurse
                 );
             }
 
@@ -481,8 +482,8 @@
                             frm.ShowDialog(this);
                         }
                     },
-                    clsGlobal.UserRole.Doctor,
-                    clsGlobal.UserRole.Nurse
+                    UserRole.Doctor,
+                    UserRole.Nurse
                 );
             }
             private void directMedicinenDispensingToolStripMenuItem_Click(object sender, EventArgs e)
@@ -496,7 +497,7 @@
                             frm.ShowDialog(this);
                         }
                     },
-                    clsGlobal.UserRole.Pharmacist
+                    UserRole.Pharmacist
                 );
             }
 
@@ -511,7 +512,7 @@
                             frm.ShowDialog(this);
                         }
                     },
-                    clsGlobal.UserRole.Pharmacist
+                    UserRole.Pharmacist
                 );
             }
 
@@ -536,8 +537,8 @@
                                 MessageBoxIcon.Error);
                         }
                     },
-                    clsGlobal.UserRole.Doctor,
-                    clsGlobal.UserRole.Pharmacist
+                    UserRole.Doctor,
+                    UserRole.Pharmacist
                 );
             }
             private void inClinicDoctorToolStripMenuItem_Click(object sender, EventArgs e)
@@ -551,7 +552,7 @@
                             frm.ShowDialog(this);
                         }
                     },
-                    clsGlobal.UserRole.Pharmacist
+                    UserRole.Pharmacist
                 );
             }
             private void addNewDrugToolStripMenuItem_Click(object sender, EventArgs e)
@@ -564,10 +565,10 @@
                             frm.ShowDialog(this);
                         }
                     },
-                    clsGlobal.UserRole.Pharmacist
+                    UserRole.Pharmacist
                 );
             }
-            private bool CanShowDashboard(clsGlobal.UserRole role)
+            private bool CanShowDashboard(UserRole role)
             {
                 if (clsGlobal.CurrentUser == null)
                     return false;
@@ -575,14 +576,14 @@
                 int currentRoleId = clsGlobal.CurrentUser.RoleID;
 
                 // Admin can see every role dashboard.
-                if (currentRoleId == (int)clsGlobal.UserRole.Admin)
+                if (currentRoleId == (int)UserRole.Admin)
                     return true;
 
                 // Other users see only their assigned role.
                 return currentRoleId == (int)role;
             }
 
-            private bool CanAccessMenu(params clsGlobal.UserRole[] allowedRoles)
+            private bool CanAccessMenu(params UserRole[] allowedRoles)
             {
                 if (clsGlobal.CurrentUser == null)
                     return false;
@@ -590,10 +591,10 @@
                 int currentRoleId = clsGlobal.CurrentUser.RoleID;
 
                 // Admin can access all menus.
-                if (currentRoleId == (int)clsGlobal.UserRole.Admin)
+                if (currentRoleId == (int)UserRole.Admin)
                     return true;
 
-                foreach (clsGlobal.UserRole role in allowedRoles)
+                foreach (UserRole role in allowedRoles)
                 {
                     if (currentRoleId == (int)role)
                         return true;
@@ -602,7 +603,7 @@
                 return false;
             }
 
-            private void OpenIfAuthorized(Action openForm, params clsGlobal.UserRole[] allowedRoles)
+            private void OpenIfAuthorized(Action openForm, params UserRole[] allowedRoles)
             {
                 if (!CanAccessMenu(allowedRoles))
                 {
@@ -1191,7 +1192,7 @@
             {
                 if (modernSidebar == null ||
                     clsGlobal.CurrentUser == null ||
-                    clsGlobal.CurrentUser.RoleID != (int)clsGlobal.UserRole.Admin)
+                    clsGlobal.CurrentUser.RoleID != (int)UserRole.Admin)
                     return;
 
                 var forms = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -1531,7 +1532,7 @@
                             MessageBoxIcon.Error);
                     }
 
-                }, clsGlobal.UserRole.Admin);
+                }, UserRole.Admin);
             }
         }
     }

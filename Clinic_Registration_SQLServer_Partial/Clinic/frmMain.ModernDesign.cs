@@ -1,3 +1,4 @@
+using Clinic_Common;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -152,37 +153,37 @@ namespace Clinic
             };
             modernSidebar.Controls.Add(menu);
             menu.Controls.Add(MakeNav("⌂", "Dashboard", () => modernDashboard.AutoScrollPosition = new Point(0, 0), true));
-            if (CanAccessMenu(clsGlobal.UserRole.Admin, clsGlobal.UserRole.Doctor, clsGlobal.UserRole.Nurse, clsGlobal.UserRole.Receptionist, clsGlobal.UserRole.Cashier))
+            if (CanAccessMenu(UserRole.Admin, UserRole.Doctor, UserRole.Nurse, UserRole.Receptionist, UserRole.Cashier))
                 AddMenuHeading(menu, "Main");
-            if (CanAccessMenu(clsGlobal.UserRole.Doctor, clsGlobal.UserRole.Nurse, clsGlobal.UserRole.Receptionist))
+            if (CanAccessMenu(UserRole.Doctor, UserRole.Nurse, UserRole.Receptionist))
             {
                 menu.Controls.Add(MakeNav("♙", "Patients", () => PatientsToolStripMenuItem_Click(this, EventArgs.Empty)));
             }
-            if (CanAccessMenu(clsGlobal.UserRole.Doctor, clsGlobal.UserRole.Nurse, clsGlobal.UserRole.Receptionist, clsGlobal.UserRole.Cashier))
+            if (CanAccessMenu(UserRole.Doctor, UserRole.Nurse, UserRole.Receptionist, UserRole.Cashier))
             {
                 menu.Controls.Add(MakeNav("▦", "Appointments", () => appointmentsToolStripMenuItem_Click(this, EventArgs.Empty)));
             }
-            if (CanAccessMenu(clsGlobal.UserRole.Doctor, clsGlobal.UserRole.Nurse))
+            if (CanAccessMenu(UserRole.Doctor, UserRole.Nurse))
             {
                 menu.Controls.Add(MakeNav("✚", "Visits", () => listVisitToolStripMenuItem_Click(this, EventArgs.Empty)));
                 menu.Controls.Add(MakeNav("▤", "Medical Records", () => doctorToolStripMenuItem2_Click(this, EventArgs.Empty)));
             }
-            if (CanAccessMenu(clsGlobal.UserRole.Admin, clsGlobal.UserRole.Doctor, clsGlobal.UserRole.Pharmacist, clsGlobal.UserRole.Cashier))
+            if (CanAccessMenu(UserRole.Admin, UserRole.Doctor, UserRole.Pharmacist, UserRole.Cashier))
                 AddMenuHeading(menu, "Clinic Services");
-            if (CanAccessMenu(clsGlobal.UserRole.Cashier))
+            if (CanAccessMenu(UserRole.Cashier))
             {
                 menu.Controls.Add(MakeNav("▣", "Billing & Payments", () => OpenManageBills()));
             }
-            if (CanAccessMenu(clsGlobal.UserRole.Cashier))
+            if (CanAccessMenu(UserRole.Cashier))
             {
                 menu.Controls.Add(MakeNav("🧾", "Invoices", () => IssueInvoiceToolStripMenuItem_Click(this, EventArgs.Empty)));
             }
-            if (CanAccessMenu(clsGlobal.UserRole.Doctor, clsGlobal.UserRole.Pharmacist))
+            if (CanAccessMenu(UserRole.Doctor, UserRole.Pharmacist))
             {
                 menu.Controls.Add(MakeNav("✚", "Prescriptions", () => listPrescriptionToolStripMenuItem_Click(this, EventArgs.Empty)));
             }
           
-            if (CanAccessMenu(clsGlobal.UserRole.Doctor))
+            if (CanAccessMenu(UserRole.Doctor))
             {
                 menu.Controls.Add(
                     MakeNav("⚗", "Laboratory", () =>
@@ -193,7 +194,7 @@ namespace Clinic
             }
             // ERP-style expandable groups: visible only to Administrator.
             if (clsGlobal.CurrentUser != null &&
-                clsGlobal.CurrentUser.RoleID == (int)clsGlobal.UserRole.Admin)
+                clsGlobal.CurrentUser.RoleID == (int)UserRole.Admin)
             {
                 AddAdminNavigationGroups(menu);
             }
@@ -201,7 +202,7 @@ namespace Clinic
             // Administrator gets expandable accounting reports; retain the existing
             // Reports entry for Cashier without granting access to accounting reports.
             if (clsGlobal.CurrentUser != null &&
-                clsGlobal.CurrentUser.RoleID == (int)clsGlobal.UserRole.Admin)
+                clsGlobal.CurrentUser.RoleID == (int)UserRole.Admin)
             {
                 AddAdminGroup(menu, "▥", "Reports", new string[]
                 {
@@ -224,19 +225,19 @@ namespace Clinic
                     "Vendor|Vendor Summary|frmVendorSummary"
                 });
             }
-            else if (CanAccessMenu(clsGlobal.UserRole.Cashier))
+            else if (CanAccessMenu(UserRole.Cashier))
             {
                 menu.Controls.Add(MakeNav("▥", "Reports", null));
             }
-            if (CanAccessMenu(clsGlobal.UserRole.Admin))
+            if (CanAccessMenu(UserRole.Admin))
                 AddMenuHeading(menu, "Administration");
-            if (CanAccessMenu(clsGlobal.UserRole.Admin))
+            if (CanAccessMenu(UserRole.Admin))
             {
                 menu.Controls.Add(MakeNav("♙", "Users", () => UsersToolStripMenuItem_Click(this, EventArgs.Empty)));
             }
-            if (CanAccessMenu(clsGlobal.UserRole.Admin))
+            if (CanAccessMenu(UserRole.Admin))
                 menu.Controls.Add(MakeNav("⚑", "Doctors", () => DoctorsStripMenuItem1_Click(this, EventArgs.Empty)));
-            if (CanAccessMenu(clsGlobal.UserRole.Admin))
+            if (CanAccessMenu(UserRole.Admin))
                 menu.Controls.Add(MakeNav("⚙", "Settings", () => manageServicesToolStripMenuItem_Click(this, EventArgs.Empty)));
 
             menu.Controls.Add(MakeNav("↪", "Sign Out", () => signOutToolStripMenuItem_Click(this, EventArgs.Empty)));
@@ -342,7 +343,7 @@ namespace Clinic
             string role = clsGlobal.CurrentUser == null
                 ? ""
                 : Enum.GetName(
-                    typeof(clsGlobal.UserRole),
+                    typeof(UserRole),
                     clsGlobal.CurrentUser.RoleID) ?? "";
 
             modernUser.Text = userName;
@@ -683,7 +684,7 @@ namespace Clinic
             AddStat(stats, 3, "♡", "Active Visits", "—", Color.FromArgb(246, 137, 22));
             modernDashboard.Controls.Add(stats);
 
-            bool isAdmin = clsGlobal.CurrentUser.RoleID == (int)clsGlobal.UserRole.Admin;
+            bool isAdmin = clsGlobal.CurrentUser.RoleID == (int)UserRole.Admin;
             TableLayoutPanel roleRows = new TableLayoutPanel
             {
                 ColumnCount = isAdmin ? 2 : 1,
@@ -711,7 +712,7 @@ namespace Clinic
                 roleRows.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
                 roleRows.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
             }
-            if (CanShowDashboard(clsGlobal.UserRole.Doctor))
+            if (CanShowDashboard(UserRole.Doctor))
             {
                 roleRows.Controls.Add(
                     RoleCard("✚", "Doctor Role Dashboard", Color.FromArgb(0, 121, 246),
@@ -722,7 +723,7 @@ namespace Clinic
                                 () => doctorToolStripMenuItem2_Click(this, EventArgs.Empty) }
                     ), 0, 0);
             }
-            if (CanShowDashboard(clsGlobal.UserRole.Nurse))
+            if (CanShowDashboard(UserRole.Nurse))
             {
                 roleRows.Controls.Add(
                     RoleCard("✚", "Nurse Role Dashboard", Color.FromArgb(15, 118, 110),
@@ -730,7 +731,7 @@ namespace Clinic
                         new Action[] { () => nurseToolStripMenuItem1_Click(this, EventArgs.Empty) }
                     ), 0, 2);
             }
-            if (CanShowDashboard(clsGlobal.UserRole.Receptionist))
+            if (CanShowDashboard(UserRole.Receptionist))
             {
                 roleRows.Controls.Add(RoleCard("♙", "Receptionist Role Dashboard", Color.FromArgb(248, 105, 35),
                 new string[] { "Register\nNew Patient", "Schedule\nAppointment", "Appointment\nQueue", "Patient\nCheck-in" },
@@ -739,7 +740,7 @@ namespace Clinic
                     () => appointmentsToolStripMenuItem_Click(this, EventArgs.Empty),
                     () => appointmentsToolStripMenuItem_Click(this, EventArgs.Empty) }), 1, 1);
             }
-            if (CanShowDashboard(clsGlobal.UserRole.Pharmacist))
+            if (CanShowDashboard(UserRole.Pharmacist))
             {
                 roleRows.Controls.Add(RoleCard("✚", "Pharmacist Role Dashboard", Color.FromArgb(159, 37, 225),
                 new string[] { "All\nPrescriptions", "In-Clinic\nDoctor\nPrescription", "Add New\nDrug", "Direct Medicine\nDispensing" },
@@ -751,7 +752,7 @@ namespace Clinic
                     () => directMedicinenDispensingToolStripMenuItem_Click(this, EventArgs.Empty)
                 }), 0, 1);
             }
-            if (CanShowDashboard(clsGlobal.UserRole.Cashier))
+            if (CanShowDashboard(UserRole.Cashier))
             {
                 roleRows.Controls.Add(RoleCard(
                      "$",
@@ -781,20 +782,20 @@ namespace Clinic
             Place(actions, TextLabel("Quick Actions", 15, ink, true), 20, 8, 500, 38);
             FlowLayoutPanel quick = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 126, Padding = new Padding(10, 0, 0, 0) };
             actions.Controls.Add(quick);
-            if (CanAccessMenu(clsGlobal.UserRole.Doctor, clsGlobal.UserRole.Nurse, clsGlobal.UserRole.Receptionist))
+            if (CanAccessMenu(UserRole.Doctor, UserRole.Nurse, UserRole.Receptionist))
             {
                 QuickButton(quick, "Register New Patient", () => PatientsToolStripMenuItem_Click(this, EventArgs.Empty));
             }
-            if (CanAccessMenu(clsGlobal.UserRole.Doctor, clsGlobal.UserRole.Nurse, clsGlobal.UserRole.Receptionist, clsGlobal.UserRole.Cashier))
+            if (CanAccessMenu(UserRole.Doctor, UserRole.Nurse, UserRole.Receptionist, UserRole.Cashier))
             {
                 QuickButton(quick, "New Appointment", () => btnAddApp_Click(this, EventArgs.Empty));
             }
 
-            if (CanAccessMenu(clsGlobal.UserRole.Doctor, clsGlobal.UserRole.Nurse, clsGlobal.UserRole.Receptionist))
+            if (CanAccessMenu(UserRole.Doctor, UserRole.Nurse, UserRole.Receptionist))
             {
                 QuickButton(quick, "Find Patient", () => btnFindPatient_Click(this, EventArgs.Empty));
             }
-            if (CanAccessMenu(clsGlobal.UserRole.Admin))
+            if (CanAccessMenu(UserRole.Admin))
             {
                 QuickButton(quick, "Manage Users", () => UsersToolStripMenuItem_Click(this, EventArgs.Empty));
             }

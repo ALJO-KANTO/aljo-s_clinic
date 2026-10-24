@@ -1,4 +1,5 @@
 ﻿using Clinic_Business;
+using Clinic_Common;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -183,7 +184,7 @@ namespace Clinic.Medical_Services.Vital
 
             bool statusUpdated = clsAppointment.UpdateAppointmentStatus(
                 appointmentID,
-                clsAppointment.enAppointmentStatus.Ready_For_Doctor,
+                enAppointmentStatus.Ready_For_Doctor,
                 clsGlobal.CurrentUser.UserID);
 
             if (!statusUpdated)
@@ -262,7 +263,7 @@ namespace Clinic.Medical_Services.Vital
             {
                 bool updated = clsAppointment.UpdateAppointmentStatus(
                     appointmentID,
-                    clsAppointment.enAppointmentStatus.Waiting_For_Vitals,
+                    enAppointmentStatus.Waiting_For_Vitals,
                     clsGlobal.CurrentUser.UserID);
 
                 if (!updated)
@@ -362,7 +363,7 @@ namespace Clinic.Medical_Services.Vital
 
             bool updated = clsAppointment.UpdateAppointmentStatus(
                 appointmentID,
-                clsAppointment.enAppointmentStatus.Waiting_For_Vitals,
+                enAppointmentStatus.Waiting_For_Vitals,
                 clsGlobal.CurrentUser.UserID);
 
             if (updated)
