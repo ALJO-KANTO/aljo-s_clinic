@@ -12,8 +12,17 @@ namespace Clinic
 {
     public static class TranslationClass
     {
-        public static readonly Dictionary<string, string> sidebarTranslations = new Dictionary<string, string>
+        public class TranslationDictionary : Dictionary<string, string>
         {
+            public new void Add(string key, string value)
+            {
+                // If the key already exists, replace its translation.
+                this[key] = value;
+            }
+        }
+        public static readonly TranslationDictionary sidebarTranslations =
+       new TranslationDictionary
+           {
             { "Dashboard", "لوحة التحكم" },
             { "Main", "الرئيسية" },
             { "Patients", "المرضى" },
@@ -645,6 +654,85 @@ namespace Clinic
 { "Administrator Dashboard", "لوحة تحكم مدير النظام" },
             { "Manage Services Type",
      "إدارة أنواع الخدمات" },
+            { "Appointment ID", "رقم الموعد" },
+{ "Created By UserID", "معرّف المستخدم المنشئ" },
+{ "Patient Name", "اسم المريض" },
+{ "Doctor Name", "اسم الطبيب" },
+{ "AppointmentType", "نوع الموعد" },
+{ "Fees", "الرسوم" },
+{ "Date", "التاريخ" },
+{ "Status", "الحالة" },
+{ "C.UserID", "معرّف المستخدم المنشئ" },
+{ "None", "بدون" },
+{ "All", "الكل" },
+{ "Scheduled", "مجدول" },
+{ "Cancelled", "ملغى" },
+{ "Completed", "مكتمل" },
+{ "Postponed", "مؤجل" },
+{ "In Queue", "في قائمة الانتظار" },
+{ "Check In", "تسجيل الوصول" },
+{ "View Visit", "عرض الزيارة" },
+{ "Consultation", "استشارة" },
+{ "Follow-up", "متابعة" },
+{ "Add Appointment", "إضافة موعد" },
+{ "Edit", "تعديل" },
+{ "Delete", "حذف" },
+{ "Close", "إغلاق" },
+{ "Confirm Delete", "تأكيد الحذف" },
+{ "Successful", "تم بنجاح" },
+{ "Error", "خطأ" },
+{ "Confirm Action", "تأكيد الإجراء" },
+{ "Search", "بحث" },
+{ "Filter By", "تصفية حسب" },
+            // Appointment list - additional translations
+{ "Login to your account", "تسجيل الدخول إلى حسابك" },
+{ "Access your clinic management system", "الوصول إلى نظام إدارة العيادة" },
+{ "Welcome To", "مرحباً بك في" },
+{ "PROFESSIONAL CARE  |  BETTER HEALTH  |  BRIGHTER TOMORROW",
+  "رعاية احترافية  |  صحة أفضل  |  غد أكثر إشراقاً" },
+
+{ "Patient Name", "اسم المريض" },
+{ "Doctor Name", "اسم الطبيب" },
+{ "AppointmentType", "نوع الموعد" },
+{ "Appointment Management Station", "مركز إدارة المواعيد" },
+{ "Appointments Registry", "سجل المواعيد" },
+{ "Manage Appointments", "إدارة المواعيد" },
+{ "Filter By:", "تصفية حسب:" },
+{ "Add New Appointment", "إضافة موعد جديد" },
+{ "Add &New Appointment", "إضافة موعد جديد" },
+{ "Show Patient Details", "عرض بيانات المريض" },
+{ "Show Doctor Details", "عرض بيانات الطبيب" },
+{ "List Patient", "قائمة المرضى" },
+{ "&List Patient", "قائمة المرضى" },
+{ "Reschedule", "إعادة جدولة الموعد" },
+{ "Are you sure you want to delete Appoinment [",
+  "هل أنت متأكد أنك تريد حذف الموعد [" },
+{ "Appoinment Deleted Successfully.", "تم حذف الموعد بنجاح." },
+{ "Appoinment was not deleted because it has data linked to it in the system.",
+  "لم يتم حذف الموعد لوجود بيانات مرتبطة به في النظام." },
+{ "Appointment not found.", "لم يتم العثور على الموعد." },
+{ "Check-in Error", "خطأ في تسجيل الوصول" },
+{ "This appointment has already been checked in or is no longer scheduled.",
+  "تم تسجيل وصول هذا الموعد مسبقاً أو لم يعد مجدولاً." },
+{ "Check-in Not Allowed", "غير مسموح بتسجيل الوصول" },
+{ "The patient could not be checked in. The appointment may already have been checked in.",
+  "تعذر تسجيل وصول المريض. ربما تم تسجيل وصوله مسبقاً." },
+{ "Check-in Failed", "فشل تسجيل الوصول" },
+{ "Patient checked in successfully.", "تم تسجيل وصول المريض بنجاح." },
+{ "No visit found for Appointment ID: ", "لم يتم العثور على زيارة للموعد رقم: " },
+{ "Please check in the patient first.", "يرجى تسجيل وصول المريض أولاً." },
+{ "Visit Not Found", "لم يتم العثور على الزيارة" },
+{ "Confirm Action", "تأكيد الإجراء" },
+{ "cancel this appointment", "إلغاء هذا الموعد" },
+{ "Success", "نجاح" },
+{ "Confirm Delete", "تأكيد الحذف" },
+           { "DoctorID", "رقم الطبيب" },
+{ "PatientID", "رقم المريض" },
+{ "AppointmentStatusText", "الحالة" },
+{ "TypeName", "نوع الموعد" },
+{ "AppointmentTypeID", "نوع الموعد" },
+{ "AppointmentStatus", "حالة الموعد" },
+
 };
         public static bool IsArabic { get; set; } = false;
 
