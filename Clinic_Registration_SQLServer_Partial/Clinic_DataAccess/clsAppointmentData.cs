@@ -608,8 +608,7 @@ namespace Clinic_DataAccess
                     "@Status", (byte)Status);
 
                 command.Parameters.AddWithValue(
-                    "@ExpectedStatus",
-                    (byte)enAppointmentStatus.Scheduled
+                    "@ExpectedStatus", enAppointmentStatus.Scheduled.ToString()
                 );
 
                 return command.ExecuteNonQuery() > 0;

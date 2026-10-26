@@ -54,9 +54,9 @@ namespace Clinic_DataAccess
                                     "Appointment not found.");
                             }
 
-                            byte currentStatus = Convert.ToByte(result);
+                            string currentStatus = result.ToString();
 
-                            if (currentStatus != (byte)enAppointmentStatus.Scheduled)
+                            if (currentStatus != "Scheduled")
                             {
                                 transaction.Rollback();
                                 return false;
@@ -181,7 +181,7 @@ namespace Clinic_DataAccess
                             transaction,
                             DateTime.Now,
                             debitAccountId.ToString(),
-                            Fees.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                            Fees.ToString(),
                             "0",
                             transactionId,
                             humId,
@@ -197,7 +197,7 @@ namespace Clinic_DataAccess
                             DateTime.Now,
                             creditAccountId.ToString(),
                             "0",
-                            Fees.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                            Fees.ToString(),
                             transactionId,
                             humId,
                             "Consultation Fee",
