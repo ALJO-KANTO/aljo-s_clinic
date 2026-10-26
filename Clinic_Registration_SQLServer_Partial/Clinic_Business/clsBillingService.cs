@@ -14,7 +14,7 @@ namespace Clinic_Business
     {
         public static bool CheckInPatient(clsAppointment Appointment, int UserID, string PaymentMethod, int debitAccountId,int creditAccountId)
         {
-            return clsBillingServiceData.CheckInPatient(Appointment.AppointmentID, Appointment.DoctorID, Appointment.PatientID, Appointment.AppointmentFees, UserID, PaymentMethod, enAppointmentStatus.Waiting_For_Vitals, debitAccountId, creditAccountId);
+            return clsBillingServiceData.CheckInPatient(Appointment.AppointmentID, Appointment.DoctorID, Appointment.PatientID, Appointment.AppointmentFees, UserID, PaymentMethod, "Waiting_For_Vitals", debitAccountId, creditAccountId);
         }
         //public static bool InsertBill(int VisitorID,int UserID,decimal Fees,string Type,string PaymentMethod,int AppointmentID)
         //{

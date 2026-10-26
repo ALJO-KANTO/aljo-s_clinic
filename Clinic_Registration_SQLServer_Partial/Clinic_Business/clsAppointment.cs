@@ -26,15 +26,38 @@ namespace Clinic_Business
         {
             get
             {
-                if (!Enum.IsDefined(
-                    typeof(enAppointmentStatus),
-                    (int)AppointmentStatus))
+                switch ((enAppointmentStatus)AppointmentStatus)
                 {
-                    return "Unknown";
-                }
+                    case enAppointmentStatus.Scheduled:
+                        return "Scheduled";
 
-                return ((enAppointmentStatus)AppointmentStatus)
-                    .ToString();
+                    case enAppointmentStatus.InQueue:
+                        return "In Queue";
+
+                    case enAppointmentStatus.Progress:
+                        return "In Progress";
+
+                    case enAppointmentStatus.Postponed:
+                        return "Postponed";
+
+                    case enAppointmentStatus.Completed:
+                        return "Completed";
+
+                    case enAppointmentStatus.Cancelled:
+                        return "Cancelled";
+
+                    case enAppointmentStatus.Waiting_For_Vitals:
+                        return "Waiting for Vitals";
+
+                    case enAppointmentStatus.Ready_For_Doctor:
+                        return "Ready for Doctor";
+
+                    case enAppointmentStatus.In_Billing:
+                        return "In Billing";
+
+                    default:
+                        return "Unknown";
+                }
             }
         }
         public clsAppointment()
@@ -183,7 +206,7 @@ namespace Clinic_Business
 
         public static bool UpdateAppointmentStatus(
          int AppointmentID,
-         enAppointmentStatus Status,
+         string Status,
          int UserID)
         {
             return clsAppointmentData.UpdateAppointmentStatus(

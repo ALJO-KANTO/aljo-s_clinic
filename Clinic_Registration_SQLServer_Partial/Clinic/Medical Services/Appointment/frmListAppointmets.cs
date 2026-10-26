@@ -549,6 +549,42 @@ namespace Clinic.Medical_Services.Appointment
             }
         }
 
+        public string GetAppointmentStatusText(enAppointmentStatus AppointmentStatus)
+        {
+                switch ((enAppointmentStatus)AppointmentStatus)
+                {
+                    case enAppointmentStatus.Scheduled:
+                        return "Scheduled";
+
+                    case enAppointmentStatus.InQueue:
+                        return "In Queue";
+
+                    case enAppointmentStatus.Progress:
+                        return "In Progress";
+
+                    case enAppointmentStatus.Postponed:
+                        return "Postponed";
+
+                    case enAppointmentStatus.Completed:
+                        return "Completed";
+
+                    case enAppointmentStatus.Cancelled:
+                        return "Cancelled";
+
+                    case enAppointmentStatus.Waiting_For_Vitals:
+                        return "Waiting for Vitals";
+
+                    case enAppointmentStatus.Ready_For_Doctor:
+                        return "Ready for Doctor";
+
+                    case enAppointmentStatus.In_Billing:
+                        return "In Billing";
+
+                    default:
+                        return "Unknown";
+                }
+            
+        }
         private void _ProcessAppointmentStatus(enAppointmentStatus newStatus, string actionName)
         {
             if (dgvAppointments.CurrentRow == null) return;
@@ -558,9 +594,11 @@ namespace Clinic.Medical_Services.Appointment
             string message = Tr("Are you sure you want to ") + Tr(actionName) + "?";
             string title = Tr("Confirm Action");
 
+
+
             if (MessageBox.Show(message, title, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
-                if (clsAppointment.UpdateAppointmentStatus(currentAppointmentID, newStatus, clsGlobal.CurrentUser.UserID))
+                if (clsAppointment.UpdateAppointmentStatus(currentAppointmentID, GetAppointmentStatusText(newStatus), clsGlobal.CurrentUser.UserID))
                 {
                     if (newStatus == enAppointmentStatus.InQueue)
                     {

@@ -5,20 +5,46 @@ using System.Collections.Generic;
 using System.Data;
 using System.Windows.Forms;
 using YamyProject.Localization;
-
+using Clinic;
 namespace YamyProject
 {
     public partial class MasterItemCategory : Form
     {
         private EventHandler itemCategoryUpdatedHandler;
-
+        private bool isArabic => TranslationClass.IsArabic;
         public MasterItemCategory()
         {
             InitializeComponent();
+
             LocalizationManager.LocalizeForm(this);
-            headerUC1.FormText = this.Text;
+
+            ApplyCategoryTranslations();
+
             itemCategoryUpdatedHandler = (sender, args) => BindItems();
             EventHub.ItemCategory += itemCategoryUpdatedHandler;
+        }
+        private void ApplyCategoryTranslations()
+        {
+            this.Text = isArabic
+                ? "فئات الأصناف"
+                : "Item Categories";
+
+            // Translate custom heading
+            headerUC1.FormText = this.Text;
+
+            btnNew.Text = isArabic ? "إضافة جديد" : "New";
+            btnEdit.Text = isArabic ? "تعديل" : "Edit";
+            btnDelete.Text = isArabic ? "حذف" : "Delete";
+
+            this.RightToLeft = isArabic
+                ? RightToLeft.Yes
+                : RightToLeft.No;
+
+            this.RightToLeftLayout = false;
+
+            dgvCustomer.RightToLeft = isArabic
+                ? RightToLeft.Yes
+                : RightToLeft.No;
         }
         private void MasterItemCategory_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -37,11 +63,29 @@ namespace YamyProject
         }
         public void BindItems()
         {
-            dgvCustomer.DataSource = ClinicDatabase.ExecuteDataTable(@"select id,Concat( code , ' - ',name) as 'Category Name' from tbl_item_category");
-            dgvCustomer.Columns["Category name"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dgvCustomer.Columns["Category Name"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            dgvCustomer.Columns["id"].Visible = false;
-           // LocalizationManager.LocalizeDataGridViewHeaders(dgvCustomer);
+            dgvCustomer.DataSource = ClinicDatabase.ExecuteDataTable(
+                @"SELECT
+              id,
+              CONCAT(code, ' - ', name) AS `Category Name`
+          FROM tbl_item_category");
+
+            if (dgvCustomer.Columns.Contains("Category Name"))
+            {
+                var column = dgvCustomer.Columns["Category Name"];
+
+                column.HeaderText = isArabic
+                    ? "اسم الفئة"
+                    : "Category Name";
+
+                column.DefaultCellStyle.Alignment =
+                    DataGridViewContentAlignment.MiddleCenter;
+
+                column.AutoSizeMode =
+                    DataGridViewAutoSizeColumnMode.Fill;
+            }
+
+            if (dgvCustomer.Columns.Contains("id"))
+                dgvCustomer.Columns["id"].Visible = false;
         }
         private void chkAll_CheckedChanged(object sender, EventArgs e)
         {
@@ -80,21 +124,45 @@ namespace YamyProject
 
         private void btnDelete_Click(object sender, EventArgs e)
         {
-            object result = ClinicDatabase.ExecuteScalar(@"SELECT COUNT(1) FROM tbl_items 
-                  WHERE category_id = @id", ClinicDatabase.CreateParameterNew("id", int.Parse(dgvCustomer.SelectedRows[0].Cells["id"].Value.ToString())));
-            int recordCount = 0;
-            if (result != null && result != DBNull.Value)
-                recordCount = Convert.ToInt32(result);
-            if (recordCount > 0)
+            if (dgvCustomer.SelectedRows.Count == 0)
             {
-                MessageBox.Show("Already used");
+                MessageBox.Show(isArabic
+                    ? "يرجى تحديد فئة أولاً"
+                    : "Please select a category first.");
                 return;
             }
-            ClinicDatabase.ExecuteNonQuery("DELETE FROM tbl_item_category WHERE id=@id", ClinicDatabase.CreateParameterNew("id", int.Parse(dgvCustomer.SelectedRows[0].Cells["id"].Value.ToString())));
-            BindItems();
-            MessageBox.Show("Deleted");
-        }
 
+            int categoryId = Convert.ToInt32(
+                dgvCustomer.SelectedRows[0].Cells["id"].Value);
+
+            object result = ClinicDatabase.ExecuteScalar(
+                @"SELECT COUNT(1)
+          FROM tbl_items
+          WHERE category_id = @id",
+                ClinicDatabase.CreateParameterNew("id", categoryId));
+
+            int recordCount = result == null || result == DBNull.Value
+                ? 0
+                : Convert.ToInt32(result);
+
+            if (recordCount > 0)
+            {
+                MessageBox.Show(isArabic
+                    ? "الفئة مستخدمة بالفعل"
+                    : "Already used");
+                return;
+            }
+
+            ClinicDatabase.ExecuteNonQuery(
+                "DELETE FROM tbl_item_category WHERE id = @id",
+                ClinicDatabase.CreateParameterNew("id", categoryId));
+
+            BindItems();
+
+            MessageBox.Show(isArabic
+                ? "تم الحذف بنجاح"
+                : "Deleted");
+        }
         private void guna2Button1_Click(object sender, EventArgs e)
         {
             this.WindowState = FormWindowState.Minimized;

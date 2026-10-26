@@ -543,7 +543,7 @@ namespace Clinic_DataAccess
             }
         }
         public static bool UpdateAppointmentStatus(
-          int AppointmentID, enAppointmentStatus Status,
+          int AppointmentID, string Status,
           int UserID)
         {
             try
@@ -578,17 +578,13 @@ namespace Clinic_DataAccess
 
         public static bool UpdateAppointmentStatus(
             int AppointmentID,
-            enAppointmentStatus Status,
+            string Status,
             int UserID,
             MySqlTransaction transaction)
         {
             if (transaction == null)
                 throw new ArgumentNullException(nameof(transaction));
 
-            if (!Enum.IsDefined(typeof(enAppointmentStatus), Status))
-            {
-                throw new ArgumentException("Invalid appointment status.", nameof(Status));
-            }
 
             string query = @"
                     UPDATE appointments
@@ -605,10 +601,10 @@ namespace Clinic_DataAccess
                     "@AppointmentID", AppointmentID);
 
                 command.Parameters.AddWithValue(
-                    "@Status", (byte)Status);
+                    "@Status", Status);
 
                 command.Parameters.AddWithValue(
-                    "@ExpectedStatus", enAppointmentStatus.Scheduled.ToString()
+                    "@ExpectedStatus", "Scheduled"
                 );
 
                 return command.ExecuteNonQuery() > 0;

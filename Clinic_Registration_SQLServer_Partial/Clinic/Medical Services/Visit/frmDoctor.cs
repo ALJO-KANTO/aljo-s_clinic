@@ -1170,7 +1170,7 @@ AND active = 0        ORDER BY name;";
 
                     if (ConfirmAction("The Patient IS Called Are youe Update Status To Postpone and Call Next Patient") == DialogResult.Yes)
                     {
-                        clsAppointment.UpdateAppointmentStatus(AppointmentID, enAppointmentStatus.Postponed, clsGlobal.CurrentUser.UserID);
+                        clsAppointment.UpdateAppointmentStatus(AppointmentID, "Postponed", clsGlobal.CurrentUser.UserID);
                         _CallNextPatientInQueue();
 
                     }
@@ -1343,7 +1343,7 @@ AND active = 0        ORDER BY name;";
             try
             {
                 if (!clsAppointment.UpdateAppointmentStatus(
-                    appointmentId, newStatus, clsGlobal.CurrentUser.UserID))
+                    appointmentId, GetAppointmentStatusText(newStatus), clsGlobal.CurrentUser.UserID))
                 {
                     ShowError("Could not update the appointment status.");
                     return false;
@@ -1357,6 +1357,45 @@ AND active = 0        ORDER BY name;";
                 ShowError("Status update failed: " + ex.Message);
                 return false;
             }
+        }
+
+        private string GetAppointmentStatusText(enAppointmentStatus AppointmentStatus)
+        {
+           
+                switch ((enAppointmentStatus)AppointmentStatus)
+                {
+                    case enAppointmentStatus.Scheduled:
+                        return "Scheduled";
+
+                    case enAppointmentStatus.InQueue:
+                        return "In Queue";
+
+                    case enAppointmentStatus.Progress:
+                        return "In Progress";
+
+                    case enAppointmentStatus.Postponed:
+                        return "Postponed";
+
+                    case enAppointmentStatus.Completed:
+                        return "Completed";
+
+                    case enAppointmentStatus.Cancelled:
+                        return "Cancelled";
+
+                    case enAppointmentStatus.Waiting_For_Vitals:
+                        return "Waiting for Vitals";
+
+                    case enAppointmentStatus.Ready_For_Doctor:
+                        return "Ready for Doctor";
+
+                    case enAppointmentStatus.In_Billing:
+                        return "In Billing";
+
+                    default:
+                        return "Unknown";
+                
+            
+        }
         }
 
         private void btnInProgress_Click(object sender, EventArgs e)
@@ -1393,7 +1432,7 @@ AND active = 0        ORDER BY name;";
 
             bool updated = clsAppointment.UpdateAppointmentStatus(
                 appointmentID,
-                enAppointmentStatus.Progress,
+                    "Progress",
                 clsGlobal.CurrentUser.UserID);
 
             if (!updated)

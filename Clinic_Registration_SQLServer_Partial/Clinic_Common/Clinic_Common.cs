@@ -1,7 +1,7 @@
 ﻿namespace Clinic_Common
 {
     public enum UserRole { Admin = 1, Doctor = 2, Nurse = 3, Receptionist = 4, Staff = 5, Pharmacist = 6, Cashier = 7 }
-    public enum enAppointmentStatus
+    public enum  enAppointmentStatus
     {
         Scheduled = 1,
         InQueue = 2,

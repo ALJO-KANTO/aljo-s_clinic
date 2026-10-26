@@ -1,9 +1,10 @@
 ﻿using Clinic_Business;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
-
 namespace Clinic.Medical_Services.Casher
 {
     public partial class frmMedicineSalesReturn : Form
@@ -39,10 +40,13 @@ namespace Clinic.Medical_Services.Casher
             dgvReturnItems.Paint += dgvReturnItems_Paint;
             dgvReturnItems.Scroll += (s, ev) => { _ShowUpDownOnCurrentCell(); };
             dgvReturnItems.DataError += (s, ev) => { ev.ThrowException = false; };
+            ApplyReturnTranslations();
         }
 
         private void frmMedicineSalesReturn_Load(object sender, EventArgs e)
         {
+            ApplyReturnTranslations();
+
             if (_BillID != -1)
             {
                 txtBillIDSearch.Text = _BillID.ToString();
@@ -65,8 +69,12 @@ namespace Clinic.Medical_Services.Casher
         {
             if (!clsSalesReturn.IsBillPaidOrPartiallyPaid(billID))
             {
-                MessageBox.Show("Cannot process return. This bill is either unpaid, cancelled, or does not exist.",
-                                "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                MessageBox.Show(
+                    T("Cannot process return. This bill is either unpaid, cancelled, or does not exist."),
+                    T("Access Denied"),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
                 _ResetForm();
                 return;
             }
@@ -96,6 +104,7 @@ namespace Clinic.Medical_Services.Casher
 
             dgvReturnItems.DataSource = _dtReturnItems;
             _SetupDataGridViewColumns();
+            TranslateReturnGridHeaders();
             _CalculateTotalRefund();
 
             // 🎯 إظهار العداد فوراً على أول سطر بمجرد تحميل البيانات
@@ -303,7 +312,137 @@ namespace Clinic.Medical_Services.Casher
                 MessageBox.Show(ex.Message, "Business Rule Error", MessageBoxButtons.OK, MessageBoxIcon.Stop);
             }
         }
+        private readonly System.Collections.Generic.Dictionary<Control, string>
+    _originalTexts = new System.Collections.Generic.Dictionary<Control, string>();
 
+       
+
+        private string T(string english)
+        {
+            return TranslationClass.Translate(
+                english,
+                TranslationClass.IsArabic);
+        }
+
+        private string TranslateReturnText(string value)
+        {
+            if (!TranslationClass.IsArabic ||
+                string.IsNullOrWhiteSpace(value))
+                return value;
+
+            string normalized = System.Text.RegularExpressions.Regex
+                .Replace(value.Replace("\r", " ").Replace("\n", " "),
+                         @"\s+", " ")
+                .Trim();
+
+            string translated = T(normalized);
+
+            if (translated != normalized)
+                return translated;
+
+            // Handles icons and extra spaces around English captions.
+            foreach (var item in TranslationClass.sidebarTranslations
+                         .OrderByDescending(x => x.Key.Length))
+            {
+                translated = System.Text.RegularExpressions.Regex.Replace(
+                    translated,
+                    System.Text.RegularExpressions.Regex.Escape(item.Key),
+                    _ => item.Value,
+                    System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            }
+
+            return translated;
+        }
+
+        private void ApplyReturnTranslations()
+        {
+            bool arabic = TranslationClass.IsArabic;
+
+            SuspendLayout();
+
+            try
+            {
+                this.Text = arabic
+                    ? "مرتجعات مبيعات الأدوية"
+                    : "Medicine Sales Return System";
+
+                this.RightToLeft = arabic
+                    ? RightToLeft.Yes : RightToLeft.No;
+
+                // Keep existing panel positions unchanged.
+                this.RightToLeftLayout = false;
+
+                TranslateReturnControls(this, arabic);
+                TranslateReturnGridHeaders();
+            }
+            finally
+            {
+                ResumeLayout(true);
+            }
+        }
+
+        private void TranslateReturnControls(Control parent, bool arabic)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                bool translatable =
+                    control is Label ||
+                    control is Button ||
+                    control is CheckBox ||
+                    control is RadioButton ||
+                    control is GroupBox;
+
+                if (translatable)
+                {
+                    if (!_originalTexts.ContainsKey(control))
+                        _originalTexts[control] = control.Text;
+
+                    string english = _originalTexts[control];
+
+                    control.Text = arabic
+                        ? TranslateReturnText(english)
+                        : english;
+
+                    control.RightToLeft = arabic
+                        ? RightToLeft.Yes
+                        : RightToLeft.No;
+                }
+
+                if (control.HasChildren)
+                    TranslateReturnControls(control, arabic);
+            }
+        }
+        private void TranslateReturnGridHeaders()
+        {
+            bool arabic = TranslationClass.IsArabic;
+
+            dgvReturnItems.RightToLeft = arabic
+                ? RightToLeft.Yes
+                : RightToLeft.No;
+
+            var headers = new Dictionary<string, string>
+    {
+        { "SavedMedicineName", "Medicine Name" },
+        { "QtyBought", "Qty Bought" },
+        { "QtyReturnedBefore", "Qty Returned Before" },
+        { "UnitPrice", "Unit Price" },
+        { "QtyReturned", "Qty Returned" }
+    };
+
+            foreach (var item in headers)
+            {
+                if (dgvReturnItems.Columns.Contains(item.Key))
+                {
+                    dgvReturnItems.Columns[item.Key].HeaderText =
+                        T(item.Value);
+                }
+            }
+
+            dgvReturnItems.ColumnHeadersDefaultCellStyle.Alignment =
+                arabic
+                    ? DataGridViewContentAlignment.MiddleRight
+                    : DataGridViewContentAlignment.MiddleLeft;
+        }
         private void _ResetForm()
         {
             _BillID = -1;

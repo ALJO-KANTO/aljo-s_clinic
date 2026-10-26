@@ -20,7 +20,7 @@ namespace Clinic_DataAccess
             decimal Fees,
             int UserID,
             string PaymentMethod,
-            enAppointmentStatus status,
+            string status,
             int debitAccountId,
             int creditAccountId)
         {

@@ -184,7 +184,7 @@ namespace Clinic.Medical_Services.Vital
 
             bool statusUpdated = clsAppointment.UpdateAppointmentStatus(
                 appointmentID,
-                enAppointmentStatus.Ready_For_Doctor,
+                "Ready_For_Doctor",
                 clsGlobal.CurrentUser.UserID);
 
             if (!statusUpdated)
@@ -263,7 +263,7 @@ namespace Clinic.Medical_Services.Vital
             {
                 bool updated = clsAppointment.UpdateAppointmentStatus(
                     appointmentID,
-                    enAppointmentStatus.Waiting_For_Vitals,
+                    "Waiting_For_Vitals",
                     clsGlobal.CurrentUser.UserID);
 
                 if (!updated)
@@ -363,7 +363,7 @@ namespace Clinic.Medical_Services.Vital
 
             bool updated = clsAppointment.UpdateAppointmentStatus(
                 appointmentID,
-                enAppointmentStatus.Waiting_For_Vitals,
+                "Waiting_For_Vitals",
                 clsGlobal.CurrentUser.UserID);
 
             if (updated)

@@ -38,7 +38,7 @@ namespace Clinic_DataAccess
                             // استدعاء تحديث حالة الموعد باستخدام نفس الـ transaction
                             clsAppointmentData.UpdateAppointmentStatus(
                                 AppointmentID,
-                                enAppointmentStatus.In_Billing,
+                                "In_Billing",
                                 CreatedByUserID,
                                 transaction);
                             if (result != null && int.TryParse(result.ToString(), out int newVitalID))

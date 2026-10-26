@@ -12,12 +12,7 @@ namespace Clinic.Medical_Services.Casher
     {
         private int _BillID;
 
-        private string T(string text)
-        {
-            return TranslationClass.Translate(
-                text,
-                TranslationClass.IsArabic);
-        }
+      
 
         public frmProcessPayments(int BillID)
         {
@@ -41,6 +36,20 @@ namespace Clinic.Medical_Services.Casher
             lbCurrentUser.Text = clsGlobal.PersonName;
         }
 
+
+        private readonly Dictionary<Control, string> _originalTexts =
+            new Dictionary<Control, string>();
+
+        private readonly Dictionary<DataGridViewColumn, string> _originalHeaders =
+            new Dictionary<DataGridViewColumn, string>();
+
+        private string T(string text)
+        {
+            return TranslationClass.Translate(
+                text,
+                TranslationClass.IsArabic);
+        }
+
         private void ApplyPaymentTranslations()
         {
             bool arabic = TranslationClass.IsArabic;
@@ -55,8 +64,7 @@ namespace Clinic.Medical_Services.Casher
 
                 RightToLeftLayout = arabic;
 
-                TranslateControls(this);
-
+                TranslateControls(this, arabic);
                 TranslateBillGridHeaders();
             }
             finally
@@ -65,46 +73,82 @@ namespace Clinic.Medical_Services.Casher
             }
         }
 
-        private void TranslateControls(Control parent)
+        private void TranslateControls(Control parent, bool arabic)
         {
             foreach (Control control in parent.Controls)
             {
-                if (!string.IsNullOrWhiteSpace(control.Text))
-                {
-                    string translated = T(control.Text);
+                // Do not translate user-entered values.
+                bool translatable =
+                    control is Label ||
+                    control is Button ||
+                    control is CheckBox ||
+                    control is RadioButton ||
+                    control is GroupBox;
 
-                    if (!string.IsNullOrEmpty(translated))
-                        control.Text = translated;
-                }
-
-                if (control is DataGridView grid)
+                if (translatable)
                 {
-                    TranslateBillGridHeaders();
+                    if (!_originalTexts.ContainsKey(control))
+                        _originalTexts[control] = control.Text;
+
+                    string english = _originalTexts[control];
+
+                    if (!string.IsNullOrWhiteSpace(english))
+                    {
+                        control.Text = arabic
+                            ? T(english)
+                            : english;
+                    }
+
+                    control.RightToLeft = arabic
+                        ? RightToLeft.Yes
+                        : RightToLeft.No;
+
+                    if (control is Label label)
+                    {
+                        // Preserve centered labels.
+                        if (label.TextAlign != ContentAlignment.MiddleCenter)
+                        {
+                            label.TextAlign = arabic
+                                ? ContentAlignment.MiddleRight
+                                : ContentAlignment.MiddleLeft;
+                        }
+                    }
                 }
 
                 if (control.HasChildren)
-                    TranslateControls(control);
+                    TranslateControls(control, arabic);
             }
         }
 
         private void TranslateBillGridHeaders()
         {
-            if (dgvBillDetails == null ||
-                dgvBillDetails.Columns.Count == 0)
+            if (dgvBillDetails == null)
                 return;
 
-            foreach (DataGridViewColumn column
-                     in dgvBillDetails.Columns)
+            bool arabic = TranslationClass.IsArabic;
+
+            foreach (DataGridViewColumn column in dgvBillDetails.Columns)
             {
-                if (!string.IsNullOrWhiteSpace(column.HeaderText))
-                    column.HeaderText = T(column.HeaderText);
+                if (!_originalHeaders.ContainsKey(column))
+                    _originalHeaders[column] = column.HeaderText;
+
+                string english = _originalHeaders[column];
+
+                column.HeaderText = arabic
+                    ? T(english)
+                    : english;
             }
 
-            dgvBillDetails.RightToLeft =
-                TranslationClass.IsArabic
-                    ? RightToLeft.Yes
-                    : RightToLeft.No;
+            dgvBillDetails.RightToLeft = arabic
+                ? RightToLeft.Yes
+                : RightToLeft.No;
+
+            dgvBillDetails.ColumnHeadersDefaultCellStyle.Alignment =
+                arabic
+                    ? DataGridViewContentAlignment.MiddleRight
+                    : DataGridViewContentAlignment.MiddleLeft;
         }
+
 
         private void ShowTranslatedMessage(
             string message,

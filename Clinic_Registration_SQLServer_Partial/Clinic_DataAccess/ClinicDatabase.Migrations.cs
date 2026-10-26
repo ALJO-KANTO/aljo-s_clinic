@@ -16,6 +16,67 @@ namespace Clinic_DataAccess
             public string Sql { get; set; }
         }
 
+        private static readonly string Migration_20261026_001_FixViewBillItems = @"
+CREATE OR REPLACE VIEW view_billitems AS
+
+SELECT
+    b.BillID AS BillID,
+    _utf8mb4'Medicine' COLLATE utf8mb4_0900_ai_ci AS ItemType,
+    CONVERT(pd.SavedMedicineName USING utf8mb4)
+        COLLATE utf8mb4_0900_ai_ci AS ItemName,
+    pd.Quantity AS Quantity,
+    pd.SavedMedicinePrice AS Price,
+    (pd.SavedMedicinePrice * pd.Quantity) AS Total
+
+FROM prescriptiondetails pd
+
+INNER JOIN prescriptions pr
+    ON pd.PrescriptionID = pr.PrescriptionID
+
+INNER JOIN bills b
+    ON pr.VisitID = b.VisitID
+
+UNION ALL
+
+SELECT
+    b.BillID AS BillID,
+    _utf8mb4'Service' COLLATE utf8mb4_0900_ai_ci AS ItemType,
+    CONVERT(s.ServiceName USING utf8mb4)
+        COLLATE utf8mb4_0900_ai_ci AS ItemName,
+    vs.Quantity AS Quantity,
+    vs.SavedServicePrice AS Price,
+    (vs.SavedServicePrice * vs.Quantity) AS Total
+
+FROM visitservices vs
+
+INNER JOIN services s
+    ON vs.ServiceID = s.ServiceID
+
+INNER JOIN bills b
+    ON vs.VisitID = b.VisitID
+
+UNION ALL
+
+SELECT
+    b.BillID AS BillID,
+    _utf8mb4'Appointment'
+        COLLATE utf8mb4_0900_ai_ci AS ItemType,
+    _utf8mb4'Appointment Fees'
+        COLLATE utf8mb4_0900_ai_ci AS ItemName,
+    1 AS Quantity,
+    a.AppointmentFees AS Price,
+    a.AppointmentFees AS Total
+
+FROM appointments a
+
+INNER JOIN visits v
+    ON a.AppointmentID = v.AppointmentID
+
+INNER JOIN bills b
+    ON v.VisitID = b.VisitID
+
+WHERE a.AppointmentFees > 0;
+";
         public static void ApplyMigrations()
         {
             using (MySqlConnection connection = GetConnection())
@@ -91,6 +152,12 @@ namespace Clinic_DataAccess
                                       UNIQUE KEY `CountryName` (`CountryName`)
                                     ) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
                         },
+                        new DatabaseMigration
+{
+    Version = "20261026_001",
+    Description = "Fix View Bill Items",
+    Sql = Migration_20261026_001_FixViewBillItems
+},
                         new DatabaseMigration
                         {
                             Version = "20261015_BASE_003",
@@ -1115,6 +1182,7 @@ namespace Clinic_DataAccess
                                 ADD COLUMN BillNumber VARCHAR(30) NULL;
                             "
                         },
+                        
                         new DatabaseMigration
                         {
                             Version = "20261019_0022",
@@ -4296,6 +4364,7 @@ namespace Clinic_DataAccess
                                 FROM `tbl_items` i WHERE i.`type` = '11 - Inventory Part';
                             "
                         },
+
                         new DatabaseMigration
                         {
                             Version = "20261023_CLINIC_View_03",
@@ -4324,6 +4393,7 @@ namespace Clinic_DataAccess
                                     REFERENCES `tbl_items` (`id`);
                             "
                         },
+
                   };
 
                 // STEP 4: Apply pending migrations
