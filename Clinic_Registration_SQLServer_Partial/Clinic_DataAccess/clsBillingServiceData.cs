@@ -168,11 +168,42 @@ namespace Clinic_DataAccess
 
                             cmdPayment.ExecuteNonQuery();
                         }
-                        // PaymentMethod {"Cash", "Card (POS)", "Bank Transfer"}
-                        // journal entry for payment
-                        // Replace these examples with your actual account IDs.
-                        //string debitAccountId;  // Cash or card clearing account
-                        //string creditAccountId; // Consultation Fee Revenue account
+                        // 5. Record accounting journal entries
+                        // Shared references for both sides of the journal
+                        string transactionId = BillID.ToString();
+                        string humId = VisitID.ToString();
+
+                        string description = $"Consultation fee for Bill #{BillID}";
+
+                        // Debit: Cash / Bank / Card Clearing
+                        CommonInsert.InsertTransactionEntryWithTransaction(
+                            connection,
+                            transaction,
+                            DateTime.Now,
+                            debitAccountId.ToString(),
+                            Fees.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                            "0",
+                            transactionId,
+                            humId,
+                            "Consultation Fee",
+                            description,
+                            UserID,
+                            DateTime.Now);
+
+                        // Credit: Consultation Fee Revenue
+                        CommonInsert.InsertTransactionEntryWithTransaction(
+                            connection,
+                            transaction,
+                            DateTime.Now,
+                            creditAccountId.ToString(),
+                            "0",
+                            Fees.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                            transactionId,
+                            humId,
+                            "Consultation Fee",
+                            description,
+                            UserID,
+                            DateTime.Now);
 
                         // 5. Update Appointment Status
                         if (!clsAppointmentData.UpdateAppointmentStatus(

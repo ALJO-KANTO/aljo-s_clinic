@@ -423,7 +423,7 @@ namespace Clinic_DataAccess
                                 SELECT * 
                                 FROM Appointments 
                                 WHERE PatientID = @PatientID 
-                                AND AppointmentStatus != 6
+                                AND AppointmentStatus <> 'Cancelled'
                                 AND AppointmentDate BETWEEN @StartRange AND @EndRange LIMIT 1";
 
                     using (MySqlCommand command = new MySqlCommand(query, connection))
