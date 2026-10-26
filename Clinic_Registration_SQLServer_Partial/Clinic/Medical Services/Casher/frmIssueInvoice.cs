@@ -21,18 +21,74 @@ namespace Clinic.Medical_Services.Casher
         public frmIssueInvoice(int BillID)
         {
             InitializeComponent();
-            TranslationHelper.TranslateAnyForm(this, TranslationClass.IsArabic);
-            lbCurrentUser.Text = clsGlobal.PersonName;
+
             _BillID = BillID;
+
+            ApplyInvoiceLocalization();
+
+            lbCurrentUser.Text = clsGlobal.PersonName;
+
             _FillForm();
         }
         public frmIssueInvoice()
         {
             InitializeComponent();
+
+            ApplyInvoiceLocalization();
+
             lbCurrentUser.Text = clsGlobal.PersonName;
-           
+        }
+        private string Tr(string text)
+        {
+            return TranslationClass.Translate(
+                text,
+                TranslationClass.IsArabic);
         }
 
+        private void ApplyInvoiceLocalization()
+        {
+            bool isArabic = TranslationClass.IsArabic;
+
+            TranslationHelper.TranslateAnyForm(this, isArabic);
+
+            this.RightToLeft = isArabic
+                ? RightToLeft.Yes
+                : RightToLeft.No;
+
+            this.RightToLeftLayout = isArabic;
+
+            dgBill.RightToLeft = isArabic
+                ? RightToLeft.Yes
+                : RightToLeft.No;
+
+            dgBill.ColumnHeadersDefaultCellStyle.Alignment = isArabic
+                ? DataGridViewContentAlignment.MiddleRight
+                : DataGridViewContentAlignment.MiddleLeft;
+
+            dgBill.DefaultCellStyle.Alignment = isArabic
+                ? DataGridViewContentAlignment.MiddleRight
+                : DataGridViewContentAlignment.MiddleLeft;
+
+            ApplyInvoiceGridLanguage();
+        }
+        private void ApplyInvoiceGridLanguage()
+        {
+            if (dgBill.Columns.Count == 0)
+                return;
+
+            SetInvoiceColumn("ItemName", "Item Description");
+            SetInvoiceColumn("Quantity", "Quantity");
+            SetInvoiceColumn("Price", "Price");
+            SetInvoiceColumn("Total", "Total");
+        }
+
+        private void SetInvoiceColumn(string columnName, string englishHeader)
+        {
+            if (!dgBill.Columns.Contains(columnName))
+                return;
+
+            dgBill.Columns[columnName].HeaderText = Tr(englishHeader);
+        }
         private void _ResetForm()
         {
             dgBill.DataSource = null;
@@ -65,6 +121,7 @@ namespace Clinic.Medical_Services.Casher
                 return;
             }
             dgBill.DataSource = _Invoice.ItemsTable;
+            ApplyInvoiceGridLanguage();
             lbSubtotal.Text = "$ " + _Invoice.Subtotal.ToString("N2");
             lbCoPay.Text = "$ " + _Invoice.PaymentAmount.ToString("N2");
             lbDiscoutns.Text = "$ " + _Invoice.TotalDiscount.ToString("N2");
@@ -117,7 +174,9 @@ namespace Clinic.Medical_Services.Casher
             // ترويسة الفاتورة
             g.DrawString("CLINIC MEDICAL CENTER", fontTitle, brush, startX, startY);
             offset += 25;
-            g.DrawString($"Invoice No: {_Invoice.InvoiceNumber}", fontBody, brush, startX, startY + offset);
+            g.DrawString(
+       Tr("Invoice No:") + " " + _Invoice.InvoiceNumber,
+       fontBody, brush, startX, startY + offset);
             offset += 20;
             g.DrawString($"Patient: {_Invoice.PatientName}", fontBody, brush, startX, startY + offset);
             offset += 20;
@@ -285,37 +344,51 @@ namespace Clinic.Medical_Services.Casher
         }
         private void btnGenerateAndFinalizeInVoice_Click(object sender, EventArgs e)
         {
-            if (_Invoice == null) return;
+            if (_Invoice == null)
+                return;
 
-                _PrintInvoiceDirectly();
+            _PrintInvoiceDirectly();
             this.DialogResult = DialogResult.OK;
 
-            if (MessageBox.Show("Do you want to go the Mange Bills Screen?", "Print Receipt",
-                MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            if (MessageBox.Show(
+                Tr("Do you want to go to the Manage Bills screen?"),
+                Tr("Print Receipt"),
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 clsFormHelper.ShowForm<frmManageBills>();
-                this.Close(); 
+                this.Close();
             }
-           
         }
         private void btnPreviewInvoice_Click(object sender, EventArgs e)
         {
             if (_Invoice == null)
             {
-                MessageBox.Show("No active invoice loaded to preview.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(
+                    Tr("No active invoice loaded to preview."),
+                    Tr("Warning"),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
                 return;
             }
 
             PrintPreviewDialog previewDialog = new PrintPreviewDialog();
             PrintDocument pd = new PrintDocument();
+
             pd.PrintPage += new PrintPageEventHandler(_PrintReceiptPage);
+
             previewDialog.Document = pd;
             previewDialog.ShowDialog();
         }
         private void btnSaveDraft_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Invoice draft remains pending. You can re-open and process it from Bill Management anytime.",
-                            "Draft Saved", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(
+                Tr("Invoice draft remains pending. You can re-open and process it from Bill Management anytime."),
+                Tr("Draft Saved"),
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+
             this.DialogResult = DialogResult.Cancel;
             this.Close();
         }

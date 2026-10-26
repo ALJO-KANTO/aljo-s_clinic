@@ -107,7 +107,7 @@
             this.label9.ForeColor = System.Drawing.Color.White;
             this.label9.Location = new System.Drawing.Point(794, 462);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(88, 25);
+            this.label9.Size = new System.Drawing.Size(106, 31);
             this.label9.TabIndex = 282;
             this.label9.Text = "Subtotal";
             // 
@@ -118,7 +118,7 @@
             this.lbSubtotal.ForeColor = System.Drawing.Color.White;
             this.lbSubtotal.Location = new System.Drawing.Point(1158, 462);
             this.lbSubtotal.Name = "lbSubtotal";
-            this.lbSubtotal.Size = new System.Drawing.Size(39, 25);
+            this.lbSubtotal.Size = new System.Drawing.Size(46, 31);
             this.lbSubtotal.TabIndex = 283;
             this.lbSubtotal.Text = "$ 0";
             // 
@@ -129,7 +129,7 @@
             this.lbDiscoutns.ForeColor = System.Drawing.Color.White;
             this.lbDiscoutns.Location = new System.Drawing.Point(1158, 521);
             this.lbDiscoutns.Name = "lbDiscoutns";
-            this.lbDiscoutns.Size = new System.Drawing.Size(39, 25);
+            this.lbDiscoutns.Size = new System.Drawing.Size(46, 31);
             this.lbDiscoutns.TabIndex = 287;
             this.lbDiscoutns.Text = "$ 0";
             // 
@@ -140,9 +140,9 @@
             this.label13.ForeColor = System.Drawing.Color.White;
             this.label13.Location = new System.Drawing.Point(794, 523);
             this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(99, 25);
+            this.label13.Size = new System.Drawing.Size(120, 31);
             this.label13.TabIndex = 286;
-            this.label13.Text = "Discoutns";
+            this.label13.Text = "Discounts";
             // 
             // panel7
             // 
@@ -160,7 +160,7 @@
             this.lbFinalTotal.ForeColor = System.Drawing.Color.White;
             this.lbFinalTotal.Location = new System.Drawing.Point(1158, 606);
             this.lbFinalTotal.Name = "lbFinalTotal";
-            this.lbFinalTotal.Size = new System.Drawing.Size(39, 25);
+            this.lbFinalTotal.Size = new System.Drawing.Size(46, 31);
             this.lbFinalTotal.TabIndex = 289;
             this.lbFinalTotal.Text = "$ 0";
             // 
@@ -171,7 +171,7 @@
             this.label15.ForeColor = System.Drawing.Color.White;
             this.label15.Location = new System.Drawing.Point(794, 606);
             this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(102, 25);
+            this.label15.Size = new System.Drawing.Size(125, 31);
             this.label15.TabIndex = 288;
             this.label15.Text = "Final Total";
             // 
@@ -228,7 +228,7 @@
             this.label1.ForeColor = System.Drawing.Color.White;
             this.label1.Location = new System.Drawing.Point(535, 168);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(135, 25);
+            this.label1.Size = new System.Drawing.Size(160, 31);
             this.label1.TabIndex = 291;
             this.label1.Text = "ITEM LISTING";
             // 
@@ -248,7 +248,7 @@
             this.txtSearchByPatientName.ForeColor = System.Drawing.Color.White;
             this.txtSearchByPatientName.Location = new System.Drawing.Point(20, 120);
             this.txtSearchByPatientName.Name = "txtSearchByPatientName";
-            this.txtSearchByPatientName.Size = new System.Drawing.Size(1233, 32);
+            this.txtSearchByPatientName.Size = new System.Drawing.Size(1233, 38);
             this.txtSearchByPatientName.TabIndex = 293;
             this.txtSearchByPatientName.TextChanged += new System.EventHandler(this.txtSearchByPatientName_TextChanged);
             this.txtSearchByPatientName.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtSearchByPatientName_KeyDown);
@@ -315,7 +315,7 @@
             this.label4.ForeColor = System.Drawing.Color.White;
             this.label4.Location = new System.Drawing.Point(23, 213);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(150, 25);
+            this.label4.Size = new System.Drawing.Size(181, 31);
             this.label4.TabIndex = 300;
             this.label4.Text = "Invoice Number";
             // 
@@ -327,7 +327,7 @@
             this.txtInvoiceNumber.Location = new System.Drawing.Point(20, 247);
             this.txtInvoiceNumber.Name = "txtInvoiceNumber";
             this.txtInvoiceNumber.ReadOnly = true;
-            this.txtInvoiceNumber.Size = new System.Drawing.Size(448, 32);
+            this.txtInvoiceNumber.Size = new System.Drawing.Size(448, 38);
             this.txtInvoiceNumber.TabIndex = 299;
             // 
             // label2
@@ -337,7 +337,7 @@
             this.label2.ForeColor = System.Drawing.Color.White;
             this.label2.Location = new System.Drawing.Point(18, 168);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(167, 25);
+            this.label2.Size = new System.Drawing.Size(198, 31);
             this.label2.TabIndex = 301;
             this.label2.Text = "INVOICE DETAILS";
             // 
@@ -348,7 +348,7 @@
             this.label3.ForeColor = System.Drawing.Color.White;
             this.label3.Location = new System.Drawing.Point(17, 306);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(120, 25);
+            this.label3.Size = new System.Drawing.Size(144, 31);
             this.label3.TabIndex = 303;
             this.label3.Text = "Invoice Date";
             // 
@@ -360,7 +360,7 @@
             this.txtInvoiceDate.Location = new System.Drawing.Point(20, 340);
             this.txtInvoiceDate.Name = "txtInvoiceDate";
             this.txtInvoiceDate.ReadOnly = true;
-            this.txtInvoiceDate.Size = new System.Drawing.Size(448, 32);
+            this.txtInvoiceDate.Size = new System.Drawing.Size(448, 38);
             this.txtInvoiceDate.TabIndex = 302;
             // 
             // panel5
@@ -379,7 +379,7 @@
             this.label6.ForeColor = System.Drawing.Color.White;
             this.label6.Location = new System.Drawing.Point(18, 574);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(97, 25);
+            this.label6.Size = new System.Drawing.Size(115, 31);
             this.label6.TabIndex = 308;
             this.label6.Text = "Pateint ID";
             // 
@@ -391,7 +391,7 @@
             this.txtPatientID.Location = new System.Drawing.Point(16, 608);
             this.txtPatientID.Name = "txtPatientID";
             this.txtPatientID.ReadOnly = true;
-            this.txtPatientID.Size = new System.Drawing.Size(448, 32);
+            this.txtPatientID.Size = new System.Drawing.Size(448, 38);
             this.txtPatientID.TabIndex = 307;
             // 
             // label7
@@ -401,7 +401,7 @@
             this.label7.ForeColor = System.Drawing.Color.White;
             this.label7.Location = new System.Drawing.Point(10, 420);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(226, 25);
+            this.label7.Size = new System.Drawing.Size(270, 31);
             this.label7.TabIndex = 306;
             this.label7.Text = "PATIENT INFORMATION";
             // 
@@ -412,7 +412,7 @@
             this.label10.ForeColor = System.Drawing.Color.White;
             this.label10.Location = new System.Drawing.Point(18, 476);
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(129, 25);
+            this.label10.Size = new System.Drawing.Size(153, 31);
             this.label10.TabIndex = 305;
             this.label10.Text = "Patient Name";
             // 
@@ -424,7 +424,7 @@
             this.txtPatientName.Location = new System.Drawing.Point(16, 510);
             this.txtPatientName.Name = "txtPatientName";
             this.txtPatientName.ReadOnly = true;
-            this.txtPatientName.Size = new System.Drawing.Size(448, 32);
+            this.txtPatientName.Size = new System.Drawing.Size(448, 38);
             this.txtPatientName.TabIndex = 304;
             // 
             // label8
@@ -434,7 +434,7 @@
             this.label8.ForeColor = System.Drawing.Color.White;
             this.label8.Location = new System.Drawing.Point(794, 418);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(153, 25);
+            this.label8.Size = new System.Drawing.Size(185, 31);
             this.label8.TabIndex = 309;
             this.label8.Text = "BILL SUMMARY";
             // 
@@ -445,7 +445,7 @@
             this.label12.ForeColor = System.Drawing.Color.White;
             this.label12.Location = new System.Drawing.Point(794, 494);
             this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(76, 25);
+            this.label12.Size = new System.Drawing.Size(88, 31);
             this.label12.TabIndex = 310;
             this.label12.Text = "Co-Pay";
             // 
@@ -456,7 +456,7 @@
             this.lbCoPay.ForeColor = System.Drawing.Color.White;
             this.lbCoPay.Location = new System.Drawing.Point(1158, 493);
             this.lbCoPay.Name = "lbCoPay";
-            this.lbCoPay.Size = new System.Drawing.Size(39, 25);
+            this.lbCoPay.Size = new System.Drawing.Size(46, 31);
             this.lbCoPay.TabIndex = 311;
             this.lbCoPay.Text = "$ 0";
             // 
@@ -479,7 +479,7 @@
             this.lbRemainingAmount.ForeColor = System.Drawing.Color.White;
             this.lbRemainingAmount.Location = new System.Drawing.Point(1158, 554);
             this.lbRemainingAmount.Name = "lbRemainingAmount";
-            this.lbRemainingAmount.Size = new System.Drawing.Size(39, 25);
+            this.lbRemainingAmount.Size = new System.Drawing.Size(46, 31);
             this.lbRemainingAmount.TabIndex = 316;
             this.lbRemainingAmount.Text = "$ 0";
             // 
@@ -490,7 +490,7 @@
             this.label11.ForeColor = System.Drawing.Color.White;
             this.label11.Location = new System.Drawing.Point(794, 554);
             this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(194, 25);
+            this.label11.Size = new System.Drawing.Size(239, 31);
             this.label11.TabIndex = 315;
             this.label11.Text = "⚠️Remaining (Due): ";
             // 
@@ -502,7 +502,7 @@
             this.lblTitle.Location = new System.Drawing.Point(373, 17);
             this.lblTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblTitle.Name = "lblTitle";
-            this.lblTitle.Size = new System.Drawing.Size(392, 37);
+            this.lblTitle.Size = new System.Drawing.Size(478, 45);
             this.lblTitle.TabIndex = 236;
             this.lblTitle.Text = "ISSUE INVOICE - System View";
             // 
@@ -513,7 +513,7 @@
             this.lbCurrentUser.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(236)))), ((int)(((byte)(240)))), ((int)(((byte)(241)))));
             this.lbCurrentUser.Location = new System.Drawing.Point(927, 45);
             this.lbCurrentUser.Name = "lbCurrentUser";
-            this.lbCurrentUser.Size = new System.Drawing.Size(50, 25);
+            this.lbCurrentUser.Size = new System.Drawing.Size(60, 31);
             this.lbCurrentUser.TabIndex = 241;
             this.lbCurrentUser.Text = "[???]";
             // 
@@ -541,7 +541,7 @@
             this.label5.Location = new System.Drawing.Point(902, 12);
             this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(132, 25);
+            this.label5.Size = new System.Drawing.Size(156, 31);
             this.label5.TabIndex = 240;
             this.label5.Text = "Current User:";
             // 
@@ -573,7 +573,7 @@
             // 
             // frmIssueInvoice
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 21F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 28F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(38)))), ((int)(((byte)(42)))), ((int)(((byte)(45)))));
             this.ClientSize = new System.Drawing.Size(1285, 749);
