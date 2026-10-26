@@ -216,7 +216,7 @@ namespace Clinic.Medical_Services.Appointment
             this.editToolStripMenuItem,
             this.deleteToolStripMenuItem});
             this.cmsAppointmentRecption.Name = "contextMenuStrip1";
-            this.cmsAppointmentRecption.Size = new System.Drawing.Size(273, 266);
+            this.cmsAppointmentRecption.Size = new System.Drawing.Size(273, 238);
             // 
             // toolStripMenuItem2
             // 

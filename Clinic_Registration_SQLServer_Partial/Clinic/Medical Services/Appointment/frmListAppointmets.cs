@@ -8,6 +8,7 @@ using Clinic_Common;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -16,6 +17,11 @@ namespace Clinic.Medical_Services.Appointment
     public partial class frmListAppointmets : Form
     {
         private DataTable _dtAppointmets = clsAppointment.GetAllAppointments();
+        private readonly Dictionary<Control, string> _originalControlTexts =
+    new Dictionary<Control, string>();
+
+        private readonly Dictionary<ToolStripItem, string> _originalMenuTexts =
+            new Dictionary<ToolStripItem, string>();
         public frmListAppointmets()
         {
             InitializeComponent();
@@ -44,23 +50,82 @@ namespace Clinic.Medical_Services.Appointment
 
         private string GetEnglishText(string text)
         {
+            if (string.IsNullOrWhiteSpace(text))
+                return text;
+
             string[] englishTexts =
             {
-                "None", "Status", "Appointment ID", "Created By UserID",
-                "Patient Name", "Doctor Name", "AppointmentType", "All",
-                "Scheduled", "Cancelled", "Completed", "Postponed", "In Queue",
-                "Check In", "View Visit", "Consultation", "Follow-up"
-            };
+        "None",
+        "Status",
+        "Appointment ID",
+        "Created By UserID",
+        "Patient Name",
+        "Doctor Name",
+        "AppointmentType",
+        "All",
+        "Scheduled",
+        "Cancelled",
+        "Completed",
+        "Postponed",
+        "In Queue",
+        "Check In",
+        "View Visit",
+        "Consultation",
+        "Follow-up"
+    };
 
             foreach (string english in englishTexts)
             {
-                if (text == Tr(english))
+                if (string.Equals(text, english, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(text, Tr(english), StringComparison.Ordinal))
+                {
                     return english;
+                }
             }
 
             return text;
         }
+        private void ApplyAppointmentGridLanguage()
+        {
+            bool isArabic = TranslationClass.IsArabic;
 
+            dgvAppointments.RightToLeft = isArabic
+                ? RightToLeft.Yes
+                : RightToLeft.No;
+
+            dgvAppointments.ColumnHeadersDefaultCellStyle.Alignment =
+                isArabic
+                    ? DataGridViewContentAlignment.MiddleRight
+                    : DataGridViewContentAlignment.MiddleLeft;
+
+            dgvAppointments.DefaultCellStyle.Alignment =
+                isArabic
+                    ? DataGridViewContentAlignment.MiddleRight
+                    : DataGridViewContentAlignment.MiddleLeft;
+
+            SetAppointmentColumn("AppointmentID", "Appointment ID", 150);
+            SetAppointmentColumn("PatientName", "Patient Name", 150);
+            SetAppointmentColumn("DoctorName", "Doctor Name", 150);
+            SetAppointmentColumn("TypeName", "AppointmentType", 150);
+            SetAppointmentColumn("AppointmentFees", "Fees", 100);
+            SetAppointmentColumn("AppointmentDate", "Date", 150);
+            SetAppointmentColumn("AppointmentStatusText", "Status", 100);
+            SetAppointmentColumn("CreatedByUserID", "C.UserID", 90);
+        }
+
+        private void SetAppointmentColumn(
+            string columnName,
+            string englishHeader,
+            int width)
+        {
+            if (!dgvAppointments.Columns.Contains(columnName))
+                return;
+
+            DataGridViewColumn column = dgvAppointments.Columns[columnName];
+
+            column.HeaderText = Tr(englishHeader);
+            column.Width = width;
+        }
         private void TranslateComboItems(ComboBox comboBox)
         {
             if (comboBox == null || comboBox.DataSource != null)
@@ -87,13 +152,22 @@ namespace Clinic.Medical_Services.Appointment
 
         private void TranslateToolStripItems(ToolStripItemCollection items)
         {
+            bool isArabic = TranslationClass.IsArabic;
+
             foreach (ToolStripItem item in items)
             {
-                if (!string.IsNullOrEmpty(item.Text))
-                    item.Text = Tr(item.Text);
+                if (!_originalMenuTexts.ContainsKey(item))
+                    _originalMenuTexts[item] = item.Text;
+
+                string englishText = _originalMenuTexts[item];
+
+                if (!string.IsNullOrWhiteSpace(englishText))
+                    item.Text = Tr(englishText.Trim());
 
                 if (item is ToolStripDropDownItem dropDownItem)
+                {
                     TranslateToolStripItems(dropDownItem.DropDownItems);
+                }
             }
         }
 
@@ -157,20 +231,47 @@ namespace Clinic.Medical_Services.Appointment
             }
         }
 
-        private void ApplyLocalizationToControls(Control.ControlCollection controls, bool isArabic)
+        private void ApplyLocalizationToControls(
+            Control.ControlCollection controls,
+            bool isArabic)
         {
             foreach (Control control in controls)
             {
-                if (!string.IsNullOrEmpty(control.Text))
-                    control.Text = Tr(control.Text);
+                // Save original English text once.
+                if (!_originalControlTexts.ContainsKey(control))
+                    _originalControlTexts[control] = control.Text;
 
-                control.RightToLeft = isArabic ? RightToLeft.Yes : RightToLeft.No;
+                string englishText = _originalControlTexts[control];
+
+                if (!string.IsNullOrWhiteSpace(englishText))
+                {
+                    string lookupText = englishText
+                        .Replace("\r", "")
+                        .Replace("\n", " ")
+                        .Trim();
+
+                    control.Text = Tr(lookupText);
+                }
+
+                control.RightToLeft = isArabic
+                    ? RightToLeft.Yes
+                    : RightToLeft.No;
+
+                if (control is Label label)
+                {
+                    // Preserve centered titles and record counts.
+                    if (label.Name == "lblRecordsCount")
+                        label.TextAlign = ContentAlignment.MiddleCenter;
+                    else
+                        label.TextAlign = isArabic
+                            ? ContentAlignment.MiddleRight
+                            : ContentAlignment.MiddleLeft;
+                }
 
                 if (control.HasChildren)
                     ApplyLocalizationToControls(control.Controls, isArabic);
             }
         }
-
         private void dgvAppointments_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
             if (!TranslationClass.IsArabic || e.Value == null || e.Value == DBNull.Value)
@@ -214,6 +315,7 @@ namespace Clinic.Medical_Services.Appointment
             dgvAppointments.DataSource = _dtAppointmets;
 
             ApplyLocalizationAndMirroring();
+            ApplyAppointmentGridLanguage();
             cbFilterBy.SelectedIndex = 0;
             if (_dtAppointmets.Rows.Count == 0)
                 return;
@@ -223,6 +325,18 @@ namespace Clinic.Medical_Services.Appointment
 
             dgvAppointments.Columns["AppointmentID"].HeaderText = Tr("Appointment ID");
             dgvAppointments.Columns["AppointmentID"].Width = 150;
+
+            dgvAppointments.Columns["AppointmentTypeID"].HeaderText = Tr("AppointmentTypeID");
+            dgvAppointments.Columns["AppointmentTypeID"].Width = 150;
+
+            dgvAppointments.Columns["DoctorID"].HeaderText = Tr("DoctorID");
+            dgvAppointments.Columns["DoctorID"].Width = 150;
+
+            dgvAppointments.Columns["PatientID"].HeaderText = Tr("PatientID");
+            dgvAppointments.Columns["PatientID"].Width = 150;
+
+            dgvAppointments.Columns["AppointmentStatus"].HeaderText = Tr("AppointmentStatus");
+            dgvAppointments.Columns["AppointmentStatus"].Width = 150;
 
             dgvAppointments.Columns["PatientName"].HeaderText = Tr("Patient Name");
             dgvAppointments.Columns["PatientName"].Width = 150;
