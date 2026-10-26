@@ -20,7 +20,9 @@ namespace Clinic_DataAccess
             decimal Fees,
             int UserID,
             string PaymentMethod,
-            enAppointmentStatus status)
+            enAppointmentStatus status,
+            int debitAccountId,
+            int creditAccountId)
         {
             using (MySqlConnection connection =
                 new MySqlConnection(clsDataAccessSettings.ConnectionString))
@@ -166,6 +168,11 @@ namespace Clinic_DataAccess
 
                             cmdPayment.ExecuteNonQuery();
                         }
+                        // PaymentMethod {"Cash", "Card (POS)", "Bank Transfer"}
+                        // journal entry for payment
+                        // Replace these examples with your actual account IDs.
+                        //string debitAccountId;  // Cash or card clearing account
+                        //string creditAccountId; // Consultation Fee Revenue account
 
                         // 5. Update Appointment Status
                         if (!clsAppointmentData.UpdateAppointmentStatus(
