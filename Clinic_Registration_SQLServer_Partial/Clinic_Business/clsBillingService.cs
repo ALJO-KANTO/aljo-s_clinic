@@ -12,23 +12,14 @@ namespace Clinic_Business
 {
     public class clsBillingService
     {
-        public static bool CheckInPatient(clsAppointment Appointment, int UserID, string PaymentMethod)
+        public static bool CheckInPatient(clsAppointment Appointment, int UserID, string PaymentMethod, int debitAccountId,int creditAccountId)
         {
-            return clsBillingServiceData.CheckInPatient(Appointment.AppointmentID, Appointment.DoctorID, Appointment.PatientID, Appointment.AppointmentFees, UserID, PaymentMethod, enAppointmentStatus.Waiting_For_Vitals);
+            return clsBillingServiceData.CheckInPatient(Appointment.AppointmentID, Appointment.DoctorID, Appointment.PatientID, Appointment.AppointmentFees, UserID, PaymentMethod, enAppointmentStatus.Waiting_For_Vitals, debitAccountId, creditAccountId);
         }
         //public static bool InsertBill(int VisitorID,int UserID,decimal Fees,string Type,string PaymentMethod,int AppointmentID)
         //{
         //    return clsBillingServiceData.InsertBill(VisitorID, UserID,Fees,Type,PaymentMethod,AppointmentID);
         //}
-
-        public enum enPaymetnStatus:byte
-        {
-            Pending = 0, 
-            Partial = 1, 
-            Paid = 2,
-            Refunded = 3,
-            Cancelled = 4
-        }
 
         public int BillID { get; private set; }
         public string BillNumber { get; set; }

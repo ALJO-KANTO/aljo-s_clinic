@@ -423,7 +423,7 @@ namespace Clinic_DataAccess
                                 SELECT * 
                                 FROM Appointments 
                                 WHERE PatientID = @PatientID 
-                                AND AppointmentStatus != 6
+                                AND AppointmentStatus <> 'Cancelled'
                                 AND AppointmentDate BETWEEN @StartRange AND @EndRange LIMIT 1";
 
                     using (MySqlCommand command = new MySqlCommand(query, connection))
@@ -608,8 +608,7 @@ namespace Clinic_DataAccess
                     "@Status", (byte)Status);
 
                 command.Parameters.AddWithValue(
-                    "@ExpectedStatus",
-                    (byte)enAppointmentStatus.Scheduled
+                    "@ExpectedStatus", enAppointmentStatus.Scheduled.ToString()
                 );
 
                 return command.ExecuteNonQuery() > 0;

@@ -13,4 +13,12 @@
         Ready_For_Doctor = 8,
         In_Billing = 9
     }
+    public enum enPaymetnStatus : byte
+    {
+        Pending = 0,
+        Partial = 1,
+        Paid = 2,
+        Refunded = 3,
+        Cancelled = 4
+    }
 }

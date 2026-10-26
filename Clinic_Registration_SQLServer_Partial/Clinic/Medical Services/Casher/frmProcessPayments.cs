@@ -1,5 +1,6 @@
 ﻿
 using Clinic_Business;
+using Clinic_Common;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -348,10 +349,10 @@ namespace Clinic.Medical_Services.Casher
 
             if (amountReceived >= amountToPay)
                 Payment.Status =
-                    clsBillingService.enPaymetnStatus.Paid;
+                    enPaymetnStatus.Paid;
             else
                 Payment.Status =
-                    clsBillingService.enPaymetnStatus.Partial;
+                    enPaymetnStatus.Partial;
 
             Payment.PaymentAmount = amountReceived;
             Payment.PaymentDate = DateTime.Now;

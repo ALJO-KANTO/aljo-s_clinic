@@ -20,7 +20,9 @@ namespace Clinic_DataAccess
             decimal Fees,
             int UserID,
             string PaymentMethod,
-            enAppointmentStatus status)
+            enAppointmentStatus status,
+            int debitAccountId,
+            int creditAccountId)
         {
             using (MySqlConnection connection =
                 new MySqlConnection(clsDataAccessSettings.ConnectionString))
@@ -52,9 +54,9 @@ namespace Clinic_DataAccess
                                     "Appointment not found.");
                             }
 
-                            byte currentStatus = Convert.ToByte(result);
+                            string currentStatus = result.ToString();
 
-                            if (currentStatus != (byte)enAppointmentStatus.Scheduled)
+                            if (currentStatus != "Scheduled")
                             {
                                 transaction.Rollback();
                                 return false;
@@ -166,6 +168,42 @@ namespace Clinic_DataAccess
 
                             cmdPayment.ExecuteNonQuery();
                         }
+                        // 5. Record accounting journal entries
+                        // Shared references for both sides of the journal
+                        string transactionId = BillID.ToString();
+                        string humId = VisitID.ToString();
+
+                        string description = $"Consultation fee for Bill #{BillID}";
+
+                        // Debit: Cash / Bank / Card Clearing
+                        CommonInsert.InsertTransactionEntryWithTransaction(
+                            connection,
+                            transaction,
+                            DateTime.Now,
+                            debitAccountId.ToString(),
+                            Fees.ToString(),
+                            "0",
+                            transactionId,
+                            humId,
+                            "Consultation Fee",
+                            description,
+                            UserID,
+                            DateTime.Now);
+
+                        // Credit: Consultation Fee Revenue
+                        CommonInsert.InsertTransactionEntryWithTransaction(
+                            connection,
+                            transaction,
+                            DateTime.Now,
+                            creditAccountId.ToString(),
+                            "0",
+                            Fees.ToString(),
+                            transactionId,
+                            humId,
+                            "Consultation Fee",
+                            description,
+                            UserID,
+                            DateTime.Now);
 
                         // 5. Update Appointment Status
                         if (!clsAppointmentData.UpdateAppointmentStatus(

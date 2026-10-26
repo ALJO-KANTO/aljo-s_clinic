@@ -1,4 +1,5 @@
-﻿using Clinic_DataAccess;
+﻿using Clinic_Common;
+using Clinic_DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +20,7 @@ namespace Clinic_Business
         public string PaymentMethod { get; set; }
         public int CreatedByUserID { get; set; }
 
-       public clsBillingService.enPaymetnStatus Status { get; set; }
+       public enPaymetnStatus Status { get; set; }
         public clsPayment()
         {
             PaymentID = -1;

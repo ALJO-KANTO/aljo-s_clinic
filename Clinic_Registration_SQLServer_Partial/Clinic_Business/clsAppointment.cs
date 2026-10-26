@@ -163,8 +163,8 @@ namespace Clinic_Business
                 return "Appointment date and time cannot be in the past.";
 
             // 3. منطقياً: هل المريض مشغول؟
-            if (clsAppointmentData.IsPatientHasConflict(PatientID, AppointmentDateTime))
-                return "Patient has a conflicting appointment within the 24-hour buffer period.";
+            //if (clsAppointmentData.IsPatientHasConflict(PatientID, AppointmentDateTime))
+            //    return "Patient has a conflicting appointment within the 24-hour buffer period.";
 
             // 4. مهنياً: التأكد من دوام الطبيب (هل يعمل في هذا اليوم وفي هذه الساعة؟)
             // ملاحظة: قمنا بدمج الفحوصات في دالة واحدة IsDoctorAvailable لتقليل الاتصال بقاعدة البيانات
@@ -172,11 +172,11 @@ namespace Clinic_Business
                 return "Doctor is not working or not available at this time.";
 
             // 5. إدارياً: فحص السعة (إلا في حالة الطوارئ)
-            if (AppointmentType != clsAppointmentType.enAppointmentType.Emergency)
-            {
-                if (!clsAppointmentData.IsTimeCapacityAvailable(DoctorID, AppointmentDateTime, (int)AppointmentType))
-                    return "Doctor has no capacity for this appointment.";
-            }
+            //if (AppointmentType != clsAppointmentType.enAppointmentType.Emergency)
+            //{
+            //    if (!clsAppointmentData.IsTimeCapacityAvailable(DoctorID, AppointmentDateTime, (int)AppointmentType))
+            //        return "Doctor has no capacity for this appointment.";
+            //}
 
             return string.Empty; // كل الشروط مستوفاة
         }
