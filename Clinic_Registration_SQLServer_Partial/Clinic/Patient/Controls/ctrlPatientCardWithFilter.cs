@@ -58,21 +58,30 @@ namespace Clinic.Controls
 
         private void _LoadPatientInfo()
         {
-            // قيد: التأكد أن القيمة قابلة للتحويل
-            if (!int.TryParse(txtFilterValue.Text, out int patientID)) return;
+            // Check whether Patient ID is valid.
+            if (!int.TryParse(txtFilterValue.Text, out int patientID))
+                return;
 
-            // استدعاء البيانات
+            // Load patient information.
             ctrlPatientCard1.LoadPatientInfo(patientID);
 
-            // قيد: هل المريض موجود فعلاً؟
-            if (ctrlPatientCard1.SelectedPatient == null) return; // توقف هنا ولا تطلق حدث Created
- 
+            // Translate the current UserControl and its child controls.
+            TranslationHelper.TranslateControls(
+                this,
+                TranslationClass.IsArabic);
 
-            // هنا المريض موجود، يمكن إطلاق الحدث
+            // Stop if the patient does not exist.
+            if (ctrlPatientCard1.SelectedPatient == null)
+                return;
+
+            // Raise event after successful loading.
             if (PatientCreated != null && FilterEnabled)
-                OnPatientCreated(patientID, ctrlPatientCard1.SelectedPatient.PersonID);
+            {
+                OnPatientCreated(
+                    patientID,
+                    ctrlPatientCard1.SelectedPatient.PersonID);
+            }
         }
-
         public void FocuseFilter()
         {
             txtFilterValue.Focus();

@@ -850,6 +850,101 @@ namespace Clinic
 { "Failed to save the sales return. Please contact the system administrator.",
   "فشل حفظ مرتجع المبيعات. يرجى التواصل مع مسؤول النظام." },
 { "Business Rule Error", "خطأ في قواعد العمل" },
+// Add / Update Appointment
+{ "Update Appointment", "تحديث الموعد" },
+{ "Patient Info", "معلومات المريض" },
+{ "Doctor Info", "معلومات الطبيب" },
+{ "Appointment Info", "معلومات الموعد" },
+{ "Find By Patient ID:", "البحث برقم المريض:" },
+{ "Find By Doctor ID:", "البحث برقم الطبيب:" },
+{ "Appointment ID:", "رقم الموعد:" },
+{ "Patient ID:", "رقم المريض:" },
+{ "User ID:", "رقم المستخدم:" },
+{ "Appointment Type:", "نوع الموعد:" },
+{ "Appointment Duration:", "مدة الموعد:" },
+{ "Doctor Consultant Fees:", "رسوم استشارة الطبيب:" },
+{ "Doctor Consultation Fees:", "رسوم استشارة الطبيب:" },
+{ "Appointment Type Fees:", "رسوم نوع الموعد:" },
+{ "Total Appointment Fees:", "إجمالي رسوم الموعد:" },
+{ "Doctor Working Days:", "أيام عمل الطبيب:" },
+{ "Appoint Date:", "تاريخ الموعد:" },
+{ "Specialization:", "التخصص:" },
+{ "Consultation Fees:", "رسوم الاستشارة:" },
+{ "License No:", "رقم الترخيص:" },
+{ "WorkingDays:", "أيام العمل:" },
+{ "Emergency Contact:", "جهة اتصال الطوارئ:" },
+{ "Status:", "الحالة:" },
+{ "Patient Medical Information", "المعلومات الطبية للمريض" },
+// Appointment form tabs
+{ "Patient Info", "معلومات المريض" },
+{ "Doctor Info", "معلومات الطبيب" },
+{ "Appointment Info", "معلومات الموعد" },
+
+// Appointment headings
+{ "Add New Appointment", "إضافة موعد جديد" },
+{ "Update Appointment", "تحديث الموعد" },
+{ "Doctor Information", "معلومات الطبيب" },
+{ "Patient Information", "معلومات المريض" },
+{ "Person Information", "معلومات الشخص" },
+{ "Filter", "تصفية" },
+
+// Navigation buttons
+{ "Next", "التالي" },
+{ "Close", "إغلاق" },
+{ "Save", "حفظ" },
+
+// Patient and doctor search
+{ "Find By Petient ID", "البحث برقم المريض" },
+{ "Find By Petient ID:", "البحث برقم المريض:" },
+{ "Find By Patient ID", "البحث برقم المريض" },
+{ "Find By Doctor ID", "البحث برقم الطبيب" },
+{ "Person ID", "رقم الشخص" },
+{ "Doctor ID", "رقم الطبيب" },
+{ "Patient ID", "رقم المريض" },
+{ "Doctor ID:", "رقم الطبيب:" },
+{ "Consultation Fees", "رسوم الاستشارة" },
+{ "License No", "رقم الترخيص" },
+{ "Working Days", "أيام العمل" },
+{ "WorkingDays", "أيام العمل" },
+{ "Specialization", "التخصص" },
+{ "Status", "الحالة" },
+
+// Appointment details
+{ "Appointment Duration", "مدة الموعد" },
+{ "Doctor Consultant Fees", "رسوم استشارة الطبيب" },
+{ "Appointment Type Fees", "رسوم نوع الموعد" },
+{ "Total Appointment Fees", "إجمالي رسوم الموعد" },
+{ "Doctor Working Days", "أيام عمل الطبيب" },
+{ "Appoint Date", "تاريخ الموعد" },
+{ "Appointment Type", "نوع الموعد" },
+{ "Appointment ID", "رقم الموعد" },
+{ "User ID", "رقم المستخدم" },
+
+// Appointment statuses
+{ "Scheduled", "مجدول" },
+{ "Consultation", "استشارة" },
+{ "Active", "نشط" },
+{ "Inactive", "غير نشط" },
+           // Remaining appointment labels
+{ "Appointment Duration", "مدة الموعد" },
+{ "Appointment Duration:", "مدة الموعد:" },
+
+{ "Doctor Consultant Fees", "رسوم استشارة الطبيب" },
+{ "Doctor Consultant Fees:", "رسوم استشارة الطبيب:" },
+
+{ "Consultant Fees", "رسوم الاستشارة" },
+{ "Consultant Fees:", "رسوم الاستشارة:" },
+
+{ "Person ID", "رقم الشخص" },
+{ "Person ID:", "رقم الشخص:" },
+
+{ "Patient ID", "رقم المريض" },
+{ "Patient ID:", "رقم المريض:" },
+
+{ "Doctor ID", "رقم الطبيب" },
+{ "Doctor ID:", "رقم الطبيب:" },
+           { "Appoinment Duration:", "مدة الموعد:" },
+{ "Appoinment Duration", "مدة الموعد" },
 };
         public static bool IsArabic { get; set; } = false;
 
@@ -871,14 +966,24 @@ namespace Clinic
 
     public static class TranslationHelper
     {
-        public static string Translate(string english, bool isArabic)
+        private static readonly
+            System.Runtime.CompilerServices.ConditionalWeakTable<Control, OriginalText>
+            _originalTexts =
+            new System.Runtime.CompilerServices.ConditionalWeakTable<Control, OriginalText>();
+
+        private sealed class OriginalText
         {
-            return TranslationClass.Translate(english, isArabic);
+            public string Value;
         }
 
-        public static void TranslateForm(frmFindPatient frmFindPatient, bool isArabic)
+        public static string Translate(string english, bool isArabic)
         {
-            TranslateControls(frmFindPatient, isArabic);
+            return TranslateText(english, isArabic);
+        }
+
+        public static void TranslateForm(frmFindPatient form, bool isArabic)
+        {
+            TranslateControls(form, isArabic);
         }
 
         public static void TranslateAnyForm(Form form, bool isArabic)
@@ -886,54 +991,134 @@ namespace Clinic
             TranslateControls(form, isArabic);
         }
 
-        private static void TranslateControls(Control parent, bool isArabic)
+        public static void TranslateControls(Control parent, bool isArabic)
         {
-            foreach (Control control in parent.Controls)
+            if (parent == null)
+                return;
+
+            TranslateSingleControl(parent, isArabic);
+
+            foreach (Control child in parent.Controls)
             {
-                if (control is Label || control is Button ||
-                    control is CheckBox || control is GroupBox)
+                TranslateControls(child, isArabic);
+            }
+
+            // Explicitly handle TabPage titles.
+            if (parent is TabControl tabControl)
+            {
+                foreach (TabPage page in tabControl.TabPages)
                 {
-                    // Preserve the original English text for language switching.
-                    if (!(control.Tag is string) ||
-                        string.IsNullOrWhiteSpace(control.Tag as string))
-                    {
-                        control.Tag = control.Text;
-                    }
-
-                    string english = control.Tag as string;
-
-                    if (!string.IsNullOrWhiteSpace(english))
-                    {
-                        string lookupText = english
-                            .Replace("\r", "")
-                            .Replace("\n", " ")
-                            .Trim();
-
-                        string translated =
-                            TranslationClass.Translate(lookupText, isArabic);
-
-                        control.Text = isArabic ? translated : english;
-
-                        control.RightToLeft = isArabic
-                            ? RightToLeft.Yes
-                            : RightToLeft.No;
-
-                        if (control is Label)
-                        {
-                            Label label = (Label)control;
-
-                            label.TextAlign = isArabic
-                                ? ContentAlignment.MiddleRight
-                                : ContentAlignment.MiddleLeft;
-                        }
-                    }
-                }
-
-                if (control.HasChildren)
-                {
-                    TranslateControls(control, isArabic);
+                    TranslateSingleControl(page, isArabic);
                 }
             }
+        }
+
+        private static void TranslateSingleControl(Control control, bool isArabic)
+        {
+            if (!(control is Label ||
+                  control is ButtonBase ||
+                  control is GroupBox ||
+                  control is TabPage ||
+                  control is LinkLabel))
+                return;
+
+            OriginalText stored = _originalTexts.GetValue(
+                control,
+                c => new OriginalText { Value = c.Text });
+
+            if (string.IsNullOrWhiteSpace(stored.Value))
+                return;
+
+            control.Text = TranslateText(stored.Value, isArabic);
+
+            if (control is TabPage)
+                return;
+
+            control.RightToLeft = isArabic
+                ? RightToLeft.Yes
+                : RightToLeft.No;
+
+            if (control is Label label)
+            {
+                label.TextAlign = isArabic
+                    ? ContentAlignment.MiddleRight
+                    : ContentAlignment.MiddleLeft;
+            }
+
+            if (control is Button button)
+            {
+                button.TextAlign = ContentAlignment.MiddleCenter;
+            }
+        }
+
+        private static string TranslateText(string english, bool isArabic)
+        {
+            if (!isArabic || string.IsNullOrWhiteSpace(english))
+                return english;
+
+            string normalized = System.Text.RegularExpressions.Regex
+                .Replace(
+                    english.Replace("\r", " ").Replace("\n", " "),
+                    @"\s+", " ")
+                .Trim();
+
+            // Exact match.
+            if (TranslationClass.sidebarTranslations.TryGetValue(
+                normalized, out string arabic))
+            {
+                return arabic;
+            }
+
+            // Match captions with or without a trailing colon.
+            string withoutColon = normalized.TrimEnd(':', ' ', '：');
+
+            if (TranslationClass.sidebarTranslations.TryGetValue(
+                withoutColon, out arabic))
+            {
+                return normalized.EndsWith(":")
+                    ? arabic.TrimEnd(':') + ":"
+                    : arabic.TrimEnd(':');
+            }
+
+            if (TranslationClass.sidebarTranslations.TryGetValue(
+                withoutColon + ":", out arabic))
+            {
+                return normalized.EndsWith(":")
+                    ? arabic
+                    : arabic.TrimEnd(':');
+            }
+
+            // Match captions containing an icon before or after the text.
+            // Only accept a single symbol-like prefix/suffix.
+            foreach (var entry in TranslationClass.sidebarTranslations
+                .OrderByDescending(x => x.Key.Length))
+            {
+                string key = entry.Key.Trim();
+
+                if (string.IsNullOrWhiteSpace(key))
+                    continue;
+
+                if (normalized.EndsWith(" " + key,
+                    StringComparison.OrdinalIgnoreCase))
+                {
+                    string prefix = normalized.Substring(
+                        0, normalized.Length - key.Length).Trim();
+
+                    if (prefix.Length <= 3)
+                        return prefix + " " + entry.Value;
+                }
+
+                if (normalized.StartsWith(key + " ",
+                    StringComparison.OrdinalIgnoreCase))
+                {
+                    string suffix = normalized.Substring(key.Length).Trim();
+
+                    if (suffix.Length <= 3)
+                        return entry.Value + " " + suffix;
+                }
+            }
+
+            return english;
         }
     }
 

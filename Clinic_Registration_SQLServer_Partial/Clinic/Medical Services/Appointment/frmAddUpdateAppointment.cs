@@ -24,6 +24,7 @@ namespace Clinic.Medical_Services.Appointment
         public frmAddUpdateAppointment()
         {
             InitializeComponent();
+            this.Shown += (s, e) => FixAppointmentArabicLabels();
             _Mode = enMode.AddNew;
         }
 
@@ -37,9 +38,67 @@ namespace Clinic.Medical_Services.Appointment
         private void frmAddUpdateAppointment_Load(object sender, EventArgs e)
         {
             _ResetDefaultValues();
-            if (_Mode == enMode.Update) _LoadData();
-        }
 
+            if (_Mode == enMode.Update)
+                _LoadData();
+
+            bool isArabic =
+                Properties.Settings.Default.ApplicationLanguage?
+                .StartsWith("ar", StringComparison.OrdinalIgnoreCase) == true;
+
+          
+            // Translate tab titles explicitly.
+            tcAppointmentInfo.TabPages[0].Text =
+                isArabic ? "معلومات المريض" : "Patient Info";
+
+            tcAppointmentInfo.TabPages[1].Text =
+                isArabic ? "معلومات الطبيب" : "Doctor Info";
+
+            tcAppointmentInfo.TabPages[2].Text =
+                isArabic ? "معلومات الموعد" : "Appointment Info";
+
+            tcAppointmentInfo.RightToLeft =
+                isArabic ? RightToLeft.Yes : RightToLeft.No;
+
+            tcAppointmentInfo.RightToLeftLayout = isArabic;
+
+            // Preserve any special locked appointment warning.
+            bool isLocked =
+                _Mode == enMode.Update &&
+                lblTitle.Text.StartsWith(
+                    "This appointment is locked",
+                    StringComparison.OrdinalIgnoreCase);
+
+            if (!isLocked)
+            {
+                lblTitle.Text = isArabic
+                    ? (_Mode == enMode.AddNew
+                        ? "إضافة موعد جديد"
+                        : "تحديث الموعد")
+                    : (_Mode == enMode.AddNew
+                        ? "Add New Appointment"
+                        : "Update Appointment");
+            }
+
+            this.Text = lblTitle.Text;
+
+            // Buttons are explicitly translated.
+            btnSave.Text = isArabic ? "حفظ" : "Save";
+            btnClose.Text = isArabic ? "إغلاق" : "Close";
+            btnPersonInfoNext.Text = isArabic ? "التالي" : "Next";
+            btnDoctorInfoNext.Text = isArabic ? "التالي" : "Next";
+            // Set language first
+            TranslationClass.IsArabic = isArabic;
+
+            // Translate form
+            TranslationHelper.TranslateAnyForm(this, isArabic);
+
+            // Your existing tab translation, title and button code remains here.
+
+            // At the END of frmAddUpdateAppointment_Load:
+            SetupArabicAppointmentCombos();
+            FixAppointmentArabicLabels();
+        }
         private void _ResetDefaultValues()
         {
             _FillAppointmentInCompbox();
@@ -58,7 +117,9 @@ namespace Clinic.Medical_Services.Appointment
             }
             else
             {
-                lblTitle.Text = "Update Appointment";
+                lblTitle.Text = TranslationClass.IsArabic
+                    ? "تحديث الموعد"
+                    : "Update Appointment";
             }
             this.Text = lblTitle.Text;
             cbStatus.Enabled = false;
@@ -362,7 +423,48 @@ namespace Clinic.Medical_Services.Appointment
             }
 
         }
+        private void SetupArabicAppointmentCombos()
+        {
+            cbStatus.FormattingEnabled = true;
+            cbAppointmentType.FormattingEnabled = true;
 
+            cbStatus.Format -= AppointmentCombo_Format;
+            cbAppointmentType.Format -= AppointmentCombo_Format;
+
+            cbStatus.Format += AppointmentCombo_Format;
+            cbAppointmentType.Format += AppointmentCombo_Format;
+
+            cbStatus.RightToLeft = TranslationClass.IsArabic
+                ? RightToLeft.Yes
+                : RightToLeft.No;
+
+            cbAppointmentType.RightToLeft = TranslationClass.IsArabic
+                ? RightToLeft.Yes
+                : RightToLeft.No;
+
+            cbStatus.Refresh();
+            cbAppointmentType.Refresh();
+        }
+
+        private void AppointmentCombo_Format(
+            object sender,
+            ListControlConvertEventArgs e)
+        {
+            if (!TranslationClass.IsArabic || e.ListItem == null)
+                return;
+
+            string english = Convert.ToString(e.Value);
+
+            if (string.IsNullOrWhiteSpace(english))
+                return;
+
+            string arabic = TranslationClass.Translate(
+                english.Trim(),
+                true);
+
+            if (arabic != english.Trim())
+                e.Value = arabic;
+        }
         private void ctrDoctorCardInfoWithFilter1_DoctorCreated(object sender, global_classes.clsEventArgs e)
         {
             if (e.ID != -1)
@@ -372,7 +474,53 @@ namespace Clinic.Medical_Services.Appointment
                 btnDoctorInfoNext.Focus();
             }
         }
+        private void FixAppointmentArabicLabels()
+        {
+            bool isArabic =
+                Properties.Settings.Default.ApplicationLanguage?
+                .StartsWith("ar", StringComparison.OrdinalIgnoreCase) == true;
 
+            // label9 = Appoinment Duration:
+            label9.Text = isArabic
+                ? "مدة الموعد:"
+                : "Appoinment Duration:";
+
+            // label12 = Doctor Consultant Fees:
+            label12.Text = isArabic
+                ? "رسوم استشارة الطبيب:"
+                : "Doctor Consultant Fees:";
+
+            label9.RightToLeft = isArabic
+                ? RightToLeft.Yes
+                : RightToLeft.No;
+
+            label12.RightToLeft = isArabic
+                ? RightToLeft.Yes
+                : RightToLeft.No;
+
+            label9.TextAlign = isArabic
+                ? ContentAlignment.MiddleRight
+                : ContentAlignment.MiddleLeft;
+
+            label12.TextAlign = isArabic
+                ? ContentAlignment.MiddleRight
+                : ContentAlignment.MiddleLeft;
+
+            // Prevent Arabic captions from being clipped
+            label9.AutoSize = true;
+            label12.AutoSize = true;
+        }
+        private System.Collections.Generic.IEnumerable<Control> GetAllControls(
+            Control parent)
+        {
+            foreach (Control child in parent.Controls)
+            {
+                yield return child;
+
+                foreach (Control nested in GetAllControls(child))
+                    yield return nested;
+            }
+        }
         private void btnClose_Click(object sender, EventArgs e) => this.Close();
 
         private void frmAddUpdateAppointment_Activated(object sender, EventArgs e) => ctrlPatientCardWithFilter1.FocuseFilter();

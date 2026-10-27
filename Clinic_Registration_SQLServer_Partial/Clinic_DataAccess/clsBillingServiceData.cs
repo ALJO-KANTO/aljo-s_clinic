@@ -199,7 +199,7 @@ namespace Clinic_DataAccess
                             "0",
                             Fees.ToString(),
                             transactionId,
-                            humId,
+                           "0",
                             "Consultation Fee",
                             description,
                             UserID,

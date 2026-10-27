@@ -3028,7 +3028,7 @@ WHERE a.AppointmentFees > 0;
 	                                                (20, 'Gratuity Provision', 2201001, 12, 0.000, 0.000, NULL,1),
 	                                                (21, 'Capital - Opening Balance', 3101001, 13, 0.000, 0.000, NULL,1),
 	                                                (22, 'Opening Balance Equity', 3201001, 15, 0.000, 0.000, NULL,1),
-	                                                (23, 'Sales - Local', 4101001, 18, 0.000, 0.000, NULL,1),
+	                                                (23, 'Consultation Revenue', 4101001, 18, 0.000, 0.000, NULL,1),
 	                                                (24, 'Sales - GCC', 4101002, 18, 0.000, 0.000, NULL,1),
 	                                                (25, 'Materials Purchased', 5101001, 21, 0.000, 0.000, NULL,1),
 	                                                (26, 'Employee Salary Advance', 1108001, 27, 0.000, 0.000, NULL,1),

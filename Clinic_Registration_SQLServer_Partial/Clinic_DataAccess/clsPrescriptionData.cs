@@ -880,38 +880,72 @@ namespace Clinic_DataAccess
                     }
 
                     int BillID = 0;
+
                     if (VisitID.HasValue && VisitID.Value != -1)
                     {
-                        // ابحث هل توجد فاتورة غير ملغاة لهذه الزيارة
-                        string selectBill = "SELECT BillID FROM Bills WHERE VisitID = @VisitID AND PaymentStatus != 4 LIMIT 1";
-                        using (MySqlCommand cmdSelect = new MySqlCommand(selectBill, conn, transaction))
+                        // Check whether a non-cancelled bill already exists for this visit.
+                        string selectBill = @"
+        SELECT BillID
+        FROM Bills
+        WHERE VisitID = @VisitID
+          AND PaymentStatus != 4
+        LIMIT 1
+        FOR UPDATE;";
+
+                        using (MySqlCommand cmdSelect =
+                            new MySqlCommand(selectBill, conn, transaction))
                         {
-                            cmdSelect.Parameters.AddWithValue("@VisitID", VisitID);
+                            cmdSelect.Parameters.AddWithValue("@VisitID", VisitID.Value);
+
                             object result = cmdSelect.ExecuteScalar();
-                            if (result != null)
+
+                            if (result != null && result != DBNull.Value)
                             {
                                 BillID = Convert.ToInt32(result);
-                                clsBillingServiceData.UpdatePaymentStatus(VisitID.Value, 1, transaction);
 
+                                // Existing bill: update its payment status.
+                                clsBillingServiceData.UpdatePaymentStatus(
+                                    VisitID.Value, 1, transaction);
                             }
-
-
                         }
                     }
 
-                    // 3. إذا لم نجد فاتورة (أو كانت حالة صيدلية)، ننشئ واحدة جديدة
+                    // If no existing bill is found, create a new bill.
                     if (BillID == 0)
                     {
-                        string insertBill = @"INSERT INTO Bills (VisitID, PaymentStatus, BillDate, CreatedByUserID) 
-                                      VALUES (@VisitID, 0, NOW(), @UID); 
-                                      SELECT LAST_INSERT_ID();";
+                        string insertBill = @"
+        INSERT INTO Bills
+        (
+            VisitID,
+            PaymentStatus,
+            BillDate,
+            CreatedByUserID
+        )
+        VALUES
+        (
+            @VisitID,
+            0,
+            NOW(),
+            @UID
+        );
 
-                        using (MySqlCommand cmdBill = new MySqlCommand(insertBill, conn, transaction))
+        SELECT LAST_INSERT_ID();";
+
+                        using (MySqlCommand cmdBill =
+                            new MySqlCommand(insertBill, conn, transaction))
                         {
                             cmdBill.Parameters.AddWithValue("@UID", userId);
-                            cmdBill.Parameters.AddWithValue("@VisitID", (VisitID == -1 || VisitID == null) ? (object)DBNull.Value : VisitID);
+
+                            cmdBill.Parameters.AddWithValue(
+                                "@VisitID",
+                                (VisitID == -1 || VisitID == null)
+                                    ? (object)DBNull.Value
+                                    : VisitID.Value);
+
                             BillID = Convert.ToInt32(cmdBill.ExecuteScalar());
-                            clsBillingServiceData.UpdateBillNumber(BillID, transaction);
+
+                            clsBillingServiceData.UpdateBillNumber(
+                                BillID, transaction);
                         }
                     }
 
@@ -923,18 +957,18 @@ namespace Clinic_DataAccess
                         cmdLink.ExecuteNonQuery();
                     }
 
-                    string updateStockQuery = @"
-                                UPDATE M
-                                SET M.CurrentStock = M.CurrentStock - T.DispensedQty
-                                FROM Medicines M
-                                INNER JOIN PrescriptionDetails PD ON M.MedicineID = PD.MedicineID
-                                INNER JOIN #TempDispensed T ON PD.PrescriptionDetailsID = T.DetailsID
-                                WHERE T.IsDispensed = 1 AND T.DispensedQty > 0;";
+                    //string updateStockQuery = @"
+                    //            UPDATE M
+                    //            SET M.CurrentStock = M.CurrentStock - T.DispensedQty
+                    //            FROM Medicines M
+                    //            INNER JOIN PrescriptionDetails PD ON M.MedicineID = PD.MedicineID
+                    //            INNER JOIN #TempDispensed T ON PD.PrescriptionDetailsID = T.DetailsID
+                    //            WHERE T.IsDispensed = 1 AND T.DispensedQty > 0;";
 
-                    using (MySqlCommand cmdUpdateStock = new MySqlCommand(updateStockQuery, conn, transaction))
-                    {
-                        cmdUpdateStock.ExecuteNonQuery();
-                    }
+                    ////using (MySqlCommand cmdUpdateStock = new MySqlCommand(updateStockQuery, conn, transaction))
+                    ////{
+                    ////    cmdUpdateStock.ExecuteNonQuery();
+                    ////}
 
                     // ب. تسجيل حركة الصرف بالسالب في جدول InventoryTransactions للرقابة والتدقيق
                     string insertTransactionQuery = @"
@@ -955,7 +989,83 @@ namespace Clinic_DataAccess
                         cmdInsertTrans.Parameters.AddWithValue("@UserID", userId);
                         cmdInsertTrans.ExecuteNonQuery();
                     }
+                    string transactionId = BillID.ToString();
 
+                    foreach (DataRow row in dtDispensedItems.Rows)
+                    {
+                        int detailsId = Convert.ToInt32(
+                            row["PrescriptionDetailsID"]);
+
+                        decimal dispensedQty = Convert.ToDecimal(
+                            row["DispensedQuantity"]);
+
+                        bool isDispensed = Convert.ToBoolean(
+                            row["IsDispensed"]);
+
+                        if (!isDispensed || dispensedQty <= 0)
+                            continue;
+
+                        string itemQuery = @"
+        SELECT
+            PD.MedicineID,
+            IFNULL(I.cost_price, 0) AS CostPrice,
+            IFNULL(I.sales_price, 0) AS SalesPrice
+        FROM PrescriptionDetails PD
+        INNER JOIN tbl_items I
+            ON I.id = PD.MedicineID
+        WHERE PD.PrescriptionDetailsID = @DetailsID
+        LIMIT 1;";
+
+                        using (MySqlCommand cmd = new MySqlCommand(
+                            itemQuery, conn, transaction))
+                        {
+                            cmd.Parameters.AddWithValue(
+                                "@DetailsID", detailsId);
+
+                            using (MySqlDataReader reader = cmd.ExecuteReader())
+                            {
+                                if (!reader.Read())
+                                    throw new Exception(
+                                        $"Medicine item not found for detail {detailsId}");
+
+                                int itemId = Convert.ToInt32(
+                                    reader["MedicineID"]);
+
+                                decimal costPrice = Convert.ToDecimal(
+                                    reader["CostPrice"]);
+
+                                decimal salesPrice = Convert.ToDecimal(
+                                    reader["SalesPrice"]);
+
+                                // Close the reader before executing another command.
+                                reader.Close();
+
+                                CommonInsert.InsertItemTransactionWithTransaction(
+                                    conn,
+                                    transaction,
+                                    DateTime.Now,
+                                    "Prescription Dispense",
+                                    transactionId,
+                                    itemId.ToString(),
+                                    costPrice.ToString(
+                                        System.Globalization.CultureInfo.InvariantCulture),
+                                    "0", // qtyIn
+                                    salesPrice.ToString(
+                                        System.Globalization.CultureInfo.InvariantCulture),
+                                    dispensedQty.ToString(
+                                        System.Globalization.CultureInfo.InvariantCulture), // qtyOut
+                                    "0", // qtyInc
+                                    $"Medicine dispensed against Bill #{BillID}",
+                                    null, // warehouseId
+                                    null, // batchId
+                                    null, // unitId
+                                    "1", // factor
+                                    dispensedQty.ToString(
+                                        System.Globalization.CultureInfo.InvariantCulture) // qtyDisplay
+                                );
+                            }
+                        }
+                    }
                     transaction.Commit();
                     return true;
                 }

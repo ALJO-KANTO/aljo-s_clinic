@@ -46,14 +46,40 @@ namespace Clinic.Controls
         private void _LoadDoctorInfo()
         {
             _DoctorID = _Doctor.DoctorID;
+
             ctrlPersonCard1.LoadPersonInfo(_Doctor.PersonID);
+
             lblDoctorID.Text = _Doctor.DoctorID.ToString();
+
             lblSpecialization.Text = _Doctor.GetSpecializations();
-            lblActiveStatus.Text = _Doctor.IsActive ? "Active" : "Inactive";
-            lblActiveStatus.ForeColor = _Doctor.IsActive ? Color.Green : Color.Red;
-            lblConsultationFees.Text = _Doctor.ConsultationFees.ToString("C", new CultureInfo("en-US"));
+
+            lblActiveStatus.Text = _Doctor.IsActive
+                ? "Active"
+                : "Inactive";
+
+            lblActiveStatus.ForeColor = _Doctor.IsActive
+                ? Color.Green
+                : Color.Red;
+
+            lblConsultationFees.Text =
+                _Doctor.ConsultationFees.ToString(
+                    "C",
+                    new System.Globalization.CultureInfo("en-US"));
+
             lblLicenseNo.Text = _Doctor.LicenseNumber;
+
             _LoadDoctorShiftInfo();
+
+            // Translate the current doctor UserControl,
+            // including its embedded person information card.
+            TranslationHelper.TranslateControls(
+                this,
+                TranslationClass.IsArabic);
+
+            // Translate dynamic status.
+            lblActiveStatus.Text = TranslationClass.Translate(
+                _Doctor.IsActive ? "Active" : "Inactive",
+                TranslationClass.IsArabic);
         }
 
         private void _LoadDoctorShiftInfo()
