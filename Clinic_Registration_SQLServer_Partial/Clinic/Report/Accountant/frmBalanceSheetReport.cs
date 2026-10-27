@@ -65,6 +65,7 @@ namespace YamyProject
             LoadData();
             ApplyBalanceSheetArabic();
             ApplyBalanceSheetLayout();
+            TranslateReportToolbar();
         }
         private void LoadData()
         {
@@ -2232,6 +2233,62 @@ namespace YamyProject
 
                 if (item is ToolStripDropDownItem dropDown)
                     TranslateBalanceSheetMenu(dropDown.DropDownItems);
+            }
+        }
+        private void TranslateReportToolbar()
+        {
+            bool arabic = IsArabicReport();
+
+            SetToolbarButtonText("Refresh",
+                arabic ? "تحديث" : "Refresh");
+
+            SetToolbarButtonText("Hide Header",
+                arabic ? "إخفاء الترويسة" : "Hide Header");
+
+            SetToolbarButtonText("Excel",
+                arabic ? "إكسل" : "Excel");
+
+            SetToolbarButtonText("Memorize",
+                arabic ? "حفظ التقرير" : "Memorize");
+
+            SetToolbarButtonText("Comment On Report",
+                arabic ? "تعليق على التقرير" : "Comment On Report");
+
+            SetToolbarButtonText("Customize Report",
+                arabic ? "تخصيص التقرير" : "Customize Report");
+
+            btnPrint.Text = arabic ? "طباعة ▼" : "Print ▼";
+        }
+
+        private void SetToolbarButtonText(string english, string translated)
+        {
+            SetToolbarButtonTextRecursive(this, english, translated);
+        }
+
+        private void SetToolbarButtonTextRecursive(
+            Control parent,
+            string english,
+            string translated)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                if (control is ButtonBase ||
+                    control is Guna.UI2.WinForms.Guna2Button)
+                {
+                    string current = control.Text?.Trim() ?? "";
+
+                    if (current.Equals(english,
+                        StringComparison.OrdinalIgnoreCase) ||
+                        current.Equals(translated,
+                        StringComparison.OrdinalIgnoreCase))
+                    {
+                        control.Text = translated;
+                    }
+                }
+
+                if (control.HasChildren)
+                    SetToolbarButtonTextRecursive(
+                        control, english, translated);
             }
         }
         private void dateWords()

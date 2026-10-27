@@ -945,6 +945,82 @@ namespace Clinic
 { "Doctor ID:", "رقم الطبيب:" },
            { "Appoinment Duration:", "مدة الموعد:" },
 { "Appoinment Duration", "مدة الموعد" },
+// Balance Sheet Report
+{ "Assets", "الأصول" },
+{ "Current Assets", "الأصول المتداولة" },
+{ "Banks", "البنوك" },
+{ "Bank Account", "الحساب البنكي" },
+{ "Petty Cash", "النقدية النثرية" },
+{ "Accounts Receivable", "الذمم المدينة" },
+{ "Cash On Hand", "النقدية بالصندوق" },
+{ "Liabilities", "الالتزامات" },
+{ "Current Liabilities", "الالتزامات المتداولة" },
+{ "Equity", "حقوق الملكية" },
+{ "Total Assets", "إجمالي الأصول" },
+{ "Total Liabilities", "إجمالي الالتزامات" },
+{ "Total Equity", "إجمالي حقوق الملكية" },
+{ "Total Liabilities and Equity", "إجمالي الالتزامات وحقوق الملكية" },
+{ "As of", "اعتبارًا من" },
+{ "Sort By", "ترتيب حسب" },
+{ "Show Columns", "إظهار الأعمدة" },
+{ "Print", "طباعة" },
+{ "Customize Report", "تخصيص التقرير" },
+
+{ "Purchase By Vendor Summary", "ملخص المشتريات حسب المورد" },
+{ "Purchase By Subcontractor Summary", "ملخص المشتريات حسب المقاول الفرعي" },
+{ "Net Purchase", "صافي المشتريات" },
+{ "SN", "الرقم" },
+{ "Show Columns", "إظهار الأعمدة" },
+{ "All Transactions", "جميع المعاملات" },
+
+ // Nurse Station
+{ "Modern Clinic - Nurse Station", "العيادة الحديثة - محطة التمريض" },
+{ "Modern Clinic  •  Nurse Station", "العيادة الحديثة • محطة التمريض" },
+{ "Patient Vitals Queue", "قائمة انتظار العلامات الحيوية" },
+{ "Patient Vitals Entry", "إدخال العلامات الحيوية للمريض" },
+{ "Waiting Vitals", "بانتظار قياس العلامات الحيوية" },
+{ "Save and Send Next Patient", "حفظ وإرسال المريض التالي" },
+{ "Blood Pressure (mmHg)", "ضغط الدم (ملم زئبق)" },
+{ "Temperature (°C)", "درجة الحرارة (°م)" },
+{ "Weight (kg)", "الوزن (كجم)" },
+{ "Pulse (bpm)", "النبض (نبضة/دقيقة)" },
+{ "CheckInTime", "وقت تسجيل الوصول" },
+{ "StatusText", "الحالة" },
+{ "No patients waiting", "لا يوجد مرضى في الانتظار" },
+{ "No available patient", "لا يوجد مريض متاح" },
+{ "Waiting_For_Vitals", "بانتظار قياس العلامات الحيوية" },
+{ "Ready_For_Doctor", "جاهز للطبيب" },
+{ "e.g., 120/80 mmHg", "مثال: 120/80 ملم زئبق" },
+{ "# Records:", "عدد السجلات:" },
+
+ // Nurse Station
+{ "Modern Clinic - Nurse Station", "العيادة الحديثة - محطة التمريض" },
+{ "Modern Clinic  •  Nurse Station", "العيادة الحديثة • محطة التمريض" },
+{ "Patient Vitals Queue", "قائمة انتظار العلامات الحيوية" },
+{ "Patient Vitals Entry", "إدخال العلامات الحيوية للمريض" },
+{ "Waiting Vitals", "بانتظار قياس العلامات الحيوية" },
+{ "Save and Send Next Patient", "حفظ وإرسال المريض التالي" },
+{ "Blood Pressure (mmHg)", "ضغط الدم (ملم زئبق)" },
+{ "Temperature (°C)", "درجة الحرارة (°م)" },
+{ "Weight (kg)", "الوزن (كجم)" },
+{ "Pulse (bpm)", "النبض (نبضة/دقيقة)" },
+{ "CheckInTime", "وقت تسجيل الوصول" },
+{ "StatusText", "الحالة" },
+{ "No patients waiting", "لا يوجد مرضى في الانتظار" },
+{ "No available patient", "لا يوجد مريض متاح" },
+{ "Waiting_For_Vitals", "بانتظار قياس العلامات الحيوية" },
+{ "Ready_For_Doctor", "جاهز للطبيب" },
+{ "e.g., 120/80 mmHg", "مثال: 120/80 ملم زئبق" },
+{ "# Records:", "عدد السجلات:" },
+{ "Patient:", "المريض:" },
+{ "Patient Vitals Queue", "قائمة انتظار العلامات الحيوية" },
+{ "Patient Vitals Entry", "إدخال العلامات الحيوية للمريض" },
+{ "Blood Pressure (mmHg)", "ضغط الدم (ملم زئبق)" },
+{ "Temperature (°C)", "درجة الحرارة (°م)" },
+{ "Weight (kg)", "الوزن (كجم)" },
+{ "Pulse (bpm)", "النبض (نبضة/دقيقة)" },
+{ "Save and Send Next Patient", "حفظ وإرسال المريض التالي" },
+{ "Waiting Vitals", "بانتظار قياس العلامات الحيوية" }
 };
         public static bool IsArabic { get; set; } = false;
 
@@ -998,21 +1074,53 @@ namespace Clinic
 
             TranslateSingleControl(parent, isArabic);
 
+            // Translate child controls
             foreach (Control child in parent.Controls)
             {
                 TranslateControls(child, isArabic);
             }
 
-            // Explicitly handle TabPage titles.
-            if (parent is TabControl tabControl)
+            // Translate ToolStrip and MenuStrip items
+            if (parent is ToolStrip toolStrip)
             {
-                foreach (TabPage page in tabControl.TabPages)
+                TranslateToolStripItems(toolStrip.Items, isArabic);
+            }
+
+            // Translate DataGridView column headings
+            if (parent is DataGridView dgv)
+            {
+                foreach (DataGridViewColumn column in dgv.Columns)
                 {
-                    TranslateSingleControl(page, isArabic);
+                    if (column.Tag == null)
+                        column.Tag = column.HeaderText;
+
+                    string original = column.Tag?.ToString() ?? "";
+
+                    column.HeaderText = TranslateText(original, isArabic);
                 }
             }
         }
+        private static void TranslateToolStripItems(
+    ToolStripItemCollection items,
+    bool isArabic)
+        {
+            foreach (ToolStripItem item in items)
+            {
+                if (item.Tag == null)
+                    item.Tag = item.Text;
 
+                string original = item.Tag?.ToString() ?? "";
+
+                item.Text = TranslateText(original, isArabic);
+
+                if (item is ToolStripDropDownItem dropDown)
+                {
+                    TranslateToolStripItems(
+                        dropDown.DropDownItems,
+                        isArabic);
+                }
+            }
+        }
         private static void TranslateSingleControl(Control control, bool isArabic)
         {
             if (!(control is Label ||

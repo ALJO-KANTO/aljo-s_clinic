@@ -868,14 +868,14 @@
     <Compile Include="Medical Services\Visit\frmListVisit.Designer.cs">
       <DependentUpon>frmListVisit.cs</DependentUpon>
     </Compile>
+    <Compile Include="Medical Services\Vital\frmNurse.Arabic.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Medical Services\Vital\frmNurse.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Medical Services\Vital\frmNurse.Designer.cs">
       <DependentUpon>frmNurse.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Medical Services\Vital\frmNurse.ModernDesign.cs">
-      <SubType>Form</SubType>
     </Compile>
     <Compile Include="PasswordHelper.cs" />
     <Compile Include="Person\Controls\ctrlPersonCard.cs">
@@ -1600,6 +1600,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Report\Accountant\frmBalanceSheetReport.resx">
       <DependentUpon>frmBalanceSheetReport.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Report\Accountant\frmCostCenterSummery.resx">
+      <DependentUpon>frmCostCenterSummery.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Report\Accountant\ProfitandLossDetailReport.resx">
       <DependentUpon>ProfitandLossDetailReport.cs</DependentUpon>

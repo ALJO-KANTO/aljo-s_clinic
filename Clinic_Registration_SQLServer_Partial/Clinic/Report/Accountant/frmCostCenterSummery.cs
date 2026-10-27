@@ -52,8 +52,9 @@ namespace YamyProject
 
             LoadData();
 
-            // Translate after loading the grid and report data.
             ApplyCostCenterArabic();
+            FixCostCenterToolbarTranslation();
+
             headerUC1.ArabicLayout = TranslationClass.IsArabic;
         }
         private void btnPrint_Click(object sender, EventArgs e)
@@ -585,6 +586,181 @@ namespace YamyProject
                     control.Anchor = isArabic
                         ? AnchorStyles.Top | AnchorStyles.Left
                         : AnchorStyles.Top | AnchorStyles.Right;
+                }
+            }
+        }
+        private void SetReportText(
+    string english,
+    string arabic,
+    bool isArabic)
+        {
+            foreach (Control control in GetAllReportControls(this))
+            {
+                string current = (control.Text ?? "").Trim();
+
+                if (current.Equals(english,
+                        StringComparison.OrdinalIgnoreCase) ||
+                    current.Equals(arabic,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    control.Text = isArabic ? arabic : english;
+                }
+            }
+        }
+
+        private IEnumerable<Control> GetAllReportControls(Control parent)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                yield return control;
+
+                foreach (Control child in GetAllReportControls(control))
+                    yield return child;
+            }
+        }
+
+        private void TranslateRemainingReportControls(
+            Control parent,
+            bool isArabic)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                if (control is Label ||
+                    control is ButtonBase ||
+                    control.GetType().Name.Contains("Button"))
+                {
+                    if (control != lblDate &&
+                        control != lblTime &&
+                        control != lblCompany)
+                    {
+                        string current = (control.Text ?? "").Trim();
+
+                        // Handle texts that are still English
+                        if (!string.IsNullOrWhiteSpace(current))
+                        {
+                            control.Text = TranslationClass.Translate(
+                                current, isArabic);
+                        }
+                    }
+                }
+
+                if (control.HasChildren)
+                {
+                    TranslateRemainingReportControls(
+                        control, isArabic);
+                }
+            }
+        }
+        private void FixCostCenterToolbarTranslation()
+        {
+            bool ar = TranslationClass.IsArabic;
+
+            // Toolbar buttons
+            SetReportText("Customize Report", "تخصيص التقرير", ar);
+            SetReportText("Comment On", "إضافة تعليق", ar);
+            SetReportText("Memorize", "حفظ التقرير", ar);
+            SetReportText("Excel", "إكسل", ar);
+
+            btnPrint.Text = ar ? "طباعة ▼" : "Print ▼";
+
+            // Report title
+            string title = ar
+                ? "ملخص مراكز التكلفة"
+                : "Cost Center Summary";
+
+            this.Text = title;
+            headerUC1.FormText = title;
+
+            // Translate all static labels and buttons
+            TranslateRemainingReportControls(this, ar);
+
+            // Translate grid headers and total cells
+
+            // Translate grid headers - compatible with C# 7.3
+            foreach (DataGridViewColumn col in dgvSales.Columns)
+            {
+                string english;
+
+                switch (col.Name)
+                {
+                    case "name":
+                        english = "Description";
+                        break;
+
+                    case "VoucherNo":
+                        english = "Voucher No";
+                        break;
+
+                    case "debit":
+                        english = "Debit";
+                        break;
+
+                    case "credit":
+                        english = "Credit";
+                        break;
+
+                    case "balance":
+                        english = "Balance";
+                        break;
+
+                    default:
+                        english = col.HeaderText;
+                        break;
+                }
+
+                col.HeaderText = TranslationClass.Translate(english, ar);
+            }
+
+
+            foreach (DataGridViewRow row in dgvSales.Rows)
+            {
+                if (row.IsNewRow) continue;
+
+                foreach (DataGridViewCell cell in row.Cells)
+                {
+                    if (cell.Value is string value &&
+                        value.Trim().Equals("TOTAL",
+                            StringComparison.OrdinalIgnoreCase))
+                    {
+                        cell.Value = ar ? "الإجمالي" : "TOTAL";
+                    }
+                }
+            }
+
+            dgvSales.Refresh();
+        }
+        private void TranslateToolbarButtons(
+            Control parent,
+            Dictionary<string, string> captions,
+            bool isArabic)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                if (control is ButtonBase ||
+                    control.GetType().Name.Contains("Button"))
+                {
+                    string current = (control.Text ?? "").Trim();
+
+                    foreach (var item in captions)
+                    {
+                        if (current.Equals(item.Key,
+                            StringComparison.OrdinalIgnoreCase) ||
+                            current.Equals(item.Value,
+                            StringComparison.OrdinalIgnoreCase))
+                        {
+                            control.Text = isArabic
+                                ? item.Value
+                                : item.Key;
+
+                            break;
+                        }
+                    }
+                }
+
+                if (control.HasChildren)
+                {
+                    TranslateToolbarButtons(
+                        control, captions, isArabic);
                 }
             }
         }

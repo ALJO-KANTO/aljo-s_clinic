@@ -77,20 +77,31 @@ namespace Clinic.Medical_Services.Vital
 
         }
 
+
+
+
         private void frmNurse_Load(object sender, EventArgs e)
         {
-            ApplyNurseModernDesign();
-
+            // 1. Setup grid columns
             _SetupNurseGrid();
+
+            // 2. Load patient data
             _RefreashData();
 
+            // 3. Apply Arabic / English translation
+            ApplyNurseArabicUI();
+
+            // 4. Start timers
             timer1.Start();
             timer2.Start();
 
+            // 5. Call next patient
             if (dgvNurseQueue.Rows.Count > 0)
+            {
                 _CallNextPatientInQueue();
-
+            }
         }
+
 
         private void _ResetForm()
         {
@@ -214,8 +225,8 @@ namespace Clinic.Medical_Services.Vital
 
             if (dtQueue == null || dtQueue.Rows.Count == 0)
             {
-                lbPatientName.Text = "No patients waiting";
-                _RefreashData();
+                lbPatientName.Text = TranslationClass.Translate(
+                    "No patients waiting", IsNurseArabic()); _RefreashData();
                 return;
             }
 
@@ -240,8 +251,8 @@ namespace Clinic.Medical_Services.Vital
 
             if (nextRow == null)
             {
-                lbPatientName.Text = "No available patient";
-                _RefreashData();
+                lbPatientName.Text = TranslationClass.Translate(
+                    "No available patient", IsNurseArabic()); _RefreashData();
                 return;
             }
 

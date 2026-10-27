@@ -27,57 +27,175 @@ namespace YamyProject
             headerUC1.FormText = isSubcontractors ? "Purchase By Subcontractor Summary" : this.Text;
         }
 
-        private void frmPurchaseByVendorSummary_Load(object sender, EventArgs e)
+
+        private void frmPurchaseByVendorSummary_Load(
+            object sender, EventArgs e)
         {
-            btnPrint.Text = "Print ▼";
             if (isSubcontractors)
             {
-                guna2HtmlLabel7.Text = "Purchase By Subcontractor Summary";
+                guna2HtmlLabel7.Text =
+                    "Purchase By Subcontractor Summary";
             }
+
             LoadPurchaseData();
-            using (MySqlDataReader reader = ClinicDatabase.ExecuteReader("SELECT name FROM tbl_company LIMIT 1"))
+
+            using (MySqlDataReader reader =
+                ClinicDatabase.ExecuteReader(
+                    "SELECT name FROM tbl_company LIMIT 1"))
+            {
                 if (reader.Read())
                 {
                     lblCompany.Text = reader["name"].ToString();
                 }
-            lblDate.Text = DateTime.Now.Date.ToString("dd/MM/yyyy");
+            }
+
+            lblDate.Text = DateTime.Now.ToString("dd/MM/yyyy");
             lblTime.Text = DateTime.Now.ToString("hh:mm:tt");
+
             ApplyArabicReportUI();
         }
         // UI localization only. No database, filtering, totals, navigation or export logic changes.
+
         private void ApplyArabicReportUI()
         {
-            bool arabic = (Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en")
+            bool arabic =
+                (Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en")
                 .StartsWith("ar", StringComparison.OrdinalIgnoreCase);
 
             headerUC1.ArabicLayout = arabic;
-            if (!arabic) return;
 
-            string title = isSubcontractors
-                ? "ملخص المشتريات حسب المقاول الفرعي"
-                : "ملخص المشتريات حسب المورد";
+            string englishTitle = isSubcontractors
+                ? "Purchase By Subcontractor Summary"
+                : "Purchase By Vendor Summary";
+
+            string title = arabic
+                ? (isSubcontractors
+                    ? "ملخص المشتريات حسب المقاول الفرعي"
+                    : "ملخص المشتريات حسب المورد")
+                : englishTitle;
+
             this.Text = title;
             headerUC1.FormText = title;
             guna2HtmlLabel7.Text = title;
-            btnPrint.Text = "طباعة ▼";
 
-            TranslateReportControls(this);
+            btnPrint.Text = arabic ? "طباعة ▼" : "Print ▼";
+
+            // Translate static controls.
+            TranslatePurchaseControls(this, arabic);
+
+            // Translate export menu.
             TranslateExportMenu(contextMenuExport.Items);
 
-            dgvPurchase.RightToLeft = RightToLeft.Yes;
-            dgvPurchase.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            // Translate grid headers.
+            dgvPurchase.RightToLeft =
+                arabic ? RightToLeft.Yes : RightToLeft.No;
+
             foreach (DataGridViewColumn column in dgvPurchase.Columns)
             {
-                if (column.Name == "sn") column.HeaderText = "الرقم";
-                else if (column.Name == "name") column.HeaderText = "الاسم";
-                else if (column.Name == "debit") column.HeaderText = "صافي المشتريات";
+                string english = column.HeaderText;
+
+                switch (column.Name)
+                {
+                    case "sn":
+                        english = "SN";
+                        break;
+
+                    case "name":
+                        english = "Name";
+                        break;
+
+                    case "debit":
+                        english = "Net Purchase";
+                        break;
+                }
+
+                column.HeaderText = arabic
+                    ? Clinic.TranslationClass.Translate(english, true)
+                    : english;
             }
-            // Keep the debit numeric values right-aligned, as before.
+
+            dgvPurchase.ColumnHeadersDefaultCellStyle.Alignment =
+                arabic
+                    ? DataGridViewContentAlignment.MiddleRight
+                    : DataGridViewContentAlignment.MiddleLeft;
+
             if (dgvPurchase.Columns.Contains("debit"))
+            {
                 dgvPurchase.Columns["debit"].DefaultCellStyle.Alignment =
                     DataGridViewContentAlignment.MiddleRight;
+            }
 
-            // Do NOT translate row values such as TOTAL: PDF and Excel exports check them.
+            dgvPurchase.Refresh();
+        }
+
+        private void TranslatePurchaseControls(
+            Control parent,
+            bool arabic)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                // HeaderUC handles its own title and window buttons.
+                if (control == headerUC1)
+                    continue;
+
+                // Do not translate database values or user input.
+                if (control == lblCompany ||
+                    control == lblDate ||
+                    control == lblTime ||
+                    control is TextBoxBase ||
+                    control is ComboBox ||
+                    control is DateTimePicker ||
+                    control is DataGridView)
+                {
+                    continue;
+                }
+
+                bool translatable =
+                    control is Label ||
+                    control is ButtonBase ||
+                    control is CheckBox ||
+                    control is GroupBox ||
+                    control is Guna2HtmlLabel ||
+                    control.GetType().Name.Contains("Button");
+
+                if (translatable)
+                {
+                    string current = (control.Text ?? "").Trim();
+
+                    if (!string.IsNullOrWhiteSpace(current))
+                    {
+                        string translated = arabic
+                            ? Clinic.TranslationClass.Translate(current, true)
+                            : current;
+
+                        control.Text = translated;
+                    }
+
+                    Label label = control as Label;
+
+                    if (label != null)
+                    {
+                        label.TextAlign = arabic
+                            ? ContentAlignment.MiddleRight
+                            : ContentAlignment.MiddleLeft;
+                    }
+
+                    Guna2HtmlLabel htmlLabel =
+                        control as Guna2HtmlLabel;
+
+                    if (htmlLabel != null)
+                    {
+                        htmlLabel.TextAlignment = arabic
+                            ? ContentAlignment.MiddleRight
+                            : ContentAlignment.MiddleLeft;
+                    }
+                }
+
+                if (control.HasChildren)
+                {
+                    TranslatePurchaseControls(control, arabic);
+                }
+            }
         }
 
         private void TranslateReportControls(Control parent)
