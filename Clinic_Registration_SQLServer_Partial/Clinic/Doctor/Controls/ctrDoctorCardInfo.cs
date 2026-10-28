@@ -34,54 +34,55 @@ namespace Clinic.Controls
 
         public void ResetDoctorInfo()
         {
+            _Doctor = null;
+            _DoctorID = -1;
+
             ctrlPersonCard1.ResetPersonInfo();
+
             lblDoctorID.Text = "[???]";
             lblSpecialization.Text = "[???]";
             lblActiveStatus.Text = "[???]";
             lblConsultationFees.Text = "[???]";
             lblLicenseNo.Text = "[???]";
+
             dgvShifts.DataSource = null;
         }
 
         private void _LoadDoctorInfo()
         {
+            if (_Doctor == null)
+                return;
+
             _DoctorID = _Doctor.DoctorID;
 
+            // Load person information from database.
             ctrlPersonCard1.LoadPersonInfo(_Doctor.PersonID);
 
+            // Load doctor information.
             lblDoctorID.Text = _Doctor.DoctorID.ToString();
 
             lblSpecialization.Text = _Doctor.GetSpecializations();
 
-            lblActiveStatus.Text = _Doctor.IsActive
-                ? "Active"
-                : "Inactive";
+            lblActiveStatus.Text = TranslationClass.Translate(
+                _Doctor.IsActive ? "Active" : "Inactive",
+                TranslationClass.IsArabic);
 
             lblActiveStatus.ForeColor = _Doctor.IsActive
                 ? Color.Green
                 : Color.Red;
 
             lblConsultationFees.Text =
-                _Doctor.ConsultationFees.ToString(
-                    "C",
-                    new System.Globalization.CultureInfo("en-US"));
+                _Doctor.ConsultationFees.ToString("N2");
 
             lblLicenseNo.Text = _Doctor.LicenseNumber;
 
+            // Load working days.
             _LoadDoctorShiftInfo();
 
-            // Translate the current doctor UserControl,
-            // including its embedded person information card.
-            TranslationHelper.TranslateControls(
-                this,
-                TranslationClass.IsArabic);
-
-            // Translate dynamic status.
-            lblActiveStatus.Text = TranslationClass.Translate(
-                _Doctor.IsActive ? "Active" : "Inactive",
-                TranslationClass.IsArabic);
+            // IMPORTANT:
+            // Do not translate the entire UserControl after
+            // loading dynamic database values.
         }
-
         private void _LoadDoctorShiftInfo()
         {
            

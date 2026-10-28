@@ -1014,8 +1014,8 @@ namespace YamyProject
 
                 var parameters = new List<MySqlParameter>();
                 string itemId = row.Cells["itemId"].Value.ToString();
-                decimal qty = row.Cells["qty"].Value == DBNull.Value ? 0 : Convert.ToDecimal(row.Cells["qty"].Value);
-                string batch = row.Cells["batch_no"].Value.ToString();
+                decimal qty = row.Cells["qty"].Value == null ? 0 : Convert.ToDecimal(row.Cells["qty"].Value);
+                string batch = row.Cells["batch_no"].Value == null ? "" : row.Cells["batch_no"].Value.ToString();
                 DateTime expiry = Convert.ToDateTime(row.Cells["expiry_date"].Value);
 
                 // Prepare parameterized values for each row

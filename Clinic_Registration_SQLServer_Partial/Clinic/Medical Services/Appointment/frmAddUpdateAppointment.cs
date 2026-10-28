@@ -88,7 +88,7 @@ namespace Clinic.Medical_Services.Appointment
             btnPersonInfoNext.Text = isArabic ? "التالي" : "Next";
             btnDoctorInfoNext.Text = isArabic ? "التالي" : "Next";
             // Set language first
-            TranslationClass.IsArabic = isArabic;
+            //TranslationClass.IsArabic = isArabic;
 
             // Translate form
             TranslationHelper.TranslateAnyForm(this, isArabic);

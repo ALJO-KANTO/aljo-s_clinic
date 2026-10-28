@@ -556,7 +556,15 @@ WHERE a.AppointmentFees > 0;
                               CONSTRAINT `fk_prescriptions_visit` FOREIGN KEY (`VisitID`) REFERENCES `visits` (`VisitID`)
                             ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
                         },
-                          new DatabaseMigration
+                        new DatabaseMigration
+
+                        {
+                            Version = "20261028_BASE_026",
+                            Description = "Alter table prescriptions add BillID",
+                            Sql = @"ALTER TABLE `prescriptions` ADD COLUMN `BillID` int DEFAULT NULL;"
+                        },
+
+                        new DatabaseMigration
                         {
                             Version = "20261015_BASE_028",
                             Description = "Initial schema: prescriptiondetails",
@@ -3483,54 +3491,79 @@ WHERE a.AppointmentFees > 0;
                                     CreatedDate = VALUES(CreatedDate);
                             "
                         },
+                        new DatabaseMigration
+{
+    Version = "20261028_BASE_028",
+    Description = "Fix InventoryTransactions medicine foreign key to reference tbl_items",
+    Sql = @"
+        ALTER TABLE `inventorytransactions`
+        DROP FOREIGN KEY `fk_inventory_medicine`;
+
+        ALTER TABLE `inventorytransactions`
+        ADD CONSTRAINT `fk_inventory_medicine`
+        FOREIGN KEY (`MedicineID`)
+        REFERENCES `tbl_items` (`id`);
+    "
+},
 
 /*************************************Table Views************************************************/
 
                         new DatabaseMigration
                         {
-                            Version = "20261014_003",
+                            Version = "20261028_003",
                             Description = "Create billing list view",
                             Sql = @"
-                                CREATE OR REPLACE VIEW View_Bills AS
-                                SELECT
-                                    B.BillID,
+                                CREATE OR REPLACE
+                            ALGORITHM = UNDEFINED
+                            SQL SECURITY INVOKER
+                            VIEW view_bills AS
+                            SELECT
+                                b.BillID,
+                                COALESCE(
+                                    b.BillNumber,
                                     CONCAT(
                                         'INV-',
-                                        YEAR(B.BillDate),
+                                        YEAR(b.BillDate),
                                         '-',
-                                        LPAD(B.BillID, 4, '0')
-                                    ) AS BillNumber,
-                                    B.VisitID,
-                                    V.PatientID,
-                                    P.PersonID,
-                                    PE.FullName AS PatientName,
-                                    V.DoctorID,
-                                    V.AppointmentID,
-                                    B.BillDate,
-                                    B.TotalAmount,
-                                    B.PaymentStatus,
-                                    B.CreatedByUserID,
-                                    COALESCE(PAY.PaymentAmount, 0) AS PaidAmount,
-                                    GREATEST(
-                                        B.TotalAmount - COALESCE(PAY.PaymentAmount, 0),
-                                        0
-                                    ) AS BalanceDue
-                                FROM bills B
-                                INNER JOIN visits V
-                                    ON B.VisitID = V.VisitID
-                                INNER JOIN patients P
-                                    ON V.PatientID = P.PatientID
-                                INNER JOIN persons PE
-                                    ON P.PersonID = PE.PersonID
-                                LEFT JOIN
-                                (
-                                    SELECT
-                                        BillID,
-                                        SUM(PaymentAmount) AS PaymentAmount
-                                    FROM payments
-                                    GROUP BY BillID
-                                ) PAY
-                                    ON B.BillID = PAY.BillID;"
+                                        LPAD(b.BillID, 4, '0')
+                                    )
+                                ) AS BillNumber,
+
+                                b.VisitID,
+                                v.PatientID,
+                                p.PersonID,
+                                COALESCE(pe.FullName, 'Unknown Patient') AS PatientName,
+                                v.DoctorID,
+                                v.AppointmentID,
+                                b.BillDate,
+
+                                COALESCE(bs.Subtotal, 0) AS TotalAmount,
+                                b.PaymentStatus,
+                                b.CreatedByUserID,
+
+                                COALESCE(bs.PaymentAmount, 0) AS PaidAmount,
+
+                                GREATEST(
+                                    COALESCE(bs.Subtotal, 0)
+                                    - COALESCE(bs.PaymentAmount, 0),
+                                    0
+                                ) AS BalanceDue,
+
+                                COALESCE(bs.ItemsTotal, '') AS ItemsTotal
+
+                            FROM bills b
+
+                            LEFT JOIN visits v
+                                ON v.VisitID = b.VisitID
+
+                            LEFT JOIN patients p
+                                ON p.PatientID = v.PatientID
+
+                            LEFT JOIN persons pe
+                                ON pe.PersonID = p.PersonID
+
+                            LEFT JOIN view_billsummaries bs
+                                ON bs.BillID = b.BillID;"
                         },
                         new DatabaseMigration
                         {

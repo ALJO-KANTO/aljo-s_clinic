@@ -854,25 +854,58 @@ namespace Clinic_DataAccess
                 try
                 {
                     // 1. إنشاء الجدول المؤقت
-                    conn.ExecuteNonQuery("CREATE TABLE #TempDispensed (DetailsID INT, DispensedQty INT, IsDispensed BIT)", transaction);
+                    conn.ExecuteNonQuery(@"
+    CREATE TEMPORARY TABLE TempDispensed
+    (
+        DetailsID INT,
+        DispensedQty INT,
+        IsDispensed BIT
+    )", transaction);
 
                     // 2. نقل البيانات عبر SqlBulkCopy
-                    using (SqlBulkCopy bulkCopy = new SqlBulkCopy(conn, SqlBulkCopyOptions.Default, transaction))
-                    {
-                        bulkCopy.DestinationTableName = "#TempDispensed";
-                        bulkCopy.ColumnMappings.Add("PrescriptionDetailsID", "DetailsID");
-                        bulkCopy.ColumnMappings.Add("DispensedQuantity", "DispensedQty");
-                        bulkCopy.ColumnMappings.Add("IsDispensed", "IsDispensed");
-                        bulkCopy.WriteToServer(dtDispensedItems);
-                    }
+                    string insertTempQuery = @"
+    INSERT INTO TempDispensed
+    (DetailsID, DispensedQty, IsDispensed)
+    VALUES (@DetailsID, @DispensedQty, @IsDispensed)";
 
+                    using (MySqlCommand cmd = new MySqlCommand(
+                        insertTempQuery, conn, transaction))
+                    {
+                        cmd.Parameters.Add("@DetailsID", MySqlDbType.Int32);
+                        cmd.Parameters.Add("@DispensedQty", MySqlDbType.Decimal);
+                        cmd.Parameters.Add("@IsDispensed", MySqlDbType.Byte);
+
+                        foreach (DataRow row in dtDispensedItems.Rows)
+                        {
+                            cmd.Parameters["@DetailsID"].Value =
+                                Convert.ToInt32(row["PrescriptionDetailID"]);
+
+                            cmd.Parameters["@DispensedQty"].Value =
+                                Convert.ToDecimal(row["DispensedQuantity"]);
+
+                            cmd.Parameters["@IsDispensed"].Value =
+                                Convert.ToBoolean(row["IsDispensed"]) ? 1 : 0;
+
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
                     // 3. تحديث الجدول الأصلي
-                    string updateQuery = @"UPDATE PD 
-                                   SET PD.DispensedQuantity = T.DispensedQty, 
-                                       PD.IsDispensed = T.IsDispensed
-                                   FROM PrescriptionDetails PD
-                                   INNER JOIN #TempDispensed T ON PD.PrescriptionDetailsID = T.DetailsID";
-                    conn.ExecuteNonQuery(updateQuery, transaction);
+                    string updateQuery = @"
+    UPDATE PrescriptionDetails PD
+    INNER JOIN TempDispensed T
+        ON PD.PrescriptionDetailID = T.DetailsID
+    SET
+        PD.DispensedQuantity = T.DispensedQty,
+        PD.IsDispensed = T.IsDispensed
+    WHERE PD.PrescriptionID = @PrescriptionID;";
+
+                    using (MySqlCommand cmd = new MySqlCommand(
+                        updateQuery, conn, transaction))
+                    {
+                        cmd.Parameters.AddWithValue("@PrescriptionID", prescriptionId);
+                        cmd.ExecuteNonQuery();
+                    }
+                    //conn.ExecuteNonQuery(updateQuery, transaction);
 
                     if (!UpdatePrescriptionStatus(prescriptionId, 2, transaction))
                     {
@@ -962,7 +995,7 @@ namespace Clinic_DataAccess
                     //            SET M.CurrentStock = M.CurrentStock - T.DispensedQty
                     //            FROM Medicines M
                     //            INNER JOIN PrescriptionDetails PD ON M.MedicineID = PD.MedicineID
-                    //            INNER JOIN #TempDispensed T ON PD.PrescriptionDetailsID = T.DetailsID
+                    //            INNER JOIN #TempDispensed T ON PD.PrescriptionDetailID = T.DetailsID
                     //            WHERE T.IsDispensed = 1 AND T.DispensedQty > 0;";
 
                     ////using (MySqlCommand cmdUpdateStock = new MySqlCommand(updateStockQuery, conn, transaction))
@@ -979,8 +1012,8 @@ namespace Clinic_DataAccess
                                         @BillID,          -- المرجع هنا هو رقم الفاتورة التي تم ربطها
                                         NOW(),
                                         @UserID
-                                    FROM #TempDispensed T
-                                    INNER JOIN PrescriptionDetails PD ON T.DetailsID = PD.PrescriptionDetailsID
+                                    FROM TempDispensed T
+                                    INNER JOIN PrescriptionDetails PD ON T.DetailsID = PD.PrescriptionDetailID
                                     WHERE T.IsDispensed = 1 AND T.DispensedQty > 0;";
 
                     using (MySqlCommand cmdInsertTrans = new MySqlCommand(insertTransactionQuery, conn, transaction))
@@ -994,7 +1027,7 @@ namespace Clinic_DataAccess
                     foreach (DataRow row in dtDispensedItems.Rows)
                     {
                         int detailsId = Convert.ToInt32(
-                            row["PrescriptionDetailsID"]);
+                            row["PrescriptionDetailID"]);
 
                         decimal dispensedQty = Convert.ToDecimal(
                             row["DispensedQuantity"]);
@@ -1013,7 +1046,7 @@ namespace Clinic_DataAccess
         FROM PrescriptionDetails PD
         INNER JOIN tbl_items I
             ON I.id = PD.MedicineID
-        WHERE PD.PrescriptionDetailsID = @DetailsID
+        WHERE PD.PrescriptionDetailID = @DetailsID
         LIMIT 1;";
 
                         using (MySqlCommand cmd = new MySqlCommand(
@@ -1056,9 +1089,9 @@ namespace Clinic_DataAccess
                                         System.Globalization.CultureInfo.InvariantCulture), // qtyOut
                                     "0", // qtyInc
                                     $"Medicine dispensed against Bill #{BillID}",
-                                    null, // warehouseId
-                                    null, // batchId
-                                    null, // unitId
+                                    "1", // warehouseId
+                                    "0", // batchId
+                                    "0", // unitId
                                     "1", // factor
                                     dispensedQty.ToString(
                                         System.Globalization.CultureInfo.InvariantCulture) // qtyDisplay
@@ -1077,7 +1110,13 @@ namespace Clinic_DataAccess
                 }
                 finally
                 {
-                    try { conn.ExecuteNonQuery("IF OBJECT_ID('tempdb..#TempDispensed') IS NOT NULL DROP TABLE #TempDispensed", transaction); }
+                    try {
+                        using (MySqlCommand cmd = new MySqlCommand(
+    "DROP TEMPORARY TABLE IF EXISTS TempDispensed", conn, transaction))
+                        {
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
                     catch { }
                 }
             }

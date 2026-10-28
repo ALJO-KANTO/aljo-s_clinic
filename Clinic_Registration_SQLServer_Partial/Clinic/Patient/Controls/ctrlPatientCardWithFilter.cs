@@ -58,23 +58,18 @@ namespace Clinic.Controls
 
         private void _LoadPatientInfo()
         {
-            // Check whether Patient ID is valid.
             if (!int.TryParse(txtFilterValue.Text, out int patientID))
                 return;
 
-            // Load patient information.
+            // Load the patient and nested person information.
             ctrlPatientCard1.LoadPatientInfo(patientID);
 
-            // Translate the current UserControl and its child controls.
-            TranslationHelper.TranslateControls(
-                this,
-                TranslationClass.IsArabic);
-
-            // Stop if the patient does not exist.
             if (ctrlPatientCard1.SelectedPatient == null)
                 return;
 
-            // Raise event after successful loading.
+            // Do not translate the entire control after loading
+            // because it contains dynamic database values.
+
             if (PatientCreated != null && FilterEnabled)
             {
                 OnPatientCreated(

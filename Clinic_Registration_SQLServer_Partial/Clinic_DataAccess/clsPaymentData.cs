@@ -32,29 +32,53 @@ namespace Clinic_DataAccess
                 {
                     try
                     {
-                        // STEP 1: Get bill amount and existing payments.
-                        decimal totalAmount = 0;
-                        decimal paidBefore = 0;
+                        decimal totalAmount = 0m;
+                        decimal paidBefore = 0m;
                         int visitID = 0;
 
-                        string billQuery = @"
-                            SELECT
-                                B.VisitID,
-                                B.TotalAmount,
-                                COALESCE(
-                                    (
-                                        SELECT SUM(P.PaymentAmount)
-                                        FROM payments P
-                                        WHERE P.BillID = B.BillID
-                                    ), 0
-                                ) AS PaidAmount
-                            FROM bills B
-                            WHERE B.BillID = @BillID
+                        // STEP 1: Lock the bill row.
+                        // This helps serialize payments for this bill.
+                        string lockBillQuery = @"
+                            SELECT VisitID
+                            FROM bills
+                            WHERE BillID = @BillID
                             FOR UPDATE;";
 
                         using (MySqlCommand cmd =
                             new MySqlCommand(
-                                billQuery, connection, transaction))
+                                lockBillQuery,
+                                connection,
+                                transaction))
+                        {
+                            cmd.Parameters.AddWithValue(
+                                "@BillID", billID);
+
+                            object result = cmd.ExecuteScalar();
+
+                            if (result == null ||
+                                result == DBNull.Value)
+                            {
+                                throw new Exception(
+                                    "Bill not found: " + billID);
+                            }
+
+                            visitID = Convert.ToInt32(result);
+                        }
+
+                        // STEP 2: Get the complete bill total.
+                        // Includes appointment, medicines and services.
+                        string billQuery = @"
+                            SELECT
+                                COALESCE(Subtotal, 0) AS TotalAmount,
+                                COALESCE(PaymentAmount, 0) AS PaidAmount
+                            FROM view_billsummaries
+                            WHERE BillID = @BillID;";
+
+                        using (MySqlCommand cmd =
+                            new MySqlCommand(
+                                billQuery,
+                                connection,
+                                transaction))
                         {
                             cmd.Parameters.AddWithValue(
                                 "@BillID", billID);
@@ -63,30 +87,37 @@ namespace Clinic_DataAccess
                                 cmd.ExecuteReader())
                             {
                                 if (!reader.Read())
+                                {
                                     throw new Exception(
-                                        "Bill not found: " + billID);
+                                        "Bill summary not found: " +
+                                        billID);
+                                }
 
-                                visitID = Convert.ToInt32(
-                                    reader["VisitID"]);
+                                totalAmount =
+                                    Convert.ToDecimal(
+                                        reader["TotalAmount"]);
 
-                                totalAmount = Convert.ToDecimal(
-                                    reader["TotalAmount"]);
-
-                                paidBefore = Convert.ToDecimal(
-                                    reader["PaidAmount"]);
+                                paidBefore =
+                                    Convert.ToDecimal(
+                                        reader["PaidAmount"]);
                             }
                         }
 
+                        // STEP 3: Validate outstanding balance.
                         decimal balanceDue =
-                            totalAmount - paidBefore;
+                            Math.Max(
+                                totalAmount - paidBefore,
+                                0m);
 
                         if (paymentAmount > balanceDue)
                         {
                             throw new Exception(
-                                "Payment exceeds outstanding balance.");
+                                "Payment exceeds outstanding balance. " +
+                                "Remaining balance: " +
+                                balanceDue.ToString("N2"));
                         }
 
-                        // STEP 2: Insert payment.
+                        // STEP 4: Insert payment.
                         string insertPayment = @"
                             INSERT INTO payments
                             (
@@ -126,7 +157,7 @@ namespace Clinic_DataAccess
                             cmd.ExecuteNonQuery();
                         }
 
-                        // STEP 3: Calculate final payment status.
+                        // STEP 5: Calculate payment status.
                         decimal totalPaid =
                             paidBefore + paymentAmount;
 
@@ -139,10 +170,13 @@ namespace Clinic_DataAccess
                         else
                             statusText = "Pending";
 
-                        // STEP 4: Update bill.
+                        // STEP 6: Update stored bill total
+                        // and payment status together.
                         string updateBill = @"
                             UPDATE bills
-                            SET PaymentStatus = @Status
+                            SET
+                                TotalAmount = @TotalAmount,
+                                PaymentStatus = @Status
                             WHERE BillID = @BillID;";
 
                         using (MySqlCommand cmd =
@@ -152,6 +186,9 @@ namespace Clinic_DataAccess
                                 transaction))
                         {
                             cmd.Parameters.AddWithValue(
+                                "@TotalAmount", totalAmount);
+
+                            cmd.Parameters.AddWithValue(
                                 "@Status", statusText);
 
                             cmd.Parameters.AddWithValue(
@@ -160,7 +197,7 @@ namespace Clinic_DataAccess
                             cmd.ExecuteNonQuery();
                         }
 
-                        // STEP 5: Update visit only if fully paid.
+                        // STEP 7: Update visit only if fully paid.
                         if (statusText == "Paid")
                         {
                             string updateVisit = @"
@@ -181,8 +218,8 @@ namespace Clinic_DataAccess
                                 cmd.ExecuteNonQuery();
                             }
 
-                            // STEP 6: Update prescription status.
-                            // Keep the existing status value 3.
+                            // STEP 8: Update prescription status.
+                            // Preserve your existing status value 3.
                             if (!clsPrescriptionData
                                 .UpdatePrescriptionStatusByBill(
                                     billID, 3, transaction))
@@ -192,7 +229,7 @@ namespace Clinic_DataAccess
                             }
                         }
 
-                        // STEP 7: Save all changes.
+                        // STEP 9: Commit all changes.
                         transaction.Commit();
 
                         return true;
