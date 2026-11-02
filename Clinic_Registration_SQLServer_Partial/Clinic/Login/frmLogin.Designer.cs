@@ -33,6 +33,7 @@ namespace Clinic.Login
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmLogin));
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.leftPanel = new Clinic.Login.ClinicGradientPanel();
             this.lblVersion = new System.Windows.Forms.Label();
@@ -563,6 +564,7 @@ namespace Clinic.Login
             this.Controls.Add(this.splitContainer1);
             this.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximumSize = new System.Drawing.Size(1440, 650);
             this.MinimumSize = new System.Drawing.Size(1440, 650);
             this.Name = "frmLogin";

@@ -6,24 +6,45 @@ namespace Clinic_DataAccess
 {
     public static partial class ClinicDatabase
     {
+
         public static void EnsureLaboratoryTables()
         {
             // Call after InitializeDatabase()/ApplyMigrations().
-            ExecuteNonQuery(@"CREATE TABLE IF NOT EXISTS labrequests (
-                LabRequestID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                VisitID INT NOT NULL,
-                TestID INT NOT NULL,
-                RequestedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                Status VARCHAR(30) NOT NULL DEFAULT 'Ordered',
-                ResultValue TEXT NULL,
-                ResultNotes TEXT NULL,
-                ResultedAt DATETIME NULL,
-                INDEX IX_LabRequests_Visit (VisitID),
-                INDEX IX_LabRequests_Test (TestID),
-                INDEX IX_LabRequests_Status (Status),
-                CONSTRAINT FK_LabRequests_Visit FOREIGN KEY (VisitID) REFERENCES visits(VisitID),
-                CONSTRAINT FK_LabRequests_Test FOREIGN KEY (TestID) REFERENCES laboratorytests(TestID)
-            ) ENGINE=InnoDB;");
+            ExecuteNonQuery(@"
+        CREATE TABLE IF NOT EXISTS labrequests
+        (
+            LabRequestID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            VisitID INT NOT NULL,
+            TestID INT NOT NULL,
+            BillID INT NULL,
+            SavedTestPrice DECIMAL(12,2) NULL,
+
+            RequestedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            Status VARCHAR(30) NOT NULL DEFAULT 'Ordered',
+            ResultValue TEXT NULL,
+            ResultNotes TEXT NULL,
+            ResultedAt DATETIME NULL,
+
+            INDEX IX_LabRequests_Visit (VisitID),
+            INDEX IX_LabRequests_Test (TestID),
+            INDEX IX_LabRequests_Status (Status),
+
+            UNIQUE KEY UQ_LabRequests_BillID (BillID),
+
+            CONSTRAINT FK_LabRequests_Visit
+                FOREIGN KEY (VisitID)
+                REFERENCES visits(VisitID),
+
+            CONSTRAINT FK_LabRequests_Test
+                FOREIGN KEY (TestID)
+                REFERENCES laboratorytests(TestID),
+
+            CONSTRAINT FK_LabRequests_Bill
+                FOREIGN KEY (BillID)
+                REFERENCES bills(BillID)
+
+        ) ENGINE=InnoDB;
+    ");
         }
         public static DataTable GetLabPatients()
         {
@@ -37,7 +58,16 @@ namespace Clinic_DataAccess
         WHERE p.IsActive = 1
         ORDER BY pe.FullName;");
         }
-
+        public static int BackfillLabRequestPrices()
+        {
+            return ExecuteNonQuery(@"
+            UPDATE labrequests lr
+            INNER JOIN laboratorytests lt
+                ON lr.TestID = lt.TestID
+            SET lr.SavedTestPrice = lt.TestPrice
+            WHERE lr.SavedTestPrice IS NULL;
+        ");
+        }
         public static DataTable GetLabPatientVisits(int patientID)
         {
             return ExecuteDataTable(@"
@@ -103,22 +133,41 @@ namespace Clinic_DataAccess
 
         public static int CreateLabRequest(int visitID, int testID)
         {
-            if (visitID <= 0 || testID <= 0) throw new ArgumentException("Select a visit and a test.");
+            if (visitID <= 0 || testID <= 0)
+                throw new ArgumentException(
+                    "Select a visit and a test.");
+
             using (var connection = GetConnection())
             {
                 connection.Open();
-                using (var cmd = new MySqlCommand(@"INSERT INTO labrequests (VisitID, TestID)
-                    SELECT @VisitID, TestID FROM laboratorytests
-                    WHERE TestID=@TestID AND IsActive=1", connection))
+
+                using (var cmd = new MySqlCommand(@"
+            INSERT INTO labrequests
+            (
+                VisitID,
+                TestID,
+                SavedTestPrice
+            )
+            SELECT
+                @VisitID,
+                TestID,
+                TestPrice
+            FROM laboratorytests
+            WHERE TestID = @TestID
+              AND IsActive = 1;",
+                    connection))
                 {
                     cmd.Parameters.AddWithValue("@VisitID", visitID);
                     cmd.Parameters.AddWithValue("@TestID", testID);
-                    if (cmd.ExecuteNonQuery() != 1) throw new InvalidOperationException("Selected test is inactive or missing.");
+
+                    if (cmd.ExecuteNonQuery() != 1)
+                        throw new InvalidOperationException(
+                            "Selected test is inactive or missing.");
+
                     return Convert.ToInt32(cmd.LastInsertedId);
                 }
             }
         }
-
         public static DataTable GetLabRequests(string search = "", string status = "All")
         {
             return ExecuteDataTable(@"SELECT r.LabRequestID, r.VisitID,
@@ -156,7 +205,167 @@ namespace Clinic_DataAccess
                 WHERE LabRequestID=@ID AND Status IN ('Ordered','In Progress')",
                 new MySqlParameter("@Status", status), new MySqlParameter("@ID", requestID)) > 0;
         }
+        // =====================================================
+        // GET OR CREATE BILL FOR LABORATORY REQUEST
+        // =====================================================
 
+
+
+        public static int GetOrCreateLabRequestBill(int requestID)
+        {
+            using (MySqlConnection connection = GetConnection())
+            {
+                connection.Open();
+
+                using (MySqlTransaction transaction =
+                    connection.BeginTransaction())
+                {
+                    try
+                    {
+                        int visitID;
+                        int? existingBillID;
+                        decimal testPrice;
+
+                        using (var cmd = new MySqlCommand(@"
+                    SELECT
+                        lr.VisitID,
+                        lr.BillID,
+                        COALESCE(lr.SavedTestPrice, lt.TestPrice) AS TestPrice
+                    FROM labrequests lr
+                    INNER JOIN laboratorytests lt
+                        ON lt.TestID = lr.TestID
+                    WHERE lr.LabRequestID = @RequestID
+                      AND lr.Status <> 'Cancelled'
+                    FOR UPDATE;",
+                            connection, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@RequestID", requestID);
+
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                if (!reader.Read())
+                                    throw new Exception(
+                                        "Laboratory request not found or cancelled.");
+
+                                visitID = Convert.ToInt32(reader["VisitID"]);
+
+                                existingBillID = reader["BillID"] == DBNull.Value
+                                    ? (int?)null
+                                    : Convert.ToInt32(reader["BillID"]);
+
+                                testPrice = Convert.ToDecimal(reader["TestPrice"]);
+                            }
+                        }
+
+                        if (existingBillID.HasValue)
+                        {
+                            transaction.Commit();
+                            return existingBillID.Value;
+                        }
+
+                        if (testPrice <= 0)
+                            throw new Exception("Laboratory test price must be greater than zero.");
+
+                        int billID;
+
+                        using (var cmd = new MySqlCommand(@"
+                    INSERT INTO bills
+                        (VisitID, PaymentStatus, TotalAmount)
+                    VALUES
+                        (@VisitID, 'Unpaid', @Amount);",
+                            connection, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@VisitID", visitID);
+                            cmd.Parameters.AddWithValue("@Amount", testPrice);
+
+                            cmd.ExecuteNonQuery();
+                            billID = Convert.ToInt32(cmd.LastInsertedId);
+                        }
+
+                        using (var cmd = new MySqlCommand(@"
+                    UPDATE bills
+                    SET BillNumber = CONCAT(
+                        'INV-', YEAR(BillDate), '-',
+                        LPAD(BillID, 4, '0'))
+                    WHERE BillID = @BillID;",
+                            connection, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@BillID", billID);
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        using (var cmd = new MySqlCommand(@"
+                    UPDATE labrequests
+                    SET BillID = @BillID,
+                        SavedTestPrice = @Amount
+                    WHERE LabRequestID = @RequestID;",
+                            connection, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@BillID", billID);
+                            cmd.Parameters.AddWithValue("@Amount", testPrice);
+                            cmd.Parameters.AddWithValue("@RequestID", requestID);
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        transaction.Commit();
+                        return billID;
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
+                }
+            }
+        }
+
+
+        // =====================================================
+        // CHECK WHETHER LAB REQUEST HAS BEEN PAID
+        // =====================================================
+
+
+
+        public static bool IsLabRequestPaid(int requestID)
+        {
+            using (MySqlConnection connection = GetConnection())
+            {
+                connection.Open();
+
+                using (var cmd = new MySqlCommand(@"
+            SELECT
+                COALESCE(lr.SavedTestPrice, lt.TestPrice) AS TestAmount,
+                COALESCE((
+                    SELECT SUM(p.PaymentAmount)
+                    FROM payments p
+                    WHERE p.BillID = lr.BillID
+                ), 0) AS PaidAmount
+            FROM labrequests lr
+            INNER JOIN laboratorytests lt
+                ON lt.TestID = lr.TestID
+            WHERE lr.LabRequestID = @RequestID
+              AND lr.BillID IS NOT NULL
+              AND lr.Status <> 'Cancelled';",
+                    connection))
+                {
+                    cmd.Parameters.AddWithValue("@RequestID", requestID);
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (!reader.Read())
+                            return false;
+
+                        decimal amount = Convert.ToDecimal(
+                            reader["TestAmount"]);
+
+                        decimal paid = Convert.ToDecimal(
+                            reader["PaidAmount"]);
+
+                        return amount > 0 && paid >= amount;
+                    }
+                }
+            }
+        }
         public static bool SaveLabResult(int requestID, string result, string notes)
         {
             if (string.IsNullOrWhiteSpace(result)) throw new ArgumentException("Result is required.");

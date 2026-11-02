@@ -10,7 +10,8 @@ namespace Clinic.Medical_Services.Laboratory
         private Panel header, statsPanel, actionsPanel, filterPanel, gridPanel;
         private Label title, subtitle;
         private Label[] statValues;
-        private Button btnNewRequest, btnManageTests, btnEnterResult, btnRefresh, btnClose; private TextBox txtSearch;
+        private Button btnNewRequest, btnManageTests,
+            btnSendToBilling, btnEnterResult, btnRefresh, btnClose; private TextBox txtSearch;
         private ComboBox cmbStatus;
         private DataGridView dgvRequests;
 
@@ -119,10 +120,24 @@ namespace Clinic.Medical_Services.Laboratory
             var actions = new FlowLayoutPanel { Dock = DockStyle.Fill, WrapContents = true, AutoScroll = true };
             btnNewRequest = MakeButton("New Lab Request", Color.FromArgb(0, 150, 136));
             btnManageTests = MakeButton("Manage Lab Tests", Color.FromArgb(23, 112, 155));
+            btnSendToBilling = MakeButton(
+    "Send to Billing",
+    Color.FromArgb(230, 126, 34)
+);
             btnEnterResult = MakeButton("Enter Result", Color.FromArgb(102, 81, 169));
             btnRefresh = MakeButton("Refresh", Color.FromArgb(74, 96, 109)); btnRefresh.Width = 110;
-            foreach (Button b in new[] { btnNewRequest, btnManageTests, btnEnterResult, btnRefresh })
-            { b.Margin = new Padding(0, 0, 10, 0); actions.Controls.Add(b); }
+            foreach (Button b in new[]
+  {
+    btnNewRequest,
+    btnManageTests,
+    btnSendToBilling,
+    btnEnterResult,
+    btnRefresh
+})
+            {
+                b.Margin = new Padding(0, 0, 10, 0);
+                actions.Controls.Add(b);
+            }   
             actionsPanel.Controls.Add(actions); body.Controls.Add(actionsPanel, 0, 2);
 
             filterPanel = new Panel { Dock = DockStyle.Fill, BackColor = Color.White, Padding = new Padding(12, 12, 12, 8) };
@@ -161,6 +176,7 @@ namespace Clinic.Medical_Services.Laboratory
             btnNewRequest.Click += btnNewRequest_Click;
             btnManageTests.Click += btnManageTests_Click;
             btnEnterResult.Click += btnEnterResult_Click;
+            btnSendToBilling.Click += btnSendToBilling_Click;
             ResumeLayout(false);
         }
     }

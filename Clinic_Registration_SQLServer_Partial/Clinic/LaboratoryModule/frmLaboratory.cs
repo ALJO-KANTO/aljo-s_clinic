@@ -1,10 +1,11 @@
-
+using Clinic.ControlsMain;
+using Clinic.Medical_Services.Casher;
+using Clinic_DataAccess;
 using System;
 using System.Data;
 using System.Drawing;
 using System.Windows.Forms;
-using Clinic_DataAccess;
-using Clinic.ControlsMain;
+
 
 namespace Clinic.Medical_Services.Laboratory
 {
@@ -13,9 +14,10 @@ namespace Clinic.Medical_Services.Laboratory
         public frmLaboratory()
         {
             InitializeComponent();
+
             ApplyArabicProperties();
 
-            // Keep the Arabic heading centered when the header is resized.
+            // Keep Arabic heading centered when resized.
             header.Resize += Header_Resize;
         }
 
@@ -41,35 +43,35 @@ namespace Clinic.Medical_Services.Laboratory
 
             if (arabic)
             {
-                // Center the main heading across the entire header.
                 title.Dock = DockStyle.None;
                 title.AutoSize = false;
                 title.Left = 0;
                 title.Width = header.ClientSize.Width;
                 title.Height = 44;
                 title.TextAlign = ContentAlignment.MiddleCenter;
-                title.Anchor = AnchorStyles.Top
-                             | AnchorStyles.Left
-                             | AnchorStyles.Right;
 
-                // Center the subtitle in Arabic mode as well.
+                title.Anchor =
+                    AnchorStyles.Top |
+                    AnchorStyles.Left |
+                    AnchorStyles.Right;
+
                 subtitle.Dock = DockStyle.None;
                 subtitle.AutoSize = false;
                 subtitle.Left = 0;
                 subtitle.Width = header.ClientSize.Width;
                 subtitle.Height = 24;
                 subtitle.TextAlign = ContentAlignment.MiddleCenter;
-                subtitle.Anchor = AnchorStyles.Top
-                                | AnchorStyles.Left
-                                | AnchorStyles.Right;
 
-                // Position the heading and subtitle within the header.
+                subtitle.Anchor =
+                    AnchorStyles.Top |
+                    AnchorStyles.Left |
+                    AnchorStyles.Right;
+
                 title.Top = 14;
                 subtitle.Top = title.Bottom;
             }
             else
             {
-                // Preserve the original English layout.
                 title.Dock = DockStyle.Top;
                 title.AutoSize = false;
                 title.Height = 44;
@@ -166,6 +168,8 @@ namespace Clinic.Medical_Services.Laboratory
             try
             {
                 ClinicDatabase.EnsureLaboratoryTables();
+               
+                ClinicDatabase.BackfillLabRequestPrices();
                 ReloadData();
             }
             catch (Exception ex)
@@ -189,7 +193,8 @@ namespace Clinic.Medical_Services.Laboratory
         {
             try
             {
-                DataTable stats = ClinicDatabase.GetLabDashboardStats();
+                DataTable stats =
+                    ClinicDatabase.GetLabDashboardStats();
 
                 if (stats.Rows.Count > 0)
                 {
@@ -229,7 +234,8 @@ namespace Clinic.Medical_Services.Laboratory
                 if (dgvRequests.Columns.Contains("RequestedAt"))
                 {
                     dgvRequests.Columns["RequestedAt"]
-                        .DefaultCellStyle.Format = "dd MMM yyyy HH:mm";
+                        .DefaultCellStyle.Format =
+                            "dd MMM yyyy HH:mm";
                 }
 
                 TranslateGridHeaders();
@@ -253,9 +259,16 @@ namespace Clinic.Medical_Services.Laboratory
                 return -1;
             }
 
-            return Convert.ToInt32(
-                dgvRequests.CurrentRow.Cells["LabRequestID"].Value
-            );
+            if (!dgvRequests.Columns.Contains("LabRequestID"))
+                return -1;
+
+            object value =
+                dgvRequests.CurrentRow.Cells["LabRequestID"].Value;
+
+            if (value == null || value == DBNull.Value)
+                return -1;
+
+            return Convert.ToInt32(value);
         }
 
         private void btnNewRequest_Click(object sender, EventArgs e)
@@ -276,13 +289,56 @@ namespace Clinic.Medical_Services.Laboratory
             }
         }
 
-        private void btnEnterResult_Click(object sender, EventArgs e)
+        // =====================================================
+        // NEW: SEND LAB REQUEST TO BILLING
+        // =====================================================
+        private void btnSendToBilling_Click(object sender, EventArgs e)
+        {
+            if (dgvRequests.CurrentRow == null)
+            {
+                MessageBox.Show("Please select a laboratory request.");
+                return;
+            }
+
+            try
+            {
+                int requestID = Convert.ToInt32(
+                    dgvRequests.CurrentRow.Cells["LabRequestID"].Value);
+
+                int billID =
+                    ClinicDatabase.GetOrCreateLabRequestBill(requestID);
+
+                using (var frm = new
+                    Clinic.Medical_Services.Casher.frmManageBills(billID))
+                {
+                    frm.ShowDialog(this);
+                }
+
+                ReloadData();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    ex.Message,
+                    "Laboratory Billing",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+        // =====================================================
+        // UPDATED: ENTER RESULT ONLY AFTER PAYMENT
+        // =====================================================
+        private void btnEnterResult_Click(
+            object sender,
+            EventArgs e)
         {
             int id = SelectedRequestID();
 
             if (id < 1)
             {
-                MessageBox.Show(T("Select a lab request first."));
+                MessageBox.Show(
+                    T("Select a lab request first.")
+                );
                 return;
             }
 
@@ -290,7 +346,15 @@ namespace Clinic.Medical_Services.Laboratory
                 dgvRequests.CurrentRow.Cells["Status"].Value
             );
 
-            if (status == "Completed" || status == "Cancelled")
+            if (string.Equals(
+                    status,
+                    "Completed",
+                    StringComparison.OrdinalIgnoreCase)
+                ||
+                string.Equals(
+                    status,
+                    "Cancelled",
+                    StringComparison.OrdinalIgnoreCase))
             {
                 MessageBox.Show(
                     T("Completed or cancelled requests cannot be overwritten.")
@@ -298,10 +362,37 @@ namespace Clinic.Medical_Services.Laboratory
                 return;
             }
 
-            using (var form = new frmLabResult(id))
+            try
             {
-                if (form.ShowDialog(this) == DialogResult.OK)
-                    ReloadData();
+                bool isPaid =
+                    ClinicDatabase.IsLabRequestPaid(id);
+
+                if (!isPaid)
+                {
+                    MessageBox.Show(
+                        T("Please complete laboratory payment before entering results."),
+                        T("Payment Required"),
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning
+                    );
+
+                    return;
+                }
+
+                using (var form = new frmLabResult(id))
+                {
+                    if (form.ShowDialog(this) == DialogResult.OK)
+                        ReloadData();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    ex.Message,
+                    T("Laboratory"),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
             }
         }
     }

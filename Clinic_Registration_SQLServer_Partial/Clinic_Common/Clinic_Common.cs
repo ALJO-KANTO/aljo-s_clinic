@@ -22,5 +22,12 @@
         Cancelled = 4
     }
 
-    // dsdas
- }
+    public enum enVisitStatus : byte
+    {
+        InQueue = 1,
+        InProgress = 2,
+        Pending_Billing = 3,
+        Completed = 4,
+        Cancelled = 5
+    }
+}

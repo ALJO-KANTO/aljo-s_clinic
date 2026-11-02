@@ -192,6 +192,16 @@ namespace Clinic
                     })
                 );
             }
+            if (CanAccessMenu(UserRole.Receptionist))
+            {
+                menu.Controls.Add(
+                    MakeNav(
+                        "⚗",
+                        "Direct Lab Request",
+                        () => OpenReceptionLabRequest()
+                    )
+                );
+            }
             // ERP-style expandable groups: visible only to Administrator.
             if (clsGlobal.CurrentUser != null &&
                 clsGlobal.CurrentUser.RoleID == (int)UserRole.Admin)
@@ -733,12 +743,40 @@ namespace Clinic
             }
             if (CanShowDashboard(UserRole.Receptionist))
             {
-                roleRows.Controls.Add(RoleCard("♙", "Receptionist Role Dashboard", Color.FromArgb(248, 105, 35),
-                new string[] { "Register\nNew Patient", "Schedule\nAppointment", "Appointment\nQueue", "Patient\nCheck-in" },
-                new Action[] { () => PatientsToolStripMenuItem_Click(this, EventArgs.Empty),
-                    () => btnAddApp_Click(this, EventArgs.Empty),
-                    () => appointmentsToolStripMenuItem_Click(this, EventArgs.Empty),
-                    () => appointmentsToolStripMenuItem_Click(this, EventArgs.Empty) }), 1, 1);
+                roleRows.Controls.Add(
+                    RoleCard(
+                        "♙",
+                        "Receptionist Role Dashboard",
+                        Color.FromArgb(248, 105, 35),
+
+                        new string[]
+                        {
+                "Register\nNew Patient",
+                "Schedule\nAppointment",
+                "Appointment\nQueue",
+                "Patient\nCheck-in",
+                "Direct Lab\nRequest"
+                        },
+
+                        new Action[]
+                        {
+                () => PatientsToolStripMenuItem_Click(
+                    this, EventArgs.Empty),
+
+                () => btnAddApp_Click(
+                    this, EventArgs.Empty),
+
+                () => appointmentsToolStripMenuItem_Click(
+                    this, EventArgs.Empty),
+
+                () => appointmentsToolStripMenuItem_Click(
+                    this, EventArgs.Empty),
+
+                () => OpenReceptionLabRequest()
+                        }
+                    ),
+                    1, 1
+                );
             }
             if (CanShowDashboard(UserRole.Pharmacist))
             {

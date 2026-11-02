@@ -1261,7 +1261,7 @@ WHERE a.AppointmentFees > 0;
                                 INSERT IGNORE INTO `tbl_coa_config`
                                 (`id`, `account_id`, `category`)
                                 VALUES
-                                    (1, 23, 'Sales'),
+                                    (1, 23, 'Consultation Revenue'),
                                     (2, 25, 'COGS'),
                                     (3, 42, 'Default Account For Cash'),
                                     (4, 5, 'Inventory'),
@@ -1288,7 +1288,7 @@ WHERE a.AppointmentFees > 0;
                                     (25, 34, 'PDC Receivable Return'),
                                     (26, 35, 'PDC Receivable Hold'),
                                     (27, 36, 'PDC Receivable Cancel'),
-                                    (28, 3, 'Customer'),
+                                    (28, 3, 'Patient'),
                                     (29, 2, 'Petty Cash Account'),
                                     (30, 14, 'End of Service Debit'),
                                     (31, 30, 'End of Service Credit'),
@@ -1300,9 +1300,9 @@ WHERE a.AppointmentFees > 0;
                                     (37, 1, 'Default Account For Bank'),
                                     (38, 1, 'Salaries'),
                                     (39, 31, 'Stock Settlement'),
-                                    (40, 44, 'Customer Advances'),
-                                    (41, 45, 'Retention'),
-                                    (42, 1, 'Deduction'),
+                                    (40, 47, 'Medicine Revenue'),
+                                    (41, 48, 'Service Revenue'),
+                                    (42, 1, 'Insurance'),
                                     (43, 46, 'Retention Purchase');
                             "
                         },
@@ -3059,7 +3059,8 @@ WHERE a.AppointmentFees > 0;
 	                                                (43, 'Sales Return', 4101003, 19, 0.000, 0.000, NULL,1),
 	                                                (44, 'Customer Advances', 2105002, 29, 0.000, 0.000, NULL,1),
 	                                                (45, 'Retention Receivable', 1103007, 3, 0.000, 0.000, NULL,1),
-	                                                (46, 'Retention Payable', 2105003, 29, 0.000, 0.000, NULL,1);
+	                                                (46, 'Medicine Revenue', 4101004, 18, 0.000, 0.000, NULL,1),
+	                                                (47, 'Service Revenue', 4101005, 18, 0.000, 0.000, NULL,1);
                             "
                         },
 
@@ -3959,6 +3960,144 @@ WHERE a.AppointmentFees > 0;
                                 WHERE P.IsDeleted = 1;
                             "
                         },
+
+
+new DatabaseMigration
+{
+    Version = "20261102_001",
+    Description = "Separate direct laboratory bill items",
+    Sql = @"
+        CREATE OR REPLACE VIEW View_BillItems AS
+
+        -- Medicines belonging to normal visit bills only
+        SELECT
+            B.BillID,
+
+            CONVERT('Medicine' USING utf8mb4)
+                COLLATE utf8mb4_unicode_ci AS ItemType,
+
+            CONVERT(PD.SavedMedicineName USING utf8mb4)
+                COLLATE utf8mb4_unicode_ci AS ItemName,
+
+            PD.Quantity,
+            PD.SavedMedicinePrice AS Price,
+            PD.SavedMedicinePrice * PD.Quantity AS Total
+
+        FROM prescriptiondetails PD
+
+        INNER JOIN prescriptions PR
+            ON PD.PrescriptionID = PR.PrescriptionID
+
+        INNER JOIN bills B
+            ON PR.VisitID = B.VisitID
+
+        WHERE NOT EXISTS
+        (
+            SELECT 1
+            FROM labrequests LR
+            WHERE LR.BillID = B.BillID
+        )
+
+        UNION ALL
+
+        -- Services belonging to normal visit bills only
+        SELECT
+            B.BillID,
+
+            CONVERT('Service' USING utf8mb4)
+                COLLATE utf8mb4_unicode_ci AS ItemType,
+
+            CONVERT(S.ServiceName USING utf8mb4)
+                COLLATE utf8mb4_unicode_ci AS ItemName,
+
+            VS.Quantity,
+            VS.SavedServicePrice AS Price,
+            VS.SavedServicePrice * VS.Quantity AS Total
+
+        FROM visitservices VS
+
+        INNER JOIN services S
+            ON VS.ServiceID = S.ServiceID
+
+        INNER JOIN bills B
+            ON VS.VisitID = B.VisitID
+
+        WHERE NOT EXISTS
+        (
+            SELECT 1
+            FROM labrequests LR
+            WHERE LR.BillID = B.BillID
+        )
+
+        UNION ALL
+
+        -- Appointment fees on normal visit bills only
+        SELECT
+            B.BillID,
+
+            CONVERT('Appointment' USING utf8mb4)
+                COLLATE utf8mb4_unicode_ci AS ItemType,
+
+            CONVERT('Appointment Fees' USING utf8mb4)
+                COLLATE utf8mb4_unicode_ci AS ItemName,
+
+            1 AS Quantity,
+            A.AppointmentFees AS Price,
+            A.AppointmentFees AS Total
+
+        FROM appointments A
+
+        INNER JOIN visits V
+            ON A.AppointmentID = V.AppointmentID
+
+        INNER JOIN bills B
+            ON V.VisitID = B.VisitID
+
+        WHERE A.AppointmentFees > 0
+
+          AND NOT EXISTS
+          (
+              SELECT 1
+              FROM labrequests LR
+              WHERE LR.BillID = B.BillID
+          )
+
+        UNION ALL
+
+        -- Exactly the test linked to this laboratory bill
+        SELECT
+            LR.BillID,
+
+            CONVERT('Laboratory' USING utf8mb4)
+                COLLATE utf8mb4_unicode_ci AS ItemType,
+
+            CONVERT(LT.TestName USING utf8mb4)
+                COLLATE utf8mb4_unicode_ci AS ItemName,
+
+            1 AS Quantity,
+
+            COALESCE(
+                LR.SavedTestPrice,
+                LT.TestPrice,
+                0
+            ) AS Price,
+
+            COALESCE(
+                LR.SavedTestPrice,
+                LT.TestPrice,
+                0
+            ) AS Total
+
+        FROM labrequests LR
+
+        INNER JOIN laboratorytests LT
+            ON LT.TestID = LR.TestID
+
+        WHERE LR.BillID IS NOT NULL;
+    "
+},
+
+
                         new DatabaseMigration
                         {
                             Version = "20261016_016",
@@ -4021,6 +4160,11 @@ WHERE a.AppointmentFees > 0;
                                     ) AS BalanceDue
 
                                 FROM bills B
+LEFT JOIN labrequests LR
+    ON LR.BillID = B.BillID
+
+LEFT JOIN laboratorytests LT
+    ON LT.TestID = LR.TestID
 
                                 LEFT JOIN visits V
                                     ON B.VisitID = V.VisitID
@@ -4162,6 +4306,356 @@ WHERE a.AppointmentFees > 0;
                                     ON B.VisitID = M.VisitID;
                             "
                         },
+
+
+new DatabaseMigration
+{
+    Version = "20261102_001",
+    Description = "Add separate direct laboratory billing to invoice views",
+    Sql = @"
+
+        CREATE OR REPLACE VIEW View_BillSummaries AS
+        SELECT
+            CONCAT(
+                'INV-',
+                YEAR(B.BillDate),
+                '-',
+                LPAD(B.BillID, 4, '0')
+            ) AS BillNumber,
+
+            B.BillID,
+
+            COALESCE(P.FullName, 'Pharmacy Sale') AS PatientName,
+
+            CASE
+                WHEN LR.LabRequestID IS NOT NULL THEN
+                    CONCAT('1 Lab Test: ', LT.TestName)
+
+                WHEN B.VisitID IS NULL THEN
+                    CONCAT(
+                        COALESCE(M.PrescriptionCount, 0),
+                        ' Pharmacy Sale'
+                    )
+
+                ELSE
+                    CONCAT(
+                        COALESCE(S.ServiceCount, 0),
+                        ' Servs, ',
+                        COALESCE(M.PrescriptionCount, 0),
+                        ' Presc'
+                    )
+            END AS ItemsTotal,
+
+            CASE
+                WHEN LR.LabRequestID IS NOT NULL THEN 0
+                ELSE COALESCE(A.AppointmentFees, 0)
+            END AS AppointmentFees,
+
+            CASE
+                WHEN LR.LabRequestID IS NOT NULL THEN 0
+                ELSE COALESCE(M.TotalMedicinesOnly, 0)
+            END AS MedicinesTotal,
+
+            CASE
+                WHEN LR.LabRequestID IS NOT NULL THEN 0
+                ELSE COALESCE(S.TotalServicesOnly, 0)
+            END AS ServicesTotal,
+
+            CASE
+                WHEN LR.LabRequestID IS NOT NULL THEN 0
+                ELSE
+                    COALESCE(S.ServiceDiscount, 0)
+                    + COALESCE(M.MedsDiscount, 0)
+            END AS TotalDiscount,
+
+            CASE
+                WHEN LR.LabRequestID IS NOT NULL THEN 0
+                ELSE COALESCE(M.TotalTax, 0)
+            END AS TotalTax,
+
+            CASE
+                WHEN LR.LabRequestID IS NOT NULL THEN
+                    COALESCE(
+                        LR.SavedTestPrice,
+                        LT.TestPrice,
+                        0
+                    )
+                ELSE
+                    COALESCE(A.AppointmentFees, 0)
+                    + COALESCE(M.TotalMedicinesNet, 0)
+                    + COALESCE(S.TotalServicesNet, 0)
+            END AS Subtotal,
+
+            COALESCE(Pay.TotalPaid, 0) AS PaymentAmount,
+
+            CASE
+                WHEN LR.LabRequestID IS NOT NULL THEN
+                    COALESCE(
+                        LR.SavedTestPrice,
+                        LT.TestPrice,
+                        0
+                    )
+                    - COALESCE(Pay.TotalPaid, 0)
+                ELSE
+                    COALESCE(A.AppointmentFees, 0)
+                    + COALESCE(M.TotalMedicinesNet, 0)
+                    + COALESCE(S.TotalServicesNet, 0)
+                    - COALESCE(Pay.TotalPaid, 0)
+            END AS BalanceDue
+
+        FROM bills B
+
+        LEFT JOIN labrequests LR
+            ON LR.BillID = B.BillID
+
+        LEFT JOIN laboratorytests LT
+            ON LT.TestID = LR.TestID
+
+        LEFT JOIN visits V
+            ON B.VisitID = V.VisitID
+
+        LEFT JOIN appointments A
+            ON V.AppointmentID = A.AppointmentID
+
+        LEFT JOIN patients PA
+            ON V.PatientID = PA.PatientID
+
+        LEFT JOIN persons P
+            ON PA.PersonID = P.PersonID
+
+        LEFT JOIN
+        (
+            SELECT
+                BillID,
+                SUM(PaymentAmount) AS TotalPaid
+            FROM payments
+            GROUP BY BillID
+        ) Pay
+            ON B.BillID = Pay.BillID
+
+        LEFT JOIN
+        (
+            SELECT
+                VisitID,
+                COUNT(*) AS ServiceCount,
+
+                SUM(
+                    SavedServicePrice * Quantity
+                ) AS TotalServicesOnly,
+
+                SUM(
+                    Discount * Quantity
+                ) AS ServiceDiscount,
+
+                SUM(
+                    (SavedServicePrice * Quantity)
+                    - (Discount * Quantity)
+                ) AS TotalServicesNet
+
+            FROM visitservices
+            GROUP BY VisitID
+        ) S
+            ON B.VisitID = S.VisitID
+
+        LEFT JOIN
+        (
+            SELECT
+                PR.VisitID,
+
+                COUNT(DISTINCT PR.PrescriptionID)
+                    AS PrescriptionCount,
+
+                COALESCE(
+                    SUM(
+                        PD.SavedMedicinePrice
+                        * PD.Quantity
+                    ), 0
+                ) AS TotalMedicinesOnly,
+
+                COALESCE(
+                    SUM(
+                        PD.DiscountAmount
+                        * PD.Quantity
+                    ), 0
+                ) AS MedsDiscount,
+
+                CAST(
+                    ROUND(
+                        COALESCE(
+                            SUM(
+                                CASE
+                                    WHEN PD.Quantity > 0 THEN
+                                        (
+                                            (
+                                                PD.SavedMedicinePrice
+                                                * PD.Quantity
+                                            )
+                                            -
+                                            (
+                                                PD.DiscountAmount
+                                                * PD.Quantity
+                                            )
+                                        )
+                                        *
+                                        (
+                                            COALESCE(MED.TaxRate, 0)
+                                            / 100.0
+                                        )
+                                    ELSE 0
+                                END
+                            ), 0
+                        ),
+                        2
+                    ) AS DECIMAL(18,2)
+                ) AS TotalTax,
+
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN PD.Quantity > 0 THEN
+                                (
+                                    (
+                                        PD.SavedMedicinePrice
+                                        * PD.Quantity
+                                    )
+                                    -
+                                    (
+                                        PD.DiscountAmount
+                                        * PD.Quantity
+                                    )
+                                )
+                                *
+                                (
+                                    1 +
+                                    (
+                                        COALESCE(MED.TaxRate, 0)
+                                        / 100.0
+                                    )
+                                )
+                            ELSE 0
+                        END
+                    ), 0
+                ) AS TotalMedicinesNet
+
+            FROM prescriptions PR
+
+            LEFT JOIN prescriptiondetails PD
+                ON PR.PrescriptionID = PD.PrescriptionID
+
+            LEFT JOIN medicines MED
+                ON PD.MedicineID = MED.MedicineID
+
+            GROUP BY PR.VisitID
+        ) M
+            ON B.VisitID = M.VisitID;
+
+
+        CREATE OR REPLACE VIEW View_BillItems AS
+
+        SELECT
+            B.BillID,
+            'Medicine' AS ItemType,
+            PD.SavedMedicineName AS ItemName,
+            PD.Quantity,
+            PD.SavedMedicinePrice AS Price,
+            PD.SavedMedicinePrice * PD.Quantity AS Total
+
+        FROM prescriptiondetails PD
+
+        INNER JOIN prescriptions PR
+            ON PD.PrescriptionID = PR.PrescriptionID
+
+        INNER JOIN bills B
+            ON PR.VisitID = B.VisitID
+
+        WHERE NOT EXISTS
+        (
+            SELECT 1
+            FROM labrequests LR
+            WHERE LR.BillID = B.BillID
+        )
+
+        UNION ALL
+
+        SELECT
+            B.BillID,
+            'Service' AS ItemType,
+            S.ServiceName AS ItemName,
+            VS.Quantity,
+            VS.SavedServicePrice AS Price,
+            VS.SavedServicePrice * VS.Quantity AS Total
+
+        FROM visitservices VS
+
+        INNER JOIN services S
+            ON VS.ServiceID = S.ServiceID
+
+        INNER JOIN bills B
+            ON VS.VisitID = B.VisitID
+
+        WHERE NOT EXISTS
+        (
+            SELECT 1
+            FROM labrequests LR
+            WHERE LR.BillID = B.BillID
+        )
+
+        UNION ALL
+
+        SELECT
+            B.BillID,
+            'Appointment' AS ItemType,
+            'Appointment Fees' AS ItemName,
+            1 AS Quantity,
+            A.AppointmentFees AS Price,
+            A.AppointmentFees AS Total
+
+        FROM appointments A
+
+        INNER JOIN visits V
+            ON A.AppointmentID = V.AppointmentID
+
+        INNER JOIN bills B
+            ON V.VisitID = B.VisitID
+
+        WHERE A.AppointmentFees > 0
+          AND NOT EXISTS
+          (
+              SELECT 1
+              FROM labrequests LR
+              WHERE LR.BillID = B.BillID
+          )
+
+        UNION ALL
+
+        SELECT
+            LR.BillID,
+            'Laboratory' AS ItemType,
+            LT.TestName AS ItemName,
+            1 AS Quantity,
+
+            COALESCE(
+                LR.SavedTestPrice,
+                LT.TestPrice,
+                0
+            ) AS Price,
+
+            COALESCE(
+                LR.SavedTestPrice,
+                LT.TestPrice,
+                0
+            ) AS Total
+
+        FROM labrequests LR
+
+        INNER JOIN laboratorytests LT
+            ON LT.TestID = LR.TestID
+
+        WHERE LR.BillID IS NOT NULL;
+
+    "
+},
+
                         new DatabaseMigration
                         {
                             Version = "20261016_017",

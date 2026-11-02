@@ -39,7 +39,7 @@ namespace YamyProject
             openingBalanceEquity = BindCombos.SelectDefaultLevelAccount("Opening Balance Equity").ToString();
             assetAccount = BindCombos.SelectDefaultLevelAccount("Inventory").ToString();
             COGSAccount = BindCombos.SelectDefaultLevelAccount("COGS").ToString();
-            incomeAccount = BindCombos.SelectDefaultLevelAccount("Sales").ToString();
+            incomeAccount = BindCombos.SelectDefaultLevelAccount("Consultation Revenue").ToString();
         }
         private void BindData()
         {

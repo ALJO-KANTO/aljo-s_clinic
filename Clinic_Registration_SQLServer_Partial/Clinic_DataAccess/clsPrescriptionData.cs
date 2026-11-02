@@ -844,7 +844,8 @@ namespace Clinic_DataAccess
             return total;
         }
 
-        public static bool SendToCashier(int prescriptionId, DataTable dtDispensedItems, int? VisitID, int userId)
+        public static bool SendToCashier(int prescriptionId, DataTable dtDispensedItems, int? VisitID, int userId,int receivableAccountID,
+        int medicineRevenueAccountID, int serviceRevenueAccountID)
         {
             using (MySqlConnection conn = new MySqlConnection(clsDataAccessSettings.ConnectionString))
             {
@@ -853,20 +854,63 @@ namespace Clinic_DataAccess
 
                 try
                 {
+
+
+                    if (prescriptionId <= 0)
+                        throw new ArgumentException("Invalid prescription ID.");
+
+                    if (dtDispensedItems == null ||
+                        dtDispensedItems.Rows.Count == 0)
+                    {
+                        throw new InvalidOperationException(
+                            "No prescription items were provided.");
+                    }
+
+                    // Lock prescription and allow processing only once.
+                    using (MySqlCommand cmd = new MySqlCommand(@"
+                            SELECT PrescriptionStatus
+                            FROM Prescriptions
+                            WHERE PrescriptionID = @PrescriptionID
+                            FOR UPDATE;",
+                        conn, transaction))
+                    {
+                        cmd.Parameters.AddWithValue(
+                            "@PrescriptionID", prescriptionId);
+
+                        object result = cmd.ExecuteScalar();
+
+                        if (result == null || result == DBNull.Value)
+                            throw new InvalidOperationException(
+                                "Prescription not found.");
+
+                        string currentStatus =
+                            Convert.ToString(result).Trim();
+
+                        if (currentStatus != "1" &&
+                            !currentStatus.Equals(
+                                "Pending",
+                                StringComparison.OrdinalIgnoreCase))
+                        {
+                            throw new InvalidOperationException(
+                                "This prescription has already been processed. " +
+                                "Current status: " + currentStatus);
+                        }
+                    }
+
                     // 1. إنشاء الجدول المؤقت
                     conn.ExecuteNonQuery(@"
-    CREATE TEMPORARY TABLE TempDispensed
-    (
-        DetailsID INT,
-        DispensedQty INT,
-        IsDispensed BIT
-    )", transaction);
+                        CREATE TEMPORARY TABLE TempDispensed
+                        (
+                            DetailsID INT,
+                            DispensedQty INT,
+                            IsDispensed BIT
+                        )", transaction);
 
                     // 2. نقل البيانات عبر SqlBulkCopy
                     string insertTempQuery = @"
-    INSERT INTO TempDispensed
-    (DetailsID, DispensedQty, IsDispensed)
-    VALUES (@DetailsID, @DispensedQty, @IsDispensed)";
+                            INSERT INTO TempDispensed
+                            (DetailsID, DispensedQty, IsDispensed)
+                            VALUES (@DetailsID, @DispensedQty, @IsDispensed)";
 
                     using (MySqlCommand cmd = new MySqlCommand(
                         insertTempQuery, conn, transaction))
@@ -891,13 +935,13 @@ namespace Clinic_DataAccess
                     }
                     // 3. تحديث الجدول الأصلي
                     string updateQuery = @"
-    UPDATE PrescriptionDetails PD
-    INNER JOIN TempDispensed T
-        ON PD.PrescriptionDetailID = T.DetailsID
-    SET
-        PD.DispensedQuantity = T.DispensedQty,
-        PD.IsDispensed = T.IsDispensed
-    WHERE PD.PrescriptionID = @PrescriptionID;";
+                            UPDATE PrescriptionDetails PD
+                            INNER JOIN TempDispensed T
+                                ON PD.PrescriptionDetailID = T.DetailsID
+                            SET
+                                PD.DispensedQuantity = T.DispensedQty,
+                                PD.IsDispensed = T.IsDispensed
+                            WHERE PD.PrescriptionID = @PrescriptionID;";
 
                     using (MySqlCommand cmd = new MySqlCommand(
                         updateQuery, conn, transaction))
@@ -905,12 +949,44 @@ namespace Clinic_DataAccess
                         cmd.Parameters.AddWithValue("@PrescriptionID", prescriptionId);
                         cmd.ExecuteNonQuery();
                     }
-                    //conn.ExecuteNonQuery(updateQuery, transaction);
 
                     if (!UpdatePrescriptionStatus(prescriptionId, 2, transaction))
                     {
                         throw new Exception("Failed to update prescription status.");
                     }
+
+
+                    decimal medicineRevenue = 0m;
+
+                    string medicineTotalQuery = @"
+                            SELECT
+                                COALESCE(
+                                    SUM(
+                                        (
+                                            PD.DispensedQuantity *
+                                            PD.SavedMedicinePrice
+                                        )
+                                        - COALESCE(PD.DiscountAmount, 0)
+                                    ),
+                                    0
+                                ) AS MedicineRevenue
+                            FROM PrescriptionDetails PD
+                            WHERE PD.PrescriptionID = @PrescriptionID
+                              AND PD.IsDispensed = 1
+                              AND PD.DispensedQuantity > 0;";
+
+                    using (MySqlCommand cmd = new MySqlCommand(
+                        medicineTotalQuery,
+                        conn,
+                        transaction))
+                    {
+                        cmd.Parameters.AddWithValue(
+                            "@PrescriptionID", prescriptionId);
+
+                        medicineRevenue = Convert.ToDecimal(
+                            cmd.ExecuteScalar());
+                    }
+
 
                     int BillID = 0;
 
@@ -918,12 +994,12 @@ namespace Clinic_DataAccess
                     {
                         // Check whether a non-cancelled bill already exists for this visit.
                         string selectBill = @"
-        SELECT BillID
-        FROM Bills
-        WHERE VisitID = @VisitID
-          AND PaymentStatus != 4
-        LIMIT 1
-        FOR UPDATE;";
+                                SELECT BillID
+                                FROM Bills
+                                WHERE VisitID = @VisitID
+                                  AND PaymentStatus != 4
+                                LIMIT 1
+                                FOR UPDATE;";
 
                         using (MySqlCommand cmdSelect =
                             new MySqlCommand(selectBill, conn, transaction))
@@ -947,22 +1023,22 @@ namespace Clinic_DataAccess
                     if (BillID == 0)
                     {
                         string insertBill = @"
-        INSERT INTO Bills
-        (
-            VisitID,
-            PaymentStatus,
-            BillDate,
-            CreatedByUserID
-        )
-        VALUES
-        (
-            @VisitID,
-            0,
-            NOW(),
-            @UID
-        );
+                                INSERT INTO Bills
+                                (
+                                    VisitID,
+                                    PaymentStatus,
+                                    BillDate,
+                                    CreatedByUserID
+                                )
+                                VALUES
+                                (
+                                    @VisitID,
+                                    0,
+                                    NOW(),
+                                    @UID
+                                );
 
-        SELECT LAST_INSERT_ID();";
+                                SELECT LAST_INSERT_ID();";
 
                         using (MySqlCommand cmdBill =
                             new MySqlCommand(insertBill, conn, transaction))
@@ -1039,15 +1115,15 @@ namespace Clinic_DataAccess
                             continue;
 
                         string itemQuery = @"
-        SELECT
-            PD.MedicineID,
-            IFNULL(I.cost_price, 0) AS CostPrice,
-            IFNULL(I.sales_price, 0) AS SalesPrice
-        FROM PrescriptionDetails PD
-        INNER JOIN tbl_items I
-            ON I.id = PD.MedicineID
-        WHERE PD.PrescriptionDetailID = @DetailsID
-        LIMIT 1;";
+                                SELECT
+                                    PD.MedicineID,
+                                    IFNULL(I.cost_price, 0) AS CostPrice,
+                                    IFNULL(I.sales_price, 0) AS SalesPrice
+                                FROM PrescriptionDetails PD
+                                INNER JOIN tbl_items I
+                                    ON I.id = PD.MedicineID
+                                WHERE PD.PrescriptionDetailID = @DetailsID
+                                LIMIT 1;";
 
                         using (MySqlCommand cmd = new MySqlCommand(
                             itemQuery, conn, transaction))
@@ -1099,20 +1175,85 @@ namespace Clinic_DataAccess
                             }
                         }
                     }
+
+                    // Resolve these account IDs from your configured
+                    // Chart of Accounts before calling SendToCashier.
+                    // Do not hardcode guessed IDs.
+                    //int receivableAccountID = 0;
+                    //int medicineRevenueAccountID = 0;
+
+                    // Both account IDs must be configured.
+                    // This example intentionally fails until configured.
+                    InsertMedicineSalesJournal(
+                        conn,
+                        transaction,
+                        BillID,
+                        VisitID ?? 0,
+                        prescriptionId,
+                        medicineRevenue,
+                        receivableAccountID,
+                        medicineRevenueAccountID,
+                        userId);
+
+
+                    decimal serviceRevenue = 0m;
+
+                    string serviceTotalQuery = @"
+    SELECT
+        COALESCE(
+            SUM(
+                (VS.SavedServicePrice * VS.Quantity) - VS.Discount
+            ),
+            0
+        ) AS ServiceRevenue
+    FROM VisitServices VS
+    WHERE VS.VisitID = @VisitID;";
+
+                    using (MySqlCommand cmd = new MySqlCommand(
+                        serviceTotalQuery,
+                        conn,
+                        transaction))
+                    {
+                        cmd.Parameters.AddWithValue(
+                            "@VisitID", VisitID.Value);
+
+                        serviceRevenue = Convert.ToDecimal(
+                            cmd.ExecuteScalar());
+                    }
+
+
+                    InsertServiceRevenueJournal(conn,transaction,
+                        BillID,
+                        VisitID ?? 0,
+                        serviceRevenue,
+                        receivableAccountID,
+                        serviceRevenueAccountID,
+                        userId);
+
                     transaction.Commit();
                     return true;
+
                 }
-                catch (MySqlException ex)
+                catch (Exception ex)
                 {
-                    clsGlobalLogger.LogMySqlException(ex, clsGlobalLogger.LogLevel.Error);
-                    transaction.Rollback();
-                    return false;
+                    try
+                    {
+                        transaction.Rollback();
+                    }
+                    catch
+                    {
+                        // Preserve the original exception.
+                    }
+
+                    System.Diagnostics.Debug.WriteLine(
+                        "SendToCashier ERROR: " + ex.ToString());
+
+                    throw;
                 }
                 finally
                 {
                     try {
-                        using (MySqlCommand cmd = new MySqlCommand(
-    "DROP TEMPORARY TABLE IF EXISTS TempDispensed", conn, transaction))
+                        using (MySqlCommand cmd = new MySqlCommand("DROP TEMPORARY TABLE IF EXISTS TempDispensed", conn, transaction))
                         {
                             cmd.ExecuteNonQuery();
                         }
@@ -1145,5 +1286,143 @@ namespace Clinic_DataAccess
                 }
             }
         }
+
+        private static void InsertMedicineSalesJournal(
+            MySqlConnection connection,
+            MySqlTransaction transaction,
+            int billID,
+            int visitID,
+            int prescriptionID,
+            decimal medicineRevenue,
+            int receivableAccountID,
+            int medicineRevenueAccountID,
+            int userID)
+        {
+            if (medicineRevenue <= 0)
+                return;
+
+            if (receivableAccountID <= 0 ||
+                medicineRevenueAccountID <= 0)
+            {
+                throw new InvalidOperationException(
+                    "Medicine journal accounts are not configured.");
+            }
+
+            if (receivableAccountID == medicineRevenueAccountID)
+            {
+                throw new InvalidOperationException(
+                    "Receivable and revenue accounts must differ.");
+            }
+
+            string amount = medicineRevenue.ToString(
+                System.Globalization.CultureInfo.InvariantCulture);
+
+            string transactionID = billID.ToString();
+
+            string description =
+                $"Medicine sales for Bill #{billID}, " +
+                $"Prescription #{prescriptionID}";
+
+            DateTime journalDate = DateTime.Now;
+
+            // DEBIT: Accounts Receivable
+            CommonInsert.InsertTransactionEntryWithTransaction(
+                connection,
+                transaction,
+                journalDate,
+                receivableAccountID.ToString(),
+                amount,
+                "0",
+                transactionID,
+                visitID.ToString(),
+                "Medicine Sales",
+                description,
+                userID,
+                journalDate);
+
+            // CREDIT: Medicine Sales Revenue
+            CommonInsert.InsertTransactionEntryWithTransaction(
+                connection,
+                transaction,
+                journalDate,
+                medicineRevenueAccountID.ToString(),
+                "0",
+                amount,
+                transactionID,
+                "0",
+                "Medicine Sales",
+                description,
+                userID,
+                journalDate);
+        }
+
+
+        public static void InsertServiceRevenueJournal(
+            MySqlConnection connection,
+            MySqlTransaction transaction,
+            int billID,
+            int visitID,
+            decimal serviceAmount,
+            int receivableAccountID,
+            int serviceRevenueAccountID,
+            int userID)
+        {
+            if (serviceAmount <= 0)
+                return;
+
+            if (receivableAccountID <= 0 ||
+                serviceRevenueAccountID <= 0)
+            {
+                throw new InvalidOperationException(
+                    "Service revenue accounts are not configured.");
+            }
+
+            if (receivableAccountID == serviceRevenueAccountID)
+            {
+                throw new InvalidOperationException(
+                    "Receivable and revenue accounts must differ.");
+            }
+
+            string amount = serviceAmount.ToString(
+                System.Globalization.CultureInfo.InvariantCulture);
+
+            string transactionID = billID.ToString();
+
+            string description =
+                $"Service revenue for Bill #{billID}";
+
+            DateTime journalDate = DateTime.Now;
+
+            // DEBIT: Accounts Receivable
+            CommonInsert.InsertTransactionEntryWithTransaction(
+                connection,
+                transaction,
+                journalDate,
+                receivableAccountID.ToString(),
+                amount,
+                "0",
+                transactionID,
+                visitID.ToString(),
+                "Service Sales",
+                description,
+                userID,
+                journalDate);
+
+            // CREDIT: Service Revenue
+            CommonInsert.InsertTransactionEntryWithTransaction(
+                connection,
+                transaction,
+                journalDate,
+                serviceRevenueAccountID.ToString(),
+                "0",
+                amount,
+                transactionID,
+                "0",
+                "Service Sales",
+                description,
+                userID,
+                journalDate);
+        }
+
     }
 }

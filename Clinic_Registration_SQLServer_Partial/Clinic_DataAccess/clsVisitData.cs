@@ -9,7 +9,7 @@ namespace Clinic_DataAccess
 {
     public class clsVisitData
     {
-        public static int AddNewVisitData(int VisitID, int AppointmentID, string Diagnosis, string VisitNotes, int CreatedByUserID, int DoctorID, DataTable services, DataTable dtMedicines, string PrescriptionNotes, DateTime PrescriptionDate)
+        public static int AddNewVisitData(int VisitID, int AppointmentID, string Diagnosis, string VisitNotes, int CreatedByUserID, int DoctorID, DataTable services, DataTable dtMedicines, string PrescriptionNotes, DateTime PrescriptionDate, int billID, int receivableAccountID, int serviceRevenueAccountID)
         {
             int PrescriptionID = 0;
             using (MySqlConnection conn = new MySqlConnection(clsDataAccessSettings.ConnectionString))

@@ -200,9 +200,11 @@ namespace Clinic_Business
             return clsPrescriptionData.GetPrescriptionTotalForCashier(PrescriptionID);
         }
 
-        public static bool SendToCashier(int PrescriptionID,DataTable dtDispensedItems,int ?VisitID, int userId)
+        public static bool SendToCashier(int PrescriptionID,DataTable dtDispensedItems,int ?VisitID, int userId,int receivableAccountID,
+        int medicineRevenueAccountID, int serviceRevenueAccountID)
         {
-            return clsPrescriptionData.SendToCashier(PrescriptionID, dtDispensedItems,VisitID, userId);
+            return clsPrescriptionData.SendToCashier(PrescriptionID, dtDispensedItems,VisitID, userId,  receivableAccountID,
+         medicineRevenueAccountID, serviceRevenueAccountID);
         }
 
         public  bool IsPrescriptionPending()
@@ -212,4 +214,3 @@ namespace Clinic_Business
 
     }
 }
-;

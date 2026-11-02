@@ -35,7 +35,7 @@ namespace YamyProject
             BindCombos.PopulateAllLevel4Account(cmbAccount);
             if (type == "Customer")
             {
-                cmbAccount.SelectedValue = BindCombos.SelectDefaultLevelAccount("Customer");
+                cmbAccount.SelectedValue = BindCombos.SelectDefaultLevelAccount("Patient");
             } else if (type == "Vendor")
             {
                 cmbAccount.SelectedValue = BindCombos.SelectDefaultLevelAccount("Vendor");

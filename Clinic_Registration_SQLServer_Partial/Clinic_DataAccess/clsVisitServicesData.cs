@@ -113,6 +113,9 @@ namespace Clinic_DataAccess
                 1,
                 transaction);
 
+            decimal totalServiceAmount = dtServices.AsEnumerable()
+                .Sum(row => Convert.ToDecimal(row["SavedServicePrice"]) * Convert.ToDecimal(row["Quantity"]) - (row["Discount"] == DBNull.Value ? 0m : Convert.ToDecimal(row["Discount"])));
+
             return true;
         }
         public static bool DeleteVisitServices(int VisitID, MySqlTransaction transaction)
@@ -130,6 +133,7 @@ namespace Clinic_DataAccess
 
 
         }
+
 
     }
 }

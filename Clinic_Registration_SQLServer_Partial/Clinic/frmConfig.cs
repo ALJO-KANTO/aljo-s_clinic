@@ -110,6 +110,7 @@ namespace Clinic
                 // STEP 3: Apply migrations
                 ClinicDatabase.ApplyMigrations();
                 ClinicDatabase.EnsureLaboratoryTables();
+                ClinicDatabase.BackfillLabRequestPrices();
                 MessageBox.Show(
                     "Database configured successfully.\nPlease restart the application.",
                     "Success",

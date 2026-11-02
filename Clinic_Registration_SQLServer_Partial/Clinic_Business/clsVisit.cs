@@ -20,6 +20,7 @@ namespace Clinic_Business
         public int CreatedByUserID { get; set; }
         public clsPrescription PrescriptionInfo { get; set; }
         public DataTable dtServices { get; set; }
+
         public enum enVisitStatus : byte
         {
             InQueue = 1,
@@ -45,7 +46,7 @@ namespace Clinic_Business
 
         private clsVisit(int VisitID, int PatientID, int DoctorID, int AppointmentID,
                          string Diagnosis, string VisitNotes, DateTime VisitDate,
-                         byte VisitStatus, int CreatedByUserID)
+                         byte VisitStatus, int CreatedByUserID, int BillID, int ReceivableAccountID, int ServiceRevenueAccountID)
         {
             this.VisitID = VisitID;
             this.PatientID = PatientID;
@@ -175,10 +176,11 @@ namespace Clinic_Business
             DateTime VisitDate = DateTime.Now;
             byte VisitStatus = 0;
             int CreatedByUserID = -1;
+            int BillID = -1, ReceivableAccountID = -1, ServiceRevenueAccountID = -1;
 
             if (clsVisitData.GetVisitByID(VisitID, ref PatientID, ref Diagnosis, ref VisitDate, ref AppointmentID, ref VisitNotes, ref DoctorID, ref VisitStatus, ref CreatedByUserID))
             {
-                return new clsVisit(VisitID, PatientID, DoctorID, AppointmentID, Diagnosis, VisitNotes, VisitDate, VisitStatus, CreatedByUserID);
+                return new clsVisit(VisitID, PatientID, DoctorID, AppointmentID, Diagnosis, VisitNotes, VisitDate, VisitStatus, CreatedByUserID, BillID, ReceivableAccountID, ServiceRevenueAccountID);
             }
             return null;
         }

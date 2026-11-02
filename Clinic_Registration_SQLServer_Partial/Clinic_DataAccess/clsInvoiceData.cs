@@ -52,8 +52,7 @@ namespace Clinic_DataAccess
                 {
                     // استدعاء الـ View بالكامل
                     string query = @"  SELECT (Subtotal+TotalDiscount) AS Subtotal,PaymentAmount ,TotalDiscount,Subtotal AS FinalTotal
-                                                FROM ClinicDB.dbo.View_BillSummaries
-                                                 Where BillID=@BillID;";
+FROM View_BillSummaries                                                 Where BillID=@BillID;";
 
                     using (MySqlCommand command = new MySqlCommand(query, connection))
                     {
@@ -113,50 +112,86 @@ namespace Clinic_DataAccess
             return dt;
         }
 
-        public static bool GetINVoiceAndPatientDetalis(int BillID, ref int InVoiceNumber, ref DateTime InVoiceDate, ref int PateintID, ref string PatientName)
+
+        public static bool GetINVoiceAndPatientDetalis(
+            int BillID,
+            ref int InVoiceNumber,
+            ref DateTime InVoiceDate,
+            ref int PateintID,
+            ref string PatientName)
         {
             try
             {
-                using (MySqlConnection connection = new MySqlConnection(clsDataAccessSettings.ConnectionString))
+                using (MySqlConnection connection =
+                    new MySqlConnection(
+                        clsDataAccessSettings.ConnectionString))
                 {
-                    // استدعاء الـ View بالكامل
-                    string query = @"Select  Pay.PaymentID As InvoiceNumber,
-                                        FORMAT(Pay.PaymentDate,'dd/mm/yyyy')As InvoiceDate,
-                                         IFNULL(Per.FullName,'Pharmysy Sales')AS PatienName,
-                                         IFNULL(Pat.PatientID,-1)AS PatientID
-                                         From Payments Pay JOIN Bills B ON Pay.BillID=B.BillID
-                                          Left JOIN Visits V ON B.VisitID=V.VisitID
-                                          left Join Patients Pat ON V.PatientID=Pat.PatientID
-                                          left join Persons Per ON Pat.PersonID=Per.PersonID
-                                                  Where Pay.BillID=@BillID;
-";
+                    string query = @"
+                SELECT
+                    B.BillNumber AS InvoiceNumber,
+                    B.BillDate AS InvoiceDate,
+                    IFNULL(
+                        Per.FullName,
+                        'Pharmacy Sales'
+                    ) AS PatienName,
+                    IFNULL(
+                        Pat.PatientID,
+                        -1
+                    ) AS PatientID
+                FROM Bills B
+                LEFT JOIN Visits V
+                    ON B.VisitID = V.VisitID
+                LEFT JOIN Patients Pat
+                    ON V.PatientID = Pat.PatientID
+                LEFT JOIN Persons Per
+                    ON Pat.PersonID = Per.PersonID
+                WHERE B.BillID = @BillID
+                LIMIT 1;";
 
-                    using (MySqlCommand command = new MySqlCommand(query, connection))
+                    using (MySqlCommand command =
+                        new MySqlCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@BillID", BillID);
+                        command.Parameters.AddWithValue(
+                            "@BillID", BillID);
+
                         connection.Open();
 
-                        using (MySqlDataReader reader = command.ExecuteReader())
+                        using (MySqlDataReader reader =
+                            command.ExecuteReader())
                         {
-                            if (reader.Read())
-                            {
-                                InVoiceNumber = (int)reader["InvoiceNumber"];
-                                InVoiceDate = (DateTime)reader["InvoiceDate"];
-                                PateintID = (int)reader["PatientID"];
-                                PatientName = reader["PatienName"].ToString();
+                            if (!reader.Read())
+                                return false;
 
-                                return true;
-                            }
+                            InVoiceNumber =
+                                reader["InvoiceNumber"] == DBNull.Value
+                                    ? 0
+                                    : Convert.ToInt32(
+                                        reader["InvoiceNumber"]);
+
+                            InVoiceDate =
+                                Convert.ToDateTime(
+                                    reader["InvoiceDate"]);
+
+                            PateintID =
+                                Convert.ToInt32(
+                                    reader["PatientID"]);
+
+                            PatientName =
+                                reader["PatienName"].ToString();
+
+                            return true;
                         }
                     }
                 }
             }
             catch (MySqlException ex)
             {
-                clsGlobalLogger.LogMySqlException(ex, clsGlobalLogger.LogLevel.Error);
+                clsGlobalLogger.LogMySqlException(
+                    ex,
+                    clsGlobalLogger.LogLevel.Error);
             }
-            return false;
 
+            return false;
         }
         #endregion
     }

@@ -399,15 +399,51 @@ namespace Clinic.Medical_Services.Pharmaciy
                 MessageBox.Show("Total amount must be greater than zero. Please check dispensed quantities.", "Invalid Amount", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
+            int receivableAccountID = BindCombos.SelectDefaultLevelAccount("Patient");
+        int medicineRevenueAccountID = BindCombos.SelectDefaultLevelAccount("Medicine Revenue");
+            int ServiceRevenueAccountID = BindCombos.SelectDefaultLevelAccount("Service Revenue");
+    //        MessageBox.Show(
+    //$"Receivable Account ID: {receivableAccountID}\n" +
+    //$"Medicine Revenue Account ID: {medicineRevenueAccountID}\n" +
+    //$"Service Revenue Account ID: {ServiceRevenueAccountID}",
+    //"Account Configuration");
+            try
+            {
+                bool result = clsPrescription.SendToCashier(
+                    _currentPrescriptionId,
+                    dv.ToTable(),
+                    _VisitID,
+                    clsGlobal.CurrentUser.UserID,
+                    receivableAccountID,
+                    medicineRevenueAccountID,
+                    ServiceRevenueAccountID);
 
-            if (clsPrescription.SendToCashier(_currentPrescriptionId, dv.ToTable(), _VisitID, clsGlobal.CurrentUser.UserID))
-            {
-                MessageBox.Show("Prescription billing details have been successfully forwarded to accounting.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                _RefrashData();
+                if (result)
+                {
+                    MessageBox.Show(
+                        "Prescription billing details have been successfully forwarded to accounting.",
+                        "Success",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+
+                    _RefrashData();
+                }
+                else
+                {
+                    MessageBox.Show(
+                        "SendToCashier returned false. Check the business and data-access layers.",
+                        "Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                MessageBox.Show("Failed to forward the prescription invoice to accounting. Please try again.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(
+                    ex.ToString(),
+                    "Send To Accounting - Actual Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
             }
         }
 

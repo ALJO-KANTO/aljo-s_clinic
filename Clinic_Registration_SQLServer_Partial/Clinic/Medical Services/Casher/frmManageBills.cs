@@ -15,13 +15,25 @@ namespace Clinic.Medical_Services.Casher
     {
         private DataView _dvBills = new DataView();
         private DataTable _dtBills = new DataTable();
-
-        public frmManageBills()
+        private readonly int _filterBillID;
+        private bool _isFormLoaded = false;
+        // Normal Billing - required by clsFormHelper.ShowForm<T>()
+        public frmManageBills() : this(-1)
         {
+        }
+
+        // Laboratory Billing - opens a specific BillID
+        public frmManageBills(int filterBillID)
+        {
+            _filterBillID = filterBillID;
+
             InitializeComponent();
-            TranslationHelper.TranslateAnyForm(this, TranslationClass.IsArabic);
-            // Use the existing TranslationClass method for this form.
+
+            TranslationHelper.TranslateAnyForm(
+                this, TranslationClass.IsArabic);
+
             ApplyBillFormTranslation();
+
 
             txtSearchByPatientName.TextChanged +=
                 txtSearchByPatientName_TextChanged;
@@ -51,6 +63,9 @@ namespace Clinic.Medical_Services.Casher
 
             dgMasterBillList.CellFormatting +=
                 dgMasterBillList_CellFormatting;
+
+            dgMasterBillList.CellContentClick -=
+     dgMasterBillList_CellContentClick;
 
             dgMasterBillList.CellContentClick +=
                 dgMasterBillList_CellContentClick;
@@ -146,7 +161,6 @@ namespace Clinic.Medical_Services.Casher
             chePartial.Checked = true;
             chePaid.Checked = true;
 
-            // Show all dates initially
             CheckBox chkAllDates = this.Controls
                 .Find("chkAllDates", true)
                 .OfType<CheckBox>()
@@ -155,10 +169,11 @@ namespace Clinic.Medical_Services.Casher
             if (chkAllDates != null)
                 chkAllDates.Checked = true;
 
+            _isFormLoaded = true;
+
             _RefreshBillsList();
             ApplyBillFormTranslation();
         }
-
         private void _RefreshBillsList()
         {
             try
@@ -286,6 +301,13 @@ namespace Clinic.Medical_Services.Casher
 
         private void _UpdateKPICards(DataTable dt)
         {
+            if (lblCountPending == null ||
+    lblCountPartial == null ||
+    lblCountPaid == null ||
+    dateTimePicker1 == null)
+            {
+                return;
+            }
             lblCountPending.Text = "0";
             lblCountPartial.Text = "0";
             lblCountPaid.Text = "0";
@@ -344,9 +366,23 @@ namespace Clinic.Medical_Services.Casher
 
         private void _ApplyAdvancedFilter()
         {
-            if (_dtBills == null || _dvBills == null)
+            if (!_isFormLoaded ||
+                _dtBills == null ||
+                _dvBills == null ||
+                dgMasterBillList == null)
                 return;
 
+            // Laboratory-specific billing filter
+            if (_filterBillID > 0)
+            {
+                if (!_dtBills.Columns.Contains("BillID"))
+                    return;
+
+                _dvBills.RowFilter = "BillID = " + _filterBillID;
+                dgMasterBillList.Refresh();
+                _UpdateKPICards(_dvBills.ToTable());
+                return;
+            }
             if (!_dtBills.Columns.Contains("Status") ||
                 !_dtBills.Columns.Contains("BillDate") ||
                 !_dtBills.Columns.Contains("PatientName"))
@@ -509,13 +545,7 @@ namespace Clinic.Medical_Services.Casher
             else if (columnName == "btnPayAction")
             {
                 // Do not infer an empty bill if ItemsTotal was not loaded.
-                if (status == "Pending" && hasItemDetails && IsEmptyBill(itemsTotal))
-                {
-                    e.Value = "Delete";
-                    e.CellStyle.BackColor = Color.FromArgb(120, 40, 40);
-                    e.CellStyle.ForeColor = Color.White;
-                }
-                else if (status == "Pending" || status == "Partial")
+                if (status == "Pending" || status == "Partial")
                 {
                     e.Value = status == "Partial" ? "Complete" : "Pay";
                     e.CellStyle.BackColor = Color.FromArgb(14, 114, 95);
@@ -523,7 +553,10 @@ namespace Clinic.Medical_Services.Casher
                 }
                 else
                 {
-                    e.Value = status == "Paid" || status == "Refunded" ? "Print" : "Locked";
+                    e.Value = status == "Paid" || status == "Refunded"
+                        ? "Print"
+                        : "Locked";
+
                     e.CellStyle.BackColor = Color.FromArgb(28, 58, 68);
                     e.CellStyle.ForeColor = Color.FromArgb(0, 210, 190);
                 }
@@ -609,16 +642,25 @@ namespace Clinic.Medical_Services.Casher
                 if (currentStatus != "Pending" && currentStatus != "Partial")
                     return;
 
-                if (hasItemDetails && IsEmptyBill(itemsTotal) && currentStatus == "Pending")
+                try
                 {
-                    // No delete method is currently implemented. Never show a false success.
-                    MessageBox.Show("Delete bill is not implemented yet.",
-                        "Action Unavailable", MessageBoxButtons.OK,
-                        MessageBoxIcon.Information);
-                    return;
+                    using (frmProcessPayments frm =
+                        new frmProcessPayments(billID))
+                    {
+                        frm.ShowDialog(this);
+                    }
+
+                    _RefreshBillsList();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(
+                        ex.ToString(),
+                        "Payment Form Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
                 }
 
-                clsFormHelper.ShowForm(() => new frmProcessPayments(billID), _RefreshBillsList);
                 return;
             }
 

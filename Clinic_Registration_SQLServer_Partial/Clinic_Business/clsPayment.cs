@@ -29,12 +29,26 @@ namespace Clinic_Business
             PaymentAmount = 0.0m;
             PaymentDate=DateTime.Now;
             PaymentMethod = "Cash";
+            DebitAccountID = -1;
+            CreditAccountID = -1;
         }
+
+
+        public int DebitAccountID { get; set; }
+        public int CreditAccountID { get; set; }
 
         private bool _AddPayment()
         {
-            return clsPaymentData.AddPaymentAndSetStatus(BillID, PaymentAmount,PaymentMethod,CreatedByUserID,(byte)Status);
+            return clsPaymentData.AddPaymentAndSetStatus(
+                BillID,
+                PaymentAmount,
+                PaymentMethod,
+                CreatedByUserID,
+                (byte)Status,
+                DebitAccountID,
+                CreditAccountID);
         }
+
 
         public bool Save()
         {

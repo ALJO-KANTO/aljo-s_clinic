@@ -725,7 +725,7 @@ namespace Clinic.Medical_Services.Appointment
                     // "Cash" = Default Account For Cash,"Card (POS)" = Default Account For Bank,"Bank Transfer" =Default Account For Bank
 
                     int debitAccountId = BindCombos.SelectDefaultLevelAccount(paymentMethod == "Cash" ? "Default Account For Cash" : "Default Account For Bank");  // Cash or card clearing account
-                    int creditAccountId = BindCombos.SelectDefaultLevelAccount("Sales"); // here category name sales is accountid of Consultation Fee Revenue
+                    int creditAccountId = BindCombos.SelectDefaultLevelAccount("Consultation Revenue"); // here category name sales is accountid of Consultation Fee Revenue
 
                     // 4. Perform check-in
                     bool success = clsBillingService.CheckInPatient(

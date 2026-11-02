@@ -380,9 +380,44 @@ namespace Clinic.Medical_Services.Casher
                 return;
             }
 
+            string paymentMethod;
+
+            if (rdbCreditCard.Checked)
+                paymentMethod = "Credit Card";
+            else if (rdbCash.Checked)
+                paymentMethod = "Cash";
+            else
+                paymentMethod = "InSurance";
+
+            int debitAccountId =
+                BindCombos.SelectDefaultLevelAccount(
+                    paymentMethod == "Cash"
+                        ? "Default Account For Cash"
+                       : paymentMethod ==  "Insurance"
+                       ? "Insurance"
+                        : "Default Account For Bank");
+
+            int creditAccountId =
+                BindCombos.SelectDefaultLevelAccount(
+                    "Patient");
+
+            if (debitAccountId <= 0 || creditAccountId <= 0)
+            {
+                MessageBox.Show(
+                    "Cash/Bank or Accounts Receivable account is not configured.",
+                    "Accounting Configuration",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
+                return;
+            }
+
             clsPayment Payment = new clsPayment();
 
             Payment.BillID = _BillID;
+            Payment.PaymentMethod = paymentMethod;
+            Payment.DebitAccountID = debitAccountId;
+            Payment.CreditAccountID = creditAccountId;
 
             if (rdbCreditCard.Checked)
                 Payment.PaymentMethod = "Credit Card";

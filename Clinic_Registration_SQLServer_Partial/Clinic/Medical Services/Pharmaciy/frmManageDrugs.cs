@@ -43,7 +43,7 @@ namespace Clinic.Medical_Services.Pharmaciy
             BindCombos.PopulateWarehouse(cmbWarehouse);
             BindCombos.PopulateItemTax(nudTaxRate);
 
-            IncomeAccount = BindCombos.SelectDefaultLevelAccount("Sales");
+            IncomeAccount = BindCombos.SelectDefaultLevelAccount("Consultation Revenue");
             AssetAccount = BindCombos.SelectDefaultLevelAccount("Inventory");
             COGSAccount = BindCombos.SelectDefaultLevelAccount("COGS");
         }

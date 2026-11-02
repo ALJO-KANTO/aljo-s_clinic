@@ -145,7 +145,36 @@ namespace Clinic
                     UserRole.Nurse
                 );
             }
-            private void OpenLaboratory()
+        private void OpenReceptionLabRequest()
+        {
+            OpenIfAuthorized(
+                () =>
+                {
+                    try
+                    {
+                        using (frmLaboratory frm = new frmLaboratory())
+                        {
+                            frm.StartPosition =
+                                FormStartPosition.CenterParent;
+
+                            frm.ShowDialog(this);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(
+                            ex.ToString(),
+                            "Unable to Open Laboratory Request",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error
+                        );
+                    }
+                },
+                UserRole.Admin,
+                UserRole.Receptionist
+            );
+        }
+        private void OpenLaboratory()
             {
                 OpenIfAuthorized(
                     () =>

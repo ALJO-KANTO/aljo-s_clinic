@@ -252,6 +252,7 @@ namespace Clinic_DataAccess
                 }
             }
         }
+
         public static bool UpdateBillNumber(int BillID, MySqlTransaction transaction)
         {
             string query = @"
