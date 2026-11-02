@@ -3962,140 +3962,7 @@ WHERE a.AppointmentFees > 0;
                         },
 
 
-new DatabaseMigration
-{
-    Version = "20261102_001",
-    Description = "Separate direct laboratory bill items",
-    Sql = @"
-        CREATE OR REPLACE VIEW View_BillItems AS
 
-        -- Medicines belonging to normal visit bills only
-        SELECT
-            B.BillID,
-
-            CONVERT('Medicine' USING utf8mb4)
-                COLLATE utf8mb4_unicode_ci AS ItemType,
-
-            CONVERT(PD.SavedMedicineName USING utf8mb4)
-                COLLATE utf8mb4_unicode_ci AS ItemName,
-
-            PD.Quantity,
-            PD.SavedMedicinePrice AS Price,
-            PD.SavedMedicinePrice * PD.Quantity AS Total
-
-        FROM prescriptiondetails PD
-
-        INNER JOIN prescriptions PR
-            ON PD.PrescriptionID = PR.PrescriptionID
-
-        INNER JOIN bills B
-            ON PR.VisitID = B.VisitID
-
-        WHERE NOT EXISTS
-        (
-            SELECT 1
-            FROM labrequests LR
-            WHERE LR.BillID = B.BillID
-        )
-
-        UNION ALL
-
-        -- Services belonging to normal visit bills only
-        SELECT
-            B.BillID,
-
-            CONVERT('Service' USING utf8mb4)
-                COLLATE utf8mb4_unicode_ci AS ItemType,
-
-            CONVERT(S.ServiceName USING utf8mb4)
-                COLLATE utf8mb4_unicode_ci AS ItemName,
-
-            VS.Quantity,
-            VS.SavedServicePrice AS Price,
-            VS.SavedServicePrice * VS.Quantity AS Total
-
-        FROM visitservices VS
-
-        INNER JOIN services S
-            ON VS.ServiceID = S.ServiceID
-
-        INNER JOIN bills B
-            ON VS.VisitID = B.VisitID
-
-        WHERE NOT EXISTS
-        (
-            SELECT 1
-            FROM labrequests LR
-            WHERE LR.BillID = B.BillID
-        )
-
-        UNION ALL
-
-        -- Appointment fees on normal visit bills only
-        SELECT
-            B.BillID,
-
-            CONVERT('Appointment' USING utf8mb4)
-                COLLATE utf8mb4_unicode_ci AS ItemType,
-
-            CONVERT('Appointment Fees' USING utf8mb4)
-                COLLATE utf8mb4_unicode_ci AS ItemName,
-
-            1 AS Quantity,
-            A.AppointmentFees AS Price,
-            A.AppointmentFees AS Total
-
-        FROM appointments A
-
-        INNER JOIN visits V
-            ON A.AppointmentID = V.AppointmentID
-
-        INNER JOIN bills B
-            ON V.VisitID = B.VisitID
-
-        WHERE A.AppointmentFees > 0
-
-          AND NOT EXISTS
-          (
-              SELECT 1
-              FROM labrequests LR
-              WHERE LR.BillID = B.BillID
-          )
-
-        UNION ALL
-
-        -- Exactly the test linked to this laboratory bill
-        SELECT
-            LR.BillID,
-
-            CONVERT('Laboratory' USING utf8mb4)
-                COLLATE utf8mb4_unicode_ci AS ItemType,
-
-            CONVERT(LT.TestName USING utf8mb4)
-                COLLATE utf8mb4_unicode_ci AS ItemName,
-
-            1 AS Quantity,
-
-            COALESCE(
-                LR.SavedTestPrice,
-                LT.TestPrice,
-                0
-            ) AS Price,
-
-            COALESCE(
-                LR.SavedTestPrice,
-                LT.TestPrice,
-                0
-            ) AS Total
-
-        FROM labrequests LR
-
-        INNER JOIN laboratorytests LT
-            ON LT.TestID = LR.TestID
-
-        WHERE LR.BillID IS NOT NULL;
-    "
-},
 
 
                         new DatabaseMigration
@@ -4306,7 +4173,140 @@ LEFT JOIN laboratorytests LT
                                     ON B.VisitID = M.VisitID;
                             "
                         },
+                        new DatabaseMigration
+{
+    Version = "20261102_001A",
+    Description = "Separate direct laboratory bill items",
+    Sql = @"
+        CREATE OR REPLACE VIEW View_BillItems AS
 
+        -- Medicines belonging to normal visit bills only
+        SELECT
+            B.BillID,
+
+            CONVERT('Medicine' USING utf8mb4)
+                COLLATE utf8mb4_unicode_ci AS ItemType,
+
+            CONVERT(PD.SavedMedicineName USING utf8mb4)
+                COLLATE utf8mb4_unicode_ci AS ItemName,
+
+            PD.Quantity,
+            PD.SavedMedicinePrice AS Price,
+            PD.SavedMedicinePrice * PD.Quantity AS Total
+
+        FROM prescriptiondetails PD
+
+        INNER JOIN prescriptions PR
+            ON PD.PrescriptionID = PR.PrescriptionID
+
+        INNER JOIN bills B
+            ON PR.VisitID = B.VisitID
+
+        WHERE NOT EXISTS
+        (
+            SELECT 1
+            FROM labrequests LR
+            WHERE LR.BillID = B.BillID
+        )
+
+        UNION ALL
+
+        -- Services belonging to normal visit bills only
+        SELECT
+            B.BillID,
+
+            CONVERT('Service' USING utf8mb4)
+                COLLATE utf8mb4_unicode_ci AS ItemType,
+
+            CONVERT(S.ServiceName USING utf8mb4)
+                COLLATE utf8mb4_unicode_ci AS ItemName,
+
+            VS.Quantity,
+            VS.SavedServicePrice AS Price,
+            VS.SavedServicePrice * VS.Quantity AS Total
+
+        FROM visitservices VS
+
+        INNER JOIN services S
+            ON VS.ServiceID = S.ServiceID
+
+        INNER JOIN bills B
+            ON VS.VisitID = B.VisitID
+
+        WHERE NOT EXISTS
+        (
+            SELECT 1
+            FROM labrequests LR
+            WHERE LR.BillID = B.BillID
+        )
+
+        UNION ALL
+
+        -- Appointment fees on normal visit bills only
+        SELECT
+            B.BillID,
+
+            CONVERT('Appointment' USING utf8mb4)
+                COLLATE utf8mb4_unicode_ci AS ItemType,
+
+            CONVERT('Appointment Fees' USING utf8mb4)
+                COLLATE utf8mb4_unicode_ci AS ItemName,
+
+            1 AS Quantity,
+            A.AppointmentFees AS Price,
+            A.AppointmentFees AS Total
+
+        FROM appointments A
+
+        INNER JOIN visits V
+            ON A.AppointmentID = V.AppointmentID
+
+        INNER JOIN bills B
+            ON V.VisitID = B.VisitID
+
+        WHERE A.AppointmentFees > 0
+
+          AND NOT EXISTS
+          (
+              SELECT 1
+              FROM labrequests LR
+              WHERE LR.BillID = B.BillID
+          )
+
+        UNION ALL
+
+        -- Exactly the test linked to this laboratory bill
+        SELECT
+            LR.BillID,
+
+            CONVERT('Laboratory' USING utf8mb4)
+                COLLATE utf8mb4_unicode_ci AS ItemType,
+
+            CONVERT(LT.TestName USING utf8mb4)
+                COLLATE utf8mb4_unicode_ci AS ItemName,
+
+            1 AS Quantity,
+
+            COALESCE(
+                LR.SavedTestPrice,
+                LT.TestPrice,
+                0
+            ) AS Price,
+
+            COALESCE(
+                LR.SavedTestPrice,
+                LT.TestPrice,
+                0
+            ) AS Total
+
+        FROM labrequests LR
+
+        INNER JOIN laboratorytests LT
+            ON LT.TestID = LR.TestID
+
+        WHERE LR.BillID IS NOT NULL;
+    "
+},
 
 new DatabaseMigration
 {
