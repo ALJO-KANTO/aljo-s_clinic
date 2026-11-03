@@ -296,7 +296,9 @@ namespace Clinic.Medical_Services.Casher
             int presc = GetPrescriptionCount(itemsTotal);
             int pharm = GetPharmacySaleCount(itemsTotal);
 
-            return serv == 0 && presc == 0 && pharm == 0;
+            // Lab-only invoices are not empty: a batch may contain many tests.
+            bool hasLabTests = Regex.IsMatch(itemsTotal ?? "", @"\d+\s+Lab Tests?", RegexOptions.IgnoreCase);
+            return serv == 0 && presc == 0 && pharm == 0 && !hasLabTests;
         }
 
         private void _UpdateKPICards(DataTable dt)
@@ -587,7 +589,8 @@ namespace Clinic.Medical_Services.Casher
             }
             else if (columnName == "btnCancelAction")
             {
-                bool canCancel = status == "Pending" && hasItemDetails && !hasServices;
+                bool isLabBill = Regex.IsMatch(itemsTotal ?? "", @"\d+\s+Lab Tests?", RegexOptions.IgnoreCase);
+                bool canCancel = status == "Pending" && hasItemDetails && !hasServices && !isLabBill;
                 e.Value = canCancel ? "Cancel" : "Locked";
                 e.CellStyle.BackColor = canCancel
                     ? Color.FromArgb(120, 40, 40) : Color.FromArgb(20, 43, 50);

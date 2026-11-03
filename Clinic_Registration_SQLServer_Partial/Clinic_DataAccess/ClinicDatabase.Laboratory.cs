@@ -168,21 +168,86 @@ namespace Clinic_DataAccess
                 }
             }
         }
-        public static DataTable GetLabRequests(string search = "", string status = "All")
+
+        public static DataTable GetLabRequests(
+            string search = "",
+            string status = "All")
         {
-            return ExecuteDataTable(@"SELECT r.LabRequestID, r.VisitID,
-                pe.FullName AS PatientName, lt.TestName,
-                r.RequestedAt, r.Status, r.ResultValue, r.ResultNotes, r.ResultedAt
-                FROM labrequests r
-                INNER JOIN visits v ON v.VisitID=r.VisitID
-                INNER JOIN patients p ON p.PatientID=v.PatientID
-                INNER JOIN persons pe ON pe.PersonID=p.PersonID
-                INNER JOIN laboratorytests lt ON lt.TestID=r.TestID
-                WHERE (@Status='All' OR r.Status=@Status)
-                  AND (@Search='' OR pe.FullName LIKE CONCAT('%',@Search,'%')
-                    OR lt.TestName LIKE CONCAT('%',@Search,'%')
-                    OR CAST(r.LabRequestID AS CHAR) LIKE CONCAT('%',@Search,'%'))
-                ORDER BY r.RequestedAt DESC, r.LabRequestID DESC",
+            return ExecuteDataTable(@"
+        SELECT *
+        FROM
+        (
+            SELECT
+                R.LabRequestID,
+                R.VisitID,
+                R.BillID,
+                PE.FullName AS PatientName,
+                LT.TestName,
+                COALESCE(
+                    R.SavedTestPrice,
+                    LT.TestPrice,
+                    0
+                ) AS SavedTestPrice,
+                COALESCE(PAY.PaidAmount, 0) AS PaidAmount,
+                GREATEST(
+                    COALESCE(R.SavedTestPrice, LT.TestPrice, 0)
+                    - COALESCE(PAY.PaidAmount, 0),
+                    0
+                ) AS BalanceDue,
+                R.RequestedAt,
+                CASE
+                    WHEN R.Status = 'Cancelled'
+                        THEN 'Cancelled'
+                    WHEN R.Status = 'Completed'
+                        THEN 'Completed'
+                    WHEN COALESCE(
+                        R.SavedTestPrice,
+                        LT.TestPrice,
+                        0
+                    ) > 0
+                    AND COALESCE(PAY.PaidAmount, 0) >=
+                        COALESCE(
+                            R.SavedTestPrice,
+                            LT.TestPrice,
+                            0
+                        )
+                        THEN 'Paid'
+                    WHEN COALESCE(PAY.PaidAmount, 0) > 0
+                        THEN 'Partial Payment'
+                    ELSE 'Ordered'
+                END AS Status,
+                R.ResultValue,
+                R.ResultNotes,
+                R.ResultedAt
+            FROM labrequests R
+            INNER JOIN visits V
+                ON V.VisitID = R.VisitID
+            INNER JOIN patients P
+                ON P.PatientID = V.PatientID
+            INNER JOIN persons PE
+                ON PE.PersonID = P.PersonID
+            INNER JOIN laboratorytests LT
+                ON LT.TestID = R.TestID
+            LEFT JOIN
+            (
+                SELECT
+                    BillID,
+                    SUM(PaymentAmount) AS PaidAmount
+                FROM payments
+                GROUP BY BillID
+            ) PAY
+                ON PAY.BillID = R.BillID
+        ) X
+        WHERE (@Status = 'All' OR X.Status = @Status)
+          AND (
+              @Search = ''
+              OR X.PatientName LIKE CONCAT('%', @Search, '%')
+              OR X.TestName LIKE CONCAT('%', @Search, '%')
+              OR CAST(X.LabRequestID AS CHAR)
+                  LIKE CONCAT('%', @Search, '%')
+          )
+        ORDER BY X.RequestedAt DESC,
+                 X.LabRequestID DESC;",
                 new MySqlParameter("@Status", status ?? "All"),
                 new MySqlParameter("@Search", search ?? ""));
         }
@@ -366,16 +431,175 @@ namespace Clinic_DataAccess
                 }
             }
         }
-        public static bool SaveLabResult(int requestID, string result, string notes)
+
+        public static DataTable GetLabReportDetails(int requestID)
         {
-            if (string.IsNullOrWhiteSpace(result)) throw new ArgumentException("Result is required.");
-            return ExecuteNonQuery(@"UPDATE labrequests
-                SET ResultValue=@Result, ResultNotes=@Notes,
-                    ResultedAt=NOW(), Status='Completed'
-                WHERE LabRequestID=@ID AND Status IN ('Ordered','In Progress')",
-                new MySqlParameter("@Result", result.Trim()),
-                new MySqlParameter("@Notes", (object)(notes ?? "") ),
-                new MySqlParameter("@ID", requestID)) > 0;
+            return ExecuteDataTable(@"
+        SELECT
+            LR.LabRequestID,
+            LR.VisitID,
+            LR.BillID,
+            P.PatientID,
+            PE.FullName AS PatientName,
+            COALESCE(DP.FullName, 'Not Assigned') AS DoctorName,
+            LT.TestName,
+            COALESCE(LR.SavedTestPrice, LT.TestPrice, 0) AS SavedTestPrice,
+            LR.ResultValue,
+            LR.ResultNotes,
+            LR.RequestedAt,
+            LR.ResultedAt,
+            LR.Status AS RequestStatus,
+            COALESCE(PAY.PaidAmount, 0) AS PaidAmount
+        FROM labrequests LR
+        INNER JOIN visits V
+            ON V.VisitID = LR.VisitID
+        INNER JOIN patients P
+            ON P.PatientID = V.PatientID
+        INNER JOIN persons PE
+            ON PE.PersonID = P.PersonID
+        INNER JOIN laboratorytests LT
+            ON LT.TestID = LR.TestID
+        LEFT JOIN doctors D
+            ON D.DoctorID = V.DoctorID
+        LEFT JOIN persons DP
+            ON DP.PersonID = D.PersonID
+        LEFT JOIN
+        (
+            SELECT
+                BillID,
+                SUM(PaymentAmount) AS PaidAmount
+            FROM payments
+            GROUP BY BillID
+        ) PAY
+            ON PAY.BillID = LR.BillID
+        WHERE LR.LabRequestID = @RequestID;",
+                new MySqlParameter("@RequestID", requestID));
         }
+
+
+        public static bool SaveLabResult(
+            int requestID,
+            string result,
+            string notes)
+        {
+            if (string.IsNullOrWhiteSpace(result))
+                throw new ArgumentException("Result is required.");
+
+            using (MySqlConnection connection = GetConnection())
+            {
+                connection.Open();
+
+                using (MySqlTransaction transaction =
+                    connection.BeginTransaction())
+                {
+                    try
+                    {
+                        decimal testAmount;
+                        decimal paidAmount;
+                        string status;
+
+                        using (MySqlCommand cmd = new MySqlCommand(@"
+                    SELECT
+                        COALESCE(
+                            LR.SavedTestPrice,
+                            LT.TestPrice,
+                            0
+                        ) AS TestAmount,
+                        COALESCE(
+                            (
+                                SELECT SUM(PAY.PaymentAmount)
+                                FROM payments PAY
+                                WHERE PAY.BillID = LR.BillID
+                            ), 0
+                        ) AS PaidAmount,
+                        LR.Status
+                    FROM labrequests LR
+                    INNER JOIN laboratorytests LT
+                        ON LT.TestID = LR.TestID
+                    WHERE LR.LabRequestID = @RequestID
+                      AND LR.BillID IS NOT NULL
+                    FOR UPDATE;",
+                            connection, transaction))
+                        {
+                            cmd.Parameters.AddWithValue(
+                                "@RequestID", requestID);
+
+                            using (MySqlDataReader reader =
+                                cmd.ExecuteReader())
+                            {
+                                if (!reader.Read())
+                                    throw new InvalidOperationException(
+                                        "Laboratory request or bill not found.");
+
+                                testAmount = Convert.ToDecimal(
+                                    reader["TestAmount"]);
+
+                                paidAmount = Convert.ToDecimal(
+                                    reader["PaidAmount"]);
+
+                                status = Convert.ToString(
+                                    reader["Status"]);
+                            }
+                        }
+
+                        if (status == "Cancelled")
+                            throw new InvalidOperationException(
+                                "Cancelled laboratory requests cannot be completed.");
+
+                        if (status == "Completed")
+                            throw new InvalidOperationException(
+                                "This laboratory result is already completed.");
+
+                        if (status != "Ordered" &&
+                            status != "In Progress")
+                            throw new InvalidOperationException(
+                                "The request is not ready for result entry.");
+
+                        if (testAmount <= 0 ||
+                            paidAmount < testAmount)
+                            throw new InvalidOperationException(
+                                "Full payment is required before entering " +
+                                "the laboratory result. Remaining: AED " +
+                                Math.Max(0, testAmount - paidAmount)
+                                    .ToString("N2"));
+
+                        using (MySqlCommand cmd = new MySqlCommand(@"
+                    UPDATE labrequests
+                    SET ResultValue = @Result,
+                        ResultNotes = @Notes,
+                        ResultedAt = NOW(),
+                        Status = 'Completed'
+                    WHERE LabRequestID = @RequestID
+                      AND Status IN ('Ordered', 'In Progress');",
+                            connection, transaction))
+                        {
+                            cmd.Parameters.AddWithValue(
+                                "@Result", result.Trim());
+
+                            cmd.Parameters.AddWithValue(
+                                "@Notes", notes ?? "");
+
+                            cmd.Parameters.AddWithValue(
+                                "@RequestID", requestID);
+
+                            if (cmd.ExecuteNonQuery() != 1)
+                            {
+                                transaction.Rollback();
+                                return false;
+                            }
+                        }
+
+                        transaction.Commit();
+                        return true;
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
+                }
+            }
+        }
+
     }
 }

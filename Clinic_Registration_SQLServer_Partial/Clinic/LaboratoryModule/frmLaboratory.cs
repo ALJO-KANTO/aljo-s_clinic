@@ -3,6 +3,8 @@ using Clinic.Medical_Services.Casher;
 using Clinic_DataAccess;
 using System;
 using System.Data;
+using System.Collections.Generic;
+using System.Linq;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -11,14 +13,52 @@ namespace Clinic.Medical_Services.Laboratory
 {
     public partial class frmLaboratory : Form
     {
+        private DataTable _individualRequests;
+
         public frmLaboratory()
         {
             InitializeComponent();
 
+            dgvRequests.CellContentClick += dgvRequests_CellContentClick;
+            dgvRequests.CellFormatting += dgvRequests_CellFormatting;
             ApplyArabicProperties();
 
             // Keep Arabic heading centered when resized.
             header.Resize += Header_Resize;
+        }
+        private void dgvRequests_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (e.RowIndex < 0 || e.ColumnIndex < 0 ||
+                dgvRequests.Columns[e.ColumnIndex].Name != "PrintLabReport") return;
+            DataGridViewRow row = dgvRequests.Rows[e.RowIndex];
+            bool complete = Convert.ToString(row.Cells["Status"].Value) == "Completed";
+            e.Value = complete ? T("Print") : "—";
+            e.FormattingApplied = true;
+        }
+
+        private void dgvRequests_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0 || e.ColumnIndex < 0 ||
+                dgvRequests.Columns[e.ColumnIndex].Name != "PrintLabReport") return;
+            try
+            {
+                DataRow[] requests = GetGroupRequests(dgvRequests.Rows[e.RowIndex]);
+                DataRow selected = ChooseRequest(requests, true);
+                if (selected == null) return;
+                int id = Convert.ToInt32(selected["LabRequestID"]);
+                if (!string.Equals(Convert.ToString(selected["Status"]), "Completed", StringComparison.OrdinalIgnoreCase))
+                {
+                    MessageBox.Show(T("The laboratory result must be completed before printing."));
+                    return;
+                }
+                if (!ClinicDatabase.IsLabRequestPaid(id))
+                {
+                    MessageBox.Show(T("The laboratory bill must be fully paid before printing."));
+                    return;
+                }
+                using (var form = new frmLabReportPrint(id)) form.ShowDialog(this);
+            }
+            catch (Exception ex) { MessageBox.Show(ex.Message, T("Print Lab Report")); }
         }
 
         private string T(string text)
@@ -168,7 +208,7 @@ namespace Clinic.Medical_Services.Laboratory
             try
             {
                 ClinicDatabase.EnsureLaboratoryTables();
-               
+
                 ClinicDatabase.BackfillLabRequestPrices();
                 ReloadData();
             }
@@ -216,11 +256,34 @@ namespace Clinic.Medical_Services.Laboratory
                     }
                 }
 
-                dgvRequests.DataSource =
-                    ClinicDatabase.GetLabRequests(
-                        txtSearch.Text,
-                        cmbStatus.Text
-                    );
+                _individualRequests = ClinicDatabase.GetLabRequests(txtSearch.Text, cmbStatus.Text);
+                dgvRequests.DataSource = BuildGroupedRequests(_individualRequests);
+                // Add Print button column after loading the requests.
+                if (!dgvRequests.Columns.Contains("PrintLabReport"))
+                {
+                    DataGridViewButtonColumn printColumn =
+                        new DataGridViewButtonColumn();
+
+                    printColumn.Name = "PrintLabReport";
+                    printColumn.HeaderText = T("Print Report");
+                    printColumn.Text = T("Print");
+                    printColumn.UseColumnTextForButtonValue = true;
+                    printColumn.Width = 115;
+                    printColumn.MinimumWidth = 105;
+                    printColumn.AutoSizeMode =
+                        DataGridViewAutoSizeColumnMode.None;
+
+                    printColumn.FlatStyle = FlatStyle.Flat;
+                    printColumn.DefaultCellStyle.BackColor =
+                        Color.FromArgb(0, 121, 107);
+                    printColumn.DefaultCellStyle.ForeColor =
+                        Color.White;
+
+                    dgvRequests.Columns.Add(printColumn);
+                }
+
+                dgvRequests.Columns["PrintLabReport"].DisplayIndex =
+                    dgvRequests.Columns.Count - 1;
 
                 if (dgvRequests.Columns.Contains("ResultNotes"))
                     dgvRequests.Columns["ResultNotes"].Visible = false;
@@ -251,24 +314,122 @@ namespace Clinic.Medical_Services.Laboratory
             }
         }
 
-        private int SelectedRequestID()
+        // This is display-only grouping: it does not modify database bills.
+        // Billed tests group by BillID; unbilled tests group by VisitID.
+        private DataTable BuildGroupedRequests(DataTable source)
         {
-            if (dgvRequests.CurrentRow == null ||
-                dgvRequests.CurrentRow.IsNewRow)
+            DataTable grouped = new DataTable();
+            grouped.Columns.Add("LabRequestID", typeof(int));
+            grouped.Columns.Add("VisitID", typeof(int));
+            grouped.Columns.Add("BillID", typeof(string));
+            grouped.Columns.Add("PatientName", typeof(string));
+            grouped.Columns.Add("TestName", typeof(string));
+            grouped.Columns.Add("SavedTestPrice", typeof(decimal));
+            grouped.Columns.Add("PaidAmount", typeof(decimal));
+            grouped.Columns.Add("BalanceDue", typeof(decimal));
+            grouped.Columns.Add("RequestedAt", typeof(DateTime));
+            grouped.Columns.Add("Status", typeof(string));
+
+            var groups = source.AsEnumerable().GroupBy(r => Convert.ToInt32(r["VisitID"]));
+
+            foreach (var group in groups)
             {
-                return -1;
+                var rows = group.ToList();
+                var first = rows[0];
+                var billIDs = rows.Where(r => r["BillID"] != DBNull.Value)
+                    .Select(r => Convert.ToString(r["BillID"])).Distinct().ToArray();
+                bool hasUnbilled = rows.Any(r => r["BillID"] == DBNull.Value);
+                bool singleBill = billIDs.Length == 1 && !hasUnbilled;
+                decimal total = rows.Sum(r => SafeDecimal(r, "SavedTestPrice"));
+                // PaidAmount is the bill-level payment and must not be summed per test.
+                decimal paid = rows.Where(r => r["BillID"] != DBNull.Value)
+                    .GroupBy(r => Convert.ToString(r["BillID"]))
+                    .Sum(g => g.Max(r => SafeDecimal(r, "PaidAmount")));
+                string status = rows.All(r => Convert.ToString(r["Status"]) == "Completed")
+                    ? "Completed"
+                    : rows.Any(r => Convert.ToString(r["Status"]) == "In Progress")
+                        ? "In Progress"
+                        : rows.Any(r => Convert.ToString(r["Status"]) == "Ordered")
+                            ? "Ordered" : Convert.ToString(first["Status"]);
+                DataRow display = grouped.NewRow();
+                display["LabRequestID"] = Convert.ToInt32(first["LabRequestID"]);
+                display["VisitID"] = Convert.ToInt32(first["VisitID"]);
+                display["BillID"] = billIDs.Length == 0 ? "" :
+                    string.Join(", ", billIDs) + (hasUnbilled ? " + Unbilled" : "");
+                display["PatientName"] = Convert.ToString(first["PatientName"]);
+                display["TestName"] = rows.Count == 1
+                    ? Convert.ToString(first["TestName"])
+                    : rows.Count + " Tests";
+                display["SavedTestPrice"] = total;
+                display["PaidAmount"] = paid;
+                display["BalanceDue"] = Math.Max(0m, total - paid);
+                display["RequestedAt"] = rows.Max(r => Convert.ToDateTime(r["RequestedAt"]));
+                display["Status"] = status;
+                grouped.Rows.Add(display);
             }
+            return grouped;
+        }
 
-            if (!dgvRequests.Columns.Contains("LabRequestID"))
-                return -1;
+        private decimal SafeDecimal(DataRow row, string column)
+        {
+            if (!row.Table.Columns.Contains(column) || row[column] == DBNull.Value) return 0m;
+            return Convert.ToDecimal(row[column]);
+        }
 
-            object value =
-                dgvRequests.CurrentRow.Cells["LabRequestID"].Value;
+        private DataRow[] GetGroupRequests(DataGridViewRow gridRow)
+        {
+            if (_individualRequests == null || gridRow == null) return new DataRow[0];
+            int visitID = Convert.ToInt32(gridRow.Cells["VisitID"].Value);
+            return _individualRequests.AsEnumerable()
+                .Where(r => Convert.ToInt32(r["VisitID"]) == visitID).ToArray();
+        }
 
-            if (value == null || value == DBNull.Value)
-                return -1;
-
-            return Convert.ToInt32(value);
+        private DataRow ChooseRequest(DataRow[] rows, bool completedOnly = false)
+        {
+            if (rows.Length == 0) return null;
+            var eligible = completedOnly
+                ? rows.Where(r => string.Equals(Convert.ToString(r["Status"]), "Completed", StringComparison.OrdinalIgnoreCase)).ToArray()
+                : rows;
+            if (eligible.Length == 0)
+            {
+                MessageBox.Show(T("No completed laboratory tests in this group."));
+                return null;
+            }
+            if (eligible.Length == 1) return eligible[0];
+            using (var dialog = new Form())
+            {
+                dialog.Text = T("Select Laboratory Test");
+                dialog.StartPosition = FormStartPosition.CenterParent;
+                dialog.Size = new Size(680, 400);
+                dialog.RightToLeft = TranslationClass.IsArabic ? RightToLeft.Yes : RightToLeft.No;
+                dialog.RightToLeftLayout = TranslationClass.IsArabic;
+                var table = new DataTable();
+                table.Columns.Add("LabRequestID", typeof(int));
+                table.Columns.Add("TestName", typeof(string));
+                table.Columns.Add("Status", typeof(string));
+                foreach (DataRow r in eligible)
+                    table.Rows.Add(Convert.ToInt32(r["LabRequestID"]), Convert.ToString(r["TestName"]), Convert.ToString(r["Status"]));
+                var grid = new DataGridView
+                {
+                    Dock = DockStyle.Fill,
+                    DataSource = table,
+                    ReadOnly = true,
+                    SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+                    MultiSelect = false,
+                    AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+                    AllowUserToAddRows = false,
+                    RowHeadersVisible = false
+                };
+                var button = new Button { Text = T("Select"), Dock = DockStyle.Bottom, Height = 44 };
+                Action choose = () => { if (grid.CurrentRow != null) dialog.DialogResult = DialogResult.OK; };
+                button.Click += (sender, e) => choose();
+                grid.CellDoubleClick += (sender, e) => { if (e.RowIndex >= 0) choose(); };
+                dialog.Controls.Add(grid);
+                dialog.Controls.Add(button);
+                if (dialog.ShowDialog(this) != DialogResult.OK || grid.CurrentRow == null) return null;
+                int id = Convert.ToInt32(grid.CurrentRow.Cells["LabRequestID"].Value);
+                return eligible.First(r => Convert.ToInt32(r["LabRequestID"]) == id);
+            }
         }
 
         private void btnNewRequest_Click(object sender, EventArgs e)
@@ -296,104 +457,180 @@ namespace Clinic.Medical_Services.Laboratory
         {
             if (dgvRequests.CurrentRow == null)
             {
-                MessageBox.Show("Please select a laboratory request.");
+                MessageBox.Show(T("Select a lab request first."));
                 return;
             }
 
             try
             {
-                int requestID = Convert.ToInt32(
-                    dgvRequests.CurrentRow.Cells["LabRequestID"].Value);
+                DataRow[] rows = GetGroupRequests(dgvRequests.CurrentRow);
+                if (rows.Length == 0) return;
 
-                int billID =
-                    ClinicDatabase.GetOrCreateLabRequestBill(requestID);
+                // A grouped visit may contain several EXISTING invoices.
+                // Let the user choose the actual invoice; never combine
+                // previously billed/paid invoices simply for display.
+                var billGroups = rows
+                    .Where(r => r["BillID"] != DBNull.Value)
+                    .GroupBy(r => Convert.ToInt32(r["BillID"]))
+                    .OrderBy(g => g.Key)
+                    .ToList();
 
-                using (var frm = new
-                    Clinic.Medical_Services.Casher.frmManageBills(billID))
+                int billID = -1;
+                if (billGroups.Count == 1 &&
+                    rows.All(r => r["BillID"] != DBNull.Value))
                 {
-                    frm.ShowDialog(this);
+                    billID = billGroups[0].Key;
                 }
+                else
+                {
+                    using (var dialog = new Form())
+                    {
+                        dialog.Text = T("Select Laboratory Bill");
+                        dialog.StartPosition = FormStartPosition.CenterParent;
+                        dialog.Size = new Size(700, 420);
+                        dialog.MinimumSize = new Size(560, 320);
+                        dialog.RightToLeft = TranslationClass.IsArabic
+                            ? RightToLeft.Yes : RightToLeft.No;
+                        dialog.RightToLeftLayout = TranslationClass.IsArabic;
+
+                        DataTable choices = new DataTable();
+                        choices.Columns.Add("BillID", typeof(int));
+                        choices.Columns.Add("Tests", typeof(string));
+                        choices.Columns.Add("Amount", typeof(decimal));
+                        choices.Columns.Add("RequestID", typeof(int));
+
+                        foreach (var g in billGroups)
+                        {
+                            choices.Rows.Add(g.Key,
+                                g.Count() + " Tests (existing bill)",
+                                g.Sum(r => SafeDecimal(r, "SavedTestPrice")),
+                                Convert.ToInt32(g.First()["LabRequestID"]));
+                        }
+
+                        // Unbilled requests have no invoice yet. The existing
+                        // database method bills ONE request; do not imply it
+                        // creates a combined invoice for the entire visit.
+                        foreach (DataRow r in rows.Where(r => r["BillID"] == DBNull.Value))
+                        {
+                            choices.Rows.Add(-1,
+                                Convert.ToString(r["TestName"]) + " (unbilled)",
+                                SafeDecimal(r, "SavedTestPrice"),
+                                Convert.ToInt32(r["LabRequestID"]));
+                        }
+
+                        // Create columns explicitly before binding. When a grid is
+                        // not parented yet, auto-generated columns may not exist.
+                        var grid = new DataGridView
+                        {
+                            Dock = DockStyle.Fill,
+                            ReadOnly = true,
+                            AllowUserToAddRows = false,
+                            AllowUserToDeleteRows = false,
+                            RowHeadersVisible = false,
+                            MultiSelect = false,
+                            SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+                            AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+                            AutoGenerateColumns = false
+                        };
+
+                        grid.Columns.Add(new DataGridViewTextBoxColumn
+                        {
+                            Name = "BillID",
+                            DataPropertyName = "BillID",
+                            HeaderText = T("Bill ID (-1 = unbilled)")
+                        });
+                        grid.Columns.Add(new DataGridViewTextBoxColumn
+                        {
+                            Name = "Tests",
+                            DataPropertyName = "Tests",
+                            HeaderText = T("Tests")
+                        });
+                        grid.Columns.Add(new DataGridViewTextBoxColumn
+                        {
+                            Name = "Amount",
+                            DataPropertyName = "Amount",
+                            HeaderText = T("Amount"),
+                            DefaultCellStyle = new DataGridViewCellStyle { Format = "N2" }
+                        });
+                        grid.Columns.Add(new DataGridViewTextBoxColumn
+                        {
+                            Name = "RequestID",
+                            DataPropertyName = "RequestID",
+                            Visible = false
+                        });
+                        grid.DataSource = choices;
+
+                        var select = new Button
+                        {
+                            Text = T("Open / Create Selected Bill"),
+                            Dock = DockStyle.Bottom,
+                            Height = 46
+                        };
+                        select.Click += (s, args) =>
+                        {
+                            if (grid.CurrentRow != null)
+                                dialog.DialogResult = DialogResult.OK;
+                        };
+                        grid.CellDoubleClick += (s, args) =>
+                        {
+                            if (args.RowIndex >= 0)
+                                dialog.DialogResult = DialogResult.OK;
+                        };
+                        dialog.Controls.Add(grid);
+                        dialog.Controls.Add(select);
+
+                        if (dialog.ShowDialog(this) != DialogResult.OK ||
+                            grid.CurrentRow == null)
+                            return;
+
+                        int chosenBillID = Convert.ToInt32(
+                            grid.CurrentRow.Cells["BillID"].Value);
+                        if (chosenBillID > 0)
+                            billID = chosenBillID;
+                        else
+                            billID = ClinicDatabase.GetOrCreateLabRequestBill(
+                                Convert.ToInt32(grid.CurrentRow.Cells["RequestID"].Value));
+                    }
+                }
+
+                using (var form = new frmManageBills(billID))
+                    form.ShowDialog(this);
 
                 ReloadData();
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    ex.Message,
-                    "Laboratory Billing",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, T("Laboratory Billing"),
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         // =====================================================
         // UPDATED: ENTER RESULT ONLY AFTER PAYMENT
         // =====================================================
-        private void btnEnterResult_Click(
-            object sender,
-            EventArgs e)
+        private void btnEnterResult_Click(object sender, EventArgs e)
         {
-            int id = SelectedRequestID();
-
-            if (id < 1)
-            {
-                MessageBox.Show(
-                    T("Select a lab request first.")
-                );
-                return;
-            }
-
-            string status = Convert.ToString(
-                dgvRequests.CurrentRow.Cells["Status"].Value
-            );
-
-            if (string.Equals(
-                    status,
-                    "Completed",
-                    StringComparison.OrdinalIgnoreCase)
-                ||
-                string.Equals(
-                    status,
-                    "Cancelled",
-                    StringComparison.OrdinalIgnoreCase))
-            {
-                MessageBox.Show(
-                    T("Completed or cancelled requests cannot be overwritten.")
-                );
-                return;
-            }
-
+            if (dgvRequests.CurrentRow == null) { MessageBox.Show(T("Select a lab request first.")); return; }
             try
             {
-                bool isPaid =
-                    ClinicDatabase.IsLabRequestPaid(id);
-
-                if (!isPaid)
+                DataRow selected = ChooseRequest(GetGroupRequests(dgvRequests.CurrentRow));
+                if (selected == null) return;
+                int id = Convert.ToInt32(selected["LabRequestID"]);
+                string status = Convert.ToString(selected["Status"]);
+                if (status == "Completed" || status == "Cancelled")
                 {
-                    MessageBox.Show(
-                        T("Please complete laboratory payment before entering results."),
-                        T("Payment Required"),
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning
-                    );
-
+                    MessageBox.Show(T("Completed or cancelled requests cannot be overwritten."));
                     return;
                 }
-
-                using (var form = new frmLabResult(id))
+                if (!ClinicDatabase.IsLabRequestPaid(id))
                 {
-                    if (form.ShowDialog(this) == DialogResult.OK)
-                        ReloadData();
+                    MessageBox.Show(T("Please complete laboratory payment before entering results."),
+                        T("Payment Required"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
                 }
+                using (var form = new frmLabResult(id))
+                    if (form.ShowDialog(this) == DialogResult.OK) ReloadData();
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    ex.Message,
-                    T("Laboratory"),
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error
-                );
-            }
+            catch (Exception ex) { MessageBox.Show(ex.Message, T("Laboratory")); }
         }
     }
 }

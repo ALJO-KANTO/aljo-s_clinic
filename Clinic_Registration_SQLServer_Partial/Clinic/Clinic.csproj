@@ -13,7 +13,7 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
     <IsWebBootstrapper>false</IsWebBootstrapper>
-    <PublishUrl>C:\Users\aljo2\OneDrive\Desktop\YamyClinic\</PublishUrl>
+    <PublishUrl>C:\Users\aljo2\OneDrive\Desktop\YamyClinic1\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
     <UpdateEnabled>false</UpdateEnabled>
@@ -23,7 +23,7 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>2</ApplicationRevision>
+    <ApplicationRevision>3</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -725,6 +725,15 @@
     </Compile>
     <Compile Include="LaboratoryModule\frmLaboratory.Designer.cs">
       <DependentUpon>frmLaboratory.cs</DependentUpon>
+    </Compile>
+    <Compile Include="LaboratoryModule\frmLabReportPrint.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LaboratoryModule\frmLabTestConfiguration.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LaboratoryModule\frmLabTestConfiguration.Designer.cs">
+      <DependentUpon>frmLabTestConfiguration.cs</DependentUpon>
     </Compile>
     <Compile Include="LoadingForm.cs">
       <SubType>Form</SubType>

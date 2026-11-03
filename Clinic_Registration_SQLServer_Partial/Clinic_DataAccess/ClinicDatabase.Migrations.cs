@@ -1190,7 +1190,7 @@ WHERE a.AppointmentFees > 0;
                                 ADD COLUMN BillNumber VARCHAR(30) NULL;
                             "
                         },
-                        
+
                         new DatabaseMigration
                         {
                             Version = "20261019_0022",
@@ -1498,7 +1498,16 @@ WHERE a.AppointmentFees > 0;
                                                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
                             "
                         },
-
+                        new DatabaseMigration
+{
+    Version = "20261103_LAB_003_GENDER_RANGES",
+    Description = "Add male and female reference ranges to laboratory test parameters",
+    Sql = @"
+        ALTER TABLE laboratorytestparameters
+            ADD COLUMN MaleReferenceRange VARCHAR(200) NULL,
+            ADD COLUMN FemaleReferenceRange VARCHAR(200) NULL;
+    "
+},
                         new DatabaseMigration
                         {
                             Version = "20261019_ERP_003",
@@ -1864,7 +1873,7 @@ WHERE a.AppointmentFees > 0;
                             "
                         },
 
-                        new DatabaseMigration
+                                new DatabaseMigration
                         {
                             Version = "20261019_ERP_015",
                             Description = "Create tbl_advance_payment_voucher_details",
@@ -2536,6 +2545,18 @@ WHERE a.AppointmentFees > 0;
 
                         new DatabaseMigration
                         {
+                            Version = "20261102_LAB_002",
+                            Description = "Add Low, Medium and High values to laboratory tests",
+                            Sql = @"
+                                ALTER TABLE laboratorytests
+                                    ADD COLUMN LowValue DECIMAL(14,4) NULL,
+                                    ADD COLUMN MediumValue DECIMAL(14,4) NULL,
+                                    ADD COLUMN HighValue DECIMAL(14,4) NULL;
+                            "
+                        },
+
+                        new DatabaseMigration
+                        {
                             Version = "20261019_ERP_051",
                             Description = "Create tbl_purchase",
                             Sql = @"
@@ -2610,7 +2631,8 @@ WHERE a.AppointmentFees > 0;
                                                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
                             "
                         },
-                        new DatabaseMigration
+
+new DatabaseMigration
                         {
                             Version = "20261021_ERP_051",
                             Description = "Create tbl_purchase_return",
@@ -2875,7 +2897,7 @@ WHERE a.AppointmentFees > 0;
                             ADD COLUMN qty_display decimal(20,4) DEFAULT 0;
                             "
                         },
-                       
+
                         new DatabaseMigration
                         {
                             Version = "20261015_BASE_026",
@@ -3357,6 +3379,190 @@ WHERE a.AppointmentFees > 0;
                                 DEFAULT CHARSET=utf8mb4
                                 COLLATE=utf8mb4_general_ci;"
                         },
+
+new DatabaseMigration
+{
+    Version = "20261103_LAB_PARAMETERS_001",
+    Description = "Create laboratory test parameters",
+    Sql = @"
+        CREATE TABLE IF NOT EXISTS laboratorytestparameters
+        (
+            ParameterID INT NOT NULL AUTO_INCREMENT,
+            TestID INT NOT NULL,
+            ParameterName VARCHAR(200) NOT NULL,
+            Unit VARCHAR(50) NULL,
+            LowLimit DECIMAL(18,4) NULL,
+            HighLimit DECIMAL(18,4) NULL,
+            ReferenceRange VARCHAR(200) NULL,
+            MaleReferenceRange VARCHAR(200) NULL,
+            FemaleReferenceRange VARCHAR(200) NULL,
+            ResultType VARCHAR(30) NOT NULL DEFAULT 'Numeric',
+            DisplayOrder INT NOT NULL DEFAULT 0,
+            IsActive TINYINT(1) NOT NULL DEFAULT 1,
+
+            PRIMARY KEY (ParameterID),
+            INDEX IX_LabParameters_Test (TestID),
+
+            CONSTRAINT FK_LabParameters_Test
+                FOREIGN KEY (TestID)
+                REFERENCES laboratorytests(TestID)
+        ) ENGINE=InnoDB
+        DEFAULT CHARSET=utf8mb4
+        COLLATE=utf8mb4_unicode_ci;"
+},
+
+new DatabaseMigration
+{
+    Version = "20261103_LAB_PARAMETER_RESULTS_002",
+    Description = "Create patient laboratory parameter results",
+    Sql = @"
+        CREATE TABLE IF NOT EXISTS laboratoryparameterresults
+        (
+            ResultID INT NOT NULL AUTO_INCREMENT,
+            LabRequestID INT NOT NULL,
+            ParameterID INT NOT NULL,
+            ResultValue VARCHAR(500) NOT NULL,
+            ResultFlag VARCHAR(30) NULL,
+            UnitSnapshot VARCHAR(50) NULL,
+            ReferenceRangeSnapshot VARCHAR(200) NULL,
+            RecordedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+            PRIMARY KEY (ResultID),
+
+            UNIQUE KEY UQ_LabParameterResult
+                (LabRequestID, ParameterID),
+
+            CONSTRAINT FK_LabParameterResult_Request
+                FOREIGN KEY (LabRequestID)
+                REFERENCES labrequests(LabRequestID),
+
+            CONSTRAINT FK_LabParameterResult_Parameter
+                FOREIGN KEY (ParameterID)
+                REFERENCES laboratorytestparameters(ParameterID)
+        ) ENGINE=InnoDB
+        DEFAULT CHARSET=utf8mb4
+        COLLATE=utf8mb4_unicode_ci;"
+},
+
+
+new DatabaseMigration
+{
+    Version = "20261102_LAB_002_PARAMETERS",
+    Description = "Create laboratory test parameters with reference ranges",
+    Sql = @"
+        CREATE TABLE IF NOT EXISTS laboratorytestparameters
+        (
+            ParameterID INT NOT NULL AUTO_INCREMENT,
+            TestID INT NOT NULL,
+            ParameterName VARCHAR(200) NOT NULL,
+            Unit VARCHAR(50) NULL,
+            LowLimit DECIMAL(14,4) NULL,
+            HighLimit DECIMAL(14,4) NULL,
+            ReferenceRange VARCHAR(200) NULL,
+            ResultType VARCHAR(20) NOT NULL DEFAULT 'Numeric',
+            DisplayOrder INT NOT NULL DEFAULT 0,
+            IsActive TINYINT(1) NOT NULL DEFAULT 1,
+
+            PRIMARY KEY (ParameterID),
+            INDEX IX_LabParameters_TestID (TestID),
+
+            CONSTRAINT FK_LabParameters_Test
+                FOREIGN KEY (TestID)
+                REFERENCES laboratorytests(TestID)
+        ) ENGINE=InnoDB
+          DEFAULT CHARSET=utf8mb4
+          COLLATE=utf8mb4_unicode_ci;
+    "
+},
+
+new DatabaseMigration
+{
+    Version = "20261103_LAB_RESULT_ENTRIES_004",
+    Description = "Create lab parameter result entries for new result form",
+    Sql = @"
+        CREATE TABLE IF NOT EXISTS labparameterresultentries
+        (
+            ResultID INT NOT NULL AUTO_INCREMENT,
+            LabRequestID INT NOT NULL,
+            ParameterID INT NOT NULL,
+
+            ObservedValue VARCHAR(500) NULL,
+            NumericValue DECIMAL(18,4) NULL,
+
+            SavedParameterName VARCHAR(200) NOT NULL,
+            SavedUnit VARCHAR(50) NULL,
+            SavedReferenceRange VARCHAR(200) NULL,
+
+            ResultFlag VARCHAR(30) NULL,
+            ResultNotes TEXT NULL,
+            EnteredAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+            PRIMARY KEY (ResultID),
+
+            UNIQUE KEY UQ_LabEntry_RequestParameter
+                (LabRequestID, ParameterID),
+
+            INDEX IX_LabEntry_ParameterID (ParameterID),
+
+            CONSTRAINT FK_LabEntry_Request
+                FOREIGN KEY (LabRequestID)
+                REFERENCES labrequests(LabRequestID),
+
+            CONSTRAINT FK_LabEntry_Parameter
+                FOREIGN KEY (ParameterID)
+                REFERENCES laboratorytestparameters(ParameterID)
+
+        ) ENGINE=InnoDB
+          DEFAULT CHARSET=utf8mb4
+          COLLATE=utf8mb4_unicode_ci;
+    "
+},
+
+new DatabaseMigration
+{
+    Version = "20261102_LAB_003",
+    Description = "Create patient laboratory parameter results",
+    Sql = @"
+        CREATE TABLE IF NOT EXISTS laboratoryparameterresults
+        (
+            ResultID INT NOT NULL AUTO_INCREMENT,
+            LabRequestID INT NOT NULL,
+            ParameterID INT NOT NULL,
+
+            ObservedValue VARCHAR(200) NULL,
+            NumericValue DECIMAL(14,4) NULL,
+
+            SavedParameterName VARCHAR(200) NOT NULL,
+            SavedUnit VARCHAR(50) NULL,
+            SavedLowLimit DECIMAL(14,4) NULL,
+            SavedHighLimit DECIMAL(14,4) NULL,
+            SavedReferenceRange VARCHAR(200) NULL,
+
+            ResultFlag VARCHAR(30) NULL,
+            ResultNotes TEXT NULL,
+            EnteredAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+            PRIMARY KEY (ResultID),
+
+            UNIQUE KEY UQ_LabResult_RequestParameter
+                (LabRequestID, ParameterID),
+
+            INDEX IX_LabResult_ParameterID (ParameterID),
+
+            CONSTRAINT FK_LabResult_Request
+                FOREIGN KEY (LabRequestID)
+                REFERENCES labrequests(LabRequestID),
+
+            CONSTRAINT FK_LabResult_Parameter
+                FOREIGN KEY (ParameterID)
+                REFERENCES laboratorytestparameters(ParameterID)
+
+        ) ENGINE=InnoDB
+          DEFAULT CHARSET=utf8mb4
+          COLLATE=utf8mb4_unicode_ci;
+    "
+},
+
                         new DatabaseMigration
                         {
                             Version = "20261023_CLINIC_Col_01",
@@ -4920,6 +5126,266 @@ new DatabaseMigration
                                     REFERENCES `tbl_items` (`id`);
                             "
                         },
+
+
+new DatabaseMigration
+{
+    Version = "20261103_LAB_BATCH_002",
+    Description = "Aggregate lab billing summaries",
+    Sql = @"
+        CREATE OR REPLACE VIEW View_BillSummaries AS
+        SELECT
+            CONCAT(
+                'INV-',
+                YEAR(B.BillDate),
+                '-',
+                LPAD(B.BillID, 4, '0')
+            ) AS BillNumber,
+
+            B.BillID,
+
+            COALESCE(P.FullName, 'Pharmacy Sale') AS PatientName,
+
+            CASE
+                WHEN LR.TestCount IS NOT NULL THEN
+                    CONCAT(LR.TestCount, ' Lab Tests')
+
+                WHEN B.VisitID IS NULL THEN
+                    CONCAT(
+                        COALESCE(M.PrescriptionCount, 0),
+                        ' Pharmacy Sale'
+                    )
+
+                ELSE
+                    CONCAT(
+                        COALESCE(S.ServiceCount, 0),
+                        ' Servs, ',
+                        COALESCE(M.PrescriptionCount, 0),
+                        ' Presc'
+                    )
+            END AS ItemsTotal,
+
+            CASE
+                WHEN LR.TestCount IS NOT NULL THEN 0
+                ELSE COALESCE(A.AppointmentFees, 0)
+            END AS AppointmentFees,
+
+            CASE
+                WHEN LR.TestCount IS NOT NULL THEN 0
+                ELSE COALESCE(M.TotalMedicinesOnly, 0)
+            END AS MedicinesTotal,
+
+            CASE
+                WHEN LR.TestCount IS NOT NULL THEN 0
+                ELSE COALESCE(S.TotalServicesOnly, 0)
+            END AS ServicesTotal,
+
+            CASE
+                WHEN LR.TestCount IS NOT NULL THEN 0
+                ELSE
+                    COALESCE(S.ServiceDiscount, 0)
+                    + COALESCE(M.MedsDiscount, 0)
+            END AS TotalDiscount,
+
+            CASE
+                WHEN LR.TestCount IS NOT NULL THEN 0
+                ELSE COALESCE(M.TotalTax, 0)
+            END AS TotalTax,
+
+            CASE
+                WHEN LR.TestCount IS NOT NULL THEN
+                    COALESCE(LR.LabTotal, 0)
+                ELSE
+                    COALESCE(A.AppointmentFees, 0)
+                    + COALESCE(M.TotalMedicinesNet, 0)
+                    + COALESCE(S.TotalServicesNet, 0)
+            END AS Subtotal,
+
+            COALESCE(Pay.TotalPaid, 0) AS PaymentAmount,
+
+            CASE
+                WHEN LR.TestCount IS NOT NULL THEN
+                    COALESCE(LR.LabTotal, 0)
+                    - COALESCE(Pay.TotalPaid, 0)
+                ELSE
+                    COALESCE(A.AppointmentFees, 0)
+                    + COALESCE(M.TotalMedicinesNet, 0)
+                    + COALESCE(S.TotalServicesNet, 0)
+                    - COALESCE(Pay.TotalPaid, 0)
+            END AS BalanceDue
+
+        FROM bills B
+
+        LEFT JOIN
+        (
+            SELECT
+                BillID,
+                COUNT(*) AS TestCount,
+                SUM(
+                    COALESCE(SavedTestPrice, 0)
+                ) AS LabTotal
+
+            FROM labrequests
+
+            WHERE BillID IS NOT NULL
+              AND Status <> 'Cancelled'
+
+            GROUP BY BillID
+
+        ) LR
+            ON LR.BillID = B.BillID
+
+        LEFT JOIN visits V
+            ON B.VisitID = V.VisitID
+
+        LEFT JOIN appointments A
+            ON V.AppointmentID = A.AppointmentID
+
+        LEFT JOIN patients PA
+            ON V.PatientID = PA.PatientID
+
+        LEFT JOIN persons P
+            ON PA.PersonID = P.PersonID
+
+        LEFT JOIN
+        (
+            SELECT
+                BillID,
+                SUM(PaymentAmount) AS TotalPaid
+
+            FROM payments
+
+            GROUP BY BillID
+
+        ) Pay
+            ON B.BillID = Pay.BillID
+
+        LEFT JOIN
+        (
+            SELECT
+                VisitID,
+
+                COUNT(*) AS ServiceCount,
+
+                SUM(
+                    SavedServicePrice * Quantity
+                ) AS TotalServicesOnly,
+
+                SUM(
+                    Discount * Quantity
+                ) AS ServiceDiscount,
+
+                SUM(
+                    (SavedServicePrice * Quantity)
+                    - (Discount * Quantity)
+                ) AS TotalServicesNet
+
+            FROM visitservices
+
+            GROUP BY VisitID
+
+        ) S
+            ON B.VisitID = S.VisitID
+
+        LEFT JOIN
+        (
+            SELECT
+                PR.VisitID,
+
+                COUNT(DISTINCT PR.PrescriptionID)
+                    AS PrescriptionCount,
+
+                COALESCE(
+                    SUM(
+                        PD.SavedMedicinePrice
+                        * PD.Quantity
+                    ),
+                    0
+                ) AS TotalMedicinesOnly,
+
+                COALESCE(
+                    SUM(
+                        PD.DiscountAmount
+                        * PD.Quantity
+                    ),
+                    0
+                ) AS MedsDiscount,
+
+                CAST(
+                    ROUND(
+                        COALESCE(
+                            SUM(
+                                CASE
+                                    WHEN PD.Quantity > 0 THEN
+                                        (
+                                            (
+                                                PD.SavedMedicinePrice
+                                                * PD.Quantity
+                                            )
+                                            -
+                                            (
+                                                PD.DiscountAmount
+                                                * PD.Quantity
+                                            )
+                                        )
+                                        *
+                                        (
+                                            COALESCE(MED.TaxRate, 0)
+                                            / 100.0
+                                        )
+                                    ELSE 0
+                                END
+                            ),
+                            0
+                        ),
+                        2
+                    ) AS DECIMAL(18,2)
+                ) AS TotalTax,
+
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN PD.Quantity > 0 THEN
+                                (
+                                    (
+                                        PD.SavedMedicinePrice
+                                        * PD.Quantity
+                                    )
+                                    -
+                                    (
+                                        PD.DiscountAmount
+                                        * PD.Quantity
+                                    )
+                                )
+                                *
+                                (
+                                    1 +
+                                    (
+                                        COALESCE(MED.TaxRate, 0)
+                                        / 100.0
+                                    )
+                                )
+                            ELSE 0
+                        END
+                    ),
+                    0
+                ) AS TotalMedicinesNet
+
+            FROM prescriptions PR
+
+            LEFT JOIN prescriptiondetails PD
+                ON PR.PrescriptionID = PD.PrescriptionID
+
+            LEFT JOIN medicines MED
+                ON PD.MedicineID = MED.MedicineID
+
+            GROUP BY PR.VisitID
+
+        ) M
+            ON B.VisitID = M.VisitID;
+    "
+},
+
 
                   };
 
