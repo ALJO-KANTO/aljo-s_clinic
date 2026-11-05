@@ -1,4 +1,4 @@
-
+﻿
 using Clinic.ControlsMain;
 using Clinic_DataAccess;
 using MySql.Data.MySqlClient;
@@ -11,12 +11,50 @@ namespace Clinic.Medical_Services.Laboratory
 {
     internal static class LabUi
     {
+        // Laboratory-specific captions not necessarily included in TranslationClass.
+        // Database values and identifiers are intentionally not translated.
+        private static readonly System.Collections.Generic.Dictionary<string, string> LabArabic =
+            new System.Collections.Generic.Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "Enter Lab Result", "إدخال نتيجة المختبر" },
+                { "Lab Request", "طلب المختبر" },
+                { "Laboratory Test", "الفحص المخبري" },
+                { "Results entered", "النتائج المدخلة" },
+                { "Validate Test Result", "اعتماد نتيجة الفحص" },
+                { "Parameter", "المعلمة" },
+                { "Result", "النتيجة" },
+                { "Unit", "وحدة القياس" },
+                { "Reference Range", "المدى المرجعي" },
+                { "Flag", "التصنيف" },
+                { "Remarks", "ملاحظات" },
+                { "Cancel", "إلغاء" },
+                { "Normal", "طبيعي" },
+                { "Low", "منخفض" },
+                { "High", "مرتفع" },
+                { "Abnormal", "غير طبيعي" },
+                { "Critical", "حرج" },
+                { "Load Lab Result", "تحميل نتيجة المختبر" },
+                { "New Lab Request", "طلب مختبر جديد" },
+                { "Configure Parameters", "إعداد المعلمات" },
+                { "Manage Lab Tests", "إدارة الفحوصات المخبرية" },
+                { "Test Name", "اسم الفحص" },
+                { "Test Price", "سعر الفحص" },
+                { "Active", "نشط" },
+                { "Save Test", "حفظ الفحص" },
+                { "New", "جديد" },
+                { "Deactivate", "إلغاء التفعيل" }
+            };
+
         public static string T(string text)
         {
-            return TranslationClass.Translate(
-                text,
-                TranslationClass.IsArabic
-            );
+            if (!TranslationClass.IsArabic || string.IsNullOrEmpty(text))
+                return text;
+
+            string translated;
+            if (LabArabic.TryGetValue(text.Trim(), out translated))
+                return translated;
+
+            return TranslationClass.Translate(text, true);
         }
 
         public static Label Label(string text)
@@ -253,7 +291,8 @@ namespace Clinic.Medical_Services.Laboratory
             var save = LabUi.Button("Save Test");
             var clear = LabUi.Button("New");
             var disable = LabUi.Button("Deactivate");
-            configureParameters = LabUi.Button("Configure Parameters");
+            configureParameters = LabUi.Button(TranslationClass.IsArabic
+                ? "إعداد معلمات الفحص" : "Configure Parameters");
             configureParameters.Width = 210;
             configureParameters.Enabled = false;
 

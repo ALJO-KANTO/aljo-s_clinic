@@ -19,13 +19,98 @@ namespace Clinic.Login
     {
         public static Dictionary<string, int> defaultAccounts;
 
+        private Button btnTranslateLogin;
+
         public frmLogin()
         {
             InitializeComponent();
 
+            ClinicLanguageManager.Initialize();
+
             this.TopMost = false;
 
             ApplyVisualEffects();
+            CreateTranslateButton();
+            ApplyLoginLanguage();
+            Shown += (s, e) => ApplyLoginLanguage();
+        }
+
+        private void CreateTranslateButton()
+        {
+            btnTranslateLogin = new Button
+            {
+                Name = "btnTranslateLogin",
+                Size = new Size(130, 38),
+                Location = new Point(540, 12),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(0, 150, 177),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                Cursor = Cursors.Hand,
+                TabStop = false
+            };
+
+            btnTranslateLogin.FlatAppearance.BorderSize = 0;
+
+            btnTranslateLogin.Click += (s, e) =>
+            {
+                ClinicLanguageManager.SetLanguage(!ClinicLanguageManager.IsArabic);
+
+                ApplyLoginLanguage();
+
+                foreach (Form form in Application.OpenForms)
+                {
+                    if (form is frmRegister register)
+                    {
+                        register.ApplyRegistrationLanguage();
+                    }
+                }
+            };
+
+            rightPanel.Controls.Add(btnTranslateLogin);
+            btnTranslateLogin.BringToFront();
+            btnClose.BringToFront();
+        }
+        public void RefreshLoginLanguage()
+        {
+            ApplyLoginLanguage();
+        }
+        private void ApplyLoginLanguage()
+        {
+            // Translate login form controls
+            LoginRegistrationLanguage.Apply(this);
+
+            bool arabic = TranslationClass.IsArabic;
+
+            // Language toggle button
+            btnTranslateLogin.Text = arabic
+                ? "English"
+                : "◉ Translate";
+
+            // Username input direction
+            txtUserName.RightToLeft = arabic
+                ? RightToLeft.Yes
+                : RightToLeft.No;
+
+            // Password remains left-to-right
+            txtPassword.RightToLeft = RightToLeft.No;
+
+            // Label alignment
+
+            lblLoginTitle.TextAlign = ContentAlignment.MiddleCenter;
+            lblSubtitle.TextAlign = ContentAlignment.MiddleCenter;
+
+            // Refresh custom-painted buttons
+            btnLogin.Invalidate();
+            btnRegister.Invalidate();
+        }
+        protected override void OnVisibleChanged(EventArgs e)
+        {
+            base.OnVisibleChanged(e);
+
+            if (Visible && btnTranslateLogin != null)
+                ApplyLoginLanguage();
         }
 
         private void ApplyVisualEffects()

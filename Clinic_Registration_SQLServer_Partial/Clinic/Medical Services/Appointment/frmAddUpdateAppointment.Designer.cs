@@ -69,16 +69,16 @@
             this.tcAppointmentInfo = new System.Windows.Forms.TabControl();
             this.tpPersonalInfo = new System.Windows.Forms.TabPage();
             this.btnPersonInfoNext = new System.Windows.Forms.Button();
+            this.ctrlPatientCardWithFilter1 = new Clinic.Controls.ctrlPatientCardWithFilter();
             this.tpDoctorInfo = new System.Windows.Forms.TabPage();
             this.btnDoctorInfoNext = new System.Windows.Forms.Button();
+            this.ctrDoctorCardInfoWithFilter1 = new Clinic.Controls.ctrDoctorCardInfoWithFilter();
             this.errorProvider1 = new System.Windows.Forms.ErrorProvider(this.components);
             this.panelHeaderContainer = new System.Windows.Forms.Panel();
             this.btnExit = new System.Windows.Forms.Button();
             this.lblTitle = new System.Windows.Forms.Label();
             this.btnSave = new System.Windows.Forms.Button();
             this.btnClose = new System.Windows.Forms.Button();
-            this.ctrlPatientCardWithFilter1 = new Clinic.Controls.ctrlPatientCardWithFilter();
-            this.ctrDoctorCardInfoWithFilter1 = new Clinic.Controls.ctrDoctorCardInfoWithFilter();
             this.tpAppointmentInfo.SuspendLayout();
             this.paAppointmentInfo.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox11)).BeginInit();
@@ -583,6 +583,21 @@
             this.btnPersonInfoNext.UseVisualStyleBackColor = false;
             this.btnPersonInfoNext.Click += new System.EventHandler(this.btnPersonInfoNext_Click);
             // 
+            // ctrlPatientCardWithFilter1
+            // 
+            this.ctrlPatientCardWithFilter1.AutoValidate = System.Windows.Forms.AutoValidate.EnableAllowFocusChange;
+            this.ctrlPatientCardWithFilter1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(250)))), ((int)(((byte)(252)))));
+            this.ctrlPatientCardWithFilter1.btnAddNewEnabled = true;
+            this.ctrlPatientCardWithFilter1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ctrlPatientCardWithFilter1.FilterEnabled = true;
+            this.ctrlPatientCardWithFilter1.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold);
+            this.ctrlPatientCardWithFilter1.Location = new System.Drawing.Point(3, 3);
+            this.ctrlPatientCardWithFilter1.Margin = new System.Windows.Forms.Padding(4);
+            this.ctrlPatientCardWithFilter1.Name = "ctrlPatientCardWithFilter1";
+            this.ctrlPatientCardWithFilter1.Size = new System.Drawing.Size(918, 645);
+            this.ctrlPatientCardWithFilter1.TabIndex = 120;
+            this.ctrlPatientCardWithFilter1.PatientCreated += new System.EventHandler<Clinic.global_classes.clsEventArgs>(this.ctrlPatientCardWithFilter1_PatientCreated);
+            // 
             // tpDoctorInfo
             // 
             this.tpDoctorInfo.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(250)))), ((int)(((byte)(252)))));
@@ -609,6 +624,22 @@
             this.btnDoctorInfoNext.Text = "Next ➡️";
             this.btnDoctorInfoNext.UseVisualStyleBackColor = false;
             this.btnDoctorInfoNext.Click += new System.EventHandler(this.btnDoctorInfoNext_Click);
+            // 
+            // ctrDoctorCardInfoWithFilter1
+            // 
+            this.ctrDoctorCardInfoWithFilter1.AutoValidate = System.Windows.Forms.AutoValidate.EnableAllowFocusChange;
+            this.ctrDoctorCardInfoWithFilter1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(244)))), ((int)(((byte)(247)))), ((int)(((byte)(251)))));
+            this.ctrDoctorCardInfoWithFilter1.btnAddNewEnabled = true;
+            this.ctrDoctorCardInfoWithFilter1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ctrDoctorCardInfoWithFilter1.FilterEnabled = true;
+            this.ctrDoctorCardInfoWithFilter1.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.ctrDoctorCardInfoWithFilter1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(244)))), ((int)(((byte)(247)))), ((int)(((byte)(251)))));
+            this.ctrDoctorCardInfoWithFilter1.Location = new System.Drawing.Point(3, 3);
+            this.ctrDoctorCardInfoWithFilter1.Margin = new System.Windows.Forms.Padding(4);
+            this.ctrDoctorCardInfoWithFilter1.Name = "ctrDoctorCardInfoWithFilter1";
+            this.ctrDoctorCardInfoWithFilter1.Size = new System.Drawing.Size(918, 645);
+            this.ctrDoctorCardInfoWithFilter1.TabIndex = 121;
+            this.ctrDoctorCardInfoWithFilter1.DoctorCreated += new System.EventHandler<Clinic.global_classes.clsEventArgs>(this.ctrDoctorCardInfoWithFilter1_DoctorCreated);
             // 
             // errorProvider1
             // 
@@ -685,37 +716,6 @@
             this.btnClose.Text = "✖  Close";
             this.btnClose.UseVisualStyleBackColor = true;
             this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
-            // 
-            // ctrlPatientCardWithFilter1
-            // 
-            this.ctrlPatientCardWithFilter1.AutoValidate = System.Windows.Forms.AutoValidate.EnableAllowFocusChange;
-            this.ctrlPatientCardWithFilter1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(250)))), ((int)(((byte)(252)))));
-            this.ctrlPatientCardWithFilter1.btnAddNewEnabled = true;
-            this.ctrlPatientCardWithFilter1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ctrlPatientCardWithFilter1.FilterEnabled = true;
-            this.ctrlPatientCardWithFilter1.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold);
-            this.ctrlPatientCardWithFilter1.Location = new System.Drawing.Point(3, 3);
-            this.ctrlPatientCardWithFilter1.Margin = new System.Windows.Forms.Padding(4);
-            this.ctrlPatientCardWithFilter1.Name = "ctrlPatientCardWithFilter1";
-            this.ctrlPatientCardWithFilter1.Size = new System.Drawing.Size(918, 645);
-            this.ctrlPatientCardWithFilter1.TabIndex = 120;
-            this.ctrlPatientCardWithFilter1.PatientCreated += new System.EventHandler<Clinic.global_classes.clsEventArgs>(this.ctrlPatientCardWithFilter1_PatientCreated);
-            // 
-            // ctrDoctorCardInfoWithFilter1
-            // 
-            this.ctrDoctorCardInfoWithFilter1.AutoValidate = System.Windows.Forms.AutoValidate.EnableAllowFocusChange;
-            this.ctrDoctorCardInfoWithFilter1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(244)))), ((int)(((byte)(247)))), ((int)(((byte)(251)))));
-            this.ctrDoctorCardInfoWithFilter1.btnAddNewEnabled = true;
-            this.ctrDoctorCardInfoWithFilter1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ctrDoctorCardInfoWithFilter1.FilterEnabled = true;
-            this.ctrDoctorCardInfoWithFilter1.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.ctrDoctorCardInfoWithFilter1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(244)))), ((int)(((byte)(247)))), ((int)(((byte)(251)))));
-            this.ctrDoctorCardInfoWithFilter1.Location = new System.Drawing.Point(3, 3);
-            this.ctrDoctorCardInfoWithFilter1.Margin = new System.Windows.Forms.Padding(4);
-            this.ctrDoctorCardInfoWithFilter1.Name = "ctrDoctorCardInfoWithFilter1";
-            this.ctrDoctorCardInfoWithFilter1.Size = new System.Drawing.Size(918, 657);
-            this.ctrDoctorCardInfoWithFilter1.TabIndex = 121;
-            this.ctrDoctorCardInfoWithFilter1.DoctorCreated += new System.EventHandler<Clinic.global_classes.clsEventArgs>(this.ctrDoctorCardInfoWithFilter1_DoctorCreated);
             // 
             // frmAddUpdateAppointment
             // 

@@ -4,7 +4,6 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Windows.Forms;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Clinic
 {
@@ -182,7 +181,7 @@ namespace Clinic
             {
                 menu.Controls.Add(MakeNav("✚", "Prescriptions", () => listPrescriptionToolStripMenuItem_Click(this, EventArgs.Empty)));
             }
-          
+
             if (CanAccessMenu(UserRole.Doctor))
             {
                 menu.Controls.Add(
@@ -235,10 +234,8 @@ namespace Clinic
                     "Vendor|Vendor Summary|frmVendorSummary"
                 });
             }
-            else if (CanAccessMenu(UserRole.Cashier))
-            {
-                menu.Controls.Add(MakeNav("▥", "Reports", null));
-            }
+            // Cashier reports are hidden until a dedicated report screen is connected.
+            // Do not show navigation buttons without an action.
             if (CanAccessMenu(UserRole.Admin))
                 AddMenuHeading(menu, "Administration");
             if (CanAccessMenu(UserRole.Admin))
@@ -248,9 +245,16 @@ namespace Clinic
             if (CanAccessMenu(UserRole.Admin))
                 menu.Controls.Add(MakeNav("⚑", "Doctors", () => DoctorsStripMenuItem1_Click(this, EventArgs.Empty)));
             if (CanAccessMenu(UserRole.Admin))
-                menu.Controls.Add(MakeNav("⚙", "Settings", () => manageServicesToolStripMenuItem_Click(this, EventArgs.Empty)));
+                menu.Controls.Add(MakeNav("⚙", "Manage Services", () => manageServicesToolStripMenuItem_Click(this, EventArgs.Empty)));
 
-            menu.Controls.Add(MakeNav("↪", "Sign Out", () => signOutToolStripMenuItem_Click(this, EventArgs.Empty)));
+            Button signOutNav = MakeNav("↪", "Sign Out", () => signOutToolStripMenuItem_Click(this, EventArgs.Empty));
+            menu.Controls.Add(signOutNav);
+            // frmMain.cs adds X-Ray after this method. Keep Sign Out last.
+            menu.ControlAdded += (sender, args) =>
+            {
+                if (args.Control != signOutNav && menu.Controls.Contains(signOutNav))
+                    menu.Controls.SetChildIndex(signOutNav, menu.Controls.Count - 1);
+            };
 
             modernContent = new Panel { Dock = DockStyle.Fill, BackColor = canvasColor };
             modernRoot.Controls.Add(modernContent);
@@ -381,8 +385,8 @@ namespace Clinic
                 new ToolStripMenuItem(
                     HeaderTranslate("Change Password"));
 
-            // Connect this to your existing password-change form.
-            passwordItem.Enabled = false;
+            passwordItem.Click += (s, e) =>
+                Password32ToolStripMenuItem_Click(this, EventArgs.Empty);
 
             ToolStripMenuItem logoutItem =
                 new ToolStripMenuItem(HeaderTranslate("Logout"));
@@ -719,8 +723,11 @@ namespace Clinic
             }
             else
             {
-                roleRows.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
-                roleRows.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
+                roleRows.ColumnStyles.Add(
+                    new ColumnStyle(SizeType.Percent, 100F));
+
+                roleRows.RowStyles.Add(
+                    new RowStyle(SizeType.Percent, 100F));
             }
             if (CanShowDashboard(UserRole.Doctor))
             {
@@ -738,8 +745,9 @@ namespace Clinic
                 roleRows.Controls.Add(
                     RoleCard("✚", "Nurse Role Dashboard", Color.FromArgb(15, 118, 110),
                         new string[] { "Nurse\nStation" },
-                        new Action[] { () => nurseToolStripMenuItem1_Click(this, EventArgs.Empty) }
-                    ), 0, 2);
+                        new Action[] { () => OpenIfAuthorized(
+                            () => nurseToolStripMenuItem1_Click(this, EventArgs.Empty), UserRole.Nurse) }
+                    ), 0, isAdmin ? 2 : 0);
             }
             if (CanShowDashboard(UserRole.Receptionist))
             {
@@ -775,7 +783,7 @@ namespace Clinic
                 () => OpenReceptionLabRequest()
                         }
                     ),
-                    1, 1
+                    isAdmin ? 1 : 0, isAdmin ? 1 : 0
                 );
             }
             if (CanShowDashboard(UserRole.Pharmacist))
@@ -788,7 +796,7 @@ namespace Clinic
                     () => inClinicDoctorToolStripMenuItem_Click(this, EventArgs.Empty),
                     () => addNewDrugToolStripMenuItem_Click(this, EventArgs.Empty),
                     () => directMedicinenDispensingToolStripMenuItem_Click(this, EventArgs.Empty)
-                }), 0, 1);
+                }), 0, isAdmin ? 1 : 0);
             }
             if (CanShowDashboard(UserRole.Cashier))
             {
@@ -813,18 +821,21 @@ namespace Clinic
                  ), 1, 0);
             }
 
-            modernDashboard.Controls.Add(roleRows);
+            if (roleRows.Controls.Count > 0)
+                modernDashboard.Controls.Add(roleRows);
+            else
+                roleRows.Dispose();
 
             Panel actions = Rounded(Color.White);
             actions.Height = 184; actions.Margin = new Padding(0, 0, 0, 12);
             Place(actions, TextLabel("Quick Actions", 15, ink, true), 20, 8, 500, 38);
             FlowLayoutPanel quick = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 126, Padding = new Padding(10, 0, 0, 0) };
             actions.Controls.Add(quick);
-            if (CanAccessMenu(UserRole.Doctor, UserRole.Nurse, UserRole.Receptionist))
+            if (CanAccessMenu(UserRole.Receptionist))
             {
                 QuickButton(quick, "Register New Patient", () => PatientsToolStripMenuItem_Click(this, EventArgs.Empty));
             }
-            if (CanAccessMenu(UserRole.Doctor, UserRole.Nurse, UserRole.Receptionist, UserRole.Cashier))
+            if (CanAccessMenu(UserRole.Receptionist))
             {
                 QuickButton(quick, "New Appointment", () => btnAddApp_Click(this, EventArgs.Empty));
             }
@@ -832,6 +843,19 @@ namespace Clinic
             if (CanAccessMenu(UserRole.Doctor, UserRole.Nurse, UserRole.Receptionist))
             {
                 QuickButton(quick, "Find Patient", () => btnFindPatient_Click(this, EventArgs.Empty));
+            }
+            if (CanAccessMenu(UserRole.Nurse))
+            {
+                QuickButton(quick, "Nurse Station", () => OpenIfAuthorized(
+                    () => nurseToolStripMenuItem1_Click(this, EventArgs.Empty), UserRole.Nurse));
+            }
+            if (CanAccessMenu(UserRole.Cashier))
+            {
+                QuickButton(quick, "Manage Bills", () => OpenManageBills());
+            }
+            if (CanAccessMenu(UserRole.Pharmacist))
+            {
+                QuickButton(quick, "All Prescriptions", () => listPrescriptionToolStripMenuItem_Click(this, EventArgs.Empty));
             }
             if (CanAccessMenu(UserRole.Admin))
             {
@@ -949,7 +973,7 @@ namespace Clinic
             buttons.BringToFront();
             return card;
         }
-        
+
         private static void QuickButton(FlowLayoutPanel container, string title, Action action)
         {
             Button b = new Button

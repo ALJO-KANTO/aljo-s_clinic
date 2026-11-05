@@ -992,6 +992,9 @@ namespace Clinic
 { "Ready_For_Doctor", "جاهز للطبيب" },
 { "e.g., 120/80 mmHg", "مثال: 120/80 ملم زئبق" },
 { "# Records:", "عدد السجلات:" },
+{ "Direct Lab Request", "طلب مختبر مباشر" },
+{ "Manage Services", "إدارة الخدمات" },
+{ "X-Ray / Radiology", "الأشعة السينية / قسم الأشعة" },
 
  // Nurse Station
 { "Modern Clinic - Nurse Station", "العيادة الحديثة - محطة التمريض" },
@@ -1020,7 +1023,33 @@ namespace Clinic
 { "Weight (kg)", "الوزن (كجم)" },
 { "Pulse (bpm)", "النبض (نبضة/دقيقة)" },
 { "Save and Send Next Patient", "حفظ وإرسال المريض التالي" },
-{ "Waiting Vitals", "بانتظار قياس العلامات الحيوية" }
+{ "Waiting Vitals", "بانتظار قياس العلامات الحيوية" },
+
+// Laboratory management: dynamic captions, filter statuses, and grid columns
+{ "Send to Billing", "إرسال إلى الفواتير" },
+{ "Print Report", "طباعة التقرير" },
+{ "BillID", "رقم الفاتورة" },
+{ "SavedTestPrice", "سعر الفحوصات" },
+{ "PaidAmount", "المبلغ المدفوع" },
+{ "BalanceDue", "الرصيد المستحق" },
+{ "Ordered", "تم الطلب" },
+{ "In Progress", "قيد التنفيذ" },
+{ "Tests", "فحوصات" },
+{ "Unbilled", "غير مفوتر" },
+{ "(unbilled)", "(غير مفوتر)" },
+{ "(existing bill)", "(فاتورة موجودة)" },
+{ "Select Laboratory Test", "اختر الفحص المخبري" },
+{ "Select Laboratory Bill", "اختر فاتورة المختبر" },
+{ "Bill ID (-1 = unbilled)", "رقم الفاتورة (-1 = غير مفوتر)" },
+{ "Open / Create Selected Bill", "فتح / إنشاء الفاتورة المحددة" },
+{ "RequestID", "رقم الطلب" },
+{ "Laboratory Billing", "فوترة المختبر" },
+{ "Payment Required", "الدفع مطلوب" },
+{ "Print Lab Report", "طباعة تقرير المختبر" },
+{ "The laboratory result must be completed before printing.", "يجب إكمال نتيجة المختبر قبل الطباعة." },
+{ "The laboratory bill must be fully paid before printing.", "يجب سداد فاتورة المختبر بالكامل قبل الطباعة." },
+{ "No completed laboratory tests in this group.", "لا توجد فحوصات مختبرية مكتملة في هذه المجموعة." },
+{ "Please complete laboratory payment before entering results.", "يرجى إكمال دفع رسوم المختبر قبل إدخال النتائج." },
 };
         public static bool IsArabic { get; set; } = false;
 

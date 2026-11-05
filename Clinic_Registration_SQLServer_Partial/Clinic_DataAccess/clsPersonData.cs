@@ -1,7 +1,10 @@
 ﻿using Clinic_DataAccess.SaveMySqlException;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
+using DocumentFormat.OpenXml.Wordprocessing;
+using Google.Protobuf.WellKnownTypes;
+using MySql.Data.MySqlClient;
 using System;
 using System.Data;
-using MySql.Data.MySqlClient;
 namespace Clinic_DataAccess
 {
     public class clsPersonData
@@ -208,6 +211,61 @@ namespace Clinic_DataAccess
             {
                 clsGlobalLogger.LogMySqlException(ex, clsGlobalLogger.LogLevel.Error);
 
+            }
+
+            return dt;
+        }
+
+        public static DataTable GetAllPatients()
+        {
+            DataTable dt = new DataTable();
+
+            try
+            {
+                using (MySqlConnection connection =
+                    new MySqlConnection(clsDataAccessSettings.ConnectionString))
+                {
+                    string query = @"
+                SELECT
+                    pat.PatientID,
+                    p.PersonID,
+                    p.FullName,
+                    p.DateOfBirth,
+                    CASE p.Gender
+                        WHEN 0 THEN 'Male'
+                        ELSE 'Female'
+                    END AS GenderCaption,
+                    p.PhoneNumber,
+                    c.CountryName,
+                    p.Address,
+                    p.Email
+                FROM patients pat
+                INNER JOIN persons p
+                    ON pat.PersonID = p.PersonID
+                LEFT JOIN countries c
+                    ON p.NationalityCountryID = c.CountryID
+                WHERE p.IsDeleted = 0
+                ORDER BY p.FullName;";
+
+                    using (MySqlCommand command =
+                        new MySqlCommand(query, connection))
+                    {
+                        connection.Open();
+
+                        using (MySqlDataReader reader =
+                            command.ExecuteReader())
+                        {
+                            dt.Load(reader);
+                        }
+                    }
+                }
+            }
+            catch (MySqlException ex)
+            {
+                clsGlobalLogger.LogMySqlException(
+                    ex,
+                    clsGlobalLogger.LogLevel.Error);
+                throw;
             }
 
             return dt;

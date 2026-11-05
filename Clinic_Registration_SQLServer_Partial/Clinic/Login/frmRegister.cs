@@ -28,6 +28,44 @@ namespace Clinic.Login
             panelBrand.Paint += PanelBrand_Paint;
             btnRegister.Paint += BtnRegister_Paint;
             _isRoleVisible = isRoleVisible;
+            ApplyRegistrationLanguage();
+        }
+
+        public void ApplyRegistrationLanguage()
+        {
+            LoginRegistrationLanguage.Apply(this);
+
+            bool arabic = TranslationClass.IsArabic;
+
+            fullName.RightToLeft = arabic
+                ? RightToLeft.Yes : RightToLeft.No;
+
+            address.RightToLeft = arabic
+                ? RightToLeft.Yes : RightToLeft.No;
+
+            // These values should remain LTR.
+            email.RightToLeft = RightToLeft.No;
+            phone.RightToLeft = RightToLeft.No;
+            username.RightToLeft = RightToLeft.No;
+            password.RightToLeft = RightToLeft.No;
+            confirm.RightToLeft = RightToLeft.No;
+
+            // Display translated gender names without changing
+            // their original indexes (0 = Male, 1 = Female).
+            int selectedGender = gender.SelectedIndex;
+
+            gender.Items.Clear();
+
+            if (arabic)
+                gender.Items.AddRange(new object[] { "ذكر", "أنثى" });
+            else
+                gender.Items.AddRange(new object[] { "Male", "Female" });
+
+            gender.SelectedIndex = selectedGender >= 0
+                ? selectedGender
+                : 0;
+
+            btnRegister.Invalidate();
         }
 
         private static void UpdateRegistrationHint(Control parent)
@@ -91,6 +129,7 @@ namespace Clinic.Login
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
             }
+            ApplyRegistrationLanguage();
         }
 
         private static void TogglePassword(TextBox field, Button button)
@@ -184,7 +223,7 @@ namespace Clinic.Login
                   addr,
                   Convert.ToInt32(country.SelectedValue),
                   user,
-                  passwordHash,roleId);
+                  passwordHash, roleId);
 
                 string emailMessage = "Account created. You can log in now with your username and password.";
                 try

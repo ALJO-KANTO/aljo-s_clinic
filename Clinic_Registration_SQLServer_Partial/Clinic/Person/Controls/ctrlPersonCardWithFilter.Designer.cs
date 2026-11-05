@@ -37,6 +37,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.errorProvider1 = new System.Windows.Forms.ErrorProvider(this.components);
             this.ctrlPersonCard1 = new Clinic.Controls.ctrlPersonCard();
+            this.txtPId = new System.Windows.Forms.TextBox();
             this.gbFilters.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider1)).BeginInit();
             this.SuspendLayout();
@@ -44,6 +45,7 @@
             // gbFilters
             // 
             this.gbFilters.BackColor = System.Drawing.Color.White;
+            this.gbFilters.Controls.Add(this.txtPId);
             this.gbFilters.Controls.Add(this.btnAddNewPerson);
             this.gbFilters.Controls.Add(this.btnFind);
             this.gbFilters.Controls.Add(this.txtFilterValue);
@@ -91,10 +93,10 @@
             this.txtFilterValue.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtFilterValue.Font = new System.Drawing.Font("Segoe UI", 11F);
             this.txtFilterValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(17)))), ((int)(((byte)(24)))), ((int)(((byte)(39)))));
-            this.txtFilterValue.Location = new System.Drawing.Point(202, 25);
+            this.txtFilterValue.Location = new System.Drawing.Point(302, 25);
             this.txtFilterValue.Margin = new System.Windows.Forms.Padding(4);
             this.txtFilterValue.Name = "txtFilterValue";
-            this.txtFilterValue.Size = new System.Drawing.Size(382, 32);
+            this.txtFilterValue.Size = new System.Drawing.Size(265, 32);
             this.txtFilterValue.TabIndex = 17;
             this.txtFilterValue.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtFilterValue_KeyPress);
             this.txtFilterValue.Validating += new System.ComponentModel.CancelEventHandler(this.txtFilterValue_Validating);
@@ -122,6 +124,18 @@
             this.ctrlPersonCard1.Name = "ctrlPersonCard1";
             this.ctrlPersonCard1.Size = new System.Drawing.Size(895, 288);
             this.ctrlPersonCard1.TabIndex = 18;
+            // 
+            // txtPId
+            // 
+            this.txtPId.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.txtPId.Font = new System.Drawing.Font("Segoe UI", 11F);
+            this.txtPId.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(17)))), ((int)(((byte)(24)))), ((int)(((byte)(39)))));
+            this.txtPId.Location = new System.Drawing.Point(219, 27);
+            this.txtPId.Margin = new System.Windows.Forms.Padding(4);
+            this.txtPId.Name = "txtPId";
+            this.txtPId.Size = new System.Drawing.Size(61, 32);
+            this.txtPId.TabIndex = 21;
+            this.txtPId.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtPId_KeyPress);
             // 
             // ctrlPersonCardWithFilter
             // 
@@ -151,5 +165,6 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ErrorProvider errorProvider1;
         private ctrlPersonCard ctrlPersonCard1;
+        private System.Windows.Forms.TextBox txtPId;
     }
 }

@@ -20,6 +20,7 @@ namespace Clinic.Patient
         public frmListPatient()
         {
             InitializeComponent();
+            ClinicLanguageManager.ApplyToForm(this);
             ApplyPatientLanguage();
         }
 
@@ -76,6 +77,7 @@ namespace Clinic.Patient
             SetColumn("BloodTypeName", "Blood Type", 100);
             SetColumn("CreatedDate", "Created Date", 150);
             SetColumn("EmergencyContact", "Emergency Contact", 150);
+            ApplyPatientLanguage();
         }
 
         private void SetColumn(string columnName, string header, int width)
@@ -299,141 +301,141 @@ namespace Clinic.Patient
             frm.ShowDialog();
         }
         private void ApplyPatientLanguage()
-{
-    bool isArabic = TranslationClass.IsArabic;
+        {
+            bool isArabic = TranslationClass.IsArabic;
 
-    this.RightToLeft = isArabic
-        ? RightToLeft.Yes
-        : RightToLeft.No;
+            this.RightToLeft = isArabic
+                ? RightToLeft.Yes
+                : RightToLeft.No;
 
-    this.RightToLeftLayout = isArabic;
+            this.RightToLeftLayout = isArabic;
             AlignControlsToRight(this, isArabic);
             // Translate ordinary controls and dynamically created labels.
             TranslatePatientControls(this);
 
 
-    // Translate context menu items.
-    TranslatePatientMenuItems(cmsPeople.Items, isArabic);
+            // Translate context menu items.
+            TranslatePatientMenuItems(cmsPeople.Items, isArabic);
 
-    // Translate grid headers after the columns exist.
-    SetColumn("PatientID", "Patient ID", 100);
-    SetColumn("PersonID", "Person ID", 100);
-    SetColumn("FullName", "Full Name", 220);
-    SetColumn("MedicalHistory", "Medical History", 180);
-    SetColumn("CountryName", "Country", 120);
-    SetColumn("BloodTypeName", "Blood Type", 100);
-    SetColumn("CreatedDate", "Created Date", 150);
-    SetColumn("EmergencyContact", "Emergency Contact", 150);
+            // Translate grid headers after the columns exist.
+            SetColumn("PatientID", "Patient ID", 100);
+            SetColumn("PersonID", "Person ID", 100);
+            SetColumn("FullName", "Full Name", 220);
+            SetColumn("MedicalHistory", "Medical History", 180);
+            SetColumn("CountryName", "Country", 120);
+            SetColumn("BloodTypeName", "Blood Type", 100);
+            SetColumn("CreatedDate", "Created Date", 150);
+            SetColumn("EmergencyContact", "Emergency Contact", 150);
 
-    dgvPatient.RightToLeft = isArabic
-        ? RightToLeft.Yes
-        : RightToLeft.No;
-
-    dgvPatient.ColumnHeadersDefaultCellStyle.Alignment =
-        isArabic
-            ? DataGridViewContentAlignment.MiddleRight
-            : DataGridViewContentAlignment.MiddleLeft;
-
-
-
-}
-
-private void TranslatePatientControls(Control parent)
-{
-    bool isArabic = TranslationClass.IsArabic;
-
-    foreach (Control control in parent.Controls)
-    {
-        // ComboBox items are handled separately to preserve filter logic.
-        if (!(control is ComboBox))
-        {
-            string originalText = control.Text;
-
-            string translatedText =
-                TranslationClass.Translate(originalText, isArabic);
-
-            if (!string.Equals(originalText, translatedText,
-                StringComparison.Ordinal))
-            {
-                control.Text = translatedText;
-            }
-        }
-
-        if (control is Label)
-        {
-            Label label = (Label)control;
-
-            label.RightToLeft = isArabic
+            dgvPatient.RightToLeft = isArabic
                 ? RightToLeft.Yes
                 : RightToLeft.No;
 
-            label.TextAlign = isArabic
-                ? ContentAlignment.MiddleRight
-                : ContentAlignment.MiddleLeft;
+            dgvPatient.ColumnHeadersDefaultCellStyle.Alignment =
+                isArabic
+                    ? DataGridViewContentAlignment.MiddleRight
+                    : DataGridViewContentAlignment.MiddleLeft;
+
+
+
         }
 
-        if (control is Button)
+        private void TranslatePatientControls(Control parent)
         {
-            control.RightToLeft = isArabic
-                ? RightToLeft.Yes
-                : RightToLeft.No;
-        }
+            bool isArabic = TranslationClass.IsArabic;
 
-        if (control.HasChildren)
-        {
-            TranslatePatientControls(control);
-        }
-    }
-}
-
-private void TranslatePatientMenuItems(
-    ToolStripItemCollection items,
-    bool isArabic)
-{
-    foreach (ToolStripItem item in items)
-    {
-        string english = item.Text;
-
-        // Remove the accelerator marker for dictionary lookup.
-        string lookupText = english.Replace("&", "");
-
-        string translated =
-            TranslationClass.Translate(lookupText, isArabic);
-
-        if (isArabic && translated != lookupText)
-        {
-            item.Text = translated;
-        }
-        else if (!isArabic)
-        {
-            // Restore the original menu caption.
-            if (item == showDetailsToolStripMenuItem)
-                item.Text = "&Show Details";
-            else if (item == toolStripMenuItem1)
-                item.Text = "Patient";
-            else if (item == addNewToolStripMenuItem)
-                item.Text = "Add &New ";
-            else if (item == findToolStripMenuItem)
-                item.Text = "Find";
-            else if (item == editToolStripMenuItem)
-                item.Text = "&Edit";
-            else if (item == deleteToolStripMenuItem)
-                item.Text = "&Delete";
-        }
-
-        if (item is ToolStripMenuItem)
-        {
-            ToolStripMenuItem menuItem = (ToolStripMenuItem)item;
-
-            if (menuItem.DropDownItems.Count > 0)
+            foreach (Control control in parent.Controls)
             {
-                TranslatePatientMenuItems(
-                    menuItem.DropDownItems,
-                    isArabic);
+                // ComboBox items are handled separately to preserve filter logic.
+                if (!(control is ComboBox))
+                {
+                    string originalText = control.Text;
+
+                    string translatedText =
+                        TranslationClass.Translate(originalText, isArabic);
+
+                    if (!string.Equals(originalText, translatedText,
+                        StringComparison.Ordinal))
+                    {
+                        control.Text = translatedText;
+                    }
+                }
+
+                if (control is Label)
+                {
+                    Label label = (Label)control;
+
+                    label.RightToLeft = isArabic
+                        ? RightToLeft.Yes
+                        : RightToLeft.No;
+
+                    label.TextAlign = isArabic
+                        ? ContentAlignment.MiddleRight
+                        : ContentAlignment.MiddleLeft;
+                }
+
+                if (control is Button)
+                {
+                    control.RightToLeft = isArabic
+                        ? RightToLeft.Yes
+                        : RightToLeft.No;
+                }
+
+                if (control.HasChildren)
+                {
+                    TranslatePatientControls(control);
+                }
             }
         }
-    }
-}
+
+        private void TranslatePatientMenuItems(
+            ToolStripItemCollection items,
+            bool isArabic)
+        {
+            foreach (ToolStripItem item in items)
+            {
+                string english = item.Text;
+
+                // Remove the accelerator marker for dictionary lookup.
+                string lookupText = english.Replace("&", "");
+
+                string translated =
+                    TranslationClass.Translate(lookupText, isArabic);
+
+                if (isArabic && translated != lookupText)
+                {
+                    item.Text = translated;
+                }
+                else if (!isArabic)
+                {
+                    // Restore the original menu caption.
+                    if (item == showDetailsToolStripMenuItem)
+                        item.Text = "&Show Details";
+                    else if (item == toolStripMenuItem1)
+                        item.Text = "Patient";
+                    else if (item == addNewToolStripMenuItem)
+                        item.Text = "Add &New ";
+                    else if (item == findToolStripMenuItem)
+                        item.Text = "Find";
+                    else if (item == editToolStripMenuItem)
+                        item.Text = "&Edit";
+                    else if (item == deleteToolStripMenuItem)
+                        item.Text = "&Delete";
+                }
+
+                if (item is ToolStripMenuItem)
+                {
+                    ToolStripMenuItem menuItem = (ToolStripMenuItem)item;
+
+                    if (menuItem.DropDownItems.Count > 0)
+                    {
+                        TranslatePatientMenuItems(
+                            menuItem.DropDownItems,
+                            isArabic);
+                    }
+                }
+            }
+        }
 
 
         private void AlignControlsToRight(Control parent, bool isArabic)

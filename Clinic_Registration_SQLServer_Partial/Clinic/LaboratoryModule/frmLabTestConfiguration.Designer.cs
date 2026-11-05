@@ -8,6 +8,7 @@ namespace Clinic.Medical_Services.Laboratory
     {
         private System.ComponentModel.IContainer components = null;
         private Panel pnlHeader;
+        private Panel pnlActions;
         private Label lblTitle, lblTestID, lblName, lblPrice, lblCount, lblHint;
         private TextBox txtTestName, txtTestPrice;
         private DataGridView dgvParameters;
@@ -74,7 +75,7 @@ namespace Clinic.Medical_Services.Laboratory
             pnlHeader.Controls.AddRange(new Control[] { lblTitle, lblTestID, lblName,
                 txtTestName, lblPrice, txtTestPrice, lblHint });
 
-            var pnlActions = new Panel { Dock = DockStyle.Top, Height = 64, Padding = new Padding(20, 12, 20, 10) };
+            pnlActions = new Panel { Dock = DockStyle.Top, Height = 64, Padding = new Padding(20, 12, 20, 10) };
             btnAddParameter = MakeButton("+ Add Parameter", 165, Color.FromArgb(0, 125, 110));
             btnAddParameter.Location = new Point(20, 10);
             btnRemoveParameter = MakeButton("Remove Selected", 170, Color.FromArgb(158, 64, 64));
@@ -139,12 +140,6 @@ namespace Clinic.Medical_Services.Laboratory
             btnClose.Anchor = AnchorStyles.Right | AnchorStyles.Top;
             btnClose.Location = new Point(920, 15);
             pnlFooter.Controls.AddRange(new Control[] { btnSave, btnClose });
-            pnlFooter.Resize += (s, e) =>
-            {
-                btnClose.Left = pnlFooter.ClientSize.Width - btnClose.Width - 22;
-                btnSave.Left = btnClose.Left - btnSave.Width - 12;
-            };
-
             Controls.Add(dgvParameters);
             Controls.Add(pnlFooter);
             Controls.Add(pnlActions);

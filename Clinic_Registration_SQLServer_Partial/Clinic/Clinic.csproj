@@ -345,6 +345,7 @@
       <DependentUpon>MasterPettyCashRequest.cs</DependentUpon>
     </Compile>
     <Compile Include="CalendarColumn.cs" />
+    <Compile Include="ClinicLanguageManager.cs" />
     <Compile Include="clsRegistrationProvisioning.cs" />
     <Compile Include="ControlsMain\ucAdminStation.cs">
       <SubType>UserControl</SubType>
@@ -748,6 +749,7 @@
     <Compile Include="Login\frmRegister.Designer.cs">
       <DependentUpon>frmRegister.cs</DependentUpon>
     </Compile>
+    <Compile Include="Login\LoginRegistrationLanguage.cs" />
     <Compile Include="MasterRecycle.cs">
       <SubType>Form</SubType>
     </Compile>

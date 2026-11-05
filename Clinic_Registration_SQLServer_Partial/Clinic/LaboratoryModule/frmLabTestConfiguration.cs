@@ -22,12 +22,135 @@ namespace Clinic.Medical_Services.Laboratory
 
             _testID = testID;
             InitializeComponent();
+            ApplyConfigurationLanguage();
             Load += frmLabTestConfiguration_Load;
             btnAddParameter.Click += btnAddParameter_Click;
             btnSave.Click += btnSave_Click;
             btnClose.Click += (s, e) => Close();
             btnRemoveParameter.Click += btnRemoveParameter_Click;
             dgvParameters.DataError += (s, e) => { e.ThrowException = false; };
+        }
+
+        private void UpdateParameterCount()
+        {
+            int count = _parameters == null ? 0 :
+                _parameters.Select(null, null, DataViewRowState.CurrentRows).Length;
+            lblCount.Text = TranslationClass.IsArabic
+                ? count + " معلمات" : count + " parameters";
+        }
+
+        private void ApplyConfigurationLanguage()
+        {
+            bool ar = TranslationClass.IsArabic;
+            // Keep form-level automatic mirroring OFF: manually mirror only the
+            // three fixed-layout panels, avoiding double mirroring and clipping.
+            RightToLeft = RightToLeft.No;
+            RightToLeftLayout = false;
+            Text = ar ? "إعداد فحوصات المختبر" : "Lab Test Configuration";
+            lblTitle.Text = Text;
+            lblName.Text = ar ? "اسم الفحص" : "Test Name";
+            lblPrice.Text = ar ? "سعر الفحص" : "Test Price";
+            lblTestID.Text = ar ? "معرّف الفحص:" : "Test ID:";
+            lblHint.Text = ar
+                ? "حدّد المجال المرجعي لكل معلمة للذكور والإناث. اترك المجال فارغاً إذا لم ينطبق."
+                : "Set each parameter's reference range for male and female patients. Leave a range blank when not applicable.";
+            btnAddParameter.Text = ar ? "+ إضافة معلمة" : "+ Add Parameter";
+            btnRemoveParameter.Text = ar ? "إزالة المحدد" : "Remove Selected";
+            btnSave.Text = ar ? "حفظ الإعدادات" : "Save Configuration";
+            btnClose.Text = ar ? "إغلاق" : "Close";
+            colParameterName.HeaderText = ar ? "المعلمة" : "Parameter";
+            colMaleRange.HeaderText = ar ? "المجال الطبيعي (ذكور)" : "Normal Range (Male)";
+            colFemaleRange.HeaderText = ar ? "المجال الطبيعي (إناث)" : "Normal Range (Female)";
+            colUnit.HeaderText = ar ? "وحدة القياس" : "UOM";
+            colResultType.HeaderText = ar ? "نوع قيمة النتيجة" : "Result Value Type";
+            colGeneralRange.HeaderText = ar ? "المجال العام / ملاحظة" : "General Range / Remark";
+            colDisplayOrder.HeaderText = ar ? "الترتيب" : "Order";
+            dgvParameters.RightToLeft = ar ? RightToLeft.Yes : RightToLeft.No;
+            dgvParameters.ColumnHeadersDefaultCellStyle.Alignment = ar
+                ? DataGridViewContentAlignment.MiddleRight
+                : DataGridViewContentAlignment.MiddleLeft;
+            dgvParameters.DefaultCellStyle.Alignment = ar
+                ? DataGridViewContentAlignment.MiddleRight
+                : DataGridViewContentAlignment.MiddleLeft;
+            dgvParameters.ColumnHeadersHeight = ar ? 48 : 42;
+            dgvParameters.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+
+            // Localized display labels with unchanged English database values.
+            var types = new DataTable();
+            types.Columns.Add("Value", typeof(string));
+            types.Columns.Add("Caption", typeof(string));
+            types.Rows.Add("Quantitative", ar ? "كمي" : "Quantitative");
+            types.Rows.Add("Qualitative", ar ? "نوعي" : "Qualitative");
+            types.Rows.Add("Text", ar ? "نصي" : "Text");
+            colResultType.Items.Clear();
+            colResultType.DataSource = types;
+            colResultType.ValueMember = "Value";
+            colResultType.DisplayMember = "Caption";
+
+            lblTitle.TextAlign = ar ? ContentAlignment.MiddleRight : ContentAlignment.MiddleLeft;
+            lblHint.TextAlign = ar ? ContentAlignment.MiddleRight : ContentAlignment.MiddleLeft;
+            lblTestID.TextAlign = ar ? ContentAlignment.MiddleLeft : ContentAlignment.MiddleRight;
+            lblCount.TextAlign = ar ? ContentAlignment.MiddleRight : ContentAlignment.MiddleLeft;
+            txtTestName.RightToLeft = ar ? RightToLeft.Yes : RightToLeft.No;
+            txtTestPrice.RightToLeft = RightToLeft.No;
+            UpdateParameterCount();
+
+            Action layout = () =>
+            {
+                int w = pnlHeader.ClientSize.Width;
+                // Responsive positioning; Arabic order is a true mirror of English.
+                int nameWidth = Math.Min(455, Math.Max(240, (w - 250) / 2));
+                int priceWidth = 160;
+                if (!ar)
+                {
+                    lblTitle.SetBounds(20, 14, Math.Max(300, w - 350), 36);
+                    lblTestID.SetBounds(Math.Max(0, w - 220), 23, 200, 28);
+                    lblName.SetBounds(22, 70, 100, 28);
+                    txtTestName.SetBounds(120, 65, nameWidth, 30);
+                    lblPrice.SetBounds(Math.Min(w - 300, 605), 70, 100, 28);
+                    txtTestPrice.SetBounds(Math.Min(w - 180, 705), 65, priceWidth, 30);
+                    lblHint.SetBounds(22, 110, Math.Max(250, w - 44), 32);
+                }
+                else
+                {
+                    lblTitle.SetBounds(220, 14, Math.Max(300, w - 240), 36);
+                    lblTestID.SetBounds(20, 23, 200, 28);
+                    lblName.SetBounds(Math.Max(0, w - 125), 70, 103, 28);
+                    txtTestName.SetBounds(Math.Max(0, w - 125 - nameWidth - 8), 65, nameWidth, 30);
+                    lblPrice.SetBounds(190, 70, 105, 28);
+                    txtTestPrice.SetBounds(20, 65, priceWidth, 30);
+                    lblHint.SetBounds(22, 110, Math.Max(250, w - 44), 32);
+                }
+                int actionW = pnlActions.ClientSize.Width;
+                if (ar)
+                {
+                    btnAddParameter.Left = actionW - btnAddParameter.Width - 20;
+                    btnRemoveParameter.Left = btnAddParameter.Left - btnRemoveParameter.Width - 12;
+                    lblCount.Left = Math.Max(10, btnRemoveParameter.Left - 125);
+                }
+                else
+                {
+                    btnAddParameter.Left = 20;
+                    btnRemoveParameter.Left = btnAddParameter.Right + 12;
+                    lblCount.Left = btnRemoveParameter.Right + 20;
+                }
+                int footerW = btnSave.Parent.ClientSize.Width;
+                if (ar)
+                {
+                    btnClose.Left = 22;
+                    btnSave.Left = btnClose.Right + 12;
+                }
+                else
+                {
+                    btnClose.Left = footerW - btnClose.Width - 22;
+                    btnSave.Left = btnClose.Left - btnSave.Width - 12;
+                }
+            };
+            pnlHeader.Resize += (s, e) => layout();
+            pnlActions.Resize += (s, e) => layout();
+            btnSave.Parent.Resize += (s, e) => layout();
+            Shown += (s, e) => layout();
+            layout();
         }
 
         private MySqlConnection OpenConnection()
@@ -64,7 +187,7 @@ namespace Clinic.Medical_Services.Laboratory
                                 throw new InvalidOperationException("The selected laboratory test no longer exists.");
                             txtTestName.Text = Convert.ToString(reader["TestName"]);
                             txtTestPrice.Text = Convert.ToDecimal(reader["TestPrice"]).ToString("N2");
-                            lblTestID.Text = "Test ID: " + _testID;
+                            lblTestID.Text = (TranslationClass.IsArabic ? "معرّف الفحص: " : "Test ID: ") + _testID;
                         }
                     }
 
@@ -86,7 +209,7 @@ namespace Clinic.Medical_Services.Laboratory
                 // DataTable can contain DBNull; the UI treats blank fields as empty strings.
                 dgvParameters.AutoGenerateColumns = false;
                 dgvParameters.DataSource = _parameters;
-                lblCount.Text = _parameters.Rows.Count + " parameters";
+                UpdateParameterCount();
             }
             finally { _loading = false; }
         }
@@ -105,7 +228,7 @@ namespace Clinic.Medical_Services.Laboratory
             row["DisplayOrder"] = _parameters.Rows.Count + 1;
             row["IsActive"] = true;
             _parameters.Rows.Add(row);
-            lblCount.Text = _parameters.Rows.Count + " parameters";
+            UpdateParameterCount();
             int index = dgvParameters.Rows.Count - 1;
             if (index >= 0)
             {
@@ -120,11 +243,11 @@ namespace Clinic.Medical_Services.Laboratory
             dgvParameters.EndEdit();
             var view = dgvParameters.CurrentRow.DataBoundItem as DataRowView;
             if (view == null) return;
-            if (MessageBox.Show(this, "Remove this parameter from the active test configuration?",
-                "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+            if (MessageBox.Show(this, (TranslationClass.IsArabic ? "هل تريد إزالة هذه المعلمة من إعدادات الفحص النشطة؟" : "Remove this parameter from the active test configuration?"),
+                (TranslationClass.IsArabic ? "تأكيد" : "Confirm"), MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
             // Removed existing parameters are disabled on Save, not physically deleted.
             view.Delete();
-            lblCount.Text = _parameters.Select(null, null, DataViewRowState.CurrentRows).Length + " parameters";
+            UpdateParameterCount();
         }
 
         private static string CellText(DataRow row, string column)
@@ -152,8 +275,8 @@ namespace Clinic.Medical_Services.Laboratory
                 {
                     if (string.IsNullOrWhiteSpace(CellText(row, "ParameterName")))
                     {
-                        MessageBox.Show(this, "Every parameter must have a name.",
-                            "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        MessageBox.Show(this, (TranslationClass.IsArabic ? "يجب إدخال اسم لكل معلمة." : "Every parameter must have a name."),
+                            (TranslationClass.IsArabic ? "التحقق من البيانات" : "Validation"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return;
                     }
                 }
@@ -219,8 +342,8 @@ namespace Clinic.Medical_Services.Laboratory
                     catch { transaction.Rollback(); throw; }
                 }
                 LoadTestAndParameters();
-                MessageBox.Show(this, "Laboratory parameters saved successfully.",
-                    "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(this, (TranslationClass.IsArabic ? "تم حفظ معلمات المختبر بنجاح." : "Laboratory parameters saved successfully."),
+                    (TranslationClass.IsArabic ? "تم الحفظ" : "Saved"), MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {

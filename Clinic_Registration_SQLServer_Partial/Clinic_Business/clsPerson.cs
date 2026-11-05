@@ -156,5 +156,10 @@ namespace Clinic_Business
             }
             return false;
         }
+
+        public static DataTable GetAllPatients()
+        {
+            return clsPersonData.GetAllPatients();
+        }
     }
 }
