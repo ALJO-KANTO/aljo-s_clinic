@@ -13,8 +13,8 @@ namespace Clinic.Medical_Services.Vital
         private readonly Dictionary<Control, string>
             _nurseOriginalTexts = new Dictionary<Control, string>();
 
-        private readonly Dictionary<Control, Rectangle>
-            _nurseOriginalBounds = new Dictionary<Control, Rectangle>();
+        //private readonly Dictionary<Control, Rectangle>
+        //    _nurseOriginalBounds = new Dictionary<Control, Rectangle>();
 
         private readonly Dictionary<Control, ContentAlignment>
             _nurseOriginalAlignments =
@@ -23,6 +23,15 @@ namespace Clinic.Medical_Services.Vital
         private readonly Dictionary<DataGridViewColumn, string>
             _nurseOriginalHeaders =
                 new Dictionary<DataGridViewColumn, string>();
+
+        private readonly Dictionary<Control, Rectangle> _nurseOriginalBounds
+    = new Dictionary<Control, Rectangle>();
+
+        private readonly Dictionary<Control, RightToLeft> _nurseOriginalRTL
+            = new Dictionary<Control, RightToLeft>();
+
+        private readonly Dictionary<Control, HorizontalAlignment> _nurseOriginalInputAlignments
+            = new Dictionary<Control, HorizontalAlignment>();
 
         private bool IsNurseArabic()
         {
@@ -51,7 +60,7 @@ namespace Clinic.Medical_Services.Vital
                     : "Modern Clinic - Nurse Station";
 
                 TranslateNurseControls(this, arabic);
-                ApplyNursePositions(arabic);
+               
                 ApplyNurseGrid(arabic);
 
                 // Mirror header Exit button separately.
@@ -83,11 +92,19 @@ namespace Clinic.Medical_Services.Vital
                     control == lbDate;
 
                 bool input =
-                    control is TextBoxBase ||
+                    control is TextBox ||
                     control is NumericUpDown ||
                     control is ComboBox ||
                     control is DataGridView;
 
+                // Save original layout and RTL state
+                if (!_nurseOriginalBounds.ContainsKey(control))
+                    _nurseOriginalBounds[control] = control.Bounds;
+
+                if (!_nurseOriginalRTL.ContainsKey(control))
+                    _nurseOriginalRTL[control] = control.RightToLeft;
+
+                // Translate static captions
                 if (!dynamicValue && !input)
                 {
                     if (!_nurseOriginalTexts.ContainsKey(control))
@@ -97,31 +114,143 @@ namespace Clinic.Medical_Services.Vital
 
                     if (!string.IsNullOrWhiteSpace(original))
                         control.Text = TranslateNurseText(original, arabic);
+                }
 
-                    if (control is Label label)
-                    {
-                        if (!_nurseOriginalAlignments.ContainsKey(control))
-                            _nurseOriginalAlignments[control] = label.TextAlign;
+                // Mirror positions for selected control types
+                bool shouldMirror =
+                    control is Label ||
+                    control is TextBoxBase ||
+                    control is NumericUpDown ||
+                    control is ComboBox ||
+                      control is Button;
 
-                        label.RightToLeft =
-                            arabic ? RightToLeft.Yes : RightToLeft.No;
+                if (shouldMirror && control.Dock == DockStyle.None)
+                {
+                    Rectangle original = _nurseOriginalBounds[control];
 
-                        label.TextAlign = arabic
-                            ? ContentAlignment.MiddleRight
-                            : _nurseOriginalAlignments[control];
-                    }
+                    int newX = arabic
+                        ? parent.ClientSize.Width - original.Right
+                        : original.Left;
 
-                    if (control is ButtonBase button)
-                    {
-                        button.RightToLeft =
-                            arabic ? RightToLeft.Yes : RightToLeft.No;
-                    }
+                    control.Location = new Point(newX, original.Top);
+                }
+
+                // Label alignment
+                if (control is Label label)
+                {
+                    if (!_nurseOriginalAlignments.ContainsKey(control))
+                        _nurseOriginalAlignments[control] = label.TextAlign;
+
+                    label.RightToLeft = arabic
+                        ? RightToLeft.Yes
+                        : _nurseOriginalRTL[control];
+
+                    label.TextAlign = arabic
+                        ? ContentAlignment.MiddleRight
+                        : _nurseOriginalAlignments[control];
+                }
+
+                // TextBox alignment
+                if (control is TextBox textBox)
+                {
+                    if (!_nurseOriginalInputAlignments.ContainsKey(control))
+                        _nurseOriginalInputAlignments[control] = textBox.TextAlign;
+
+                    textBox.RightToLeft = arabic
+                        ? RightToLeft.Yes
+                        : _nurseOriginalRTL[control];
+
+                    textBox.TextAlign = arabic
+                        ? HorizontalAlignment.Right
+                        : _nurseOriginalInputAlignments[control];
+                }
+
+                // NumericUpDown: RTL also moves the spinner arrows
+                if (control is NumericUpDown numeric)
+                {
+                    numeric.RightToLeft = arabic
+                        ? RightToLeft.Yes
+                        : _nurseOriginalRTL[control];
+
+                    numeric.TextAlign = arabic
+                        ? HorizontalAlignment.Right
+                        : HorizontalAlignment.Left;
+
+                    numeric.UpDownAlign = arabic
+                        ? LeftRightAlignment.Left
+                        : LeftRightAlignment.Right;
+                }
+
+                // ComboBox
+                if (control is ComboBox combo)
+                {
+                    combo.RightToLeft = arabic
+                        ? RightToLeft.Yes
+                        : _nurseOriginalRTL[control];
+                }
+
+                // Other buttons
+                if (control is ButtonBase button)
+                {
+                    button.RightToLeft = arabic
+                        ? RightToLeft.Yes
+                        : _nurseOriginalRTL[control];
                 }
 
                 if (control.HasChildren)
                     TranslateNurseControls(control, arabic);
             }
         }
+
+        //private void TranslateNurseControls(Control parent, bool arabic)
+        //{
+        //    foreach (Control control in parent.Controls)
+        //    {
+        //        bool dynamicValue =
+        //            control == lbPatientName ||
+        //            control == lblRecordsCount ||
+        //            control == lbDate;
+
+        //        bool input =
+        //            control is TextBoxBase ||
+        //            control is NumericUpDown ||
+        //            control is ComboBox ||
+        //            control is DataGridView;
+
+        //        if (!dynamicValue && !input)
+        //        {
+        //            if (!_nurseOriginalTexts.ContainsKey(control))
+        //                _nurseOriginalTexts[control] = control.Text ?? "";
+
+        //            string original = _nurseOriginalTexts[control];
+
+        //            if (!string.IsNullOrWhiteSpace(original))
+        //                control.Text = TranslateNurseText(original, arabic);
+
+        //            if (control is Label label)
+        //            {
+        //                if (!_nurseOriginalAlignments.ContainsKey(control))
+        //                    _nurseOriginalAlignments[control] = label.TextAlign;
+
+        //                label.RightToLeft =
+        //                    arabic ? RightToLeft.Yes : RightToLeft.No;
+
+        //                label.TextAlign = arabic
+        //                    ? ContentAlignment.MiddleRight
+        //                    : _nurseOriginalAlignments[control];
+        //            }
+
+        //            if (control is ButtonBase button)
+        //            {
+        //                button.RightToLeft =
+        //                    arabic ? RightToLeft.Yes : RightToLeft.No;
+        //            }
+        //        }
+
+        //        if (control.HasChildren)
+        //            TranslateNurseControls(control, arabic);
+        //    }
+        //}
 
         private string TranslateNurseText(string english, bool arabic)
         {

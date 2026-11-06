@@ -51,8 +51,24 @@ namespace Clinic.ControlsMain
 
         private void btnDirectMedicine_Click(object sender, EventArgs e)
         {
-            frmDirictSales frm = new frmDirictSales();
-            frm.ShowDialog();
+            try
+            {
+                MessageBox.Show("Opening Direct Sales...");
+
+                using (frmDirictSales frm = new frmDirictSales())
+                {
+                    frm.StartPosition = FormStartPosition.CenterScreen;
+                    frm.ShowDialog(this);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    ex.ToString(),
+                    "Direct Sales Opening Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
         }
     }
 }

@@ -44,6 +44,115 @@ namespace Clinic.Medical_Services.Pharmaciy
             dgPrescriptionDetails.Scroll += (s, ev) => { _qtyNumericUpDown.Visible = false; };
         }
 
+
+        // UI localization only: business status values and bound data stay in English.
+        private string PharmacyT(string value)
+        {
+            return TranslationClass.Translate(value, TranslationClass.IsArabic);
+        }
+
+        private readonly Dictionary<Control, string> _pharmacyOriginalCaptions = new Dictionary<Control, string>();
+        private readonly Dictionary<DataGridViewColumn, string> _pharmacyOriginalHeaders = new Dictionary<DataGridViewColumn, string>();
+
+        private void ApplyPharmacyLanguage()
+        {
+            bool arabic = TranslationClass.IsArabic;
+            // Keep the custom designer layout intact. RTL is applied to text and grids only.
+            this.RightToLeft = RightToLeft.No;
+            this.RightToLeftLayout = false;
+            TranslatePharmacyChildren(this, arabic);
+            TranslatePharmacyGrid(dgvPrescription, arabic);
+            TranslatePharmacyGrid(dgPrescriptionDetails, arabic);
+            dgvPrescription.RightToLeft = arabic ? RightToLeft.Yes : RightToLeft.No;
+            dgPrescriptionDetails.RightToLeft = arabic ? RightToLeft.Yes : RightToLeft.No;
+            dgvPrescription.CellFormatting -= PharmacyCellFormatting;
+            dgPrescriptionDetails.CellFormatting -= PharmacyCellFormatting;
+            dgvPrescription.CellFormatting += PharmacyCellFormatting;
+            dgPrescriptionDetails.CellFormatting += PharmacyCellFormatting;
+            UpdatePharmacyDynamicCaptions();
+        }
+
+        private void TranslatePharmacyChildren(Control parent, bool arabic)
+        {
+            foreach (Control child in parent.Controls)
+            {
+                if (child is Label || child is ButtonBase || child is GroupBox || child is TabPage)
+                {
+                    if (!_pharmacyOriginalCaptions.ContainsKey(child))
+                        _pharmacyOriginalCaptions[child] = child.Text;
+                    string original = _pharmacyOriginalCaptions[child];
+                    // Captions with live patient/order data are handled separately.
+                    if (child != lbPatientName && child != lbPatientNameDetalis &&
+                        child != lbOrderID && child != lbStatus && child != lbNotReady &&
+                        child != lbCurrentUser && child != lbTotalMedicen)
+                    {
+                        child.Text = PharmacyComposite(original, arabic);
+                        if (child is Label label && !string.IsNullOrWhiteSpace(label.Text))
+                            label.TextAlign = arabic ? ContentAlignment.MiddleRight : ContentAlignment.MiddleLeft;
+                    }
+                }
+                TranslatePharmacyChildren(child, arabic);
+            }
+        }
+
+        private string PharmacyComposite(string original, bool arabic)
+        {
+            if (!arabic || string.IsNullOrWhiteSpace(original)) return original;
+            string normalized = System.Text.RegularExpressions.Regex.Replace(original, @"\s+", " ").Trim();
+            string exact = PharmacyT(normalized);
+            if (exact != normalized) return exact;
+            // Preserve icon glyphs and line breaks when translating multi-line button labels.
+            string result = original;
+            string[] phrases = {
+                "Pharmacist Station: Prescription Dispensing", "Tab 1: Pending Prescriptions",
+                "Tab 2: Prescription Details", "Dispense Medication", "Send To Accounting",
+                "Print Shortage Slip", "Prepare Invoice", "Cancel Order", "Report Shortage",
+                "Next Expected Patient", "Total Medicine", "Search by Patient Name",
+                "Pharmacist Station", "Prescription Dispensing", "Pending Prescriptions",
+                "Prescription Details", "Dispense", "Medication", "Accounting", "Shortage",
+                "Patient", "Order", "Current User:"
+            };
+            foreach (string phrase in phrases)
+            {
+                string translated = PharmacyT(phrase);
+                if (translated != phrase)
+                    result = System.Text.RegularExpressions.Regex.Replace(result,
+                        System.Text.RegularExpressions.Regex.Escape(phrase),
+                        _ => translated, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            }
+            return result;
+        }
+
+        private void TranslatePharmacyGrid(DataGridView grid, bool arabic)
+        {
+            foreach (DataGridViewColumn column in grid.Columns)
+            {
+                if (!_pharmacyOriginalHeaders.ContainsKey(column))
+                    _pharmacyOriginalHeaders[column] = column.HeaderText;
+                column.HeaderText = arabic ? PharmacyT(_pharmacyOriginalHeaders[column]) : _pharmacyOriginalHeaders[column];
+            }
+        }
+
+        private void PharmacyCellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (!TranslationClass.IsArabic || e.RowIndex < 0 || e.Value == null) return;
+            DataGridView grid = (DataGridView)sender;
+            string column = grid.Columns[e.ColumnIndex].Name;
+            if (column != "Status" && column != "PrescriptionType" && column != "AvailableStatus") return;
+            string raw = Convert.ToString(e.Value);
+            if (raw.StartsWith("Partially Available", StringComparison.OrdinalIgnoreCase))
+                e.Value = PharmacyT("Partially Available") + raw.Substring("Partially Available".Length);
+            else
+                e.Value = PharmacyT(raw);
+            e.FormattingApplied = true;
+        }
+
+        private void UpdatePharmacyDynamicCaptions()
+        {
+            lbStatus.Text = PharmacyT(lbStatus.Text);
+            lbNotReady.Text = PharmacyT(lbNotReady.Text);
+        }
+
         private void PrintShortageReport_PrintPage(object sender, System.Drawing.Printing.PrintPageEventArgs e)
         {
             // إعدادات الخطوط والألوان للتقرير
@@ -61,11 +170,11 @@ namespace Clinic.Medical_Services.Pharmaciy
             int offsetY = 0;
 
             // --- 1. ترويسة التتقرير (Header) ---
-            e.Graphics.DrawString("Clinic Management System", headerFont, tealBrush, startX, startY);
+            e.Graphics.DrawString(PharmacyT("Clinic Management System"), headerFont, tealBrush, startX, startY);
             offsetY += 25;
-            e.Graphics.DrawString("Medicine Shortage Report", titleFont, textBrush, startX, startY + offsetY);
+            e.Graphics.DrawString(PharmacyT("Medicine Shortage Report"), titleFont, textBrush, startX, startY + offsetY);
             offsetY += 35;
-            e.Graphics.DrawString($"Date: {DateTime.Now.ToString("dd/MM/yyyy HH:mm")}", bodyFont, textBrush, startX, startY + offsetY);
+            e.Graphics.DrawString(PharmacyT("Date: ") + DateTime.Now.ToString("dd/MM/yyyy HH:mm"), bodyFont, textBrush, startX, startY + offsetY);
             offsetY += 25;
 
             // رسم خط فاصل
@@ -80,11 +189,11 @@ namespace Clinic.Medical_Services.Pharmaciy
             int colDispX = startX + 470;  // المصروفة
             int colShortX = startX + 580; // النواقص
 
-            e.Graphics.DrawString("Medicine Name", headerFont, tealBrush, colMedX, startY + offsetY);
-            e.Graphics.DrawString("Price", headerFont, tealBrush, colPriceX, startY + offsetY);
-            e.Graphics.DrawString("Req.Qty", headerFont, tealBrush, colReqX, startY + offsetY);
-            e.Graphics.DrawString("Disp.Qty", headerFont, tealBrush, colDispX, startY + offsetY);
-            e.Graphics.DrawString("Shortage", headerFont, tealBrush, colShortX, startY + offsetY);
+            e.Graphics.DrawString(PharmacyT("Medicine Name"), headerFont, tealBrush, colMedX, startY + offsetY);
+            e.Graphics.DrawString(PharmacyT("Price"), headerFont, tealBrush, colPriceX, startY + offsetY);
+            e.Graphics.DrawString(PharmacyT("Req.Qty"), headerFont, tealBrush, colReqX, startY + offsetY);
+            e.Graphics.DrawString(PharmacyT("Disp.Qty"), headerFont, tealBrush, colDispX, startY + offsetY);
+            e.Graphics.DrawString(PharmacyT("Shortage"), headerFont, tealBrush, colShortX, startY + offsetY);
 
             offsetY += 25;
             e.Graphics.DrawLine(linePen, startX, startY + offsetY, e.PageBounds.Width - 50, startY + offsetY);
@@ -136,14 +245,14 @@ namespace Clinic.Medical_Services.Pharmaciy
             // --- 4. التذييل والمجموع (Footer) ---
             if (!hasShortage)
             {
-                e.Graphics.DrawString("No shortages found. All medicines are fully dispensed!", bodyFont, Brushes.Green, startX, startY + offsetY + 20);
+                e.Graphics.DrawString(PharmacyT("No shortages found. All medicines are fully dispensed!"), bodyFont, Brushes.Green, startX, startY + offsetY + 20);
             }
             else
             {
                 offsetY += 15;
                 e.Graphics.DrawLine(linePen, startX, startY + offsetY, e.PageBounds.Width - 50, startY + offsetY);
                 offsetY += 10;
-                e.Graphics.DrawString($"Estimated Shortage Value: {totalShortageValue.ToString("C2")}", totalFont, tealBrush, colPriceX, startY + offsetY);
+                e.Graphics.DrawString(PharmacyT("Estimated Shortage Value: ") + totalShortageValue.ToString("C2"), totalFont, tealBrush, colPriceX, startY + offsetY);
             }
 
             e.HasMorePages = false; // لا توجد صفحات أخرى
@@ -163,9 +272,9 @@ namespace Clinic.Medical_Services.Pharmaciy
 
         private void _ResetFormat(string Status)
         {
-            lbNotReady.Text = "(Not Ready for Dispensing)";
+            lbNotReady.Text = PharmacyT("(Not Ready for Dispensing)");
             lbX.Text = "✕";
-            lbStatus.Text = Status;
+            lbStatus.Text = PharmacyT(Status);
             panbtnDispense.Enabled = false;
             panbtnSendToAccounting.Enabled = false;
             panbtnCancelOrder.Enabled = false;
@@ -199,7 +308,7 @@ namespace Clinic.Medical_Services.Pharmaciy
                 lbNotReady.ForeColor = Color.Green;
                 lbX.ForeColor = Color.Green;
                 lbContainer.BackColor = Color.Green;
-                lbNotReady.Text = "(Ready for Dispensing)";
+                lbNotReady.Text = PharmacyT("(Ready for Dispensing)");
                 lbX.Text = "✓";
                 panbtnDispense.Enabled = true;
             }
@@ -344,6 +453,18 @@ namespace Clinic.Medical_Services.Pharmaciy
 
             _SetupPrescriptionGrid();
             _SetupPrescriptionDetailsGrid();
+            // Defer localization until the form has finished its first layout/paint.
+            BeginInvoke(new Action(() =>
+            {
+                if (!IsDisposed && !Disposing)
+                {
+                    try { ApplyPharmacyLanguage(); }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.ToString(), "Pharmacist localization error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }));
         }
 
         private void dgPrescriptionDetails_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
@@ -359,7 +480,7 @@ namespace Clinic.Medical_Services.Pharmaciy
                 if (status == "Out of Stock")
                 {
                     e.Cancel = true;
-                    MessageBox.Show("This item is completely out of stock and cannot be modified.", "Stock Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show(PharmacyT("This item is completely out of stock and cannot be modified."), PharmacyT("Stock Warning"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
             }
@@ -386,7 +507,7 @@ namespace Clinic.Medical_Services.Pharmaciy
 
             if (!hasDispensedItems)
             {
-                MessageBox.Show("Cannot proceed: Please select at least one item to dispense by checking the 'Dispensed' box.",
+                MessageBox.Show(PharmacyT("Cannot proceed: Please select at least one item to dispense by checking the 'Dispensed' box."),
                     "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
@@ -396,17 +517,17 @@ namespace Clinic.Medical_Services.Pharmaciy
 
             if (TotalMedicinesAmount <= 0)
             {
-                MessageBox.Show("Total amount must be greater than zero. Please check dispensed quantities.", "Invalid Amount", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(PharmacyT("Total amount must be greater than zero. Please check dispensed quantities."), PharmacyT("Invalid Amount"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
             int receivableAccountID = BindCombos.SelectDefaultLevelAccount("Patient");
-        int medicineRevenueAccountID = BindCombos.SelectDefaultLevelAccount("Medicine Revenue");
+            int medicineRevenueAccountID = BindCombos.SelectDefaultLevelAccount("Medicine Revenue");
             int ServiceRevenueAccountID = BindCombos.SelectDefaultLevelAccount("Service Revenue");
-    //        MessageBox.Show(
-    //$"Receivable Account ID: {receivableAccountID}\n" +
-    //$"Medicine Revenue Account ID: {medicineRevenueAccountID}\n" +
-    //$"Service Revenue Account ID: {ServiceRevenueAccountID}",
-    //"Account Configuration");
+            //        MessageBox.Show(
+            //$"Receivable Account ID: {receivableAccountID}\n" +
+            //$"Medicine Revenue Account ID: {medicineRevenueAccountID}\n" +
+            //$"Service Revenue Account ID: {ServiceRevenueAccountID}",
+            //"Account Configuration");
             try
             {
                 bool result = clsPrescription.SendToCashier(
@@ -421,7 +542,7 @@ namespace Clinic.Medical_Services.Pharmaciy
                 if (result)
                 {
                     MessageBox.Show(
-                        "Prescription billing details have been successfully forwarded to accounting.",
+                        PharmacyT("Prescription billing details have been successfully forwarded to accounting."),
                         "Success",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Information);
@@ -431,7 +552,7 @@ namespace Clinic.Medical_Services.Pharmaciy
                 else
                 {
                     MessageBox.Show(
-                        "SendToCashier returned false. Check the business and data-access layers.",
+                        PharmacyT("SendToCashier returned false. Check the business and data-access layers."),
                         "Error",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
@@ -441,7 +562,7 @@ namespace Clinic.Medical_Services.Pharmaciy
             {
                 MessageBox.Show(
                     ex.ToString(),
-                    "Send To Accounting - Actual Error",
+                    PharmacyT("Send To Accounting - Actual Error"),
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
             }
@@ -453,10 +574,10 @@ namespace Clinic.Medical_Services.Pharmaciy
             {
                 var selectedRow = dgvPrescription.SelectedRows[0];
 
-                lbPatientName.Text = selectedRow.Cells["PatientName"].Value?.ToString() + ")";
+                lbPatientName.Text = (TranslationClass.IsArabic ? "المريض: " : "Patient: ") + selectedRow.Cells["PatientName"].Value?.ToString();
                 lbPatientNameDetalis.Text = $"[{lbPatientName.Text}]";
                 _currentPrescriptionId = Convert.ToInt32(selectedRow.Cells["PrescriptionID"].Value);
-                lbOrderID.Text = $"(Order [{_currentPrescriptionId.ToString()}] )";
+                lbOrderID.Text = TranslationClass.IsArabic ? $"(الطلب [{_currentPrescriptionId}])" : $"(Order [{_currentPrescriptionId}])";
                 _AppointmentID = Convert.ToInt32(selectedRow.Cells["AppointmentID"].Value);
                 _VisitID = Convert.ToInt32(selectedRow.Cells["VisitID"].Value);
 
@@ -513,7 +634,7 @@ namespace Clinic.Medical_Services.Pharmaciy
 
                     if (newQty > maxAvailable)
                     {
-                        MessageBox.Show($"Requested quantity exceeds stock limits. Maximum available for this item is {maxAvailable}.", "Stock Limit", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        MessageBox.Show(PharmacyT("Requested quantity exceeds stock limits. Maximum available for this item is ") + maxAvailable + ".", PharmacyT("Stock Limit"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         rowView["DispensedQuantity"] = maxAvailable;
                     }
                     else
@@ -530,7 +651,7 @@ namespace Clinic.Medical_Services.Pharmaciy
             }
             catch (Exception ex)
             {
-                MessageBox.Show("An error occurred while updating row information: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(PharmacyT("An error occurred while updating row information: ") + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
@@ -608,7 +729,7 @@ namespace Clinic.Medical_Services.Pharmaciy
         {
             if (dgPrescriptionDetails.Rows.Count == 0)
             {
-                MessageBox.Show("No prescription detail items available to scan for shortage.", "Report Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(PharmacyT("No prescription detail items available to scan for shortage."), PharmacyT("Report Warning"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -625,17 +746,17 @@ namespace Clinic.Medical_Services.Pharmaciy
         {
             if (_currentPrescriptionId == -1) return;
 
-            if (MessageBox.Show("Are you sure you want to cancel this prescription order?", "Confirm Cancellation",
+            if (MessageBox.Show(PharmacyT("Are you sure you want to cancel this prescription order?"), PharmacyT("Confirm Cancellation"),
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 if (clsPrescription.UpdatePrescriptionStatus(_currentPrescriptionId, clsPrescription.enPrescriptionStatus.Cancelled))
                 {
-                    MessageBox.Show("The prescription order has been successfully cancelled.", "Order Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show(PharmacyT("The prescription order has been successfully cancelled."), PharmacyT("Order Cancelled"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                     _RefrashData();
                 }
                 else
                 {
-                    MessageBox.Show("Failed to cancel the prescription order. Please check system logs.", "Action Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(PharmacyT("Failed to cancel the prescription order. Please check system logs."), PharmacyT("Action Failed"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
@@ -644,17 +765,17 @@ namespace Clinic.Medical_Services.Pharmaciy
         {
             if (_currentPrescriptionId == -1) return;
 
-            if (MessageBox.Show("Confirm final medicine fulfillment and closure of this order?", "Confirm Dispense",
+            if (MessageBox.Show(PharmacyT("Confirm final medicine fulfillment and closure of this order?"), PharmacyT("Confirm Dispense"),
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 if (clsPrescription.UpdatePrescriptionStatus(_currentPrescriptionId, clsPrescription.enPrescriptionStatus.Dispensed))
                 {
-                    MessageBox.Show("The items have been marked as fully dispensed, and inventory levels updated.", "Order Fulfilled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show(PharmacyT("The items have been marked as fully dispensed, and inventory levels updated."), PharmacyT("Order Fulfilled"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                     _RefrashData();
                 }
                 else
                 {
-                    MessageBox.Show("Fulfillment request failed. Please verify medication stock balance values.", "Fulfillment Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(PharmacyT("Fulfillment request failed. Please verify medication stock balance values."), PharmacyT("Fulfillment Error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }

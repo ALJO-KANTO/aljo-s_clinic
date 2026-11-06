@@ -167,8 +167,10 @@ namespace Clinic.Medical_Services.Vital
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
                 return;
-            }
 
+            }
+            if (!ConfirmCriticalBloodPressure())
+                return;
             int appointmentID = Convert.ToInt32(
                 dgvNurseQueue.CurrentRow.Cells["AppointmentID"].Value);
 
@@ -299,29 +301,90 @@ namespace Clinic.Medical_Services.Vital
             lbPatientName.Text = patientName;
             _RefreashData();
         }
-        private void txtBloodPressure_Validating(object sender, CancelEventArgs e)
+
+        private void txtBloodPressure_Validating(
+            object sender, CancelEventArgs e)
         {
-
             string input = txtBloodPressure.Text.Trim();
-            string pattern = @"^\d{1,3}/\d{1,3}$";
+            bool arabic = IsNurseArabic();
 
-            if (string.IsNullOrEmpty(input))
+            string error = null;
+
+            if (string.IsNullOrWhiteSpace(input))
             {
-                errorProvider1.SetError(txtBloodPressure, "This field is required.");
-                e.Cancel = true;
+                error = arabic
+                    ? "يرجى إدخال ضغط الدم."
+                    : "Blood pressure is required.";
             }
-            else if (!Regex.IsMatch(input, pattern))
+            else if (!Regex.IsMatch(input, @"^\d{2,3}\s*/\s*\d{2,3}$"))
             {
-                errorProvider1.SetError(txtBloodPressure, "Invalid format! Please use (e.g., 120/80).");
-                e.Cancel = true;
+                error = arabic
+                    ? "صيغة غير صحيحة. مثال: 120/80"
+                    : "Invalid format. Example: 120/80.";
             }
             else
             {
-                errorProvider1.SetError(txtBloodPressure, null);
-                e.Cancel = false;
+                string[] parts = input.Split('/');
+
+                int systolic = int.Parse(parts[0].Trim());
+                int diastolic = int.Parse(parts[1].Trim());
+
+                // Broad adult plausibility limits, not normal ranges
+                if (systolic < 50 || systolic > 300)
+                {
+                    error = arabic
+                        ? "الضغط الانقباضي خارج النطاق المتوقع (50-300)."
+                        : "Systolic pressure is outside the expected range (50-300).";
+                }
+                else if (diastolic < 30 || diastolic > 200)
+                {
+                    error = arabic
+                        ? "الضغط الانبساطي خارج النطاق المتوقع (30-200)."
+                        : "Diastolic pressure is outside the expected range (30-200).";
+                }
+                else if (systolic <= diastolic)
+                {
+                    error = arabic
+                        ? "يجب أن يكون الضغط الانقباضي أعلى من الانبساطي."
+                        : "Systolic pressure must be higher than diastolic pressure.";
+                }
+                else
+                {
+                    txtBloodPressure.Text = $"{systolic}/{diastolic}";
+                }
             }
+
+            errorProvider1.SetError(txtBloodPressure, error ?? "");
+            e.Cancel = error != null;
         }
 
+
+        private bool ConfirmCriticalBloodPressure()
+        {
+            string[] parts = txtBloodPressure.Text.Split('/');
+
+            int systolic = int.Parse(parts[0]);
+            int diastolic = int.Parse(parts[1]);
+
+            bool arabic = IsNurseArabic();
+
+            if (systolic >= 180 || diastolic >= 120 ||
+                systolic < 90 || diastolic < 60)
+            {
+                string message = arabic
+                    ? "قراءة ضغط الدم غير طبيعية وقد تكون خطيرة.\nيرجى إعادة القياس والتأكد من القراءة وإبلاغ الطبيب عند الحاجة.\nهل تم التحقق من القراءة؟"
+                    : "This blood pressure reading is abnormal and may be serious.\nPlease repeat and verify the measurement and notify the clinician as appropriate.\nHas the reading been verified?";
+
+                return MessageBox.Show(
+                    message,
+                    arabic ? "تنبيه ضغط الدم" : "Blood Pressure Alert",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Warning
+                ) == DialogResult.Yes;
+            }
+
+            return true;
+        }
 
         private void dgvNurseQueue_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
         {
