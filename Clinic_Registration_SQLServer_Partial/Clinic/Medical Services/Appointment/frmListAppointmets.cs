@@ -11,6 +11,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using System.Drawing.Drawing2D;
 
 namespace Clinic.Medical_Services.Appointment
 {
@@ -25,6 +26,14 @@ namespace Clinic.Medical_Services.Appointment
         public frmListAppointmets()
         {
             InitializeComponent();
+
+            btnShowPatientDetails.Click += btnShowPatientDetails_Click;
+            btnShowDoctorDetails.Click += btnShowDoctorDetails_Click;
+            btnListPatient.Click += VisitToolStripMenuItem_Click;
+            btnAddNewAppointment.Click += btnAddAppointment_Click;
+            btnReschedule.Click += btnReschedule_Click;
+            btnCheckIn.Click += btnCheckIn_Click;
+            dgvAppointments.CellContentClick += dgvAppointments_CellContentClick;
 
             // Add Check In to the Reception/Admin right-click menu.
             ToolStripMenuItem checkInMenu =
@@ -41,6 +50,243 @@ namespace Clinic.Medical_Services.Appointment
             // Apply localization and mirroring before the form is displayed.
             ApplyLocalizationAndMirroring();
             panelFooterBar.Resize += panelFooterBar_Resize;
+        }
+
+        private static readonly Color AppointmentDarkBlue =
+            Color.FromArgb(11, 61, 107);
+        private Image CreateEditIcon()
+        {
+            Bitmap bmp = new Bitmap(32, 32);
+
+            using (Graphics g = Graphics.FromImage(bmp))
+            {
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                g.Clear(Color.Transparent);
+
+                using (SolidBrush bg = new SolidBrush(
+                    Color.FromArgb(234, 243, 255)))
+                {
+                    g.FillEllipse(bg, 1, 1, 30, 30);
+                }
+
+                using (Pen pen = new Pen(
+                    Color.FromArgb(22, 119, 210), 3.5f))
+                {
+                    pen.StartCap = LineCap.Round;
+                    pen.EndCap = LineCap.Round;
+
+                    g.DrawLine(pen, 10, 22, 22, 10);
+                }
+
+                using (SolidBrush tip = new SolidBrush(
+                    Color.FromArgb(22, 119, 210)))
+                {
+                    g.FillPolygon(tip, new Point[]
+                    {
+                new Point(8, 24),
+                new Point(9, 18),
+                new Point(14, 23)
+                    });
+                }
+
+                using (Pen pen = new Pen(Color.White, 1.2f))
+                {
+                    g.DrawLine(pen, 18, 9, 23, 14);
+                }
+            }
+
+            return bmp;
+        }
+        private Image CreateDeleteIcon()
+        {
+            Bitmap bmp = new Bitmap(32, 32);
+
+            using (Graphics g = Graphics.FromImage(bmp))
+            {
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                g.Clear(Color.Transparent);
+
+                using (SolidBrush bg = new SolidBrush(
+                    Color.FromArgb(253, 236, 236)))
+                {
+                    g.FillEllipse(bg, 1, 1, 30, 30);
+                }
+
+                using (SolidBrush red = new SolidBrush(
+                    Color.FromArgb(220, 53, 69)))
+                {
+                    g.FillRectangle(red, 10, 11, 12, 14);
+                    g.FillRectangle(red, 8, 8, 16, 3);
+                    g.FillRectangle(red, 12, 5, 8, 2);
+                }
+
+                using (Pen white = new Pen(Color.White, 1.4f))
+                {
+                    g.DrawLine(white, 14, 14, 14, 22);
+                    g.DrawLine(white, 18, 14, 18, 22);
+                }
+            }
+
+            return bmp;
+        }
+
+        private void EnsureAppointmentActionColumns()
+        {
+            if (!dgvAppointments.Columns.Contains("EditAction"))
+            {
+                DataGridViewImageColumn editColumn = new DataGridViewImageColumn
+                {
+                    Name = "EditAction",
+                    HeaderText = Tr("Edit"),
+                    Image = CreateEditIcon(),
+                    ImageLayout = DataGridViewImageCellLayout.Zoom,
+                    Width = 48,
+                    MinimumWidth = 48,
+                    AutoSizeMode = DataGridViewAutoSizeColumnMode.None,
+                    ReadOnly = true,
+                    SortMode = DataGridViewColumnSortMode.NotSortable
+                };
+
+                editColumn.DefaultCellStyle = new DataGridViewCellStyle
+                {
+                    BackColor = AppointmentDarkBlue,
+                    SelectionBackColor = AppointmentDarkBlue,
+                    Alignment = DataGridViewContentAlignment.MiddleCenter,
+                    Padding = new Padding(5, 3, 5, 3)
+                };
+
+                dgvAppointments.Columns.Add(editColumn);
+            }
+
+            if (!dgvAppointments.Columns.Contains("DeleteAction"))
+            {
+                DataGridViewImageColumn deleteColumn = new DataGridViewImageColumn
+                {
+                    Name = "DeleteAction",
+                    HeaderText = Tr("Delete"),
+                    Image = CreateDeleteIcon(),
+                    ImageLayout = DataGridViewImageCellLayout.Zoom,
+                    Width = 48,
+                    MinimumWidth = 48,
+                    AutoSizeMode = DataGridViewAutoSizeColumnMode.None,
+                    ReadOnly = true,
+                    SortMode = DataGridViewColumnSortMode.NotSortable
+                };
+
+                deleteColumn.DefaultCellStyle = new DataGridViewCellStyle
+                {
+                    BackColor = AppointmentDarkBlue,
+                    SelectionBackColor = AppointmentDarkBlue,
+                    Alignment = DataGridViewContentAlignment.MiddleCenter,
+                    Padding = new Padding(5, 3, 5, 3)
+                };
+
+                dgvAppointments.Columns.Add(deleteColumn);
+            }
+
+            DataGridViewImageColumn editAction =
+                (DataGridViewImageColumn)dgvAppointments.Columns["EditAction"];
+
+            editAction.HeaderText = Tr("Edit");
+            editAction.Width = 48;
+            editAction.MinimumWidth = 48;
+            editAction.HeaderCell.Style.Alignment =
+                DataGridViewContentAlignment.MiddleCenter;
+
+            DataGridViewImageColumn deleteAction =
+                (DataGridViewImageColumn)dgvAppointments.Columns["DeleteAction"];
+
+            deleteAction.HeaderText = Tr("Delete");
+            deleteAction.Width = 48;
+            deleteAction.MinimumWidth = 48;
+            deleteAction.HeaderCell.Style.Alignment =
+                DataGridViewContentAlignment.MiddleCenter;
+
+            editAction.DisplayIndex = dgvAppointments.Columns.Count - 2;
+            deleteAction.DisplayIndex = dgvAppointments.Columns.Count - 1;
+        }
+
+        private bool HasSelectedAppointment()
+        {
+            if (dgvAppointments.CurrentRow == null ||
+                dgvAppointments.CurrentRow.IsNewRow)
+            {
+                MessageBox.Show(
+                    Tr("Please select an appointment first."),
+                    Tr("Appointment"),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+                return false;
+            }
+
+            return true;
+        }
+
+        private void UpdateAppointmentActionButtons()
+        {
+            bool hasSelection = dgvAppointments.CurrentRow != null &&
+                                !dgvAppointments.CurrentRow.IsNewRow;
+
+            string status = hasSelection
+                ? Convert.ToString(dgvAppointments.CurrentRow.Cells["AppointmentStatusText"].Value)
+                : string.Empty;
+
+            btnShowPatientDetails.Enabled = hasSelection;
+            btnShowDoctorDetails.Enabled = hasSelection;
+            btnReschedule.Enabled = hasSelection &&
+                (status == "Scheduled" || status == "Postponed");
+            btnCheckIn.Enabled = hasSelection && status == "Scheduled";
+        }
+
+        private void dgvAppointments_CellContentClick(
+      object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0 || e.ColumnIndex < 0)
+                return;
+
+            string columnName = dgvAppointments.Columns[e.ColumnIndex].Name;
+
+            if (columnName != "EditAction" && columnName != "DeleteAction")
+                return;
+
+            // Keep the current cell on the clicked icon.
+            // This prevents the grid from scrolling to the left.
+            dgvAppointments.CurrentCell =
+                dgvAppointments.Rows[e.RowIndex].Cells[e.ColumnIndex];
+
+            if (columnName == "EditAction")
+            {
+                if (editToolStripMenuItem.Enabled)
+                    editToolStripMenuItem_Click(sender, EventArgs.Empty);
+            }
+            else if (columnName == "DeleteAction")
+            {
+                if (deleteToolStripMenuItem.Enabled)
+                    deleteToolStripMenuItem_Click(sender, EventArgs.Empty);
+            }
+        }
+        private void btnShowPatientDetails_Click(object sender, EventArgs e)
+        {
+            if (HasSelectedAppointment())
+                showPatientDetailsToolStripMenuItem_Click(sender, e);
+        }
+
+        private void btnShowDoctorDetails_Click(object sender, EventArgs e)
+        {
+            if (HasSelectedAppointment())
+                showDoctorDetailsToolStripMenuItem_Click(sender, e);
+        }
+
+        private void btnReschedule_Click(object sender, EventArgs e)
+        {
+            if (HasSelectedAppointment() && btnReschedule.Enabled)
+                rescheduleToolStripMenuItem_Click(sender, e);
+        }
+
+        private void btnCheckIn_Click(object sender, EventArgs e)
+        {
+            if (HasSelectedAppointment() && btnCheckIn.Enabled)
+                checkINToolStripMenuItem_Click(sender, e);
         }
 
         private string Tr(string text)
@@ -103,14 +349,32 @@ namespace Clinic.Medical_Services.Appointment
                     ? DataGridViewContentAlignment.MiddleRight
                     : DataGridViewContentAlignment.MiddleLeft;
 
-            SetAppointmentColumn("AppointmentID", "Appointment ID", 150);
+            // Prevent columns from becoming compressed.
+            dgvAppointments.AutoSizeColumnsMode =
+                DataGridViewAutoSizeColumnsMode.None;
+
+            dgvAppointments.ScrollBars = ScrollBars.Both;
+
+            dgvAppointments.DefaultCellStyle.WrapMode =
+                DataGridViewTriState.False;
+
+            dgvAppointments.ColumnHeadersDefaultCellStyle.WrapMode =
+                DataGridViewTriState.True;
+
+            dgvAppointments.RowTemplate.Height = 42;
+
+            SetAppointmentColumn("AppointmentID", "Appointment ID", 110);
+            SetAppointmentColumn("PatientID", "PatientID", 85);
             SetAppointmentColumn("PatientName", "Patient Name", 150);
-            SetAppointmentColumn("DoctorName", "Doctor Name", 150);
-            SetAppointmentColumn("TypeName", "AppointmentType", 150);
-            SetAppointmentColumn("AppointmentFees", "Fees", 100);
-            SetAppointmentColumn("AppointmentDate", "Date", 150);
-            SetAppointmentColumn("AppointmentStatusText", "Status", 100);
-            SetAppointmentColumn("CreatedByUserID", "C.UserID", 90);
+            SetAppointmentColumn("DoctorID", "DoctorID", 85);
+            SetAppointmentColumn("DoctorName", "Doctor Name", 155);
+            SetAppointmentColumn("AppointmentDate", "Date", 175);
+            SetAppointmentColumn("TypeName", "AppointmentType", 130);
+            SetAppointmentColumn("AppointmentStatusText", "Status", 115);
+            SetAppointmentColumn("AppointmentFees", "Fees", 75);
+            SetAppointmentColumn("AppointmentTypeID", "AppointmentTypeID", 90);
+            SetAppointmentColumn("AppointmentStatus", "AppointmentStatus", 100);
+            SetAppointmentColumn("CreatedByUserID", "C.UserID", 85);
         }
 
         private void SetAppointmentColumn(
@@ -302,6 +566,8 @@ namespace Clinic.Medical_Services.Appointment
             _dtAppointmets.Columns["AppointmentStatusText"].ReadOnly = false;
             lblRecordsCount.Text = _dtAppointmets.Rows.Count.ToString();
             dgvAppointments.DataSource = _dtAppointmets;
+            EnsureAppointmentActionColumns();
+            UpdateAppointmentActionButtons();
             _RefreshRecords();
 
         }
@@ -313,30 +579,34 @@ namespace Clinic.Medical_Services.Appointment
                 dgvAppointments.ContextMenuStrip = cmsAppointmentRecption;
 
             dgvAppointments.DataSource = _dtAppointmets;
-
+            EnsureAppointmentActionColumns();
+            ArrangeAppointmentColumns();
             ApplyLocalizationAndMirroring();
             ApplyAppointmentGridLanguage();
             cbFilterBy.SelectedIndex = 0;
             if (_dtAppointmets.Rows.Count == 0)
+            {
+                UpdateAppointmentActionButtons();
                 return;
+            }
             _dtAppointmets.PrimaryKey = new DataColumn[] { _dtAppointmets.Columns["AppointmentID"] };
             _dtAppointmets.Columns["AppointmentStatusText"].ReadOnly = false;
             lblRecordsCount.Text = _dtAppointmets.Rows.Count.ToString();
 
             dgvAppointments.Columns["AppointmentID"].HeaderText = Tr("Appointment ID");
-            dgvAppointments.Columns["AppointmentID"].Width = 150;
+            dgvAppointments.Columns["AppointmentID"].Width = 100;
 
             dgvAppointments.Columns["AppointmentTypeID"].HeaderText = Tr("AppointmentTypeID");
-            dgvAppointments.Columns["AppointmentTypeID"].Width = 150;
+            dgvAppointments.Columns["AppointmentTypeID"].Width = 100;
 
             dgvAppointments.Columns["DoctorID"].HeaderText = Tr("DoctorID");
-            dgvAppointments.Columns["DoctorID"].Width = 150;
+            dgvAppointments.Columns["DoctorID"].Width = 85;
 
             dgvAppointments.Columns["PatientID"].HeaderText = Tr("PatientID");
-            dgvAppointments.Columns["PatientID"].Width = 150;
+            dgvAppointments.Columns["PatientID"].Width = 85;
 
             dgvAppointments.Columns["AppointmentStatus"].HeaderText = Tr("AppointmentStatus");
-            dgvAppointments.Columns["AppointmentStatus"].Width = 150;
+            dgvAppointments.Columns["AppointmentStatus"].Width = 105;
 
             dgvAppointments.Columns["PatientName"].HeaderText = Tr("Patient Name");
             dgvAppointments.Columns["PatientName"].Width = 150;
@@ -345,20 +615,21 @@ namespace Clinic.Medical_Services.Appointment
             dgvAppointments.Columns["DoctorName"].Width = 150;
 
             dgvAppointments.Columns["TypeName"].HeaderText = Tr("AppointmentType");
-            dgvAppointments.Columns["TypeName"].Width = 150;
+            dgvAppointments.Columns["TypeName"].Width = 130;
 
             dgvAppointments.Columns["AppointmentFees"].HeaderText = Tr("Fees");
-            dgvAppointments.Columns["AppointmentFees"].Width = 100;
+            dgvAppointments.Columns["AppointmentFees"].Width = 85;
 
             dgvAppointments.Columns["AppointmentDate"].HeaderText = Tr("Date");
-            dgvAppointments.Columns["AppointmentDate"].Width = 150;
+            dgvAppointments.Columns["AppointmentDate"].Width = 160;
 
             dgvAppointments.Columns["AppointmentStatusText"].HeaderText = Tr("Status");
-            dgvAppointments.Columns["AppointmentStatusText"].Width = 100;
+            dgvAppointments.Columns["AppointmentStatusText"].Width = 115;
 
             dgvAppointments.Columns["CreatedByUserID"].HeaderText = Tr("C.UserID");
             dgvAppointments.Columns["CreatedByUserID"].Width = 90;
 
+            UpdateAppointmentActionButtons();
         }
 
         private void cbFilterBy_SelectedIndexChanged(object sender, EventArgs e)
@@ -551,39 +822,39 @@ namespace Clinic.Medical_Services.Appointment
 
         public string GetAppointmentStatusText(enAppointmentStatus AppointmentStatus)
         {
-                switch ((enAppointmentStatus)AppointmentStatus)
-                {
-                    case enAppointmentStatus.Scheduled:
-                        return "Scheduled";
+            switch ((enAppointmentStatus)AppointmentStatus)
+            {
+                case enAppointmentStatus.Scheduled:
+                    return "Scheduled";
 
-                    case enAppointmentStatus.InQueue:
-                        return "In Queue";
+                case enAppointmentStatus.InQueue:
+                    return "In Queue";
 
-                    case enAppointmentStatus.Progress:
-                        return "In Progress";
+                case enAppointmentStatus.Progress:
+                    return "In Progress";
 
-                    case enAppointmentStatus.Postponed:
-                        return "Postponed";
+                case enAppointmentStatus.Postponed:
+                    return "Postponed";
 
-                    case enAppointmentStatus.Completed:
-                        return "Completed";
+                case enAppointmentStatus.Completed:
+                    return "Completed";
 
-                    case enAppointmentStatus.Cancelled:
-                        return "Cancelled";
+                case enAppointmentStatus.Cancelled:
+                    return "Cancelled";
 
-                    case enAppointmentStatus.Waiting_For_Vitals:
-                        return "Waiting for Vitals";
+                case enAppointmentStatus.Waiting_For_Vitals:
+                    return "Waiting for Vitals";
 
-                    case enAppointmentStatus.Ready_For_Doctor:
-                        return "Ready for Doctor";
+                case enAppointmentStatus.Ready_For_Doctor:
+                    return "Ready for Doctor";
 
-                    case enAppointmentStatus.In_Billing:
-                        return "In Billing";
+                case enAppointmentStatus.In_Billing:
+                    return "In Billing";
 
-                    default:
-                        return "Unknown";
-                }
-            
+                default:
+                    return "Unknown";
+            }
+
         }
         private void _ProcessAppointmentStatus(enAppointmentStatus newStatus, string actionName)
         {
@@ -624,6 +895,7 @@ namespace Clinic.Medical_Services.Appointment
             if (dgvAppointments.CurrentRow == null)
             {
                 checkINToolStripMenuItem.Enabled = false;
+                UpdateAppointmentActionButtons();
                 return;
             }
 
@@ -637,6 +909,8 @@ namespace Clinic.Medical_Services.Appointment
 
             deleteToolStripMenuItem.Enabled = (currentStatus != "Completed");
             editToolStripMenuItem.Enabled = deleteToolStripMenuItem.Enabled && (currentStatus != "Cancelled");
+
+            UpdateAppointmentActionButtons();
         }
 
         private void showPatientDetailsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -666,6 +940,7 @@ namespace Clinic.Medical_Services.Appointment
             frmReschedule frm = new frmReschedule(AppointmentID, appointment.DoctorID, appointment.PatientID);
             frm.ShowDialog();
             _RefreshAppointmentsList();
+            EnsureAppointmentActionColumns();
         }
 
         private void checkINToolStripMenuItem_Click(object sender, EventArgs e)
@@ -840,6 +1115,58 @@ namespace Clinic.Medical_Services.Appointment
         {
             frmListPatient frm = new frmListPatient();
             frm.ShowDialog();
+        }
+        private void ArrangeAppointmentColumns()
+        {
+            dgvAppointments.AutoSizeColumnsMode =
+                DataGridViewAutoSizeColumnsMode.None;
+
+            dgvAppointments.ScrollBars = ScrollBars.Both;
+
+            // Hide duplicate/internal columns
+            if (dgvAppointments.Columns.Contains("AppointmentTypeID"))
+                dgvAppointments.Columns["AppointmentTypeID"].Visible = false;
+
+            if (dgvAppointments.Columns.Contains("AppointmentStatus"))
+                dgvAppointments.Columns["AppointmentStatus"].Visible = false;
+
+            // Appointment ID
+            SetAppointmentColumn("AppointmentID", "Appointment ID", 105);
+
+            // Patient details
+            SetAppointmentColumn("PatientID", "Patient ID", 75);
+            SetAppointmentColumn("PatientName", "Patient Name", 145);
+
+            // Doctor details
+            SetAppointmentColumn("DoctorID", "Doctor ID", 75);
+            SetAppointmentColumn("DoctorName", "Doctor Name", 145);
+
+            // Appointment information
+            SetAppointmentColumn("AppointmentDate", "Date", 170);
+            SetAppointmentColumn("TypeName", "Appointment Type", 120);
+            SetAppointmentColumn("AppointmentStatusText", "Status", 100);
+            SetAppointmentColumn("AppointmentFees", "Fees", 75);
+            SetAppointmentColumn("CreatedByUserID", "C.UserID", 85);
+
+            // Action icons
+            if (dgvAppointments.Columns.Contains("EditAction"))
+            {
+                dgvAppointments.Columns["EditAction"].Width = 48;
+                dgvAppointments.Columns["EditAction"].DisplayIndex =
+                    dgvAppointments.Columns.Count - 2;
+            }
+
+            if (dgvAppointments.Columns.Contains("DeleteAction"))
+            {
+                dgvAppointments.Columns["DeleteAction"].Width = 48;
+                dgvAppointments.Columns["DeleteAction"].DisplayIndex =
+                    dgvAppointments.Columns.Count - 1;
+            }
+
+            dgvAppointments.RowTemplate.Height = 42;
+
+            dgvAppointments.DefaultCellStyle.WrapMode =
+                DataGridViewTriState.False;
         }
     }
 }
