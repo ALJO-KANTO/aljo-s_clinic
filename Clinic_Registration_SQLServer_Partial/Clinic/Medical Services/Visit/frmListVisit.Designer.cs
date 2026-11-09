@@ -216,7 +216,8 @@
             // 
             // panelHeaderContainer
             // 
-            this.panelHeaderContainer.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(19)))), ((int)(((byte)(59)))), ((int)(((byte)(62)))));
+            this.panelHeaderContainer.BackColor =
+     System.Drawing.Color.FromArgb(11, 61, 107);
             this.panelHeaderContainer.Controls.Add(this.btnExit);
             this.panelHeaderContainer.Controls.Add(this.lblTitle);
             this.panelHeaderContainer.Controls.Add(this.pbPersonImage);
@@ -292,10 +293,13 @@
             this.dgvVisit.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dgvVisit.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
             dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(188)))), ((int)(((byte)(156)))));
+            dataGridViewCellStyle2.BackColor =
+     System.Drawing.Color.FromArgb(11, 61, 107);
+
+            dataGridViewCellStyle2.SelectionBackColor =
+                System.Drawing.Color.FromArgb(11, 61, 107);
             dataGridViewCellStyle2.Font = new System.Drawing.Font("Segoe UI Semibold", 12F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             dataGridViewCellStyle2.ForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(188)))), ((int)(((byte)(156)))));
             dataGridViewCellStyle2.SelectionForeColor = System.Drawing.Color.White;
             dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.dgvVisit.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
@@ -334,7 +338,8 @@
             // 
             // panelGridHeader
             // 
-            this.panelGridHeader.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(188)))), ((int)(((byte)(156)))));
+            this.panelGridHeader.BackColor =
+    System.Drawing.Color.FromArgb(11, 61, 107);
             this.panelGridHeader.Controls.Add(this.lblGridTitle);
             this.panelGridHeader.Dock = System.Windows.Forms.DockStyle.Top;
             this.panelGridHeader.Location = new System.Drawing.Point(25, 20);
