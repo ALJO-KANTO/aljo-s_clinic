@@ -122,6 +122,16 @@ namespace Clinic_Business
             return clsPatientData.IsPatientExistForPersonID(PersonID);
         }
 
+        public static clsPatient FindPatientByPersonID(int personID)
+        {
+            int patientID = clsPatientData.GetPatientIDByPersonID(personID);
+
+            if (patientID <= 0)
+                return null;
+
+            return FindPatientByID(patientID);
+        }
+
         public bool SavePatient()
         {
  

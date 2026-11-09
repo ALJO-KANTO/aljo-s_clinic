@@ -115,10 +115,14 @@ namespace Clinic.Person
                 rbFemale.Checked = true;
 
             //load person image incase it was set.
-            if (_Person.ImagePath != "")
+            if (!string.IsNullOrWhiteSpace(_Person.ImagePath)
+      && File.Exists(_Person.ImagePath))
             {
                 pbPersonImage.ImageLocation = _Person.ImagePath;
-
+            }
+            else
+            {
+                SetDefaultPersonImage();
             }
 
             //hide/show the remove linke incase there is no image for the person.
@@ -144,10 +148,7 @@ namespace Clinic.Person
             this.Text = Tr("Add / Edit Person Info.");
 
             //set default image for the person.
-            if (rbMale.Checked)
-                pbPersonImage.Image = Resources.Male_512;
-            else
-                pbPersonImage.Image = Resources.Female_512;
+            SetDefaultPersonImage();
 
             //hide/show the remove linke incase there is no image for the person.
             llRemoveImage.Visible = (pbPersonImage.ImageLocation != null);
@@ -210,6 +211,82 @@ namespace Clinic.Person
             parent.ResumeLayout(true);
         }
 
+
+        // Visual styling only. All existing events and data operations are retained.
+        private void ApplyModernPersonDesign()
+        {
+            Color navy = Color.FromArgb(15, 64, 100);
+            Color blue = Color.FromArgb(18, 111, 202);
+            Color ink = Color.FromArgb(36, 55, 76);
+            Color muted = Color.FromArgb(99, 116, 136);
+            Color pale = Color.FromArgb(241, 247, 252);
+
+            BackColor = pale;
+            Font = new Font("Segoe UI", 10F);
+
+            // Header: use the existing title and exit control, not a second header.
+            if (lblTitle.Parent != null)
+            {
+                lblTitle.Parent.BackColor = navy;
+                lblTitle.ForeColor = Color.White;
+                lblTitle.Font = new Font("Segoe UI", 22F, FontStyle.Bold);
+            }
+            btnExit.FlatStyle = FlatStyle.Flat;
+            btnExit.FlatAppearance.BorderSize = 0;
+            btnExit.BackColor = navy;
+            btnExit.ForeColor = Color.White;
+
+            // Retain the original Designer layout and Arabic mirroring.
+            Label[] captions = { label22, label1, label3, label5,
+                                 label6, label4, label15, label12 };
+            foreach (Label caption in captions)
+            {
+                caption.ForeColor = muted;
+                caption.Font = new Font("Segoe UI Semibold", 10F, FontStyle.Bold);
+            }
+
+            lblPersonID.ForeColor = blue;
+            lblPersonID.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+
+            TextBox[] fields = { txtFullName, txtPhone, txtEmail, txtAddress };
+            foreach (TextBox field in fields)
+            {
+                field.BackColor = Color.White;
+                field.ForeColor = ink;
+                field.Font = new Font("Segoe UI", 10.5F);
+                field.BorderStyle = BorderStyle.FixedSingle;
+            }
+            cbCountry.BackColor = Color.White;
+            cbCountry.ForeColor = ink;
+            cbCountry.Font = new Font("Segoe UI", 10.5F);
+            dtpDateOfBirth.Font = new Font("Segoe UI", 10.5F);
+            rbMale.ForeColor = ink;
+            rbFemale.ForeColor = ink;
+
+            // Keep the actual selected photo and the image upload/remove links.
+            pbPersonImage.SizeMode = PictureBoxSizeMode.Zoom;
+            pbPersonImage.BackColor = Color.FromArgb(232, 243, 252);
+            pbPersonImage.BorderStyle = BorderStyle.None;
+            llSetImage.LinkColor = blue;
+            llRemoveImage.LinkColor = Color.FromArgb(194, 61, 61);
+
+            btnSave.BackColor = blue;
+            btnSave.ForeColor = Color.White;
+            btnSave.FlatStyle = FlatStyle.Flat;
+            btnSave.FlatAppearance.BorderSize = 0;
+            btnSave.FlatAppearance.MouseOverBackColor = Color.FromArgb(10, 92, 177);
+            btnSave.Font = new Font("Segoe UI Semibold", 10.5F, FontStyle.Bold);
+            btnSave.Cursor = Cursors.Hand;
+
+            btnClose.BackColor = Color.White;
+            btnClose.ForeColor = ink;
+            btnClose.FlatStyle = FlatStyle.Flat;
+            btnClose.FlatAppearance.BorderColor = Color.FromArgb(199, 216, 230);
+            btnClose.FlatAppearance.BorderSize = 1;
+            btnClose.Font = new Font("Segoe UI Semibold", 10.5F, FontStyle.Bold);
+            btnClose.Cursor = Cursors.Hand;
+        }
+
         private void frmAddUpdatePerson_Load(object sender, EventArgs e)
         {
             _ResetDefualtValues();
@@ -218,6 +295,7 @@ namespace Clinic.Person
 
             ApplyPersonFormTranslation();
             MirrorFormLayout();
+            ApplyModernPersonDesign();
         }
 
         private void ValidateTextBox(object sender, CancelEventArgs e)
@@ -264,12 +342,9 @@ namespace Clinic.Person
 
         private void CheckedImageGender(object sender, EventArgs e)
         {
-            if (pbPersonImage.ImageLocation == null)
+            if (string.IsNullOrEmpty(pbPersonImage.ImageLocation))
             {
-                if (rbFemale.Checked)
-                    pbPersonImage.Image = Resources.Female_512;
-                else
-                    pbPersonImage.Image = Resources.Male_512;
+                SetDefaultPersonImage();
                 llRemoveImage.Visible = false;
             }
         }
@@ -401,7 +476,12 @@ namespace Clinic.Person
 
 
         }
-
+        private void SetDefaultPersonImage()
+        {
+            pbPersonImage.ImageLocation = null;
+            pbPersonImage.Image = Resources.DefaultPersonAvatar;
+            pbPersonImage.SizeMode = PictureBoxSizeMode.Zoom;
+        }
         private void btnExit_Click(object sender, EventArgs e)
         {
             Close();

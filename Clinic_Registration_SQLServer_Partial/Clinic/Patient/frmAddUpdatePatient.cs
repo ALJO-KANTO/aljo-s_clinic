@@ -26,8 +26,6 @@ namespace Clinic.Patient
         private Label _brand;
         private Label _sectionHint;
         private bool _patientSaved;
-        private PictureBox _emptyPersonPhoto;
-        private Label _emptyPersonPhotoLabel;
 
         private static readonly Color Navy = Color.FromArgb(9, 65, 105);
         private static readonly Color Blue = Color.FromArgb(13, 111, 207);
@@ -276,62 +274,19 @@ namespace Clinic.Patient
             foreach (PictureBox picture in new[] { pictureBox4, pictureBox5, pictureBox6, pictureBox7 })
                 picture.Size = new Size(28, 28);
 
-            FindEmptyPersonPhoto(ctrlPersonCardWithFilter1);
-            RefreshEmptyState();
+            // The nested person card owns its photo and its data display.
+            // Never cover, hide or overwrite its controls.
             PositionGuideControls();
-        }
-
-        private void FindEmptyPersonPhoto(Control parent)
-        {
-            foreach (Control child in parent.Controls)
-            {
-                PictureBox photo = child as PictureBox;
-                if (photo != null && photo.Width >= 150 && photo.Height >= 150 && _emptyPersonPhoto == null)
-                {
-                    _emptyPersonPhoto = photo;
-                    _emptyPersonPhotoLabel = new Label
-                    {
-                        Text = "No person selected",
-                        TextAlign = ContentAlignment.MiddleCenter,
-                        Font = new Font("Segoe UI Semibold", 10F),
-                        ForeColor = Ink,
-                        BackColor = Pale,
-                        Bounds = photo.Bounds,
-                        Visible = false
-                    };
-                    photo.Parent.Controls.Add(_emptyPersonPhotoLabel);
-                    _emptyPersonPhotoLabel.BringToFront();
-                    return;
-                }
-                FindEmptyPersonPhoto(child);
-                if (_emptyPersonPhoto != null) return;
-            }
         }
 
         private void RefreshEmptyState()
         {
-            if (ctrlPersonCardWithFilter1 == null) return;
-            bool missing = ctrlPersonCardWithFilter1.PersonID <= 0;
-            if (_emptyPersonPhoto != null && _emptyPersonPhotoLabel != null)
-            {
-                _emptyPersonPhoto.Visible = !missing;
-                _emptyPersonPhotoLabel.Visible = missing;
-                _emptyPersonPhotoLabel.Text = TranslationClass.IsArabic ? "لم يتم اختيار شخص" : "No person selected";
-            }
-            if (missing) ReplaceEmptyPersonLabels(ctrlPersonCardWithFilter1);
+            // Update only this form's patient ID label.
+            // Do not manipulate the photo or labels in ctrlPersonCardWithFilter1:
+            // that control updates them when a person is found or selected.
             if (_Patient == null || _Patient.PatientID <= 0)
-                lblPatientID.Text = TranslationClass.IsArabic ? "لم يصدر بعد" : "Not generated yet";
-        }
-
-        private void ReplaceEmptyPersonLabels(Control parent)
-        {
-            foreach (Control child in parent.Controls)
-            {
-                Label label = child as Label;
-                if (label != null && (label.Text.Contains("????") || label.Text == "???"))
-                    label.Text = "—";
-                ReplaceEmptyPersonLabels(child);
-            }
+                lblPatientID.Text = TranslationClass.IsArabic
+                    ? "لم يصدر بعد" : "Not generated yet";
         }
 
         private void _FillBloodTypesInComboBox()
@@ -408,30 +363,68 @@ namespace Clinic.Patient
                 UpdateRegistrationGuide();
                 return;
             }
-            if (ctrlPersonCardWithFilter1.PersonID == -1)
+
+            int personID = ctrlPersonCardWithFilter1.PersonID;
+
+            if (personID <= 0)
             {
                 MessageBox.Show(
                     TranslationClass.IsArabic
-                        ? "احفظ معلومات الشخص أولاً من بطاقة الشخص، ثم اضغط التالي."
-                        : "First save or select a person in the Personal Information card, then click Next.",
-                    Tr("Select a Person"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        ? "يرجى اختيار شخص أو حفظ بيانات شخص جديد أولاً."
+                        : "Please select a person or save a new person first.",
+                    Tr("Select a Person"),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
                 ctrlPersonCardWithFilter1.FocuseTextBox();
                 return;
             }
-            if (clsPatient.IsPatientExistForPersonID(ctrlPersonCardWithFilter1.PersonID))
-            {
-                MessageBox.Show(Tr("Selected Person already has a patient record, choose another one."), Tr("Select another Person"), MessageBoxButtons.OK, MessageBoxIcon.Error);
-                ctrlPersonCardWithFilter1.FocuseTextBox();
-            }
-            else
-            {
-                btnSave.Enabled = true;
-                tpPatientInfo.Enabled = true;
-                tcPatient.SelectedTab = tpPatientInfo;
-                UpdateRegistrationGuide();
-            }
-        }
 
+            if (clsPatient.IsPatientExistForPersonID(personID))
+            {
+                DialogResult result = MessageBox.Show(
+                    TranslationClass.IsArabic
+                        ? "هذا الشخص مسجل بالفعل كمريض.\n\nهل تريد فتح سجل المريض الحالي للتعديل؟"
+                        : "This person is already registered as a patient.\n\nWould you like to open the existing patient record for editing?",
+                    TranslationClass.IsArabic
+                        ? "المريض مسجل بالفعل"
+                        : "Patient Already Registered",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
+
+                if (result == DialogResult.Yes)
+                {
+                    int existingPatientID = GetExistingPatientID(personID);
+
+                    if (existingPatientID <= 0)
+                    {
+                        MessageBox.Show(
+                            Tr("Unable to find the existing patient record."),
+                            Tr("Error"),
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error);
+                        return;
+                    }
+
+                    using (frmAddUpdatePatient editForm =
+                        new frmAddUpdatePatient(existingPatientID))
+                    {
+                        editForm.ShowDialog(this);
+                    }
+
+                    return;
+                }
+
+                ctrlPersonCardWithFilter1.FocuseTextBox();
+                return;
+            }
+
+            btnSave.Enabled = true;
+            tpPatientInfo.Enabled = true;
+            tcPatient.SelectedTab = tpPatientInfo;
+
+            UpdateRegistrationGuide();
+        }
         private void btnClose_Click(object sender, EventArgs e) { Close(); }
 
         private void txtEmergencyContact_Validating(object sender, CancelEventArgs e)
@@ -493,6 +486,15 @@ namespace Clinic.Patient
             }
         }
 
+        private int GetExistingPatientID(int personID)
+        {
+            clsPatient existingPatient =
+                clsPatient.FindPatientByPersonID(personID);
+
+            return existingPatient != null
+                ? existingPatient.PatientID
+                : -1;
+        }
         private void tcPatient_Selecting(object sender, TabControlCancelEventArgs e)
         {
             if (e.TabPage.Name == "tpPatientInfo" && _Mode == enMode.AddNew)
@@ -507,10 +509,9 @@ namespace Clinic.Patient
 
         private void frmAddUpdatePatient_Activated(object sender, EventArgs e)
         {
-            // Avoid moving keyboard focus away from the medical fields on dialog reactivation.
-            RefreshEmptyState();
-            if (tcPatient.SelectedTab == tpPersonalInfo)
-                ctrlPersonCardWithFilter1.FocuseTextBox();
+            // Do not force focus or modify nested person-card controls on activation.
+            // Searching and opening the person editor may reactivate this form.
+            // The person card must be allowed to finish loading its own photo.
         }
 
         private void btnExit_Click(object sender, EventArgs e) { Close(); }
