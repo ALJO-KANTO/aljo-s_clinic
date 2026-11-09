@@ -374,8 +374,8 @@ namespace Clinic.User
             // 
             // panel2
             // 
-            this.panel2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(25)))), ((int)(((byte)(80)))), ((int)(((byte)(80)))));
-            this.panel2.Controls.Add(this.btnExit);
+            this.panel2.BackColor =
+      System.Drawing.Color.FromArgb(11, 61, 107); this.panel2.Controls.Add(this.btnExit);
             this.panel2.Controls.Add(this.lblTitle);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel2.Location = new System.Drawing.Point(0, 0);
@@ -389,7 +389,8 @@ namespace Clinic.User
             this.btnExit.BackColor = System.Drawing.Color.Transparent;
             this.btnExit.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnExit.FlatAppearance.BorderSize = 0;
-            this.btnExit.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
+            this.btnExit.FlatAppearance.MouseOverBackColor =
+     System.Drawing.Color.FromArgb(11, 61, 107);
             this.btnExit.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnExit.Font = new System.Drawing.Font("Segoe UI", 13.8F, System.Drawing.FontStyle.Bold);
             this.btnExit.ForeColor = System.Drawing.Color.White;
@@ -405,7 +406,8 @@ namespace Clinic.User
             // lblTitle
             // 
             this.lblTitle.AutoSize = true;
-            this.lblTitle.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(25)))), ((int)(((byte)(80)))), ((int)(((byte)(80)))));
+            this.lblTitle.BackColor =
+     System.Drawing.Color.FromArgb(11, 61, 107);
             this.lblTitle.Cursor = System.Windows.Forms.Cursors.Hand;
             this.lblTitle.Font = new System.Drawing.Font("Segoe UI Semibold", 19.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblTitle.ForeColor = System.Drawing.Color.White;
