@@ -2,27 +2,45 @@
 using System;
 using System.ComponentModel;
 using System.Data;
-using System.Net.Sockets;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace Clinic.Patient
 {
     public partial class frmAddUpdatePatient : Form
     {
-        public enum enMode { AddNew = 1, Update = 2 };
+        public enum enMode { AddNew = 1, Update = 2 }
         private enMode _Mode = enMode.AddNew;
         private int _PatientID = -1;
         private clsPatient _Patient;
 
         public delegate void DataBackEventHandler(object sender, int PatientID);
-
-        // Declare an event using the delegate
         public event DataBackEventHandler DataBack;
+
+        // UI-only elements. All existing patient/business/database methods remain unchanged.
+        private Panel _progressPanel;
+        private Panel _guideBanner;
+        private Label _stepOne;
+        private Label _stepTwo;
+        private Label _stepHint;
+        private Label _brand;
+        private Label _sectionHint;
+        private bool _patientSaved;
+        private PictureBox _emptyPersonPhoto;
+        private Label _emptyPersonPhotoLabel;
+
+        private static readonly Color Navy = Color.FromArgb(9, 65, 105);
+        private static readonly Color Blue = Color.FromArgb(13, 111, 207);
+        private static readonly Color Teal = Color.FromArgb(0, 145, 166);
+        private static readonly Color Pale = Color.FromArgb(236, 247, 253);
+        private static readonly Color Ink = Color.FromArgb(24, 54, 83);
 
         public frmAddUpdatePatient()
         {
             InitializeComponent();
             _Mode = enMode.AddNew;
+            InitializeRegistrationGuide();
+            ApplyVisualPolish();
         }
 
         public frmAddUpdatePatient(int patientID)
@@ -30,6 +48,8 @@ namespace Clinic.Patient
             InitializeComponent();
             _PatientID = patientID;
             _Mode = enMode.Update;
+            InitializeRegistrationGuide();
+            ApplyVisualPolish();
         }
 
         private string Tr(string text)
@@ -37,35 +57,292 @@ namespace Clinic.Patient
             return TranslationClass.Translate(text, TranslationClass.IsArabic);
         }
 
+        private void InitializeRegistrationGuide()
+        {
+            SuspendLayout();
+            // Enlarging the window gives the original person card room to breathe.
+            ClientSize = new Size(960, 760);
+            MinimumSize = new Size(960, 760);
+            panelHeaderContainer.Height = 198;
+            panelHeaderContainer.Dock = DockStyle.Top;
+            tcPatient.Bounds = new Rectangle(16, 214, 928, 460);
+            tcPatient.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
+            btnClose.Bounds = new Rectangle(634, 700, 144, 42);
+            btnSave.Bounds = new Rectangle(790, 700, 154, 42);
+            btnClose.Anchor = AnchorStyles.Right | AnchorStyles.Bottom;
+            btnSave.Anchor = AnchorStyles.Right | AnchorStyles.Bottom;
+
+            _brand = new Label
+            {
+                Text = "✚  CLINIC MANAGEMENT",
+                ForeColor = Color.FromArgb(186, 233, 248),
+                Font = new Font("Segoe UI Semibold", 9.5F, FontStyle.Bold),
+                Bounds = new Rectangle(24, 10, 300, 24),
+                BackColor = Color.Transparent
+            };
+            panelHeaderContainer.Controls.Add(_brand);
+            lblTitle.AutoSize = false;
+            lblTitle.Bounds = new Rectangle(30, 36, 850, 44);
+            lblTitle.Font = new Font("Segoe UI Semibold", 23F, FontStyle.Bold);
+            lblTitle.TextAlign = ContentAlignment.MiddleLeft;
+            btnExit.Bounds = new Rectangle(904, 20, 40, 38);
+            btnExit.Image = null;
+            btnExit.Text = "×";
+            btnExit.Font = new Font("Segoe UI", 23F);
+            btnExit.ForeColor = Color.White;
+
+            _progressPanel = new Panel
+            {
+                BackColor = Color.White,
+                Bounds = new Rectangle(18, 91, 924, 96),
+                Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top
+            };
+            _progressPanel.Paint += (sender, e) =>
+            {
+                using (Pen pen = new Pen(Color.FromArgb(215, 230, 242)))
+                    e.Graphics.DrawRectangle(pen, 0, 0, _progressPanel.Width - 1, _progressPanel.Height - 1);
+            };
+            _stepOne = new Label
+            {
+                Bounds = new Rectangle(20, 11, 420, 36),
+                Font = new Font("Segoe UI Semibold", 11F, FontStyle.Bold),
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+            _stepTwo = new Label
+            {
+                Bounds = new Rectangle(470, 11, 420, 36),
+                Font = new Font("Segoe UI Semibold", 11F, FontStyle.Bold),
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+            _guideBanner = new Panel
+            {
+                BackColor = Pale,
+                Bounds = new Rectangle(14, 52, 896, 34),
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right
+            };
+            _stepHint = new Label
+            {
+                Dock = DockStyle.Fill,
+                Padding = new Padding(12, 0, 12, 0),
+                Font = new Font("Segoe UI", 9F),
+                ForeColor = Ink,
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+            _guideBanner.Controls.Add(_stepHint);
+            _progressPanel.Controls.Add(_stepOne);
+            _progressPanel.Controls.Add(_stepTwo);
+            _progressPanel.Controls.Add(_guideBanner);
+            panelHeaderContainer.Controls.Add(_progressPanel);
+            _progressPanel.BringToFront();
+            btnExit.BringToFront();
+
+            btnPersonInfoNext.Size = new Size(215, 42);
+            btnPersonInfoNext.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnPersonInfoNext.Location = new Point(tpPersonalInfo.ClientSize.Width - 235, tpPersonalInfo.ClientSize.Height - 58);
+            btnPersonInfoNext.Image = null;
+            btnPersonInfoNext.TextAlign = ContentAlignment.MiddleCenter;
+
+            tcPatient.SelectedIndexChanged += (sender, e) => UpdateRegistrationGuide();
+            Resize += (sender, e) => PositionGuideControls();
+            ResumeLayout(true);
+        }
+
+        private void PositionGuideControls()
+        {
+            if (_progressPanel == null) return;
+            bool arabic = TranslationClass.IsArabic;
+            int half = (_progressPanel.Width - 52) / 2;
+            _stepOne.Bounds = new Rectangle(arabic ? half + 30 : 18, 10, half, 36);
+            _stepTwo.Bounds = new Rectangle(arabic ? 18 : half + 30, 10, half, 36);
+            _guideBanner.Width = _progressPanel.Width - 28;
+            _stepHint.TextAlign = arabic ? ContentAlignment.MiddleRight : ContentAlignment.MiddleLeft;
+            if (tcPatient != null && tpPersonalInfo != null && btnPersonInfoNext != null)
+                btnPersonInfoNext.Location = new Point(Math.Max(8, tpPersonalInfo.ClientSize.Width - btnPersonInfoNext.Width - 18), Math.Max(8, tpPersonalInfo.ClientSize.Height - btnPersonInfoNext.Height - 15));
+        }
+
+        private void UpdateRegistrationGuide()
+        {
+            if (_progressPanel == null) return;
+            bool arabic = TranslationClass.IsArabic;
+            bool second = tcPatient.SelectedTab == tpPatientInfo;
+            bool saved = _Patient != null && _Patient.PatientID > 0;
+            _stepOne.Text = arabic ? "●  ١  المعلومات الشخصية" : "●  1   Personal Information";
+            _stepTwo.Text = arabic ? "●  ٢  معلومات المريض" : "●  2   Patient Information";
+            _stepOne.BackColor = second ? Color.FromArgb(239, 245, 251) : Blue;
+            _stepOne.ForeColor = second ? Ink : Color.White;
+            _stepTwo.BackColor = second ? Blue : Color.FromArgb(239, 245, 251);
+            _stepTwo.ForeColor = second ? Color.White : Ink;
+            if (_Mode == enMode.Update && !_patientSaved)
+                _stepHint.Text = arabic ? "راجع بيانات الشخص، ثم اضغط التالي لتعديل بيانات المريض." : "Review the person record, then click Next to edit patient details.";
+            else if (saved)
+                _stepHint.Text = arabic ? "تم حفظ المريض. رقم المريض: " + _Patient.PatientID : "Patient saved successfully. Patient ID: " + _Patient.PatientID;
+            else if (second)
+                _stepHint.Text = arabic ? "أدخل بيانات المريض ثم اضغط حفظ لإنشاء رقم المريض." : "Enter the patient details and click Save to generate the Patient ID.";
+            else
+                _stepHint.Text = arabic ? "احفظ الشخص من بطاقة الشخص أولاً، ثم اضغط التالي. يُنشأ رقم المريض عند حفظ الخطوة الثانية." : "Save the person record in the person card, then click Next. Patient ID is generated after saving Step 2.";
+            btnPersonInfoNext.Text = arabic ? "التالي: معلومات المريض  ←" : "Next: Patient Info  →";
+            btnSave.Text = arabic ? Tr("Save") : "Save";
+            PositionGuideControls();
+            RefreshEmptyState();
+        }
+
         private void ApplyArabicTranslation()
         {
-            bool isArabic = TranslationClass.IsArabic;
-
-            this.Text = Tr(this.Text);
-            lblTitle.Text = Tr(lblTitle.Text);
+            bool arabic = TranslationClass.IsArabic;
+            string title = _Mode == enMode.AddNew ? "Add New Patient" : "Update Patient Info";
+            Text = Tr(title);
+            lblTitle.Text = Tr(title);
+            lblTitle.TextAlign = arabic ? ContentAlignment.MiddleRight : ContentAlignment.MiddleLeft;
             tpPersonalInfo.Text = Tr("Personal Info");
             tpPatientInfo.Text = Tr("Patient Info");
-
             label6.Text = Tr("Blood Type:");
             label15.Text = Tr("Emergency Contact:");
             label7.Text = Tr("Medical History:");
             label8.Text = Tr("Patient ID:");
+            btnClose.Text = arabic ? Tr("Close") : "Close";
+            _brand.Text = arabic ? "✚  نظام إدارة العيادة" : "✚  CLINIC MANAGEMENT";
+            UpdateRegistrationGuide();
+        }
 
-            btnPersonInfoNext.Text = isArabic ? Tr("Next") : "Next   ";
-            btnSave.Text = isArabic ? Tr("Save") : "   Save";
-            btnClose.Text = isArabic ? Tr("Close") : "   Close";
+        private void ApplyVisualPolish()
+        {
+            BackColor = Color.FromArgb(246, 250, 253);
+            panelHeaderContainer.BackColor = Navy;
+            lblTitle.ForeColor = Color.White;
+            tcPatient.Font = new Font("Segoe UI Semibold", 10F);
+            tcPatient.Appearance = TabAppearance.Normal;
+            tpPersonalInfo.BackColor = Color.White;
+            tpPatientInfo.BackColor = Color.White;
+            ctrlPersonCardWithFilter1.BackColor = Color.White;
+            ctrlPersonCardWithFilter1.Location = new Point(8, 10);
+            ctrlPersonCardWithFilter1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 
+            foreach (Button button in new[] { btnSave, btnPersonInfoNext })
+            {
+                button.BackColor = Blue;
+                button.ForeColor = Color.White;
+                button.FlatStyle = FlatStyle.Flat;
+                button.FlatAppearance.BorderSize = 0;
+                button.FlatAppearance.MouseOverBackColor = Teal;
+                button.Font = new Font("Segoe UI Semibold", 10F, FontStyle.Bold);
+                button.Cursor = Cursors.Hand;
+                button.Image = null;
+                button.TextAlign = ContentAlignment.MiddleCenter;
+                button.UseVisualStyleBackColor = false;
+            }
+            btnClose.Image = null;
+            btnClose.Text = "Close";
+            btnClose.BackColor = Color.White;
+            btnClose.ForeColor = Ink;
+            btnClose.FlatStyle = FlatStyle.Flat;
+            btnClose.FlatAppearance.BorderSize = 1;
+            btnClose.FlatAppearance.BorderColor = Color.FromArgb(190, 214, 230);
+            btnClose.Font = new Font("Segoe UI Semibold", 10F);
+            btnClose.TextAlign = ContentAlignment.MiddleCenter;
+            btnClose.UseVisualStyleBackColor = false;
+
+            cbBloodType.BackColor = Color.White;
+            cbBloodType.ForeColor = Ink;
+            cbBloodType.FlatStyle = FlatStyle.Standard;
+            cbBloodType.Width = 280;
+            txtEmergencyContact.Width = 280;
+            txtMedicalHistory.Size = new Size(425, 108);
+            foreach (TextBox field in new[] { txtEmergencyContact, txtMedicalHistory })
+            {
+                field.BackColor = Color.White;
+                field.ForeColor = Ink;
+                field.BorderStyle = BorderStyle.FixedSingle;
+            }
+            lblPatientID.ForeColor = Blue;
+            lblPatientID.Text = "—";
+            foreach (Label field in new[] { label6, label7, label8, label15 })
+            {
+                field.ForeColor = Ink;
+                field.Font = new Font("Segoe UI Semibold", 10.5F, FontStyle.Bold);
+            }
+            // Align the existing fields into a neat two-column label/input grid.
+            label8.Location = new Point(45, 60);
+            pictureBox5.Location = new Point(242, 60);
+            lblPatientID.Location = new Point(286, 62);
+            label15.Location = new Point(45, 134);
+            pictureBox6.Location = new Point(242, 134);
+            txtEmergencyContact.Location = new Point(286, 132);
+            label6.Location = new Point(45, 205);
+            pictureBox4.Location = new Point(242, 205);
+            cbBloodType.Location = new Point(286, 202);
+            label7.Location = new Point(45, 277);
+            pictureBox7.Location = new Point(242, 277);
+            txtMedicalHistory.Location = new Point(286, 273);
+            foreach (PictureBox picture in new[] { pictureBox4, pictureBox5, pictureBox6, pictureBox7 })
+                picture.Size = new Size(28, 28);
+
+            FindEmptyPersonPhoto(ctrlPersonCardWithFilter1);
+            RefreshEmptyState();
+            PositionGuideControls();
+        }
+
+        private void FindEmptyPersonPhoto(Control parent)
+        {
+            foreach (Control child in parent.Controls)
+            {
+                PictureBox photo = child as PictureBox;
+                if (photo != null && photo.Width >= 150 && photo.Height >= 150 && _emptyPersonPhoto == null)
+                {
+                    _emptyPersonPhoto = photo;
+                    _emptyPersonPhotoLabel = new Label
+                    {
+                        Text = "No person selected",
+                        TextAlign = ContentAlignment.MiddleCenter,
+                        Font = new Font("Segoe UI Semibold", 10F),
+                        ForeColor = Ink,
+                        BackColor = Pale,
+                        Bounds = photo.Bounds,
+                        Visible = false
+                    };
+                    photo.Parent.Controls.Add(_emptyPersonPhotoLabel);
+                    _emptyPersonPhotoLabel.BringToFront();
+                    return;
+                }
+                FindEmptyPersonPhoto(child);
+                if (_emptyPersonPhoto != null) return;
+            }
+        }
+
+        private void RefreshEmptyState()
+        {
+            if (ctrlPersonCardWithFilter1 == null) return;
+            bool missing = ctrlPersonCardWithFilter1.PersonID <= 0;
+            if (_emptyPersonPhoto != null && _emptyPersonPhotoLabel != null)
+            {
+                _emptyPersonPhoto.Visible = !missing;
+                _emptyPersonPhotoLabel.Visible = missing;
+                _emptyPersonPhotoLabel.Text = TranslationClass.IsArabic ? "لم يتم اختيار شخص" : "No person selected";
+            }
+            if (missing) ReplaceEmptyPersonLabels(ctrlPersonCardWithFilter1);
+            if (_Patient == null || _Patient.PatientID <= 0)
+                lblPatientID.Text = TranslationClass.IsArabic ? "لم يصدر بعد" : "Not generated yet";
+        }
+
+        private void ReplaceEmptyPersonLabels(Control parent)
+        {
+            foreach (Control child in parent.Controls)
+            {
+                Label label = child as Label;
+                if (label != null && (label.Text.Contains("????") || label.Text == "???"))
+                    label.Text = "—";
+                ReplaceEmptyPersonLabels(child);
+            }
         }
 
         private void _FillBloodTypesInComboBox()
         {
-            DataTable dt = clsBloodType.GetAllBloodTypes(); // تأكد من اسم الكلاس والدالة في طبقة البزنس لديك
+            DataTable dt = clsBloodType.GetAllBloodTypes();
             if (dt != null && dt.Rows.Count > 0)
             {
                 cbBloodType.DataSource = dt;
                 cbBloodType.DisplayMember = "BloodTypeName";
                 cbBloodType.ValueMember = "BloodTypeID";
-                cbBloodType.SelectedIndex = cbBloodType.FindString("Unknown"); // البدء من أول عنصر دائماً كوضع افتراضي تلافياً للأخطاء
+                cbBloodType.SelectedIndex = cbBloodType.FindString("Unknown");
             }
         }
 
@@ -75,18 +352,15 @@ namespace Clinic.Patient
             if (_Patient == null)
             {
                 MessageBox.Show(Tr("No Patient with ID = ") + _PatientID, Tr("Patient Not Found"), MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                this.Close();
+                Close();
                 return;
             }
-
             ctrlPersonCardWithFilter1.LoadPersonInfo(_Patient.PersonID);
-            ctrlPersonCardWithFilter1.FilterEnabled = false; // قفل الفلتر في التعديل لحماية تماسك البيانات
-
+            ctrlPersonCardWithFilter1.FilterEnabled = false;
             lblPatientID.Text = _PatientID.ToString();
+            RefreshEmptyState();
             txtEmergencyContact.Text = _Patient.EmergencyContact;
             txtMedicalHistory.Text = _Patient.MedicalHistory;
-
-            // الحماية من خطأ عدم إيجاد فصيلة الدم في الـ ComboBox
             if (_Patient.BloodTypeInfo != null)
             {
                 int bloodTypeIndex = cbBloodType.FindString(_Patient.BloodTypeInfo.BloodTypeName);
@@ -98,23 +372,21 @@ namespace Clinic.Patient
         private void _ResetDefaultValues()
         {
             _FillBloodTypesInComboBox();
-
             tpPatientInfo.Enabled = false;
             btnSave.Enabled = false;
-
+            _patientSaved = false;
             if (_Mode == enMode.AddNew)
             {
                 _Patient = new clsPatient();
                 ctrlPersonCardWithFilter1.FilterEnabled = true;
-                ctrlPersonCardWithFilter1.FocuseTextBox(); // تأكد أن الدالة موجودة بكارت الفلتر لديك
+                ctrlPersonCardWithFilter1.FocuseTextBox();
                 lblTitle.Text = "Add New Patient";
             }
             else
             {
                 lblTitle.Text = "Update Patient Info";
             }
-
-            this.Text = lblTitle.Text;
+            Text = lblTitle.Text;
         }
 
         private void frmAddUpdatePatient_Load(object sender, EventArgs e)
@@ -122,8 +394,8 @@ namespace Clinic.Patient
             _ResetDefaultValues();
             if (_Mode == enMode.Update)
                 _LoadData();
-
             ApplyArabicTranslation();
+            RefreshEmptyState();
         }
 
         private void btnPersonInfoNext_Click(object sender, EventArgs e)
@@ -132,18 +404,20 @@ namespace Clinic.Patient
             {
                 btnSave.Enabled = true;
                 tpPatientInfo.Enabled = true;
-                tcPatient.SelectedTab = tcPatient.TabPages["tpPatientInfo"];
+                tcPatient.SelectedTab = tpPatientInfo;
+                UpdateRegistrationGuide();
                 return;
             }
-
             if (ctrlPersonCardWithFilter1.PersonID == -1)
             {
-                MessageBox.Show(Tr("Please Select a Person"), Tr("Select a Person"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(
+                    TranslationClass.IsArabic
+                        ? "احفظ معلومات الشخص أولاً من بطاقة الشخص، ثم اضغط التالي."
+                        : "First save or select a person in the Personal Information card, then click Next.",
+                    Tr("Select a Person"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                 ctrlPersonCardWithFilter1.FocuseTextBox();
                 return;
             }
-
-            // فحص تكرار المريض (Anti-Duplication Check)
             if (clsPatient.IsPatientExistForPersonID(ctrlPersonCardWithFilter1.PersonID))
             {
                 MessageBox.Show(Tr("Selected Person already has a patient record, choose another one."), Tr("Select another Person"), MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -153,14 +427,12 @@ namespace Clinic.Patient
             {
                 btnSave.Enabled = true;
                 tpPatientInfo.Enabled = true;
-                tcPatient.SelectedTab = tcPatient.TabPages["tpPatientInfo"];
+                tcPatient.SelectedTab = tpPatientInfo;
+                UpdateRegistrationGuide();
             }
         }
 
-        private void btnClose_Click(object sender, EventArgs e)
-        {
-            this.Close();
-        }
+        private void btnClose_Click(object sender, EventArgs e) { Close(); }
 
         private void txtEmergencyContact_Validating(object sender, CancelEventArgs e)
         {
@@ -170,55 +442,50 @@ namespace Clinic.Patient
                 errorProvider1.SetError(txtEmergencyContact, Tr("Emergency contact number cannot be blank!"));
             }
             else
-            {
                 errorProvider1.SetError(txtEmergencyContact, null);
-            }
         }
 
         private void txtEmergencyContact_KeyPress(object sender, KeyPressEventArgs e)
         {
-            // حماية إدخال الأرقام فقط في رقم الهاتف الطارئ
             if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
-            {
                 e.Handled = true;
-            }
         }
 
         private void btnSave_Click(object sender, EventArgs e)
         {
-            if (!this.ValidateChildren())
+            if (!ValidateChildren())
             {
                 MessageBox.Show(Tr("Some fields are not valid!, put the mouse over the red icon(s) to see the error"),
                     Tr("Validation Error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-
-            // تحسين أمني: الحماية من قراءة قيمة فارغة null من الـ ComboBox
             if (cbBloodType.SelectedValue == null)
             {
                 MessageBox.Show(Tr("Please select a valid blood type."), Tr("Error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
+            // Existing database assignment and save logic intentionally unchanged.
             _Patient.PersonID = ctrlPersonCardWithFilter1.PersonID;
             _Patient.EmergencyContact = txtEmergencyContact.Text.Trim();
             _Patient.MedicalHistory = string.IsNullOrEmpty(txtMedicalHistory.Text.Trim()) ? null : txtMedicalHistory.Text.Trim();
             _Patient.BloodTypeID = (int)cbBloodType.SelectedValue;
-
             _Patient.CreatedByUserID = clsGlobal.CurrentUser.UserID;
             if (_Patient.SavePatient())
             {
                 lblPatientID.Text = _Patient.PatientID.ToString();
-
-                // التبديل لوضع التحديث الفوري وقفل الفلتر حمايةً للبيانات في الذاكرة
                 _Mode = enMode.Update;
+                _patientSaved = true;
                 ctrlPersonCardWithFilter1.FilterEnabled = false;
-
                 lblTitle.Text = Tr("Update Patient Info");
-                this.Text = Tr("Update Patient Info");
-
+                Text = Tr("Update Patient Info");
+                UpdateRegistrationGuide();
                 DataBack?.Invoke(this, _Patient.PatientID);
-                MessageBox.Show(Tr("Data Saved Successfully."), Tr("Saved"), MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(
+                    TranslationClass.IsArabic
+                        ? "تم حفظ بيانات المريض بنجاح. رقم المريض: " + _Patient.PatientID
+                        : "Patient saved successfully. Patient ID: " + _Patient.PatientID,
+                    Tr("Saved"), MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
             {
@@ -226,14 +493,13 @@ namespace Clinic.Patient
             }
         }
 
-        // تحسين أمني حرج: منع تجاوز تبويب اختيار الشخص بالضغط اليدوي بالماوس على التبويبات العلوبة
         private void tcPatient_Selecting(object sender, TabControlCancelEventArgs e)
         {
             if (e.TabPage.Name == "tpPatientInfo" && _Mode == enMode.AddNew)
             {
                 if (ctrlPersonCardWithFilter1.PersonID == -1 || clsPatient.IsPatientExistForPersonID(ctrlPersonCardWithFilter1.PersonID))
                 {
-                    e.Cancel = true; // إلغاء الانتقال القسري
+                    e.Cancel = true;
                     MessageBox.Show(Tr("Please select a valid person first before moving to patient medical info."), Tr("Selection Required"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
@@ -241,13 +507,12 @@ namespace Clinic.Patient
 
         private void frmAddUpdatePatient_Activated(object sender, EventArgs e)
         {
-            ctrlPersonCardWithFilter1.FocuseTextBox();
+            // Avoid moving keyboard focus away from the medical fields on dialog reactivation.
+            RefreshEmptyState();
+            if (tcPatient.SelectedTab == tpPersonalInfo)
+                ctrlPersonCardWithFilter1.FocuseTextBox();
         }
 
-        private void btnExit_Click(object sender, EventArgs e)
-        {
-            this.Close();
-        }
-
+        private void btnExit_Click(object sender, EventArgs e) { Close(); }
     }
 }
