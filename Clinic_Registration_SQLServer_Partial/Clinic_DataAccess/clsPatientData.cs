@@ -283,6 +283,43 @@ namespace Clinic_DataAccess
             return dt.Rows.Count > 0 ? dt.Rows[0] : null;
         }
 
+        public static int GetPatientIDByPersonID(int personID)
+        {
+            try
+            {
+                using (MySqlConnection connection =
+                    new MySqlConnection(clsDataAccessSettings.ConnectionString))
+                {
+                    string query = @"
+                SELECT PatientID
+                FROM patients
+                WHERE PersonID = @PersonID
+                LIMIT 1;";
+
+                    using (MySqlCommand command =
+                        new MySqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@PersonID", personID);
+
+                        connection.Open();
+
+                        object result = command.ExecuteScalar();
+
+                        if (result != null && result != DBNull.Value)
+                            return Convert.ToInt32(result);
+                    }
+                }
+            }
+            catch (MySqlException ex)
+            {
+                clsGlobalLogger.LogMySqlException(
+                    ex,
+                    clsGlobalLogger.LogLevel.Error);
+            }
+
+            return -1;
+        }
+
         public static bool IsPatientExistForPersonID(int PersonID)
         {
 
