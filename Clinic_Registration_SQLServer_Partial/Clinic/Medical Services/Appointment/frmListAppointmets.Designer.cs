@@ -59,6 +59,13 @@ namespace Clinic.Medical_Services.Appointment
             this.panelHeaderContainer = new System.Windows.Forms.Panel();
             this.btnExit = new System.Windows.Forms.Button();
             this.panelFilterCard = new System.Windows.Forms.Panel();
+            this.panelActionButtons = new System.Windows.Forms.Panel();
+            this.btnShowPatientDetails = new System.Windows.Forms.Button();
+            this.btnShowDoctorDetails = new System.Windows.Forms.Button();
+            this.btnListPatient = new System.Windows.Forms.Button();
+            this.btnAddNewAppointment = new System.Windows.Forms.Button();
+            this.btnReschedule = new System.Windows.Forms.Button();
+            this.btnCheckIn = new System.Windows.Forms.Button();
             this.panelGridContainer = new System.Windows.Forms.Panel();
             this.panelGridHeader = new System.Windows.Forms.Panel();
             this.lblGridTitle = new System.Windows.Forms.Label();
@@ -68,6 +75,7 @@ namespace Clinic.Medical_Services.Appointment
             this.cmsAppointmentCasher.SuspendLayout();
             this.panelHeaderContainer.SuspendLayout();
             this.panelFilterCard.SuspendLayout();
+            this.panelActionButtons.SuspendLayout();
             this.panelGridContainer.SuspendLayout();
             this.panelGridHeader.SuspendLayout();
             this.panelFooterBar.SuspendLayout();
@@ -170,10 +178,10 @@ namespace Clinic.Medical_Services.Appointment
             this.dgvAppointments.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dgvAppointments.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
             dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(79)))), ((int)(((byte)(70)))), ((int)(((byte)(229)))));
+            dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(11)))), ((int)(((byte)(61)))), ((int)(((byte)(107)))));
             dataGridViewCellStyle2.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             dataGridViewCellStyle2.ForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(79)))), ((int)(((byte)(70)))), ((int)(((byte)(229)))));
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(11)))), ((int)(((byte)(61)))), ((int)(((byte)(107)))));
             dataGridViewCellStyle2.SelectionForeColor = System.Drawing.Color.White;
             dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.dgvAppointments.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
@@ -198,7 +206,7 @@ namespace Clinic.Medical_Services.Appointment
             this.dgvAppointments.RowsDefaultCellStyle = dataGridViewCellStyle3;
             this.dgvAppointments.RowTemplate.Height = 40;
             this.dgvAppointments.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvAppointments.Size = new System.Drawing.Size(1183, 405);
+            this.dgvAppointments.Size = new System.Drawing.Size(1183, 330);
             this.dgvAppointments.TabIndex = 116;
             this.dgvAppointments.TabStop = false;
             this.dgvAppointments.SelectionChanged += new System.EventHandler(this.dgvAppointments_SelectionChanged);
@@ -389,6 +397,117 @@ namespace Clinic.Medical_Services.Appointment
             this.panelFilterCard.Size = new System.Drawing.Size(1233, 75);
             this.panelFilterCard.TabIndex = 121;
             // 
+            // panelActionButtons
+            // 
+            this.panelActionButtons.BackColor = System.Drawing.Color.White;
+            this.panelActionButtons.Controls.Add(this.btnShowPatientDetails);
+            this.panelActionButtons.Controls.Add(this.btnShowDoctorDetails);
+            this.panelActionButtons.Controls.Add(this.btnListPatient);
+            this.panelActionButtons.Controls.Add(this.btnAddNewAppointment);
+            this.panelActionButtons.Controls.Add(this.btnReschedule);
+            this.panelActionButtons.Controls.Add(this.btnCheckIn);
+            this.panelActionButtons.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panelActionButtons.Location = new System.Drawing.Point(0, 185);
+            this.panelActionButtons.Name = "panelActionButtons";
+            this.panelActionButtons.Size = new System.Drawing.Size(1233, 65);
+            this.panelActionButtons.TabIndex = 124;
+            // 
+            // btnShowPatientDetails
+            // 
+            this.btnShowPatientDetails.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(11)))), ((int)(((byte)(61)))), ((int)(((byte)(107)))));
+            this.btnShowPatientDetails.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnShowPatientDetails.FlatAppearance.BorderSize = 0;
+            this.btnShowPatientDetails.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(79)))), ((int)(((byte)(128)))));
+            this.btnShowPatientDetails.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnShowPatientDetails.Font = new System.Drawing.Font("Segoe UI Semibold", 9.5F, System.Drawing.FontStyle.Bold);
+            this.btnShowPatientDetails.ForeColor = System.Drawing.Color.White;
+            this.btnShowPatientDetails.Location = new System.Drawing.Point(25, 11);
+            this.btnShowPatientDetails.Name = "btnShowPatientDetails";
+            this.btnShowPatientDetails.Size = new System.Drawing.Size(190, 43);
+            this.btnShowPatientDetails.TabIndex = 0;
+            this.btnShowPatientDetails.Text = "Show Patient Details";
+            this.btnShowPatientDetails.UseVisualStyleBackColor = false;
+            // 
+            // btnShowDoctorDetails
+            // 
+            this.btnShowDoctorDetails.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(11)))), ((int)(((byte)(61)))), ((int)(((byte)(107)))));
+            this.btnShowDoctorDetails.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnShowDoctorDetails.FlatAppearance.BorderSize = 0;
+            this.btnShowDoctorDetails.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(79)))), ((int)(((byte)(128)))));
+            this.btnShowDoctorDetails.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnShowDoctorDetails.Font = new System.Drawing.Font("Segoe UI Semibold", 9.5F, System.Drawing.FontStyle.Bold);
+            this.btnShowDoctorDetails.ForeColor = System.Drawing.Color.White;
+            this.btnShowDoctorDetails.Location = new System.Drawing.Point(225, 11);
+            this.btnShowDoctorDetails.Name = "btnShowDoctorDetails";
+            this.btnShowDoctorDetails.Size = new System.Drawing.Size(210, 43);
+            this.btnShowDoctorDetails.TabIndex = 1;
+            this.btnShowDoctorDetails.Text = "Show Doctor Details";
+            this.btnShowDoctorDetails.UseVisualStyleBackColor = false;
+            // 
+            // btnListPatient
+            // 
+            this.btnListPatient.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(11)))), ((int)(((byte)(61)))), ((int)(((byte)(107)))));
+            this.btnListPatient.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnListPatient.FlatAppearance.BorderSize = 0;
+            this.btnListPatient.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(79)))), ((int)(((byte)(128)))));
+            this.btnListPatient.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnListPatient.Font = new System.Drawing.Font("Segoe UI Semibold", 9.5F, System.Drawing.FontStyle.Bold);
+            this.btnListPatient.ForeColor = System.Drawing.Color.White;
+            this.btnListPatient.Location = new System.Drawing.Point(445, 11);
+            this.btnListPatient.Name = "btnListPatient";
+            this.btnListPatient.Size = new System.Drawing.Size(150, 43);
+            this.btnListPatient.TabIndex = 2;
+            this.btnListPatient.Text = "List Patient";
+            this.btnListPatient.UseVisualStyleBackColor = false;
+            // 
+            // btnAddNewAppointment
+            // 
+            this.btnAddNewAppointment.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(11)))), ((int)(((byte)(61)))), ((int)(((byte)(107)))));
+            this.btnAddNewAppointment.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnAddNewAppointment.FlatAppearance.BorderSize = 0;
+            this.btnAddNewAppointment.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(79)))), ((int)(((byte)(128)))));
+            this.btnAddNewAppointment.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnAddNewAppointment.Font = new System.Drawing.Font("Segoe UI Semibold", 9.5F, System.Drawing.FontStyle.Bold);
+            this.btnAddNewAppointment.ForeColor = System.Drawing.Color.White;
+            this.btnAddNewAppointment.Location = new System.Drawing.Point(605, 11);
+            this.btnAddNewAppointment.Name = "btnAddNewAppointment";
+            this.btnAddNewAppointment.Size = new System.Drawing.Size(220, 43);
+            this.btnAddNewAppointment.TabIndex = 3;
+            this.btnAddNewAppointment.Text = "Add New Appointment";
+            this.btnAddNewAppointment.UseVisualStyleBackColor = false;
+            // 
+            // btnReschedule
+            // 
+            this.btnReschedule.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(11)))), ((int)(((byte)(61)))), ((int)(((byte)(107)))));
+            this.btnReschedule.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnReschedule.FlatAppearance.BorderSize = 0;
+            this.btnReschedule.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(79)))), ((int)(((byte)(128)))));
+            this.btnReschedule.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnReschedule.Font = new System.Drawing.Font("Segoe UI Semibold", 9.5F, System.Drawing.FontStyle.Bold);
+            this.btnReschedule.ForeColor = System.Drawing.Color.White;
+            this.btnReschedule.Location = new System.Drawing.Point(835, 11);
+            this.btnReschedule.Name = "btnReschedule";
+            this.btnReschedule.Size = new System.Drawing.Size(150, 43);
+            this.btnReschedule.TabIndex = 4;
+            this.btnReschedule.Text = "Reschedule";
+            this.btnReschedule.UseVisualStyleBackColor = false;
+            // 
+            // btnCheckIn
+            // 
+            this.btnCheckIn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(11)))), ((int)(((byte)(61)))), ((int)(((byte)(107)))));
+            this.btnCheckIn.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnCheckIn.FlatAppearance.BorderSize = 0;
+            this.btnCheckIn.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(79)))), ((int)(((byte)(128)))));
+            this.btnCheckIn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnCheckIn.Font = new System.Drawing.Font("Segoe UI Semibold", 9.5F, System.Drawing.FontStyle.Bold);
+            this.btnCheckIn.ForeColor = System.Drawing.Color.White;
+            this.btnCheckIn.Location = new System.Drawing.Point(995, 11);
+            this.btnCheckIn.Name = "btnCheckIn";
+            this.btnCheckIn.Size = new System.Drawing.Size(130, 43);
+            this.btnCheckIn.TabIndex = 5;
+            this.btnCheckIn.Text = "Check In";
+            this.btnCheckIn.UseVisualStyleBackColor = false;
+            // 
             // panelGridContainer
             // 
             this.panelGridContainer.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(250)))), ((int)(((byte)(252)))));
@@ -403,7 +522,7 @@ namespace Clinic.Medical_Services.Appointment
             // 
             // panelGridHeader
             // 
-            this.panelGridHeader.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(79)))), ((int)(((byte)(70)))), ((int)(((byte)(229)))));
+            this.panelGridHeader.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(11)))), ((int)(((byte)(61)))), ((int)(((byte)(107)))));
             this.panelGridHeader.Controls.Add(this.lblGridTitle);
             this.panelGridHeader.Dock = System.Windows.Forms.DockStyle.Top;
             this.panelGridHeader.Location = new System.Drawing.Point(25, 20);
@@ -443,6 +562,7 @@ namespace Clinic.Medical_Services.Appointment
             this.ClientSize = new System.Drawing.Size(1233, 775);
             this.Controls.Add(this.panelGridContainer);
             this.Controls.Add(this.panelFooterBar);
+            this.Controls.Add(this.panelActionButtons);
             this.Controls.Add(this.panelFilterCard);
             this.Controls.Add(this.panelHeaderContainer);
             this.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -458,6 +578,7 @@ namespace Clinic.Medical_Services.Appointment
             this.panelHeaderContainer.PerformLayout();
             this.panelFilterCard.ResumeLayout(false);
             this.panelFilterCard.PerformLayout();
+            this.panelActionButtons.ResumeLayout(false);
             this.panelGridContainer.ResumeLayout(false);
             this.panelGridHeader.ResumeLayout(false);
             this.panelGridHeader.PerformLayout();
@@ -495,6 +616,13 @@ namespace Clinic.Medical_Services.Appointment
         // حاويات التصميم المطور المتباعد
         private System.Windows.Forms.Panel panelHeaderContainer;
         private System.Windows.Forms.Panel panelFilterCard;
+        private System.Windows.Forms.Panel panelActionButtons;
+        private System.Windows.Forms.Button btnShowPatientDetails;
+        private System.Windows.Forms.Button btnShowDoctorDetails;
+        private System.Windows.Forms.Button btnListPatient;
+        private System.Windows.Forms.Button btnAddNewAppointment;
+        private System.Windows.Forms.Button btnReschedule;
+        private System.Windows.Forms.Button btnCheckIn;
         private System.Windows.Forms.Panel panelGridContainer;
         private System.Windows.Forms.Panel panelGridHeader;
         private System.Windows.Forms.Label lblGridTitle;
