@@ -156,7 +156,7 @@ namespace Clinic.Medical_Services.Radiology
             var header = new Panel
             {
                 Dock = DockStyle.Fill,
-                BackColor = Color.FromArgb(0, 121, 132),
+                BackColor = Color.FromArgb(29, 53, 84),
                 Padding = new Padding(15, 10, 15, 8)
             };
 
@@ -377,7 +377,7 @@ namespace Clinic.Medical_Services.Radiology
             };
             dgvRequests.RowTemplate.Height = 52;
             dgvRequests.ColumnHeadersHeight = 43;
-            dgvRequests.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(0, 128, 139);
+            dgvRequests.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(29, 53, 84);
             dgvRequests.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
             dgvRequests.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
             dgvRequests.DefaultCellStyle.SelectionBackColor = Color.FromArgb(213, 246, 246);
