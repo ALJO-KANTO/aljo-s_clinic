@@ -10,7 +10,8 @@ namespace Clinic.Medical_Services.Visit
     public partial class frmDoctor
     {
         private readonly Color mdTeal = Color.FromArgb(0, 112, 118);
-        private readonly Color mdDark = Color.FromArgb(4, 63, 72);
+
+        private readonly Color mdDark = Color.FromArgb(29, 53, 84);
         private readonly Color mdBg = Color.FromArgb(240, 247, 250);
         private readonly Color mdText = Color.FromArgb(25, 48, 68);
         private TableLayoutPanel mdShell;
@@ -56,7 +57,8 @@ namespace Clinic.Medical_Services.Visit
             g.BorderStyle = BorderStyle.None;
             g.RowHeadersVisible = false;
             g.EnableHeadersVisualStyles = false;
-            g.ColumnHeadersDefaultCellStyle.BackColor = mdTeal;
+
+            g.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(29, 53, 84);
             g.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
             g.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             g.ColumnHeadersHeight = 43;
@@ -130,7 +132,7 @@ namespace Clinic.Medical_Services.Visit
             Controls.Add(mdShell);
 
             panTitle.Dock = DockStyle.Fill;
-            panTitle.BackColor = mdDark;
+            panTitle.BackColor = Color.FromArgb(29, 53, 84);
             panTitle.Margin = Padding.Empty;
             lblTitle.Text = "Add New Visit";
             lblTitle.ForeColor = Color.White;
