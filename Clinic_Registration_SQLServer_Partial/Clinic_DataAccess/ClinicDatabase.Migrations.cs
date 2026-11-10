@@ -4445,7 +4445,16 @@ new DatabaseMigration
         WHERE LR.BillID IS NOT NULL;
     "
 },
-
+new DatabaseMigration
+{
+    Version = "20261110_LAB_BILL_COLUMNS_001",
+    Description = "Add missing direct laboratory billing columns",
+    Sql = @"
+        ALTER TABLE labrequests
+            ADD COLUMN IF NOT EXISTS BillID INT NULL,
+            ADD COLUMN IF NOT EXISTS SavedTestPrice DECIMAL(18,2) NULL;
+    "
+},
 new DatabaseMigration
 {
     Version = "20261102_001",
