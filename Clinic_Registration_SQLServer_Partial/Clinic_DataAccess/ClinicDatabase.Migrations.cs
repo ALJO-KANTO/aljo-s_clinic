@@ -5942,40 +5942,6 @@ WHERE LR.BillID IS NOT NULL AND LR.Status <> 'Cancelled';
                             }
                         }
 
-                        // MySQL 8.0 does not support ADD COLUMN IF NOT EXISTS.
-                        // Add direct laboratory billing columns only when missing.
-                        if (migration.Version == "20261110_LAB_BILL_COLUMNS_001")
-                        {
-                            shouldExecute = false;
-                            foreach (var column in new[]
-                            {
-                                new { Name = "BillID", Definition = "INT NULL" },
-                                new { Name = "SavedTestPrice", Definition = "DECIMAL(12,2) NULL" }
-                            })
-                            {
-                                long count;
-                                using (MySqlCommand check = new MySqlCommand(@"
-                                    SELECT COUNT(*) FROM information_schema.COLUMNS
-                                    WHERE TABLE_SCHEMA = DATABASE()
-                                      AND TABLE_NAME = 'labrequests'
-                                      AND COLUMN_NAME = @columnName;", connection))
-                                {
-                                    check.Parameters.AddWithValue("@columnName", column.Name);
-                                    count = Convert.ToInt64(check.ExecuteScalar());
-                                }
-                                if (count == 0)
-                                {
-                                    // Both identifiers and definitions come from the fixed allowlist.
-                                    using (MySqlCommand add = new MySqlCommand(
-                                        "ALTER TABLE `labrequests` ADD COLUMN `" +
-                                        column.Name + "` " + column.Definition + ";", connection))
-                                    {
-                                        add.ExecuteNonQuery();
-                                    }
-                                }
-                            }
-                        }
-
                         // Add gender-specific laboratory ranges only when missing.
                         // Handles new databases and partially upgraded installations.
                         if (migration.Version == "20261103_LAB_003_GENDER_RANGES")
@@ -6004,6 +5970,7 @@ WHERE LR.BillID IS NOT NULL AND LR.Status <> 'Cancelled';
                             }
                         }
 
+>>>>>>> 9cc25fc3b4d4f32e9bbb199f1f43f07837587059
                         if (shouldExecute)
                         {
                             using (MySqlCommand command =
