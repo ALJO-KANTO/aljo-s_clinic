@@ -427,16 +427,12 @@ namespace Clinic.Patient
         }
         private void btnClose_Click(object sender, EventArgs e) { Close(); }
 
-        private void txtEmergencyContact_Validating(object sender, CancelEventArgs e)
-        {
-            if (string.IsNullOrEmpty(txtEmergencyContact.Text.Trim()))
-            {
-                e.Cancel = true;
-                errorProvider1.SetError(txtEmergencyContact, Tr("Emergency contact number cannot be blank!"));
-            }
-            else
-                errorProvider1.SetError(txtEmergencyContact, null);
-        }
+     //   private void txtEmergencyContact_Validating(
+     //object sender, CancelEventArgs e)
+     //   {
+     //       e.Cancel = false;
+     //       errorProvider1.SetError(txtEmergencyContact, "");
+     //   }
 
         private void txtEmergencyContact_KeyPress(object sender, KeyPressEventArgs e)
         {
@@ -452,11 +448,7 @@ namespace Clinic.Patient
                     Tr("Validation Error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            if (cbBloodType.SelectedValue == null)
-            {
-                MessageBox.Show(Tr("Please select a valid blood type."), Tr("Error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
+           
 
             // Existing database assignment and save logic intentionally unchanged.
             _Patient.PersonID = ctrlPersonCardWithFilter1.PersonID;

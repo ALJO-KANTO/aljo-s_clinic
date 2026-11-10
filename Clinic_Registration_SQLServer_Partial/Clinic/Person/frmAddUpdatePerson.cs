@@ -298,22 +298,38 @@ namespace Clinic.Person
             ApplyModernPersonDesign();
         }
 
+
         private void ValidateTextBox(object sender, CancelEventArgs e)
         {
-            TextBox textBox = (TextBox)sender;
-            if (textBox != null)
+            TextBox textBox = sender as TextBox;
+
+            if (textBox == null)
+                return;
+
+            // Only Full Name is mandatory.
+            if (textBox == txtFullName)
             {
-                if (string.IsNullOrWhiteSpace(textBox.Text))
+                if (string.IsNullOrWhiteSpace(txtFullName.Text))
                 {
                     e.Cancel = true;
-                    errorProvider1.SetError(textBox, Tr("This field is required."));
+                    errorProvider1.SetError(
+                        txtFullName,
+                        Tr("Full Name is required."));
                 }
                 else
                 {
-                    errorProvider1.SetError(textBox, string.Empty);
+                    e.Cancel = false;
+                    errorProvider1.SetError(txtFullName, "");
                 }
             }
+            else
+            {
+                // Phone and Address are optional.
+                e.Cancel = false;
+                errorProvider1.SetError(textBox, "");
+            }
         }
+
 
         private void txtPhone_KeyPress(object sender, KeyPressEventArgs e)
         {

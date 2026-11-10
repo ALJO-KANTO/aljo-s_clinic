@@ -4170,11 +4170,6 @@ new DatabaseMigration
                                     ) AS BalanceDue
 
                                 FROM bills B
-LEFT JOIN labrequests LR
-    ON LR.BillID = B.BillID
-
-LEFT JOIN laboratorytests LT
-    ON LT.TestID = LR.TestID
 
                                 LEFT JOIN visits V
                                     ON B.VisitID = V.VisitID
@@ -5843,6 +5838,37 @@ WHERE LR.BillID IS NOT NULL AND LR.Status <> 'Cancelled';
                             }
                         }
 
+<<<<<<< HEAD
+=======
+                        // Add gender-specific laboratory ranges only when missing.
+                        // Handles new databases and partially upgraded installations.
+                        if (migration.Version == "20261103_LAB_003_GENDER_RANGES")
+                        {
+                            shouldExecute = false;
+                            foreach (string columnName in new[] { "MaleReferenceRange", "FemaleReferenceRange" })
+                            {
+                                using (MySqlCommand check = new MySqlCommand(@"
+                                    SELECT COUNT(*) FROM information_schema.COLUMNS
+                                    WHERE TABLE_SCHEMA = DATABASE()
+                                      AND TABLE_NAME = 'laboratorytestparameters'
+                                      AND COLUMN_NAME = @columnName;", connection))
+                                {
+                                    check.Parameters.AddWithValue("@columnName", columnName);
+                                    if (Convert.ToInt64(check.ExecuteScalar()) == 0)
+                                    {
+                                        // columnName is from the fixed allowlist above, not user input.
+                                        using (MySqlCommand add = new MySqlCommand(
+                                            "ALTER TABLE `laboratorytestparameters` ADD COLUMN `" +
+                                            columnName + "` VARCHAR(200) NULL;", connection))
+                                        {
+                                            add.ExecuteNonQuery();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+>>>>>>> 9cc25fc3b4d4f32e9bbb199f1f43f07837587059
                         if (shouldExecute)
                         {
                             using (MySqlCommand command =
