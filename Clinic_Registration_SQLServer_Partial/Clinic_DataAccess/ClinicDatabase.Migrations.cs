@@ -4449,11 +4449,8 @@ new DatabaseMigration
 {
     Version = "20261110_LAB_BILL_COLUMNS_001",
     Description = "Add missing direct laboratory billing columns",
-    Sql = @"
-        ALTER TABLE labrequests
-            ADD COLUMN IF NOT EXISTS BillID INT NULL,
-            ADD COLUMN IF NOT EXISTS SavedTestPrice DECIMAL(18,2) NULL;
-    "
+    // Executed conditionally in ApplyMigrations below.
+    Sql = @"SELECT 1;"
 },
 new DatabaseMigration
 {
@@ -5754,6 +5751,57 @@ WHERE LR.BillID IS NOT NULL AND LR.Status <> 'Cancelled';
                                 ON bs.BillID = b.BillID;"
                         },
 
+                 
+                  new DatabaseMigration
+                  {
+                      Version = "20261110_CLINIC_001_FIX_APPOINTMENTS_VIEW",
+                      Description = "Repair View_AppointmentsDetails table and recreate as view",
+                      Sql = @"
+        CREATE OR REPLACE VIEW View_AppointmentsDetails AS
+        SELECT
+            A.AppointmentID,
+            A.PatientID,
+            PE.FullName AS PatientName,
+            A.DoctorID,
+            DPE.FullName AS DoctorName,
+            A.AppointmentDate,
+            A.AppointmentStatus,
+
+            CASE CAST(A.AppointmentStatus AS CHAR)
+                WHEN '1' THEN 'Scheduled'
+                WHEN '2' THEN 'InQueue'
+                WHEN '3' THEN 'Progress'
+                WHEN '4' THEN 'Postponed'
+                WHEN '5' THEN 'Completed'
+                WHEN '6' THEN 'Cancelled'
+                WHEN '7' THEN 'Waiting_For_Vitals'
+                WHEN '8' THEN 'Ready_For_Doctor'
+                WHEN '9' THEN 'In_Billing'
+                ELSE CAST(A.AppointmentStatus AS CHAR)
+            END AS AppointmentStatusText,
+
+            A.AppointmentTypeID,
+            AT.AppointmentTypeName AS TypeName,
+            A.AppointmentFees,
+            A.CreatedByUserID
+
+        FROM appointments A
+
+        LEFT JOIN patients P
+            ON A.PatientID = P.PatientID
+
+        LEFT JOIN persons PE
+            ON P.PersonID = PE.PersonID
+
+        LEFT JOIN doctors D
+            ON A.DoctorID = D.DoctorID
+
+        LEFT JOIN persons DPE
+            ON D.PersonID = DPE.PersonID
+
+        LEFT JOIN appointmenttypes AT
+            ON A.AppointmentTypeID = AT.AppointmentTypeID;"
+                  }
                   };
 
                 // STEP 4: Apply pending migrations
@@ -5788,6 +5836,53 @@ WHERE LR.BillID IS NOT NULL AND LR.Status <> 'Cancelled';
                             "Executing migration: " + migration.Version);
 
                         bool shouldExecute = true;
+
+                        if (migration.Version ==
+                            "20261110_CLINIC_001_FIX_APPOINTMENTS_VIEW")
+                        {
+                            string tableType;
+
+                            using (MySqlCommand check = new MySqlCommand(@"
+        SELECT TABLE_TYPE
+        FROM information_schema.TABLES
+        WHERE TABLE_SCHEMA = DATABASE()
+          AND TABLE_NAME = 'View_AppointmentsDetails';",
+                                connection))
+                            {
+                                tableType = Convert.ToString(check.ExecuteScalar());
+                            }
+
+                            if (string.Equals(tableType, "BASE TABLE",
+                                StringComparison.OrdinalIgnoreCase))
+                            {
+                                string backupName =
+                                    "View_AppointmentsDetails_Backup_20261110";
+
+                                using (MySqlCommand check = new MySqlCommand(@"
+            SELECT COUNT(*)
+            FROM information_schema.TABLES
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = @name;",
+                                    connection))
+                                {
+                                    check.Parameters.AddWithValue("@name", backupName);
+
+                                    if (Convert.ToInt64(check.ExecuteScalar()) > 0)
+                                    {
+                                        throw new InvalidOperationException(
+                                            "Backup table already exists: " + backupName);
+                                    }
+                                }
+
+                                using (MySqlCommand rename = new MySqlCommand(@"
+            RENAME TABLE `View_AppointmentsDetails`
+            TO `View_AppointmentsDetails_Backup_20261110`;",
+                                    connection))
+                                {
+                                    rename.ExecuteNonQuery();
+                                }
+                            }
+                        }
 
                         // BillNumber may already exist in older databases.
                         if (migration.Version == "20261016_021")
@@ -5842,6 +5937,40 @@ WHERE LR.BillID IS NOT NULL AND LR.Status <> 'Cancelled';
                                         "RENAME TABLE `" + viewName + "` TO `" + backup + "`;", connection))
                                     {
                                         rename.ExecuteNonQuery();
+                                    }
+                                }
+                            }
+                        }
+
+                        // MySQL 8.0 does not support ADD COLUMN IF NOT EXISTS.
+                        // Add direct laboratory billing columns only when missing.
+                        if (migration.Version == "20261110_LAB_BILL_COLUMNS_001")
+                        {
+                            shouldExecute = false;
+                            foreach (var column in new[]
+                            {
+                                new { Name = "BillID", Definition = "INT NULL" },
+                                new { Name = "SavedTestPrice", Definition = "DECIMAL(12,2) NULL" }
+                            })
+                            {
+                                long count;
+                                using (MySqlCommand check = new MySqlCommand(@"
+                                    SELECT COUNT(*) FROM information_schema.COLUMNS
+                                    WHERE TABLE_SCHEMA = DATABASE()
+                                      AND TABLE_NAME = 'labrequests'
+                                      AND COLUMN_NAME = @columnName;", connection))
+                                {
+                                    check.Parameters.AddWithValue("@columnName", column.Name);
+                                    count = Convert.ToInt64(check.ExecuteScalar());
+                                }
+                                if (count == 0)
+                                {
+                                    // Both identifiers and definitions come from the fixed allowlist.
+                                    using (MySqlCommand add = new MySqlCommand(
+                                        "ALTER TABLE `labrequests` ADD COLUMN `" +
+                                        column.Name + "` " + column.Definition + ";", connection))
+                                    {
+                                        add.ExecuteNonQuery();
                                     }
                                 }
                             }

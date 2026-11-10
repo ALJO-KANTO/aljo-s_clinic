@@ -573,65 +573,37 @@ namespace Clinic.Medical_Services.Appointment
         }
         private void frmListAppointmets_Load(object sender, EventArgs e)
         {
+            _dtAppointmets = clsAppointment.GetAllAppointments();
+
+            dgvAppointments.DataSource = null;
+
+            if (_dtAppointmets != null)
+            {
+                _dtAppointmets.DefaultView.RowFilter = "";
+
+                dgvAppointments.DataSource = _dtAppointmets;
+            }
+
+            int totalRows = _dtAppointmets?.Rows.Count ?? 0;
+            int visibleRows = _dtAppointmets?.DefaultView.Count ?? 0;
+
+          
+
+            lblRecordsCount.Text = visibleRows.ToString();
+
             if (clsGlobal.CurrentUser.RoleID == (int)UserRole.Cashier)
                 dgvAppointments.ContextMenuStrip = cmsAppointmentCasher;
             else
                 dgvAppointments.ContextMenuStrip = cmsAppointmentRecption;
 
-            dgvAppointments.DataSource = _dtAppointmets;
             EnsureAppointmentActionColumns();
             ArrangeAppointmentColumns();
             ApplyLocalizationAndMirroring();
             ApplyAppointmentGridLanguage();
             cbFilterBy.SelectedIndex = 0;
-            if (_dtAppointmets.Rows.Count == 0)
-            {
-                UpdateAppointmentActionButtons();
-                return;
-            }
-            _dtAppointmets.PrimaryKey = new DataColumn[] { _dtAppointmets.Columns["AppointmentID"] };
-            _dtAppointmets.Columns["AppointmentStatusText"].ReadOnly = false;
-            lblRecordsCount.Text = _dtAppointmets.Rows.Count.ToString();
-
-            dgvAppointments.Columns["AppointmentID"].HeaderText = Tr("Appointment ID");
-            dgvAppointments.Columns["AppointmentID"].Width = 100;
-
-            dgvAppointments.Columns["AppointmentTypeID"].HeaderText = Tr("AppointmentTypeID");
-            dgvAppointments.Columns["AppointmentTypeID"].Width = 100;
-
-            dgvAppointments.Columns["DoctorID"].HeaderText = Tr("DoctorID");
-            dgvAppointments.Columns["DoctorID"].Width = 85;
-
-            dgvAppointments.Columns["PatientID"].HeaderText = Tr("PatientID");
-            dgvAppointments.Columns["PatientID"].Width = 85;
-
-            dgvAppointments.Columns["AppointmentStatus"].HeaderText = Tr("AppointmentStatus");
-            dgvAppointments.Columns["AppointmentStatus"].Width = 105;
-
-            dgvAppointments.Columns["PatientName"].HeaderText = Tr("Patient Name");
-            dgvAppointments.Columns["PatientName"].Width = 150;
-
-            dgvAppointments.Columns["DoctorName"].HeaderText = Tr("Doctor Name");
-            dgvAppointments.Columns["DoctorName"].Width = 150;
-
-            dgvAppointments.Columns["TypeName"].HeaderText = Tr("AppointmentType");
-            dgvAppointments.Columns["TypeName"].Width = 130;
-
-            dgvAppointments.Columns["AppointmentFees"].HeaderText = Tr("Fees");
-            dgvAppointments.Columns["AppointmentFees"].Width = 85;
-
-            dgvAppointments.Columns["AppointmentDate"].HeaderText = Tr("Date");
-            dgvAppointments.Columns["AppointmentDate"].Width = 160;
-
-            dgvAppointments.Columns["AppointmentStatusText"].HeaderText = Tr("Status");
-            dgvAppointments.Columns["AppointmentStatusText"].Width = 115;
-
-            dgvAppointments.Columns["CreatedByUserID"].HeaderText = Tr("C.UserID");
-            dgvAppointments.Columns["CreatedByUserID"].Width = 90;
 
             UpdateAppointmentActionButtons();
         }
-
         private void cbFilterBy_SelectedIndexChanged(object sender, EventArgs e)
         {
             bool IsNone = GetEnglishText(cbFilterBy.Text) == "None";
