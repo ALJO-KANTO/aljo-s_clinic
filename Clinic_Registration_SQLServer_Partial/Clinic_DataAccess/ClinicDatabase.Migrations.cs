@@ -5847,8 +5847,6 @@ WHERE LR.BillID IS NOT NULL AND LR.Status <> 'Cancelled';
                             }
                         }
 
-<<<<<<< HEAD
-=======
                         // Add gender-specific laboratory ranges only when missing.
                         // Handles new databases and partially upgraded installations.
                         if (migration.Version == "20261103_LAB_003_GENDER_RANGES")
@@ -5877,7 +5875,6 @@ WHERE LR.BillID IS NOT NULL AND LR.Status <> 'Cancelled';
                             }
                         }
 
->>>>>>> 9cc25fc3b4d4f32e9bbb199f1f43f07837587059
                         if (shouldExecute)
                         {
                             using (MySqlCommand command =
