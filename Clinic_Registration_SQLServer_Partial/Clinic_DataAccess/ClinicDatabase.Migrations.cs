@@ -153,12 +153,6 @@ WHERE a.AppointmentFees > 0;
                                     ) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
                         },
                         new DatabaseMigration
-{
-    Version = "20261026_001",
-    Description = "Fix View Bill Items",
-    Sql = Migration_20261026_001_FixViewBillItems
-},
-                        new DatabaseMigration
                         {
                             Version = "20261015_BASE_003",
                             Description = "Initial schema: bloodtypes",
@@ -3717,63 +3711,6 @@ new DatabaseMigration
 
                         new DatabaseMigration
                         {
-                            Version = "20261028_003",
-                            Description = "Create billing list view",
-                            Sql = @"
-                                CREATE OR REPLACE
-                            ALGORITHM = UNDEFINED
-                            SQL SECURITY INVOKER
-                            VIEW view_bills AS
-                            SELECT
-                                b.BillID,
-                                COALESCE(
-                                    b.BillNumber,
-                                    CONCAT(
-                                        'INV-',
-                                        YEAR(b.BillDate),
-                                        '-',
-                                        LPAD(b.BillID, 4, '0')
-                                    )
-                                ) AS BillNumber,
-
-                                b.VisitID,
-                                v.PatientID,
-                                p.PersonID,
-                                COALESCE(pe.FullName, 'Unknown Patient') AS PatientName,
-                                v.DoctorID,
-                                v.AppointmentID,
-                                b.BillDate,
-
-                                COALESCE(bs.Subtotal, 0) AS TotalAmount,
-                                b.PaymentStatus,
-                                b.CreatedByUserID,
-
-                                COALESCE(bs.PaymentAmount, 0) AS PaidAmount,
-
-                                GREATEST(
-                                    COALESCE(bs.Subtotal, 0)
-                                    - COALESCE(bs.PaymentAmount, 0),
-                                    0
-                                ) AS BalanceDue,
-
-                                COALESCE(bs.ItemsTotal, '') AS ItemsTotal
-
-                            FROM bills b
-
-                            LEFT JOIN visits v
-                                ON v.VisitID = b.VisitID
-
-                            LEFT JOIN patients p
-                                ON p.PatientID = v.PatientID
-
-                            LEFT JOIN persons pe
-                                ON pe.PersonID = p.PersonID
-
-                            LEFT JOIN view_billsummaries bs
-                                ON bs.BillID = b.BillID;"
-                        },
-                        new DatabaseMigration
-                        {
                             Version = "20261014_004",
                             Description = "Synchronize fully paid bills with visit status",
                             Sql = @"
@@ -5387,6 +5324,432 @@ new DatabaseMigration
 },
 
 
+new DatabaseMigration
+{
+    Version = "20261110_CLINIC_FIX_DOCTORS_VIEW_001",
+    Description = "Fix View_DoctorsDetails table and restore original view",
+    Sql = @"
+        DROP TABLE IF EXISTS `view_doctorsdetails`;
+
+        CREATE OR REPLACE VIEW `view_doctorsdetails` AS
+        SELECT
+            d.DoctorID AS DoctorID,
+            d.PersonID AS PersonID,
+            p.FullName AS FullName,
+            d.LicenseNumber AS LicenseNumber,
+            d.ConsultationFees AS ConsultationFees,
+
+            COALESCE(
+                (
+                    SELECT GROUP_CONCAT(
+                        DISTINCT s.SpecializationName
+                        ORDER BY s.SpecializationName ASC
+                        SEPARATOR ', '
+                    )
+                    FROM doctorspecialties ds
+                    INNER JOIN specializations s
+                        ON s.SpecializationID = ds.SpecializationID
+                    WHERE ds.DoctorID = d.DoctorID
+                ),
+                ''
+            ) AS Specializations,
+
+            COALESCE(
+                (
+                    SELECT GROUP_CONCAT(
+                        dy.DayName
+                        ORDER BY dw.DayID ASC
+                        SEPARATOR ', '
+                    )
+                    FROM doctorworkingdays dw
+                    INNER JOIN days dy
+                        ON dy.DayID = dw.DayID
+                    WHERE dw.DoctorID = d.DoctorID
+                ),
+                ''
+            ) AS WorkingDays,
+
+            COALESCE(c.CountryName, '') AS CountryName,
+            d.IsActive AS IsActive
+
+        FROM doctors d
+        LEFT JOIN persons p
+            ON p.PersonID = d.PersonID
+        LEFT JOIN countries c
+            ON c.CountryID = p.NationalityCountryID;
+    "
+},
+
+
+new DatabaseMigration
+{
+    Version = "20261026_001",
+    Description = "Fix View Bill Items",
+    Sql = Migration_20261026_001_FixViewBillItems
+},
+
+new DatabaseMigration
+{
+    Version = "20261110_CLINIC_REPAIR_BILLING_VIEWS_002",
+    Description = "Repair billing views and include linked laboratory requests",
+    Sql = @"
+CREATE OR REPLACE VIEW `view_billitems` AS
+SELECT B.BillID, _utf8mb4'Medicine' COLLATE utf8mb4_0900_ai_ci AS ItemType,
+       CONVERT(PD.SavedMedicineName USING utf8mb4) COLLATE utf8mb4_0900_ai_ci AS ItemName,
+       PD.Quantity, PD.SavedMedicinePrice AS Price,
+       (PD.Quantity * PD.SavedMedicinePrice) AS Total
+FROM prescriptiondetails PD
+JOIN prescriptions PR ON PR.PrescriptionID = PD.PrescriptionID
+JOIN bills B ON B.VisitID = PR.VisitID
+WHERE NOT EXISTS (SELECT 1 FROM labrequests LR WHERE LR.BillID = B.BillID)
+  AND B.BillID = (SELECT MIN(B2.BillID) FROM bills B2
+                  WHERE B2.VisitID = B.VisitID
+                    AND NOT EXISTS (SELECT 1 FROM labrequests L2 WHERE L2.BillID = B2.BillID))
+UNION ALL
+SELECT B.BillID, _utf8mb4'Service' COLLATE utf8mb4_0900_ai_ci,
+       CONVERT(S.ServiceName USING utf8mb4) COLLATE utf8mb4_0900_ai_ci,
+       VS.Quantity, VS.SavedServicePrice, VS.Quantity * VS.SavedServicePrice
+FROM visitservices VS
+JOIN services S ON S.ServiceID = VS.ServiceID
+JOIN bills B ON B.VisitID = VS.VisitID
+WHERE NOT EXISTS (SELECT 1 FROM labrequests LR WHERE LR.BillID = B.BillID)
+  AND B.BillID = (SELECT MIN(B2.BillID) FROM bills B2
+                  WHERE B2.VisitID = B.VisitID
+                    AND NOT EXISTS (SELECT 1 FROM labrequests L2 WHERE L2.BillID = B2.BillID))
+UNION ALL
+SELECT B.BillID, _utf8mb4'Appointment' COLLATE utf8mb4_0900_ai_ci,
+       _utf8mb4'Appointment Fees' COLLATE utf8mb4_0900_ai_ci,
+       1, A.AppointmentFees, A.AppointmentFees
+FROM appointments A
+JOIN visits V ON V.AppointmentID = A.AppointmentID
+JOIN bills B ON B.VisitID = V.VisitID
+WHERE A.AppointmentFees > 0
+  AND NOT EXISTS (SELECT 1 FROM labrequests LR WHERE LR.BillID = B.BillID)
+  AND B.BillID = (SELECT MIN(B2.BillID) FROM bills B2
+                  WHERE B2.VisitID = B.VisitID
+                    AND NOT EXISTS (SELECT 1 FROM labrequests L2 WHERE L2.BillID = B2.BillID))
+UNION ALL
+SELECT LR.BillID, _utf8mb4'Laboratory' COLLATE utf8mb4_0900_ai_ci,
+       CONVERT(LT.TestName USING utf8mb4) COLLATE utf8mb4_0900_ai_ci,
+       1, COALESCE(LR.SavedTestPrice, LT.TestPrice),
+       COALESCE(LR.SavedTestPrice, LT.TestPrice)
+FROM labrequests LR
+JOIN laboratorytests LT ON LT.TestID = LR.TestID
+WHERE LR.BillID IS NOT NULL AND LR.Status <> 'Cancelled';
+
+
+        CREATE OR REPLACE VIEW View_BillSummaries AS
+        SELECT
+            CONCAT(
+                'INV-',
+                YEAR(B.BillDate),
+                '-',
+                LPAD(B.BillID, 4, '0')
+            ) AS BillNumber,
+
+            B.BillID,
+
+            COALESCE(P.FullName, 'Pharmacy Sale') AS PatientName,
+
+            CASE
+                WHEN LR.TestCount IS NOT NULL THEN
+                    CONCAT(LR.TestCount, ' Lab Tests')
+
+                WHEN B.VisitID IS NULL THEN
+                    CONCAT(
+                        COALESCE(M.PrescriptionCount, 0),
+                        ' Pharmacy Sale'
+                    )
+
+                ELSE
+                    CONCAT(
+                        COALESCE(S.ServiceCount, 0),
+                        ' Servs, ',
+                        COALESCE(M.PrescriptionCount, 0),
+                        ' Presc'
+                    )
+            END AS ItemsTotal,
+
+            CASE
+                WHEN LR.TestCount IS NOT NULL THEN 0
+                ELSE COALESCE(A.AppointmentFees, 0)
+            END AS AppointmentFees,
+
+            CASE
+                WHEN LR.TestCount IS NOT NULL THEN 0
+                ELSE COALESCE(M.TotalMedicinesOnly, 0)
+            END AS MedicinesTotal,
+
+            CASE
+                WHEN LR.TestCount IS NOT NULL THEN 0
+                ELSE COALESCE(S.TotalServicesOnly, 0)
+            END AS ServicesTotal,
+
+            CASE
+                WHEN LR.TestCount IS NOT NULL THEN 0
+                ELSE
+                    COALESCE(S.ServiceDiscount, 0)
+                    + COALESCE(M.MedsDiscount, 0)
+            END AS TotalDiscount,
+
+            CASE
+                WHEN LR.TestCount IS NOT NULL THEN 0
+                ELSE COALESCE(M.TotalTax, 0)
+            END AS TotalTax,
+
+            CASE
+                WHEN LR.TestCount IS NOT NULL THEN
+                    COALESCE(LR.LabTotal, 0)
+                ELSE
+                    COALESCE(A.AppointmentFees, 0)
+                    + COALESCE(M.TotalMedicinesNet, 0)
+                    + COALESCE(S.TotalServicesNet, 0)
+            END AS Subtotal,
+
+            COALESCE(Pay.TotalPaid, 0) AS PaymentAmount,
+
+            CASE
+                WHEN LR.TestCount IS NOT NULL THEN
+                    COALESCE(LR.LabTotal, 0)
+                    - COALESCE(Pay.TotalPaid, 0)
+                ELSE
+                    COALESCE(A.AppointmentFees, 0)
+                    + COALESCE(M.TotalMedicinesNet, 0)
+                    + COALESCE(S.TotalServicesNet, 0)
+                    - COALESCE(Pay.TotalPaid, 0)
+            END AS BalanceDue
+
+        FROM bills B
+
+        LEFT JOIN
+        (
+            SELECT
+                BillID,
+                COUNT(*) AS TestCount,
+                SUM(
+                    COALESCE(SavedTestPrice, 0)
+                ) AS LabTotal
+
+            FROM labrequests
+
+            WHERE BillID IS NOT NULL
+              AND Status <> 'Cancelled'
+
+            GROUP BY BillID
+
+        ) LR
+            ON LR.BillID = B.BillID
+
+        LEFT JOIN visits V
+            ON B.VisitID = V.VisitID
+
+        LEFT JOIN appointments A
+            ON V.AppointmentID = A.AppointmentID
+
+        LEFT JOIN patients PA
+            ON V.PatientID = PA.PatientID
+
+        LEFT JOIN persons P
+            ON PA.PersonID = P.PersonID
+
+        LEFT JOIN
+        (
+            SELECT
+                BillID,
+                SUM(PaymentAmount) AS TotalPaid
+
+            FROM payments
+
+            GROUP BY BillID
+
+        ) Pay
+            ON B.BillID = Pay.BillID
+
+        LEFT JOIN
+        (
+            SELECT
+                VisitID,
+
+                COUNT(*) AS ServiceCount,
+
+                SUM(
+                    SavedServicePrice * Quantity
+                ) AS TotalServicesOnly,
+
+                SUM(
+                    Discount * Quantity
+                ) AS ServiceDiscount,
+
+                SUM(
+                    (SavedServicePrice * Quantity)
+                    - (Discount * Quantity)
+                ) AS TotalServicesNet
+
+            FROM visitservices
+
+            GROUP BY VisitID
+
+        ) S
+            ON B.VisitID = S.VisitID
+
+        LEFT JOIN
+        (
+            SELECT
+                PR.VisitID,
+
+                COUNT(DISTINCT PR.PrescriptionID)
+                    AS PrescriptionCount,
+
+                COALESCE(
+                    SUM(
+                        PD.SavedMedicinePrice
+                        * PD.Quantity
+                    ),
+                    0
+                ) AS TotalMedicinesOnly,
+
+                COALESCE(
+                    SUM(
+                        PD.DiscountAmount
+                        * PD.Quantity
+                    ),
+                    0
+                ) AS MedsDiscount,
+
+                CAST(
+                    ROUND(
+                        COALESCE(
+                            SUM(
+                                CASE
+                                    WHEN PD.Quantity > 0 THEN
+                                        (
+                                            (
+                                                PD.SavedMedicinePrice
+                                                * PD.Quantity
+                                            )
+                                            -
+                                            (
+                                                PD.DiscountAmount
+                                                * PD.Quantity
+                                            )
+                                        )
+                                        *
+                                        (
+                                            COALESCE(MED.TaxRate, 0)
+                                            / 100.0
+                                        )
+                                    ELSE 0
+                                END
+                            ),
+                            0
+                        ),
+                        2
+                    ) AS DECIMAL(18,2)
+                ) AS TotalTax,
+
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN PD.Quantity > 0 THEN
+                                (
+                                    (
+                                        PD.SavedMedicinePrice
+                                        * PD.Quantity
+                                    )
+                                    -
+                                    (
+                                        PD.DiscountAmount
+                                        * PD.Quantity
+                                    )
+                                )
+                                *
+                                (
+                                    1 +
+                                    (
+                                        COALESCE(MED.TaxRate, 0)
+                                        / 100.0
+                                    )
+                                )
+                            ELSE 0
+                        END
+                    ),
+                    0
+                ) AS TotalMedicinesNet
+
+            FROM prescriptions PR
+
+            LEFT JOIN prescriptiondetails PD
+                ON PR.PrescriptionID = PD.PrescriptionID
+
+            LEFT JOIN medicines MED
+                ON PD.MedicineID = MED.MedicineID
+
+            GROUP BY PR.VisitID
+
+        ) M
+            ON B.VisitID = M.VisitID;
+    "
+},
+
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261028_003",
+                            Description = "Create billing list view",
+                            Sql = @"
+                                CREATE OR REPLACE
+                            ALGORITHM = UNDEFINED
+                            SQL SECURITY INVOKER
+                            VIEW view_bills AS
+                            SELECT
+                                b.BillID,
+                                COALESCE(
+                                    b.BillNumber,
+                                    CONCAT(
+                                        'INV-',
+                                        YEAR(b.BillDate),
+                                        '-',
+                                        LPAD(b.BillID, 4, '0')
+                                    )
+                                ) AS BillNumber,
+
+                                b.VisitID,
+                                v.PatientID,
+                                p.PersonID,
+                                COALESCE(pe.FullName, 'Unknown Patient') AS PatientName,
+                                v.DoctorID,
+                                v.AppointmentID,
+                                b.BillDate,
+
+                                COALESCE(bs.Subtotal, 0) AS TotalAmount,
+                                b.PaymentStatus,
+                                b.CreatedByUserID,
+
+                                COALESCE(bs.PaymentAmount, 0) AS PaidAmount,
+
+                                GREATEST(
+                                    COALESCE(bs.Subtotal, 0)
+                                    - COALESCE(bs.PaymentAmount, 0),
+                                    0
+                                ) AS BalanceDue,
+
+                                COALESCE(bs.ItemsTotal, '') AS ItemsTotal
+
+                            FROM bills b
+
+                            LEFT JOIN visits v
+                                ON v.VisitID = b.VisitID
+
+                            LEFT JOIN patients p
+                                ON p.PatientID = v.PatientID
+
+                            LEFT JOIN persons pe
+                                ON pe.PersonID = p.PersonID
+
+                            LEFT JOIN view_billsummaries bs
+                                ON bs.BillID = b.BillID;"
+                        },
+
                   };
 
                 // STEP 4: Apply pending migrations
@@ -5442,6 +5805,40 @@ new DatabaseMigration
 
                                     Debug.WriteLine(
                                         "BillNumber already exists. Skipping ALTER TABLE.");
+                                }
+                            }
+                        }
+
+                        if (migration.Version == "20261110_CLINIC_REPAIR_BILLING_VIEWS_002")
+                        {
+                            // Some older installations accidentally contain BASE TABLES
+                            // with these view names. Preserve their data before recreating views.
+                            foreach (string viewName in new[] { "view_billitems", "view_billsummaries" })
+                            {
+                                string tableType;
+                                using (MySqlCommand check = new MySqlCommand(@"
+                                    SELECT TABLE_TYPE FROM information_schema.TABLES
+                                    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @name;", connection))
+                                {
+                                    check.Parameters.AddWithValue("@name", viewName);
+                                    tableType = Convert.ToString(check.ExecuteScalar());
+                                }
+                                if (string.Equals(tableType, "BASE TABLE", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    string backup = viewName + "_backup_20261110";
+                                    using (MySqlCommand check = new MySqlCommand(@"
+                                        SELECT COUNT(*) FROM information_schema.TABLES
+                                        WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @name;", connection))
+                                    {
+                                        check.Parameters.AddWithValue("@name", backup);
+                                        if (Convert.ToInt64(check.ExecuteScalar()) > 0)
+                                            throw new InvalidOperationException("Backup table already exists: " + backup);
+                                    }
+                                    using (MySqlCommand rename = new MySqlCommand(
+                                        "RENAME TABLE `" + viewName + "` TO `" + backup + "`;", connection))
+                                    {
+                                        rename.ExecuteNonQuery();
+                                    }
                                 }
                             }
                         }
