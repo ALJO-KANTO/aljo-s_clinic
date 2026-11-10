@@ -153,12 +153,6 @@ WHERE a.AppointmentFees > 0;
                                     ) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
                         },
                         new DatabaseMigration
-{
-    Version = "20261026_001",
-    Description = "Fix View Bill Items",
-    Sql = Migration_20261026_001_FixViewBillItems
-},
-                        new DatabaseMigration
                         {
                             Version = "20261015_BASE_003",
                             Description = "Initial schema: bloodtypes",
@@ -3717,63 +3711,6 @@ new DatabaseMigration
 
                         new DatabaseMigration
                         {
-                            Version = "20261028_003",
-                            Description = "Create billing list view",
-                            Sql = @"
-                                CREATE OR REPLACE
-                            ALGORITHM = UNDEFINED
-                            SQL SECURITY INVOKER
-                            VIEW view_bills AS
-                            SELECT
-                                b.BillID,
-                                COALESCE(
-                                    b.BillNumber,
-                                    CONCAT(
-                                        'INV-',
-                                        YEAR(b.BillDate),
-                                        '-',
-                                        LPAD(b.BillID, 4, '0')
-                                    )
-                                ) AS BillNumber,
-
-                                b.VisitID,
-                                v.PatientID,
-                                p.PersonID,
-                                COALESCE(pe.FullName, 'Unknown Patient') AS PatientName,
-                                v.DoctorID,
-                                v.AppointmentID,
-                                b.BillDate,
-
-                                COALESCE(bs.Subtotal, 0) AS TotalAmount,
-                                b.PaymentStatus,
-                                b.CreatedByUserID,
-
-                                COALESCE(bs.PaymentAmount, 0) AS PaidAmount,
-
-                                GREATEST(
-                                    COALESCE(bs.Subtotal, 0)
-                                    - COALESCE(bs.PaymentAmount, 0),
-                                    0
-                                ) AS BalanceDue,
-
-                                COALESCE(bs.ItemsTotal, '') AS ItemsTotal
-
-                            FROM bills b
-
-                            LEFT JOIN visits v
-                                ON v.VisitID = b.VisitID
-
-                            LEFT JOIN patients p
-                                ON p.PatientID = v.PatientID
-
-                            LEFT JOIN persons pe
-                                ON pe.PersonID = p.PersonID
-
-                            LEFT JOIN view_billsummaries bs
-                                ON bs.BillID = b.BillID;"
-                        },
-                        new DatabaseMigration
-                        {
                             Version = "20261014_004",
                             Description = "Synchronize fully paid bills with visit status",
                             Sql = @"
@@ -5446,6 +5383,13 @@ new DatabaseMigration
 
 new DatabaseMigration
 {
+    Version = "20261026_001",
+    Description = "Fix View Bill Items",
+    Sql = Migration_20261026_001_FixViewBillItems
+},
+
+new DatabaseMigration
+{
     Version = "20261110_CLINIC_REPAIR_BILLING_VIEWS_002",
     Description = "Repair billing views and include linked laboratory requests",
     Sql = @"
@@ -5748,6 +5692,64 @@ WHERE LR.BillID IS NOT NULL AND LR.Status <> 'Cancelled';
 },
 
 
+                        new DatabaseMigration
+                        {
+                            Version = "20261028_003",
+                            Description = "Create billing list view",
+                            Sql = @"
+                                CREATE OR REPLACE
+                            ALGORITHM = UNDEFINED
+                            SQL SECURITY INVOKER
+                            VIEW view_bills AS
+                            SELECT
+                                b.BillID,
+                                COALESCE(
+                                    b.BillNumber,
+                                    CONCAT(
+                                        'INV-',
+                                        YEAR(b.BillDate),
+                                        '-',
+                                        LPAD(b.BillID, 4, '0')
+                                    )
+                                ) AS BillNumber,
+
+                                b.VisitID,
+                                v.PatientID,
+                                p.PersonID,
+                                COALESCE(pe.FullName, 'Unknown Patient') AS PatientName,
+                                v.DoctorID,
+                                v.AppointmentID,
+                                b.BillDate,
+
+                                COALESCE(bs.Subtotal, 0) AS TotalAmount,
+                                b.PaymentStatus,
+                                b.CreatedByUserID,
+
+                                COALESCE(bs.PaymentAmount, 0) AS PaidAmount,
+
+                                GREATEST(
+                                    COALESCE(bs.Subtotal, 0)
+                                    - COALESCE(bs.PaymentAmount, 0),
+                                    0
+                                ) AS BalanceDue,
+
+                                COALESCE(bs.ItemsTotal, '') AS ItemsTotal
+
+                            FROM bills b
+
+                            LEFT JOIN visits v
+                                ON v.VisitID = b.VisitID
+
+                            LEFT JOIN patients p
+                                ON p.PatientID = v.PatientID
+
+                            LEFT JOIN persons pe
+                                ON pe.PersonID = p.PersonID
+
+                            LEFT JOIN view_billsummaries bs
+                                ON bs.BillID = b.BillID;"
+                        },
+
                   };
 
                 // STEP 4: Apply pending migrations
@@ -5836,6 +5838,34 @@ WHERE LR.BillID IS NOT NULL AND LR.Status <> 'Cancelled';
                                         "RENAME TABLE `" + viewName + "` TO `" + backup + "`;", connection))
                                     {
                                         rename.ExecuteNonQuery();
+                                    }
+                                }
+                            }
+                        }
+
+                        // Add gender-specific laboratory ranges only when missing.
+                        // Handles new databases and partially upgraded installations.
+                        if (migration.Version == "20261103_LAB_003_GENDER_RANGES")
+                        {
+                            shouldExecute = false;
+                            foreach (string columnName in new[] { "MaleReferenceRange", "FemaleReferenceRange" })
+                            {
+                                using (MySqlCommand check = new MySqlCommand(@"
+                                    SELECT COUNT(*) FROM information_schema.COLUMNS
+                                    WHERE TABLE_SCHEMA = DATABASE()
+                                      AND TABLE_NAME = 'laboratorytestparameters'
+                                      AND COLUMN_NAME = @columnName;", connection))
+                                {
+                                    check.Parameters.AddWithValue("@columnName", columnName);
+                                    if (Convert.ToInt64(check.ExecuteScalar()) == 0)
+                                    {
+                                        // columnName is from the fixed allowlist above, not user input.
+                                        using (MySqlCommand add = new MySqlCommand(
+                                            "ALTER TABLE `laboratorytestparameters` ADD COLUMN `" +
+                                            columnName + "` VARCHAR(200) NULL;", connection))
+                                        {
+                                            add.ExecuteNonQuery();
+                                        }
                                     }
                                 }
                             }
