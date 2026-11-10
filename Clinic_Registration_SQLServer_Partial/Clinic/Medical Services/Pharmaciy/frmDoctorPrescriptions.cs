@@ -504,11 +504,43 @@ namespace Clinic.Medical_Services.Pharmaciy
                     break;
                 }
             }
-
             if (!hasDispensedItems)
             {
-                MessageBox.Show(PharmacyT("Cannot proceed: Please select at least one item to dispense by checking the 'Dispensed' box."),
-                    "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                bool hasAvailableStock = false;
+
+                foreach (DataRowView row in dv)
+                {
+                    string status = Convert.ToString(
+                        row["AvailableStatus"]);
+
+                    if (status == "Fully Available" ||
+                        status.StartsWith("Partially Available"))
+                    {
+                        hasAvailableStock = true;
+                        break;
+                    }
+                }
+
+                if (!hasAvailableStock)
+                {
+                    MessageBox.Show(
+                        "All medicines in this prescription are out of stock.\n\n" +
+                        "No medicines can be sent for billing.\n" +
+                        "Please replenish stock or print a shortage slip.",
+                        "Medicine Out of Stock",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                }
+                else
+                {
+                    MessageBox.Show(
+                        "Please select at least one available medicine " +
+                        "and enter the quantity before sending to accounting.",
+                        "Select Medicine",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                }
+
                 return;
             }
 

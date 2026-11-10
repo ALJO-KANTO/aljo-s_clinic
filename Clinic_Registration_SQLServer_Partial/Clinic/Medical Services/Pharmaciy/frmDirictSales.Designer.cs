@@ -64,7 +64,7 @@ namespace Clinic.Medical_Services.Pharmaciy
             // 
             // panTitle
             // 
-            this.panTitle.BackColor = System.Drawing.Color.FromArgb(29, 53, 84);
+            this.panTitle.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(121)))), ((int)(((byte)(107)))));
             this.panTitle.Controls.Add(this.label5);
             this.panTitle.Controls.Add(this.pictureBox4);
             this.panTitle.Controls.Add(this.btnExit);
@@ -107,7 +107,7 @@ namespace Clinic.Medical_Services.Pharmaciy
             this.btnExit.BackColor = System.Drawing.Color.Transparent;
             this.btnExit.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnExit.FlatAppearance.BorderSize = 0;
-            this.btnExit.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(29, 53, 84);
+            this.btnExit.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
             this.btnExit.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnExit.Font = new System.Drawing.Font("Segoe UI", 13.8F, System.Drawing.FontStyle.Bold);
             this.btnExit.ForeColor = System.Drawing.Color.White;
@@ -159,7 +159,7 @@ namespace Clinic.Medical_Services.Pharmaciy
             // 
             // btnAddToPrescription
             // 
-            this.btnAddToPrescription.BackColor = System.Drawing.Color.FromArgb(29, 53, 84);
+            this.btnAddToPrescription.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
             this.btnAddToPrescription.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnAddToPrescription.FlatAppearance.BorderSize = 0;
             this.btnAddToPrescription.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -180,7 +180,7 @@ namespace Clinic.Medical_Services.Pharmaciy
             // lbPrescriptionID
             // 
             this.lbPrescriptionID.Font = new System.Drawing.Font("Segoe UI", 22F, System.Drawing.FontStyle.Bold);
-            this.lbPrescriptionID.ForeColor = System.Drawing.Color.FromArgb(29, 53, 84);
+            this.lbPrescriptionID.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(121)))), ((int)(((byte)(107)))));
             this.lbPrescriptionID.Location = new System.Drawing.Point(20, 310);
             this.lbPrescriptionID.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbPrescriptionID.Name = "lbPrescriptionID";
@@ -224,10 +224,10 @@ namespace Clinic.Medical_Services.Pharmaciy
             this.dgPrescriptionDetails.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dgPrescriptionDetails.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
             dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(29, 53, 84);
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
             dataGridViewCellStyle1.Font = new System.Drawing.Font("Segoe UI Semibold", 11F, System.Drawing.FontStyle.Bold);
             dataGridViewCellStyle1.ForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.FromArgb(29, 53, 84);
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
             dataGridViewCellStyle1.SelectionForeColor = System.Drawing.Color.White;
             dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.dgPrescriptionDetails.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
@@ -273,7 +273,7 @@ namespace Clinic.Medical_Services.Pharmaciy
             // btnSavePrescription
             // 
             this.btnSavePrescription.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnSavePrescription.BackColor = System.Drawing.Color.FromArgb(29, 53, 84);
+            this.btnSavePrescription.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(121)))), ((int)(((byte)(107)))));
             this.btnSavePrescription.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnSavePrescription.FlatAppearance.BorderSize = 0;
             this.btnSavePrescription.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -317,7 +317,7 @@ namespace Clinic.Medical_Services.Pharmaciy
             // 
             // panel16
             // 
-            this.panel16.BackColor = System.Drawing.Color.FromArgb(29, 53, 84);
+            this.panel16.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
             this.panel16.Controls.Add(this.label2);
             this.panel16.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel16.Location = new System.Drawing.Point(20, 20);

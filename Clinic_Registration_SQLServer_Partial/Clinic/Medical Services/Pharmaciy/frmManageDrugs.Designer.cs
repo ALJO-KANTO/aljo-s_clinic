@@ -82,7 +82,7 @@ namespace Clinic.Medical_Services.Pharmaciy
             // 
             // panTitle
             // 
-            this.panTitle.BackColor = System.Drawing.Color.FromArgb(29, 53, 84);
+            this.panTitle.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(121)))), ((int)(((byte)(107)))));
             this.panTitle.Controls.Add(this.label5);
             this.panTitle.Controls.Add(this.pictureBox4);
             this.panTitle.Controls.Add(this.btnExit);
@@ -123,7 +123,7 @@ namespace Clinic.Medical_Services.Pharmaciy
             this.btnExit.BackColor = System.Drawing.Color.Transparent;
             this.btnExit.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnExit.FlatAppearance.BorderSize = 0;
-            this.btnExit.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(29, 53, 84);
+            this.btnExit.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
             this.btnExit.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnExit.Font = new System.Drawing.Font("Segoe UI", 13.8F, System.Drawing.FontStyle.Bold);
             this.btnExit.ForeColor = System.Drawing.Color.White;
@@ -202,7 +202,7 @@ namespace Clinic.Medical_Services.Pharmaciy
             // pictureBox2
             // 
             this.pictureBox2.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.pictureBox2.BackColor = System.Drawing.Color.FromArgb(29, 53, 84);
+            this.pictureBox2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
             this.pictureBox2.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pictureBox2.Image = global::Clinic.Properties.Resources.show_medicine_32;
             this.pictureBox2.Location = new System.Drawing.Point(387, 290);
@@ -216,7 +216,7 @@ namespace Clinic.Medical_Services.Pharmaciy
             // btnSave
             // 
             this.btnSave.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.btnSave.BackColor = System.Drawing.Color.FromArgb(29, 53, 84);
+            this.btnSave.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
             this.btnSave.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnSave.FlatAppearance.BorderSize = 0;
             this.btnSave.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -408,7 +408,7 @@ namespace Clinic.Medical_Services.Pharmaciy
             dataGridViewCellStyle10.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(249)))), ((int)(((byte)(249)))));
             dataGridViewCellStyle10.Font = new System.Drawing.Font("Segoe UI", 12F);
             dataGridViewCellStyle10.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(55)))), ((int)(((byte)(71)))), ((int)(((byte)(79)))));
-            dataGridViewCellStyle10.SelectionBackColor = System.Drawing.Color.FromArgb(29, 53, 84);
+            dataGridViewCellStyle10.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
             dataGridViewCellStyle10.SelectionForeColor = System.Drawing.Color.White;
             this.dgMedicines.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle10;
             this.dgMedicines.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
@@ -416,10 +416,10 @@ namespace Clinic.Medical_Services.Pharmaciy
             this.dgMedicines.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dgMedicines.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
             dataGridViewCellStyle11.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle11.BackColor = System.Drawing.Color.FromArgb(29, 53, 84);
+            dataGridViewCellStyle11.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(121)))), ((int)(((byte)(107)))));
             dataGridViewCellStyle11.Font = new System.Drawing.Font("Segoe UI", 12F);
             dataGridViewCellStyle11.ForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle11.SelectionBackColor = System.Drawing.Color.FromArgb(29, 53, 84);
+            dataGridViewCellStyle11.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(121)))), ((int)(((byte)(107)))));
             dataGridViewCellStyle11.SelectionForeColor = System.Drawing.Color.White;
             dataGridViewCellStyle11.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.dgMedicines.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle11;
@@ -439,7 +439,7 @@ namespace Clinic.Medical_Services.Pharmaciy
             dataGridViewCellStyle12.BackColor = System.Drawing.Color.White;
             dataGridViewCellStyle12.Font = new System.Drawing.Font("Segoe UI", 12F);
             dataGridViewCellStyle12.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(55)))), ((int)(((byte)(71)))), ((int)(((byte)(79)))));
-            dataGridViewCellStyle12.SelectionBackColor = System.Drawing.Color.FromArgb(29, 53, 84);
+            dataGridViewCellStyle12.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
             dataGridViewCellStyle12.SelectionForeColor = System.Drawing.Color.White;
             this.dgMedicines.RowsDefaultCellStyle = dataGridViewCellStyle12;
             this.dgMedicines.RowTemplate.Height = 45;
