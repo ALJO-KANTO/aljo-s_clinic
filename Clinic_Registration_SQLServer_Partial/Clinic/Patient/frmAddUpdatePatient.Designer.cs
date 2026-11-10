@@ -267,7 +267,7 @@
             this.txtEmergencyContact.Size = new System.Drawing.Size(185, 31);
             this.txtEmergencyContact.TabIndex = 118;
             this.txtEmergencyContact.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtEmergencyContact_KeyPress);
-            this.txtEmergencyContact.Validating += new System.ComponentModel.CancelEventHandler(this.txtEmergencyContact_Validating);
+            //this.txtEmergencyContact.Validating += new System.ComponentModel.CancelEventHandler(this.txtEmergencyContact_Validating);
             // 
             // txtMedicalHistory
             // 
