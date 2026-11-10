@@ -4170,11 +4170,6 @@ new DatabaseMigration
                                     ) AS BalanceDue
 
                                 FROM bills B
-LEFT JOIN labrequests LR
-    ON LR.BillID = B.BillID
-
-LEFT JOIN laboratorytests LT
-    ON LT.TestID = LR.TestID
 
                                 LEFT JOIN visits V
                                     ON B.VisitID = V.VisitID
