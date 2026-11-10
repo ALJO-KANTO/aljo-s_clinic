@@ -5751,7 +5751,7 @@ WHERE LR.BillID IS NOT NULL AND LR.Status <> 'Cancelled';
                                 ON bs.BillID = b.BillID;"
                         },
 
-                 
+
                   new DatabaseMigration
                   {
                       Version = "20261110_CLINIC_001_FIX_APPOINTMENTS_VIEW",
@@ -5801,7 +5801,64 @@ WHERE LR.BillID IS NOT NULL AND LR.Status <> 'Cancelled';
 
         LEFT JOIN appointmenttypes AT
             ON A.AppointmentTypeID = AT.AppointmentTypeID;"
-                  }
+                  },
+                  new DatabaseMigration
+                  {
+                      Version = "20261110_NURSE_003_FIX_VITALS_QUEUE",
+                      Description = "Repair nurse vitals queue for text appointment statuses",
+                      Sql = @"
+                          CREATE OR REPLACE VIEW View_PatientsWaitingForVitals AS
+                          SELECT
+                              V.VisitID,
+                              A.AppointmentID,
+                              PE.FullName AS PatientName,
+                              A.CheckInTime,
+                              A.AppointmentStatus AS StatusText,
+                              A.IsCalled
+                          FROM appointments A
+                          INNER JOIN visits V
+                              ON V.VisitID = (
+                                  SELECT MAX(V2.VisitID)
+                                  FROM visits V2
+                                  WHERE V2.AppointmentID = A.AppointmentID
+                              )
+                          INNER JOIN patients PT
+                              ON PT.PatientID = A.PatientID
+                          INNER JOIN persons PE
+                              ON PE.PersonID = PT.PersonID
+                          WHERE A.AppointmentStatus IN
+                              ('Waiting_For_Vitals', 'In-Queue', 'In_Queue');"
+                  },
+                  new DatabaseMigration
+                  {
+                      Version = "20261110_DOCTOR_001_FIX_READY_QUEUE",
+                      Description = "Repair doctor queue using ready status and actual call/check-in fields",
+                      Sql = @"
+                          CREATE OR REPLACE VIEW view_patientswaitingfordoctors AS
+                          SELECT
+                              V.VisitID,
+                              A.AppointmentID,
+                              PE.FullName AS PatientName,
+                              COALESCE(A.CheckInTime, A.AppointmentDate) AS CheckInTime,
+                              A.AppointmentStatus AS StatusText,
+                              COALESCE(A.IsCalled, 0) AS IsCalled,
+                              D.PersonID AS DoctorPersonID
+                          FROM appointments A
+                          INNER JOIN visits V
+                              ON V.VisitID = (
+                                  SELECT MAX(V2.VisitID)
+                                  FROM visits V2
+                                  WHERE V2.AppointmentID = A.AppointmentID
+                              )
+                          INNER JOIN patients PT
+                              ON PT.PatientID = A.PatientID
+                          INNER JOIN persons PE
+                              ON PE.PersonID = PT.PersonID
+                          INNER JOIN doctors D
+                              ON D.DoctorID = A.DoctorID
+                          WHERE A.AppointmentStatus IN
+                              ('Ready_For_Doctor', 'In_Progress');"
+                  },
                   };
 
                 // STEP 4: Apply pending migrations
@@ -5942,6 +5999,93 @@ WHERE LR.BillID IS NOT NULL AND LR.Status <> 'Cancelled';
                             }
                         }
 
+                        // Repair nurse queue objects created as BASE TABLES in older installations.
+                        // Keep the old table as a backup before CREATE OR REPLACE VIEW.
+                        if (migration.Version == "20261016_018" ||
+                            migration.Version == "20261110_NURSE_003_FIX_VITALS_QUEUE")
+                        {
+                            const string queueObject = "view_patientswaitingforvitals";
+                            string objectType;
+                            using (MySqlCommand check = new MySqlCommand(@"
+                                SELECT TABLE_TYPE
+                                FROM information_schema.TABLES
+                                WHERE TABLE_SCHEMA = DATABASE()
+                                  AND LOWER(TABLE_NAME) = @objectName
+                                LIMIT 1;", connection))
+                            {
+                                check.Parameters.AddWithValue("@objectName", queueObject);
+                                objectType = Convert.ToString(check.ExecuteScalar());
+                            }
+
+                            if (string.Equals(objectType, "BASE TABLE",
+                                StringComparison.OrdinalIgnoreCase))
+                            {
+                                const string backupName =
+                                    "view_patientswaitingforvitals_backup_20261110";
+                                using (MySqlCommand check = new MySqlCommand(@"
+                                    SELECT COUNT(*)
+                                    FROM information_schema.TABLES
+                                    WHERE TABLE_SCHEMA = DATABASE()
+                                      AND LOWER(TABLE_NAME) = @backupName;", connection))
+                                {
+                                    check.Parameters.AddWithValue("@backupName", backupName);
+                                    if (Convert.ToInt64(check.ExecuteScalar()) > 0)
+                                        throw new InvalidOperationException(
+                                            "Nurse queue backup already exists: " + backupName +
+                                            ". Check the database manually before retrying.");
+                                }
+
+                                using (MySqlCommand rename = new MySqlCommand(
+                                    "RENAME TABLE `" + queueObject + "` TO `" + backupName + "`;",
+                                    connection))
+                                {
+                                    rename.ExecuteNonQuery();
+                                }
+                                Debug.WriteLine("Preserved old nurse queue table as " + backupName);
+                            }
+                        }
+
+                        // Preserve an old doctor queue BASE TABLE before creating its VIEW.
+                        if (migration.Version == "20261110_DOCTOR_001_FIX_READY_QUEUE")
+                        {
+                            const string queueObject = "view_patientswaitingfordoctors";
+                            const string backupName = "view_patientswaitingfordoctors_backup_20261110";
+                            string objectType;
+                            using (MySqlCommand check = new MySqlCommand(@"
+                                SELECT TABLE_TYPE
+                                FROM information_schema.TABLES
+                                WHERE TABLE_SCHEMA = DATABASE()
+                                  AND LOWER(TABLE_NAME) = @objectName
+                                LIMIT 1;", connection))
+                            {
+                                check.Parameters.AddWithValue("@objectName", queueObject);
+                                objectType = Convert.ToString(check.ExecuteScalar());
+                            }
+
+                            if (string.Equals(objectType, "BASE TABLE", StringComparison.OrdinalIgnoreCase))
+                            {
+                                using (MySqlCommand check = new MySqlCommand(@"
+                                    SELECT COUNT(*)
+                                    FROM information_schema.TABLES
+                                    WHERE TABLE_SCHEMA = DATABASE()
+                                      AND LOWER(TABLE_NAME) = @backupName;", connection))
+                                {
+                                    check.Parameters.AddWithValue("@backupName", backupName);
+                                    if (Convert.ToInt64(check.ExecuteScalar()) > 0)
+                                        throw new InvalidOperationException(
+                                            "Doctor queue backup already exists: " + backupName);
+                                }
+
+                                using (MySqlCommand rename = new MySqlCommand(
+                                    "RENAME TABLE `" + queueObject + "` TO `" + backupName + "`;",
+                                    connection))
+                                {
+                                    rename.ExecuteNonQuery();
+                                }
+                                Debug.WriteLine("Preserved old doctor queue table as " + backupName);
+                            }
+                        }
+
                         // Add gender-specific laboratory ranges only when missing.
                         // Handles new databases and partially upgraded installations.
                         if (migration.Version == "20261103_LAB_003_GENDER_RANGES")
@@ -5970,7 +6114,6 @@ WHERE LR.BillID IS NOT NULL AND LR.Status <> 'Cancelled';
                             }
                         }
 
->>>>>>> 9cc25fc3b4d4f32e9bbb199f1f43f07837587059
                         if (shouldExecute)
                         {
                             using (MySqlCommand command =

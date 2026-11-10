@@ -556,6 +556,14 @@ namespace Clinic.Medical_Services.Appointment
         private void _RefreshAppointmentsList()
         {
             _dtAppointmets = clsAppointment.GetAllAppointments();
+            if (_dtAppointmets != null &&
+    _dtAppointmets.Columns.Contains("AppointmentID"))
+            {
+                _dtAppointmets.PrimaryKey = new DataColumn[]
+                {
+        _dtAppointmets.Columns["AppointmentID"]
+                };
+            }
             MessageBox.Show(
     string.Join(", ",
         _dtAppointmets.Columns
