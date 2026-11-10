@@ -5387,6 +5387,62 @@ new DatabaseMigration
 },
 
 
+new DatabaseMigration
+{
+    Version = "20261110_CLINIC_FIX_DOCTORS_VIEW_001",
+    Description = "Fix View_DoctorsDetails table and restore original view",
+    Sql = @"
+        DROP TABLE IF EXISTS `view_doctorsdetails`;
+
+        CREATE OR REPLACE VIEW `view_doctorsdetails` AS
+        SELECT
+            d.DoctorID AS DoctorID,
+            d.PersonID AS PersonID,
+            p.FullName AS FullName,
+            d.LicenseNumber AS LicenseNumber,
+            d.ConsultationFees AS ConsultationFees,
+
+            COALESCE(
+                (
+                    SELECT GROUP_CONCAT(
+                        DISTINCT s.SpecializationName
+                        ORDER BY s.SpecializationName ASC
+                        SEPARATOR ', '
+                    )
+                    FROM doctorspecialties ds
+                    INNER JOIN specializations s
+                        ON s.SpecializationID = ds.SpecializationID
+                    WHERE ds.DoctorID = d.DoctorID
+                ),
+                ''
+            ) AS Specializations,
+
+            COALESCE(
+                (
+                    SELECT GROUP_CONCAT(
+                        dy.DayName
+                        ORDER BY dw.DayID ASC
+                        SEPARATOR ', '
+                    )
+                    FROM doctorworkingdays dw
+                    INNER JOIN days dy
+                        ON dy.DayID = dw.DayID
+                    WHERE dw.DoctorID = d.DoctorID
+                ),
+                ''
+            ) AS WorkingDays,
+
+            COALESCE(c.CountryName, '') AS CountryName,
+            d.IsActive AS IsActive
+
+        FROM doctors d
+        LEFT JOIN persons p
+            ON p.PersonID = d.PersonID
+        LEFT JOIN countries c
+            ON c.CountryID = p.NationalityCountryID;
+    "
+},
+
                   };
 
                 // STEP 4: Apply pending migrations
