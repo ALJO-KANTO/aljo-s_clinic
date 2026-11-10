@@ -20,7 +20,7 @@ namespace Clinic.Medical_Services.Laboratory
             if (disposing && components != null) components.Dispose();
             base.Dispose(disposing);
         }
-
+        private static readonly Color DarkBlue = Color.FromArgb(11, 61, 107);
         private static readonly Color Teal = Color.FromArgb(0, 121, 107);
         private static readonly Color Light = Color.FromArgb(242, 247, 250);
         private static readonly Color Ink = Color.FromArgb(38, 55, 70);
@@ -62,8 +62,13 @@ namespace Clinic.Medical_Services.Laboratory
             body.RowStyles.Add(new RowStyle(SizeType.Absolute, 65));
             body.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
             Controls.Add(body);
+            header = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = DarkBlue,
+                Padding = new Padding(24, 14, 12, 10)
+            };
 
-            header = new Panel { Dock = DockStyle.Fill, BackColor = Teal, Padding = new Padding(24, 14, 12, 10) };
             title = new Label { Text = "Laboratory Management", ForeColor = Color.White,
                 Font = new Font("Segoe UI", 20, FontStyle.Bold), Dock = DockStyle.Top, Height = 44 };
             subtitle = new Label { Text = "Lab requests, tests and patient results", ForeColor = Color.FromArgb(207, 239, 235),
@@ -76,7 +81,7 @@ namespace Clinic.Medical_Services.Laboratory
                 Name = "btnClose",
                 Text = "Close",
                 Size = new Size(110, 38),
-                BackColor = Color.FromArgb(180, 55, 55),
+                BackColor = DarkBlue,
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
@@ -118,14 +123,13 @@ namespace Clinic.Medical_Services.Laboratory
 
             actionsPanel = new Panel { Dock = DockStyle.Fill, BackColor = Color.White, Padding = new Padding(12, 14, 12, 10) };
             var actions = new FlowLayoutPanel { Dock = DockStyle.Fill, WrapContents = true, AutoScroll = true };
-            btnNewRequest = MakeButton("New Lab Request", Color.FromArgb(0, 150, 136));
-            btnManageTests = MakeButton("Manage Lab Tests", Color.FromArgb(23, 112, 155));
-            btnSendToBilling = MakeButton(
-    "Send to Billing",
-    Color.FromArgb(230, 126, 34)
-);
-            btnEnterResult = MakeButton("Enter Result", Color.FromArgb(102, 81, 169));
-            btnRefresh = MakeButton("Refresh", Color.FromArgb(74, 96, 109)); btnRefresh.Width = 110;
+
+            btnNewRequest = MakeButton("New Lab Request", DarkBlue);
+            btnManageTests = MakeButton("Manage Lab Tests", DarkBlue);
+            btnSendToBilling = MakeButton("Send to Billing", DarkBlue);
+            btnEnterResult = MakeButton("Enter Result", DarkBlue);
+            btnRefresh = MakeButton("Refresh", DarkBlue);
+            btnRefresh.Width = 110;
             foreach (Button b in new[]
   {
     btnNewRequest,
@@ -161,11 +165,11 @@ namespace Clinic.Medical_Services.Laboratory
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect, RowTemplate = { Height = 38 },
                 EnableHeadersVisualStyles = false };
             dgvRequests.ColumnHeadersHeight = 43;
-            dgvRequests.ColumnHeadersDefaultCellStyle.BackColor = Teal;
+            dgvRequests.ColumnHeadersDefaultCellStyle.BackColor = DarkBlue;
             dgvRequests.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
             dgvRequests.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
             dgvRequests.DefaultCellStyle.Font = new Font("Segoe UI", 10);
-            dgvRequests.DefaultCellStyle.SelectionBackColor = Color.FromArgb(0, 150, 136);
+            dgvRequests.ColumnHeadersDefaultCellStyle.SelectionBackColor = DarkBlue;
             dgvRequests.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(239, 248, 248);
             gridPanel.Controls.Add(dgvRequests); body.Controls.Add(gridPanel, 0, 4);
 
