@@ -163,8 +163,7 @@ namespace YamyProject
             string itemMethod = item["method"].ToString();
             string itemType = item["type"].ToString();
             decimal salesPrice = Convert.ToDecimal(item["sales_price"]);
-            decimal costPrice = Convert.ToDecimal(item["cost"]);
-
+            decimal costPrice = Convert.ToDecimal(item["cost_price"]);
             // 2. Check if item already in grid, then increase qty
             foreach (DataGridViewRow row in dgvItems.Rows)
             {
@@ -536,7 +535,7 @@ namespace YamyProject
 
             row.Cells["unit_factor"].Value =
                 factor;
-
+            row.Cells["factor"].Value = factor;
             decimal qty =
                 GetDecimalValue(row, "qty");
 
@@ -648,46 +647,58 @@ namespace YamyProject
             }
         }
         string defaultTax = "";
+
         private void loadItemUnits(int itemId)
         {
-            if (dgvItems.CurrentRow == null)
-                return;
-
             DataGridViewRow row = dgvItems.CurrentRow;
-            DataTable units = GetItemUnits(itemId);
-            DataGridViewComboBoxCell unitCell = row.Cells["unit_id"] as DataGridViewComboBoxCell;
 
-            if (unitCell == null)
+            if (row == null || row.IsNewRow)
                 return;
+
+            if (!(row.Cells["unit_id"] is DataGridViewComboBoxCell unitCell))
+                return;
+
+            DataTable units = GetItemUnits(itemId);
 
             unitCell.Value = null;
             unitCell.DataSource = null;
 
             if (units == null || units.Rows.Count == 0)
-                return;
+            {
+                row.Cells["factor"].Value = 0m;
 
-            unitCell.DataSource = units;
+                if (dgvItems.Columns.Contains("unit_factor"))
+                    row.Cells["unit_factor"].Value = 0m;
+
+                return;
+            }
+
             unitCell.DisplayMember = "name";
             unitCell.ValueMember = "id";
-            unitCell.FlatStyle = FlatStyle.Popup;
-            unitCell.DisplayStyle = DataGridViewComboBoxDisplayStyle.DropDownButton;
-            unitCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            unitCell.DataSource = units;
 
-            DataRow[] defaultUnits = units.Select("is_default = 1");
+            DataRow selectedUnit = units.AsEnumerable()
+                .FirstOrDefault(r =>
+                    Convert.ToInt32(r["is_default"]) == 1)
+                ?? units.Rows[0];
 
-            if (defaultUnits.Length > 0)
-            {
-                unitCell.Value = defaultUnits[0]["id"];
-            }
-            else
-            {
-                unitCell.Value = units.Rows[0]["id"];
-            }
+            int unitId = Convert.ToInt32(selectedUnit["id"]);
+            decimal factor = Convert.ToDecimal(selectedUnit["factor"]);
+
+            if (factor <= 0)
+                throw new InvalidOperationException(
+                    $"Invalid conversion factor for item {itemId}.");
+
+            unitCell.Value = unitId;
+            row.Cells["factor"].Value = factor;
 
             if (dgvItems.Columns.Contains("unit_factor"))
+                row.Cells["unit_factor"].Value = factor;
+
+            if (dgvItems.Columns.Contains("base_qty"))
             {
-                row.Cells["unit_factor"].Value =
-                    units.Select("id = " + Convert.ToInt32(unitCell.Value))[0]["factor"];
+                decimal qty = GetDecimalValue(row, "qty");
+                row.Cells["base_qty"].Value = qty * factor;
             }
         }
         private DataTable GetItemUnits(int itemId)
@@ -1095,54 +1106,156 @@ namespace YamyProject
 
         private void insertItemTransaction(DataGridViewRow row)
         {
-            decimal qty = 0;
+            if (row == null || row.IsNewRow)
+                throw new InvalidOperationException("Invalid purchase item row.");
 
-            if (row.Cells["itemId"].Value == null || string.IsNullOrWhiteSpace(row.Cells["itemId"].Value.ToString()))
+            int itemId;
+            if (!int.TryParse(row.Cells["itemId"].Value?.ToString(), out itemId)
+                || itemId <= 0)
             {
-                MessageBox.Show("Invalid Item ID.");
-                return;
+                throw new InvalidOperationException("Invalid Item ID.");
             }
 
-            if (!decimal.TryParse(row.Cells["qty"].Value.ToString(), out qty) || qty <= 0)
+            decimal qty;
+            if (!decimal.TryParse(row.Cells["qty"].Value?.ToString(), out qty)
+                || qty <= 0)
             {
-                MessageBox.Show("Invalid Quantity.");
-                return;
+                throw new InvalidOperationException(
+                    $"Invalid quantity for item {itemId}.");
             }
-            // batchId
-            int itemId = Convert.ToInt32(row.Cells["itemid"].Value);
-            string batch = row.Cells["batch_no"].Value.ToString();
-            DateTime expiry = Convert.ToDateTime(row.Cells["expiry_date"].Value);
 
-            int unitId = Convert.ToInt32(row.Cells["unit_id"].Value);
-            decimal factor = Convert.ToDecimal(row.Cells["factor"].Value);
+            int unitId;
+            if (!int.TryParse(row.Cells["unit_id"].Value?.ToString(), out unitId)
+                || unitId <= 0)
+            {
+                throw new InvalidOperationException(
+                    $"Please select a valid unit for item {itemId}.");
+            }
+
+            decimal factor = 0m;
+
+            // Read the factor used by purchase saving.
+            decimal.TryParse(
+                row.Cells["factor"].Value?.ToString(),
+                out factor);
+
+            // Recover from the alternate UOM column if available.
+            if (factor <= 0 && dgvItems.Columns.Contains("unit_factor"))
+            {
+                decimal.TryParse(
+                    row.Cells["unit_factor"].Value?.ToString(),
+                    out factor);
+            }
+
+            // Do not silently assume factor 1 for an unknown unit.
+            if (factor <= 0)
+            {
+                throw new InvalidOperationException(
+                    $"Invalid unit conversion factor for item {itemId}. " +
+                    "Please reselect the unit before saving.");
+            }
+
+          
+
+            row.Cells["factor"].Value = factor;
+
+            if (dgvItems.Columns.Contains("unit_factor"))
+            {
+                row.Cells["unit_factor"].Value = factor;
+            }
+
+            // qty is already declared above.
+            // Reuse the existing variable.
+
+            if (dgvItems.Columns.Contains("base_qty"))
+            {
+                row.Cells["base_qty"].Value = qty * factor;
+            }
+            if (dgvItems.Columns.Contains("base_qty"))
+            {
+                row.Cells["base_qty"].Value = qty * factor;
+            }
+            decimal cost;
+            decimal salePrice;
+
+            if (!decimal.TryParse(row.Cells["cost"].Value?.ToString(),
+                out cost) || cost < 0)
+            {
+                throw new InvalidOperationException(
+                    $"Invalid cost for item {itemId}.");
+            }
+
+            if (!decimal.TryParse(row.Cells["price"].Value?.ToString(),
+                out salePrice) || salePrice < 0)
+            {
+                throw new InvalidOperationException(
+                    $"Invalid sale price for item {itemId}.");
+            }
+
             decimal baseQty = qty * factor;
-            decimal baseCost = row.Cells["cost"].Value == DBNull.Value ? 0 : Convert.ToDecimal(row.Cells["cost"].Value) / factor;
+            decimal baseCost = cost / factor;
 
-            int batchId = Convert.ToInt32(ClinicDatabase.ExecuteScalar(@"
-                INSERT INTO tbl_item_batches
-                (item_id, batch_no, expiry_date,cost_price,sale_price,warehouse_id, qty_in, qty_out, base_cost, factor,created_date)
-                VALUES
-                (@itemId, @batch, @expiry,@cost,@salePrice,@warwhouseId, @qty, 0,@baseCost,@factor,@date);
-                SELECT LAST_INSERT_ID();",
-                new MySqlParameter("@itemId", itemId),
-                new MySqlParameter("@batch", batch),
-                new MySqlParameter("@expiry", expiry),
-                new MySqlParameter("@cost", row.Cells["cost"].Value),
-                new MySqlParameter("@baseCost", baseCost),
-                new MySqlParameter("@salePrice", row.Cells["price"].Value),
-                new MySqlParameter("@warwhouseId", cmbWarehouse.SelectedValue),
-                new MySqlParameter("@date", DateTime.Now),
-                new MySqlParameter("@qty", baseQty),
-                new MySqlParameter("@factor", factor)
+            string batch = row.Cells["batch_no"].Value?.ToString() ?? "";
 
-            ));
-            // Insert the item transaction for the purchase=
-            decimal finalQty = baseQty > 0 ? baseQty : qty;
-            CommonInsert.InsertItemTransaction(dtInv.Value.Date, "Purchase Invoice", invId.ToString(), row.Cells["itemId"].Value.ToString(),
-                row.Cells["cost"].Value.ToString(), finalQty.ToString(), "0", "0", row.Cells["qty"].Value.ToString(),
-                "Purchase Invoice No. " + txtNextCode.Text, cmbWarehouse.SelectedValue.ToString(), batchId.ToString(), unitId.ToString(), factor.ToString(), qty.ToString());
+            DateTime expiry;
+            if (!DateTime.TryParse(
+                row.Cells["expiry_date"].Value?.ToString(), out expiry))
+            {
+                throw new InvalidOperationException(
+                    $"Invalid expiry date for item {itemId}.");
+            }
+
+            int batchId = Convert.ToInt32(
+                ClinicDatabase.ExecuteScalar(@"
+            INSERT INTO tbl_item_batches
+            (
+                item_id, batch_no, expiry_date,
+                cost_price, sale_price, warehouse_id,
+                qty_in, qty_out, base_cost,
+                factor, created_date
+            )
+            VALUES
+            (
+                @itemId, @batch, @expiry,
+                @cost, @salePrice, @warehouseId,
+                @qty, 0, @baseCost,
+                @factor, @date
+            );
+
+            SELECT LAST_INSERT_ID();",
+
+                    new MySqlParameter("@itemId", itemId),
+                    new MySqlParameter("@batch", batch),
+                    new MySqlParameter("@expiry", expiry),
+                    new MySqlParameter("@cost", cost),
+                    new MySqlParameter("@baseCost", baseCost),
+                    new MySqlParameter("@salePrice", salePrice),
+                    new MySqlParameter("@warehouseId",
+                        cmbWarehouse.SelectedValue),
+                    new MySqlParameter("@date", DateTime.Now),
+                    new MySqlParameter("@qty", baseQty),
+                    new MySqlParameter("@factor", factor)
+                )
+            );
+
+            CommonInsert.InsertItemTransaction(
+                dtInv.Value.Date,
+                "Purchase Invoice",
+                invId.ToString(),
+                itemId.ToString(),
+                cost.ToString(),
+                baseQty.ToString(),
+                "0",
+                "0",
+                qty.ToString(),
+                "Purchase Invoice No. " + txtNextCode.Text,
+                cmbWarehouse.SelectedValue.ToString(),
+                batchId.ToString(),
+                unitId.ToString(),
+                factor.ToString(),
+                qty.ToString()
+            );
         }
-
         private void transactions()
         {
             string accountId = cmbPaymentMethod.Text == "Credit" ? level4PaymentCreditMethodId.ToString()
