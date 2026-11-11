@@ -216,6 +216,7 @@ namespace Clinic.Medical_Services.Pharmaciy
             // this.btnSave.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
             // 
             this.btnSave.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.btnSave.BackColor = System.Drawing.Color.FromArgb(25, 55, 100);
             this.pictureBox2.BackColor = System.Drawing.Color.FromArgb(25, 55, 100);
             this.btnSave.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnSave.FlatAppearance.BorderSize = 0;
