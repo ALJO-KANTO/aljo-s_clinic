@@ -9,8 +9,8 @@ namespace Clinic.Medical_Services.Radiology
 {
     public partial class frmXRay : Form
     {
-        private static readonly Color Teal = Color.FromArgb(0, 121, 107);
-        private static readonly Color Light = Color.FromArgb(242, 247, 250);
+        private static readonly Color Teal = Color.FromArgb(25, 55, 100);
+        private static readonly Color Light = Color.FromArgb(242, 246, 252);
         private Label[] statValues = new Label[5];
         private DataGridView dgvRequests;
         private TextBox txtSearch;
@@ -21,7 +21,7 @@ namespace Clinic.Medical_Services.Radiology
             new System.Collections.Generic.Dictionary<string, Image>();
         private readonly System.Collections.Generic.Dictionary<int, Image> thumbnails =
             new System.Collections.Generic.Dictionary<int, Image>();
-        private static readonly Color Navy = Color.FromArgb(29, 53, 84);
+        private static readonly Color Navy = Color.FromArgb(15, 32, 64);
 
         // Uses the existing TranslationClass dictionary. Add translations there only.
         private string T(string english)
@@ -156,7 +156,7 @@ namespace Clinic.Medical_Services.Radiology
             var header = new Panel
             {
                 Dock = DockStyle.Fill,
-                BackColor = Color.FromArgb(0, 121, 132),
+                BackColor = Color.FromArgb(15, 32, 64),
                 Padding = new Padding(15, 10, 15, 8)
             };
 
@@ -185,7 +185,7 @@ namespace Clinic.Medical_Services.Radiology
             var subtitle = new Label
             {
                 Text = T("X-ray requests, imaging studies and patient results"),
-                ForeColor = Color.FromArgb(207, 239, 235),
+                ForeColor = Color.FromArgb(220, 230, 245),
                 Font = new Font("Segoe UI", 10),
                 AutoSize = false,
                 Height = 25,
@@ -377,12 +377,12 @@ namespace Clinic.Medical_Services.Radiology
             };
             dgvRequests.RowTemplate.Height = 52;
             dgvRequests.ColumnHeadersHeight = 43;
-            dgvRequests.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(0, 128, 139);
+            dgvRequests.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(15, 32, 64);
             dgvRequests.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
             dgvRequests.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
-            dgvRequests.DefaultCellStyle.SelectionBackColor = Color.FromArgb(213, 246, 246);
+            dgvRequests.DefaultCellStyle.SelectionBackColor = Color.FromArgb(220, 230, 245);
             dgvRequests.DefaultCellStyle.SelectionForeColor = Navy;
-            dgvRequests.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(239, 248, 248);
+            dgvRequests.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(242, 246, 252);
             gridPanel.Controls.Add(dgvRequests);
             body.Controls.Add(gridPanel, 0, 4);
 
