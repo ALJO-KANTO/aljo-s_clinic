@@ -866,59 +866,81 @@ namespace Clinic_DataAccess
 
 
         #region EDitPending Prescription ITems
-        public static DataTable GetPrescriptionsDetails(int BillID, ref int PrescriptionID, ref DateTime PrescriptionDate, ref bool isFound)
+
+        public static DataTable GetPrescriptionsDetails(
+            int BillID,
+            ref int PrescriptionID,
+            ref DateTime PrescriptionDate,
+            ref bool isFound)
         {
             DataTable dtDetails = new DataTable();
             isFound = false;
 
             string query = @"
-        -- الاستعلام الأول: جلب معلومات الفاتورة والمريض العامة
-          Select PrescriptionID,Format(PrescriptionDate,'yyyy/MM/dd')As PrescriptionDate
-                 From Prescriptions
-                Where BillID=@BillID
+        SELECT
+            PrescriptionID,
+            PrescriptionDate
+        FROM Prescriptions
+        WHERE BillID = @BillID;
 
-        -- الاستعلام الثاني: جلب تفاصيل الأدوية والضرائب والكميات المرتجعة سابقاً
-         Select PrescriptionDetailsID,SavedMedicineName,SavedMedicinePrice,DispensedQuantity
-                  From PrescriptionDetails PD
-                  INNER JOIN Prescriptions P ON PD.PrescriptionID=P.PrescriptionID
-                  Where P.BillID=@BillID";
+        SELECT
+            PD.PrescriptionDetailsID,
+            PD.SavedMedicineName,
+            PD.SavedMedicinePrice,
+            PD.DispensedQuantity
+        FROM PrescriptionDetails PD
+        INNER JOIN Prescriptions P
+            ON PD.PrescriptionID = P.PrescriptionID
+        WHERE P.BillID = @BillID;
+    ";
 
-            using (MySqlConnection connection = new MySqlConnection(clsDataAccessSettings.ConnectionString))
+            using (MySqlConnection connection =
+                new MySqlConnection(clsDataAccessSettings.ConnectionString))
             {
-                using (MySqlCommand command = new MySqlCommand(query, connection))
+                using (MySqlCommand command =
+                    new MySqlCommand(query, connection))
                 {
                     command.Parameters.AddWithValue("@BillID", BillID);
 
                     try
                     {
                         connection.Open();
+
                         using (MySqlDataReader reader = command.ExecuteReader())
                         {
-                            // 1. قراءة النتيجة الأولى (المعلومات العامة للفاتورة)
+                            // First result: Prescription information
                             if (reader.Read())
                             {
-                                PrescriptionID = (int)reader["PrescriptionID"];
-                                PrescriptionDate = Convert.ToDateTime(reader["PrescriptionDate"]); // تم تصحيح الكاستنج هنا
+                                PrescriptionID =
+                                    Convert.ToInt32(reader["PrescriptionID"]);
+
+                                if (reader["PrescriptionDate"] != DBNull.Value)
+                                {
+                                    PrescriptionDate =
+                                        Convert.ToDateTime(reader["PrescriptionDate"]);
+                                }
+
                                 isFound = true;
                             }
 
-                            // 2. الانتقال إلى النتيجة الثانية (جدول تفاصيل الأدوية)
+                            // Second result: Prescription medicine details
                             if (reader.NextResult())
                             {
-                                if (reader.HasRows)
-                                {
-                                    dtDetails.Load(reader);
-                                }
+                                dtDetails.Load(reader);
                             }
                         }
                     }
                     catch (MySqlException ex)
                     {
-                        clsGlobalLogger.LogMySqlException(ex, clsGlobalLogger.LogLevel.Error);
+                        clsGlobalLogger.LogMySqlException(
+                            ex,
+                            clsGlobalLogger.LogLevel.Error);
+
                         isFound = false;
                     }
                 }
             }
+
             return dtDetails;
         }
 

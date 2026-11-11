@@ -491,8 +491,13 @@ namespace Clinic.Medical_Services.Pharmaciy
             dgPrescriptionDetails.EndEdit();
             this.BindingContext[dgPrescriptionDetails.DataSource].EndCurrentEdit();
 
-            DataView dv = (DataView)dgPrescriptionDetails.DataSource;
-            if (dv == null) return;
+            DataView dv = dgPrescriptionDetails.DataSource as DataView;
+
+            if (dv == null)
+            {
+                MessageBox.Show("Prescription details are not loaded.");
+                return;
+            }
 
             bool hasDispensedItems = false;
             foreach (DataRowView row in dv)

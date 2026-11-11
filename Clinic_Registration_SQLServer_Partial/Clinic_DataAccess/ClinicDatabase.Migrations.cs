@@ -557,7 +557,61 @@ WHERE a.AppointmentFees > 0;
                             Description = "Alter table prescriptions add BillID",
                             Sql = @"ALTER TABLE `prescriptions` ADD COLUMN `BillID` int DEFAULT NULL;"
                         },
-
+                        new DatabaseMigration
+{
+    Version = "20261111_001",
+    Description = "Update missing Prescription BillID for visits with one bill",
+    Sql = @"
+        UPDATE Prescriptions P
+        INNER JOIN
+        (
+            SELECT
+                VisitID,
+                MIN(BillID) AS BillID
+            FROM Bills
+            GROUP BY VisitID
+            HAVING COUNT(*) = 1
+        ) B ON P.VisitID = B.VisitID
+        SET P.BillID = B.BillID
+        WHERE P.BillID IS NULL;
+    "
+},new DatabaseMigration
+{
+    Version = "20261111_002",
+    Description = "Fix missing Prescription BillID for single-bill visits",
+    Sql = @"
+        UPDATE Prescriptions P
+        INNER JOIN
+        (
+            SELECT
+                VisitID,
+                MIN(BillID) AS BillID
+            FROM Bills
+            GROUP BY VisitID
+            HAVING COUNT(*) = 1
+        ) B ON P.VisitID = B.VisitID
+        SET P.BillID = B.BillID
+        WHERE P.BillID IS NULL;
+    "
+},new DatabaseMigration
+{
+    Version = "20261111_003",
+    Description = "Update missing Prescription BillID for visits with one bill",
+    Sql = @"
+        UPDATE Prescriptions P
+        INNER JOIN
+        (
+            SELECT
+                VisitID,
+                MIN(BillID) AS BillID
+            FROM Bills
+            GROUP BY VisitID
+            HAVING COUNT(*) = 1
+        ) B ON P.VisitID = B.VisitID
+        SET P.BillID = B.BillID
+        WHERE P.BillID IS NULL;
+    "
+},
                         new DatabaseMigration
                         {
                             Version = "20261015_BASE_028",
