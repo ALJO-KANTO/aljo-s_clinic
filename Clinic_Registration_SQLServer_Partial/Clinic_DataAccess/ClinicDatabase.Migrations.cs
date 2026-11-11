@@ -5999,8 +5999,6 @@ WHERE LR.BillID IS NOT NULL AND LR.Status <> 'Cancelled';
                             }
                         }
 
-<<<<<<< HEAD
-=======
                         // Repair nurse queue objects created as BASE TABLES in older installations.
                         // Keep the old table as a backup before CREATE OR REPLACE VIEW.
                         if (migration.Version == "20261016_018" ||
@@ -6088,7 +6086,6 @@ WHERE LR.BillID IS NOT NULL AND LR.Status <> 'Cancelled';
                             }
                         }
 
->>>>>>> e66090210c88a33439386ccdd3771b1493935a58
                         // Add gender-specific laboratory ranges only when missing.
                         // Handles new databases and partially upgraded installations.
                         if (migration.Version == "20261103_LAB_003_GENDER_RANGES")
