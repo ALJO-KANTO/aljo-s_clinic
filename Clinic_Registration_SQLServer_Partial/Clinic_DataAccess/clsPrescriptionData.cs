@@ -428,81 +428,91 @@ namespace Clinic_DataAccess
         public static DataTable GetAllPrescriptionDetails()
         {
             DataTable dt = new DataTable();
+
             try
             {
-                using (MySqlConnection connection = new MySqlConnection(clsDataAccessSettings.ConnectionString))
+                using (MySqlConnection connection =
+                    new MySqlConnection(clsDataAccessSettings.ConnectionString))
                 {
                     string query = @"
-                                    SELECT 
-                                        P.PrescriptionStatus,
-                                        PD.PrescriptionID,
-                                        PD.PrescriptionDetailID,
-                                        PD.SavedMedicineName AS MedicineName,
-                                        PD.Dosage,
-                                        M.TaxRate,
-                                        PD.SavedMedicinePrice,
-                                        PD.Frequency,
-                                        PD.Quantity AS RequiredQuantity,
-                                        PD.Instructions,
-                                        PD.DiscountAmount,
+                SELECT
+                    P.PrescriptionStatus,
+                    PD.PrescriptionID,
+                    PD.PrescriptionDetailID,
+                    PD.SavedMedicineName AS MedicineName,
+                    PD.Dosage,
 
-                                        -- Smart dispensed quantity
-                                        CASE 
-                                            WHEN P.PrescriptionStatus = 1 THEN 
-                                                CASE 
-                                                    WHEN M.CurrentStock IS NULL OR M.CurrentStock <= 0 THEN 0
-                                                    WHEN M.CurrentStock >= PD.Quantity THEN PD.Quantity
-                                                    ELSE M.CurrentStock 
-                                                END
-                                            ELSE PD.DispensedQuantity 
-                                        END AS DispensedQuantity,
+                   0 AS TaxRate,
 
-                                        -- Smart checkbox state
-                                        CASE 
-                                            WHEN P.PrescriptionStatus = 1 THEN 
-                                                CASE 
-                                                    WHEN M.CurrentStock IS NULL OR M.CurrentStock <= 0 THEN 0
-                                                    ELSE 1 
-                                                END
-                                            ELSE PD.IsDispensed 
-                                        END AS IsDispensed,
+                    PD.SavedMedicinePrice,
+                    PD.Frequency,
+                    PD.Quantity AS RequiredQuantity,
+                    PD.Instructions,
+                    PD.DiscountAmount,
 
-                                        -- Availability status
-                                        CASE 
-                                            WHEN P.PrescriptionStatus = 1 THEN
-                                                CASE 
-                                                    WHEN M.CurrentStock IS NULL OR M.CurrentStock <= 0
-                                                        THEN 'Out of Stock'
-                                                    WHEN M.CurrentStock >= PD.Quantity
-                                                        THEN 'Fully Available'
-                                                    ELSE CONCAT(
-                                                        'Partially Available (',
-                                                        CAST(M.CurrentStock AS CHAR),
-                                                        ')'
-                                                    )
-                                                END
-                                            ELSE 'Finalized'
-                                        END AS AvailableStatus
+                    COALESCE(M.on_hand, 0) AS AvailableStock,
 
-                                    FROM PrescriptionDetails PD
-                                    LEFT JOIN Prescriptions P
-                                        ON PD.PrescriptionID = P.PrescriptionID
-                                    LEFT JOIN
-                                    (
-                                        SELECT
-                                            MedicineName,
-                                            MAX(TaxRate) AS TaxRate,
-                                            MAX(CurrentStock) AS CurrentStock
-                                        FROM Medicines
-                                        GROUP BY MedicineName
-                                    ) M
-                                        ON PD.SavedMedicineName COLLATE utf8mb4_0900_ai_ci
-                                         = M.MedicineName COLLATE utf8mb4_0900_ai_ci";
+                    CASE
+                        WHEN P.PrescriptionStatus = 1 THEN
+                            CASE
+                                WHEN COALESCE(M.on_hand, 0) <= 0
+                                    THEN 0
 
-                    using (MySqlCommand command = new MySqlCommand(query, connection))
+                                WHEN M.on_hand >= PD.Quantity
+                                    THEN PD.Quantity
+
+                                ELSE M.on_hand
+                            END
+                        ELSE COALESCE(PD.DispensedQuantity, 0)
+                    END AS DispensedQuantity,
+
+                    CASE
+                        WHEN P.PrescriptionStatus = 1 THEN
+                            CASE
+                                WHEN COALESCE(M.on_hand, 0) <= 0
+                                    THEN 0
+                                ELSE 1
+                            END
+                        ELSE COALESCE(PD.IsDispensed, 0)
+                    END AS IsDispensed,
+
+                    CASE
+                        WHEN P.PrescriptionStatus = 1 THEN
+                            CASE
+                                WHEN M.id IS NULL
+                                    THEN 'Out of Stock'
+
+                                WHEN COALESCE(M.on_hand, 0) <= 0
+                                    THEN 'Out of Stock'
+
+                                WHEN M.on_hand >= PD.Quantity
+                                    THEN 'Fully Available'
+
+                                ELSE CONCAT(
+                                    'Partially Available (',
+                                    FLOOR(M.on_hand),
+                                    ')'
+                                )
+                            END
+                        ELSE 'Finalized'
+                    END AS AvailableStatus
+
+                FROM PrescriptionDetails PD
+
+                LEFT JOIN Prescriptions P
+                    ON PD.PrescriptionID = P.PrescriptionID
+
+                LEFT JOIN tbl_items M
+                    ON PD.MedicineID = M.id;
+            ";
+
+                    using (MySqlCommand command =
+                        new MySqlCommand(query, connection))
                     {
                         connection.Open();
-                        using (MySqlDataReader reader = command.ExecuteReader())
+
+                        using (MySqlDataReader reader =
+                            command.ExecuteReader())
                         {
                             dt.Load(reader);
                         }
@@ -511,12 +521,15 @@ namespace Clinic_DataAccess
             }
             catch (MySqlException ex)
             {
-                clsGlobalLogger.LogMySqlException(ex, clsGlobalLogger.LogLevel.Error);
+                clsGlobalLogger.LogMySqlException(
+                    ex,
+                    clsGlobalLogger.LogLevel.Error);
+
+                throw;
             }
 
             return dt;
         }
-
         public static DataTable GetAllPrescriptionRecords()
         {
             DataTable dt = new DataTable();
