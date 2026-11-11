@@ -9,9 +9,9 @@ namespace Clinic.Medical_Services.Visit
 {
     public partial class frmDoctor
     {
-        private readonly Color mdTeal = Color.FromArgb(0, 112, 118);
-        private readonly Color mdDark = Color.FromArgb(4, 63, 72);
-        private readonly Color mdBg = Color.FromArgb(240, 247, 250);
+        private readonly Color mdTeal = Color.FromArgb(25, 55, 100);
+        private readonly Color mdDark = Color.FromArgb(15, 32, 64);
+        private readonly Color mdBg = Color.FromArgb(242, 246, 252);
         private readonly Color mdText = Color.FromArgb(25, 48, 68);
         private TableLayoutPanel mdShell;
         private TableLayoutPanel mdContent;
@@ -56,17 +56,17 @@ namespace Clinic.Medical_Services.Visit
             g.BorderStyle = BorderStyle.None;
             g.RowHeadersVisible = false;
             g.EnableHeadersVisualStyles = false;
-            g.ColumnHeadersDefaultCellStyle.BackColor = mdTeal;
+            g.ColumnHeadersDefaultCellStyle.BackColor = mdDark;
             g.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
             g.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             g.ColumnHeadersHeight = 43;
             g.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             g.RowTemplate.Height = 43;
             g.DefaultCellStyle.Font = new Font("Segoe UI", 9F);
-            g.DefaultCellStyle.SelectionBackColor = Color.FromArgb(214, 245, 244);
-            g.DefaultCellStyle.SelectionForeColor = mdText;
-            g.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(244, 250, 251);
-            g.GridColor = Color.FromArgb(230, 238, 241);
+            g.DefaultCellStyle.SelectionBackColor = Color.FromArgb(220, 230, 245);
+            g.DefaultCellStyle.SelectionForeColor = mdDark;
+            g.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(242, 246, 252);
+            g.GridColor = Color.FromArgb(210, 220, 235);
         }
 
         private TableLayoutPanel MdTable(int columns, int rows)
@@ -182,7 +182,7 @@ namespace Clinic.Medical_Services.Visit
             btnRefresh.FlatStyle = FlatStyle.Flat;
             btnRefresh.FlatAppearance.BorderSize = 0;
             btnRefresh.BackColor = mdBg;
-            btnRefresh.ForeColor = mdTeal;
+            btnRefresh.ForeColor = mdDark;
             btnRefresh.Size = new Size(44, 40);
             btnRefresh.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             panel2.Resize += (s, e) => btnRefresh.Left = panel2.Width - btnRefresh.Width - 8;

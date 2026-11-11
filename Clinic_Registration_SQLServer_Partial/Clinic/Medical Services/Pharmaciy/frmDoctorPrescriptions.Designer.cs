@@ -122,8 +122,7 @@
             this.SuspendLayout();
             // 
             // panTitle
-            // 
-            this.panTitle.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(121)))), ((int)(((byte)(107)))));
+            this.panTitle.BackColor = System.Drawing.Color.FromArgb(15, 32, 64);
             this.panTitle.Controls.Add(this.label5);
             this.panTitle.Controls.Add(this.pictureBox4);
             this.panTitle.Controls.Add(this.btnExit);
@@ -164,7 +163,7 @@
             this.btnExit.BackColor = System.Drawing.Color.Transparent;
             this.btnExit.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnExit.FlatAppearance.BorderSize = 0;
-            this.btnExit.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
+            this.btnExit.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(40, 75, 125);
             this.btnExit.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnExit.Font = new System.Drawing.Font("Segoe UI", 13.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnExit.ForeColor = System.Drawing.Color.White;
@@ -181,7 +180,7 @@
             // 
             this.lbCurrentUser.AutoSize = true;
             this.lbCurrentUser.Font = new System.Drawing.Font("Segoe UI", 13.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbCurrentUser.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(178)))), ((int)(((byte)(223)))), ((int)(((byte)(219)))));
+            this.lbCurrentUser.ForeColor = System.Drawing.Color.FromArgb(220, 230, 245);
             this.lbCurrentUser.Location = new System.Drawing.Point(1228, 32);
             this.lbCurrentUser.Name = "lbCurrentUser";
             this.lbCurrentUser.Size = new System.Drawing.Size(60, 31);
@@ -427,7 +426,7 @@
             // btnSendToAccounting
             // 
             this.btnSendToAccounting.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.btnSendToAccounting.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
+            this.btnSendToAccounting.BackColor = System.Drawing.Color.FromArgb(0, 150, 136);
             this.btnSendToAccounting.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnSendToAccounting.FlatAppearance.BorderSize = 0;
             this.btnSendToAccounting.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -476,10 +475,10 @@
             this.dgvPrescription.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.SingleHorizontal;
             this.dgvPrescription.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
             dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(121)))), ((int)(((byte)(107)))));
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(15, 32, 64);
             dataGridViewCellStyle1.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             dataGridViewCellStyle1.ForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(121)))), ((int)(((byte)(107)))));
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.FromArgb(15, 32, 64);
             dataGridViewCellStyle1.SelectionForeColor = System.Drawing.Color.White;
             dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.dgvPrescription.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
@@ -496,7 +495,7 @@
             dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(121)))), ((int)(((byte)(107)))));
             dataGridViewCellStyle2.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             dataGridViewCellStyle2.ForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.FromArgb(15, 32, 64);
             dataGridViewCellStyle2.SelectionForeColor = System.Drawing.Color.White;
             this.dgvPrescription.RowHeadersDefaultCellStyle = dataGridViewCellStyle2;
             this.dgvPrescription.RowHeadersWidth = 30;
@@ -516,7 +515,7 @@
             // 
             // panel11
             // 
-            this.panel11.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(137)))), ((int)(((byte)(123)))));
+            this.panel11.BackColor = System.Drawing.Color.FromArgb(15, 32, 64);
             this.panel11.Controls.Add(this.lbPatientName);
             this.panel11.Controls.Add(this.label1);
             this.panel11.Dock = System.Windows.Forms.DockStyle.Top;
@@ -531,7 +530,7 @@
             this.lbPatientName.AutoSize = true;
             this.lbPatientName.BackColor = System.Drawing.Color.Transparent;
             this.lbPatientName.Font = new System.Drawing.Font("Segoe UI", 19.8F, System.Drawing.FontStyle.Bold);
-            this.lbPatientName.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(178)))), ((int)(((byte)(223)))), ((int)(((byte)(219)))));
+            this.lbPatientName.ForeColor = System.Drawing.Color.FromArgb(220, 230, 245);
             this.lbPatientName.Location = new System.Drawing.Point(506, 9);
             this.lbPatientName.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbPatientName.Name = "lbPatientName";
@@ -727,7 +726,7 @@
             // 
             // panel3
             // 
-            this.panel3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(200)))), ((int)(((byte)(220)))), ((int)(((byte)(218)))));
+            this.panel3.BackColor = System.Drawing.Color.FromArgb(210, 220, 235);
             this.panel3.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel3.Location = new System.Drawing.Point(10, 472);
             this.panel3.Name = "panel3";
@@ -787,10 +786,10 @@
             this.dgPrescriptionDetails.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.SingleHorizontal;
             this.dgPrescriptionDetails.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
             dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(121)))), ((int)(((byte)(107)))));
+            dataGridViewCellStyle4.BackColor = System.Drawing.Color.FromArgb(15, 32, 64);
             dataGridViewCellStyle4.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             dataGridViewCellStyle4.ForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(121)))), ((int)(((byte)(107)))));
+            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.Color.FromArgb(15, 32, 64);
             dataGridViewCellStyle4.SelectionForeColor = System.Drawing.Color.White;
             dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.dgPrescriptionDetails.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle4;
@@ -805,10 +804,10 @@
             this.dgPrescriptionDetails.MultiSelect = false;
             this.dgPrescriptionDetails.Name = "dgPrescriptionDetails";
             this.dgPrescriptionDetails.ReadOnly = true;
-            dataGridViewCellStyle5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(121)))), ((int)(((byte)(107)))));
+            dataGridViewCellStyle5.BackColor = System.Drawing.Color.FromArgb(15, 32, 64);
             dataGridViewCellStyle5.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             dataGridViewCellStyle5.ForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
+            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.Color.FromArgb(25, 55, 100);
             dataGridViewCellStyle5.SelectionForeColor = System.Drawing.Color.White;
             this.dgPrescriptionDetails.RowHeadersDefaultCellStyle = dataGridViewCellStyle5;
             this.dgPrescriptionDetails.RowHeadersWidth = 30;
@@ -827,7 +826,7 @@
             // 
             // panel16
             // 
-            this.panel16.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(137)))), ((int)(((byte)(123)))));
+            this.panel16.BackColor = System.Drawing.Color.FromArgb(15, 32, 64);
             this.panel16.Controls.Add(this.lbPatientNameDetalis);
             this.panel16.Controls.Add(this.label2);
             this.panel16.Dock = System.Windows.Forms.DockStyle.Top;
@@ -841,7 +840,7 @@
             // 
             this.lbPatientNameDetalis.AutoSize = true;
             this.lbPatientNameDetalis.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbPatientNameDetalis.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(178)))), ((int)(((byte)(223)))), ((int)(((byte)(219)))));
+            this.lbPatientNameDetalis.ForeColor = System.Drawing.Color.FromArgb(220, 230, 245);
             this.lbPatientNameDetalis.Location = new System.Drawing.Point(379, 12);
             this.lbPatientNameDetalis.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbPatientNameDetalis.Name = "lbPatientNameDetalis";
@@ -901,7 +900,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
+            this.label4.BackColor = System.Drawing.Color.FromArgb(25, 55, 100);
             this.label4.Font = new System.Drawing.Font("Segoe UI Semibold", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label4.ForeColor = System.Drawing.Color.White;
             this.label4.Location = new System.Drawing.Point(35, 122);
@@ -988,7 +987,7 @@
             // 
             // btnNextExpected
             // 
-            this.btnNextExpected.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(137)))), ((int)(((byte)(123)))));
+            this.btnNextExpected.BackColor = System.Drawing.Color.FromArgb(25, 55, 100);
             this.btnNextExpected.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnNextExpected.FlatAppearance.BorderSize = 0;
             this.btnNextExpected.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -1004,7 +1003,7 @@
             // 
             // btnReprtShortage
             // 
-            this.btnReprtShortage.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(121)))), ((int)(((byte)(107)))));
+            this.btnReprtShortage.BackColor = System.Drawing.Color.FromArgb(25, 55, 100);
             this.btnReprtShortage.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnReprtShortage.FlatAppearance.BorderSize = 0;
             this.btnReprtShortage.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
