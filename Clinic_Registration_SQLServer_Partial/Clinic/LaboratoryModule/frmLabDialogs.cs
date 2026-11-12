@@ -1042,17 +1042,19 @@ namespace Clinic.Medical_Services.Laboratory
     INNER JOIN laboratorytests lt
         ON lt.TestID = lr.TestID
 
-    LEFT JOIN visits v
-        ON v.VisitID = lr.VisitID
+    
+LEFT JOIN visits v
+    ON v.VisitID = lr.VisitID
 
-    INNER JOIN patients pa
-        ON pa.PatientID = COALESCE(
-            lr.PatientID,
-            v.PatientID
-        )
+LEFT JOIN patients pa
+    ON pa.PatientID = COALESCE(
+        lr.PatientID,
+        v.PatientID
+    )
 
-    INNER JOIN persons p
-        ON p.PersonID = pa.PersonID
+LEFT JOIN persons pe
+    ON pe.PersonID = pa.PersonID
+
 
     WHERE lr.LabRequestID = @id
     LIMIT 1;", con))
