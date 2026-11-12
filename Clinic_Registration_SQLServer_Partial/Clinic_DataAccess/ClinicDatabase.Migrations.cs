@@ -5636,6 +5636,50 @@ namespace Clinic_DataAccess
                               WHERE A.AppointmentStatus IN
                                   ('Ready_For_Doctor', 'In_Progress');"
                       },
+
+new DatabaseMigration
+{
+    Version = "20261112_DOCTOR_002_FIX_INQUEUE",
+    Description = "Fix doctor waiting queue to include InQueue appointments",
+    Sql = @"
+        CREATE OR REPLACE VIEW view_patientswaitingfordoctors AS
+        SELECT
+            V.VisitID,
+            A.AppointmentID,
+            PE.FullName AS PatientName,
+            COALESCE(
+                A.CheckInTime,
+                A.AppointmentDate
+            ) AS CheckInTime,
+            A.AppointmentStatus AS StatusText,
+            COALESCE(A.IsCalled, 0) AS IsCalled,
+            D.PersonID AS DoctorPersonID
+        FROM appointments A
+        INNER JOIN visits V
+            ON V.VisitID = (
+                SELECT MAX(V2.VisitID)
+                FROM visits V2
+                WHERE V2.AppointmentID = A.AppointmentID
+            )
+        INNER JOIN patients PT
+            ON PT.PatientID = A.PatientID
+        INNER JOIN persons PE
+            ON PE.PersonID = PT.PersonID
+        INNER JOIN doctors D
+            ON D.DoctorID = A.DoctorID
+        WHERE A.AppointmentStatus IN
+        (
+            'InQueue',
+            'In-Queue',
+            'In_Queue',
+            'Ready_For_Doctor',
+            'Progress',
+            'InProgress',
+            'In-Progress',
+            'In_Progress'
+        );"
+},
+
                   };
 
                 // STEP 4: Apply pending migrations
@@ -5670,6 +5714,44 @@ namespace Clinic_DataAccess
                             "Executing migration: " + migration.Version);
 
                         bool shouldExecute = true;
+
+
+                        if (migration.Version ==
+                            "20261110_LAB_BILL_COLUMNS_001A" ||
+                            migration.Version ==
+                            "20261110_LAB_BILL_COLUMNS_001B")
+                        {
+                            string columnName =
+                                migration.Version.EndsWith("001A")
+                                    ? "BillID"
+                                    : "SavedTestPrice";
+
+                            using (MySqlCommand check = new MySqlCommand(@"
+        SELECT COUNT(*)
+        FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE()
+          AND TABLE_NAME = 'labrequests'
+          AND COLUMN_NAME = @ColumnName;",
+                                connection))
+                            {
+                                check.Parameters.AddWithValue(
+                                    "@ColumnName", columnName);
+
+                                long columnCount =
+                                    Convert.ToInt64(check.ExecuteScalar());
+
+                                if (columnCount > 0)
+                                {
+                                    shouldExecute = false;
+
+                                    Debug.WriteLine(
+                                        "Column already exists: " +
+                                        columnName +
+                                        ". Skipping ALTER TABLE.");
+                                }
+                            }
+                        }
+
 
                         if (migration.Version ==
                             "20261110_CLINIC_001_FIX_APPOINTMENTS_VIEW")
