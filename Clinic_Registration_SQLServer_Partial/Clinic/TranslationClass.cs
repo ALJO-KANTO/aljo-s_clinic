@@ -1169,7 +1169,14 @@ namespace Clinic
             { "Add Medicine", "إضافة دواء" },
             { "Direct Pharmacy Sales", "مبيعات الصيدلية المباشرة" },
             { "Edit  |  Delete", "تعديل  |  حذف" },
-};
+
+           //labtests
+           {"Selected Tests", "الفحوصات المختارة" },
+           {"Create Requests", "إنشاء طلبات" },
+           {"Search Lab Tests", "البحث عن الفحوصات المخبرية" },
+           {"Lab Tests", "الفحوصات المخبرية" },
+           {"Lab Test Info", "معلومات الفحص المخبري" },
+        };
         public static bool IsArabic { get; set; } = false;
 
 

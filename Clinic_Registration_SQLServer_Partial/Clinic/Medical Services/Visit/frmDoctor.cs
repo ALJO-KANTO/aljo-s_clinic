@@ -1,10 +1,12 @@
 ﻿using Clinic.Controls;
 using Clinic.ControlsMain;
 using Clinic.Doctor;
+using Clinic.Medical_Services.Laboratory;
 using Clinic.Patient;
 using Clinic.Serveces.ServecesType;
 using Clinic_Business;
 using Clinic_Common;
+using Clinic_DataAccess;
 using System;
 using System.ComponentModel;
 using System.Data;
@@ -905,7 +907,16 @@ AND active = 0        ORDER BY name;";
                     lbPrescriptionID.Text =
                         _Visit.PrescriptionInfo.PrescriptionID.ToString();
                 }
-
+                if (selectedTestIDs.Count > 0)
+                {
+                    ClinicDatabase.CreateLabOrder(
+                        patientID: _Visit.PatientID,
+                        visitID: _Visit.VisitID,
+                        doctorID: _Visit.DoctorID,
+                        requestSource: "Doctor",
+                        testIDs: new System.Collections.Generic.List<int>(selectedTestIDs)
+                    );
+                }
                 ShowSuccess("Visit details saved successfully.");
 
                 if (isUpdate)
@@ -1537,6 +1548,8 @@ AND active = 0        ORDER BY name;";
                 tcVisitInfo.SelectedIndex = 0;
                 txtDiagnosis.Focus();
             }
+
+            LoadLabTestForm();
         }
         private void btnPostpone_Click(object sender, EventArgs e)
         {
@@ -1951,6 +1964,69 @@ AND active = 0        ORDER BY name;";
                 temperature,
                 weight,
                 pulse);
+        }
+
+        private void LoadLabTestForm()
+        {
+            allTests = ClinicDatabase.GetLabTests();
+            RefreshTestList();
+        }
+        private readonly System.Collections.Generic.HashSet<int> selectedTestIDs =
+            new System.Collections.Generic.HashSet<int>();
+        private bool loadingTests;
+        private DataTable allTests;
+        private void RefreshTestList()
+        {
+            if (allTests == null) return;
+            loadingTests = true;
+            lstTests.BeginUpdate();
+            try
+            {
+                lstTests.Items.Clear();
+                string search = txtSearchTest.Text.Trim();
+                foreach (DataRow row in allTests.Rows)
+                {
+                    if (row["IsActive"] == DBNull.Value ||
+                        !Convert.ToBoolean(row["IsActive"])) continue;
+
+                    int id = Convert.ToInt32(row["TestID"]);
+                    string name = Convert.ToString(row["TestName"]);
+                    if (name.IndexOf(search, StringComparison.OrdinalIgnoreCase) < 0)
+                        continue;
+
+                    var item = new LabTestItem(id, name);
+                    int index = lstTests.Items.Add(item);
+                    lstTests.SetItemChecked(index, selectedTestIDs.Contains(id));
+                }
+            }
+            finally
+            {
+                lstTests.EndUpdate();
+                loadingTests = false;
+            }
+        }
+
+        private sealed class LabTestItem
+        {
+            public int ID { get; private set; }
+            public string Name { get; private set; }
+            public LabTestItem(int id, string name) { ID = id; Name = name; }
+            public override string ToString() { return Name; }
+        }
+        private void lstTests_ItemCheck(object sender, ItemCheckEventArgs e)
+        {
+            if (loadingTests) return;
+            var item = lstTests.Items[e.Index] as LabTestItem;
+            if (item == null) return;
+            if (e.NewValue == CheckState.Checked)
+                selectedTestIDs.Add(item.ID);
+            else
+                selectedTestIDs.Remove(item.ID);
+        }
+
+        private void txtSearchTest_TextChanged(object sender, EventArgs e)
+        {
+            RefreshTestList();
         }
     }
 }
