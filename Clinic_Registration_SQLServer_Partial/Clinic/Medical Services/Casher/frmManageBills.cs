@@ -89,12 +89,12 @@ namespace Clinic.Medical_Services.Casher
                 TranslateBillGridHeader("BillDate", "Bill Date", isArabic);
                 TranslateBillGridHeader("TotalAmount", "Total Amount", isArabic);
                 TranslateBillGridHeader("PaidAmount", "Paid Amount", isArabic);
-                TranslateBillGridHeader("BalanceDue", "Balance Due", isArabic);
+                TranslateBillGridHeader("BalanceDue", "Remaining Balance", isArabic);
                 TranslateBillGridHeader("BillDateString", "Bill Date", isArabic);
                 TranslateBillGridHeader("Status", "Status", isArabic);
-                TranslateBillGridHeader("btnPayAction", "Full Pay", isArabic);
-                TranslateBillGridHeader("btnEditAction", "Adjustment", isArabic);
-                TranslateBillGridHeader("btnCancelAction", "Cancel Bill", isArabic);
+                TranslateBillGridHeader("btnPayAction", "Payment / Receipt", isArabic);
+                TranslateBillGridHeader("btnEditAction", "Edit / Refund", isArabic);
+                TranslateBillGridHeader("btnCancelAction", "Cancel Invoice", isArabic);
 
             }
         }
@@ -229,7 +229,7 @@ namespace Clinic.Medical_Services.Casher
                     DataGridViewAutoSizeColumnsMode.Fill;
                 dgMasterBillList.ColumnHeadersHeightSizeMode =
                     DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-                dgMasterBillList.ColumnHeadersHeight = 42;
+                dgMasterBillList.ColumnHeadersHeight = 50;
 
                 if (dgMasterBillList.Columns.Contains("BillNumber"))
                     dgMasterBillList.Columns["BillNumber"].HeaderText = "Bill Number";
@@ -240,13 +240,21 @@ namespace Clinic.Medical_Services.Casher
                 if (dgMasterBillList.Columns.Contains("PaidAmount"))
                     dgMasterBillList.Columns["PaidAmount"].HeaderText = "Paid Amount";
                 if (dgMasterBillList.Columns.Contains("BalanceDue"))
-                    dgMasterBillList.Columns["BalanceDue"].HeaderText = "Balance Due";
+                    dgMasterBillList.Columns["BalanceDue"].HeaderText = "Remaining Balance";
+
+                // Keep financial values easy to compare and read.
+                SetBillAmountColumnStyle("TotalAmount", "Total Amount");
+                SetBillAmountColumnStyle("PaidAmount", "Paid Amount");
+                SetBillAmountColumnStyle("BalanceDue", "Remaining Balance");
 
                 // 5. Apply date, status and patient filters
                 _ApplyAdvancedFilter();
 
                 // 6. Add action buttons
                 _AddActionButtonsOnce();
+
+                // Apply readable widths after all data and action columns exist.
+                ConfigureBillGridLayout();
 
                 // Translate dynamic grid columns and action buttons after binding.
                 ApplyBillFormTranslation();
@@ -262,6 +270,108 @@ namespace Clinic.Medical_Services.Casher
             }
         }
 
+
+        private void SetBillAmountColumnStyle(string columnName, string headerText)
+        {
+            if (!dgMasterBillList.Columns.Contains(columnName))
+                return;
+
+            DataGridViewColumn column = dgMasterBillList.Columns[columnName];
+            column.HeaderText = headerText;
+            column.DefaultCellStyle.Format = "N2";
+            column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            column.DefaultCellStyle.Padding = new Padding(5, 0, 8, 0);
+            column.MinimumWidth = 88;
+            column.FillWeight = 95;
+        }
+
+        private void ConfigureBillGridLayout()
+        {
+            if (dgMasterBillList == null)
+                return;
+
+            // Fit the visible columns inside the available grid width.
+            // Vertical scrolling remains available; horizontal scrolling is not needed.
+            dgMasterBillList.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgMasterBillList.ScrollBars = ScrollBars.Vertical;
+            dgMasterBillList.ColumnHeadersHeight = 54;
+            dgMasterBillList.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
+            dgMasterBillList.DefaultCellStyle.WrapMode = DataGridViewTriState.False;
+            dgMasterBillList.RowTemplate.Height = 42;
+            dgMasterBillList.ShowCellToolTips = true;
+
+            // BillDateString duplicates BillDate in the current screen.
+            // Keep the actual BillDate column and hide the duplicate.
+            if (dgMasterBillList.Columns.Contains("BillDate") &&
+                dgMasterBillList.Columns.Contains("BillDateString"))
+            {
+                dgMasterBillList.Columns["BillDateString"].Visible = false;
+            }
+            else if (dgMasterBillList.Columns.Contains("BillDateString"))
+            {
+                dgMasterBillList.Columns["BillDateString"].HeaderText = "Bill Date";
+            }
+
+            if (dgMasterBillList.Columns.Contains("BillDate"))
+            {
+                dgMasterBillList.Columns["BillDate"].DefaultCellStyle.Format = "dd/MM/yyyy";
+                dgMasterBillList.Columns["BillDate"].DefaultCellStyle.Alignment =
+                    DataGridViewContentAlignment.MiddleCenter;
+            }
+
+            if (dgMasterBillList.Columns.Contains("ItemsTotal"))
+            {
+                DataGridViewColumn itemsColumn = dgMasterBillList.Columns["ItemsTotal"];
+                itemsColumn.HeaderText = "Items";
+                itemsColumn.MinimumWidth = 72;
+                itemsColumn.FillWeight = 85;
+                itemsColumn.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                itemsColumn.ToolTipText = "Hover over an item summary to view the complete details.";
+            }
+
+            // Minimum widths are intentionally compact so their combined width fits
+            // the grid, while FillWeight distributes any remaining space.
+            SetBillColumnLayout("BillNumber", 110, 115);
+            SetBillColumnLayout("PatientName", 100, 105);
+            SetBillColumnLayout("BillDate", 100, 100);
+            SetBillColumnLayout("TotalAmount", 82, 88);
+            SetBillColumnLayout("PaidAmount", 82, 88);
+            SetBillColumnLayout("BalanceDue", 95, 100);
+            SetBillColumnLayout("ItemsTotal", 72, 85);
+            SetBillColumnLayout("Status", 70, 75);
+            SetBillColumnLayout("btnPayAction", 98, 100);
+            SetBillColumnLayout("btnEditAction", 92, 95);
+            SetBillColumnLayout("btnCancelAction", 88, 90);
+
+            foreach (DataGridViewRow row in dgMasterBillList.Rows)
+            {
+                if (dgMasterBillList.Columns.Contains("ItemsTotal"))
+                    row.Cells["ItemsTotal"].ToolTipText =
+                        Convert.ToString(row.Cells["ItemsTotal"].Value) ?? string.Empty;
+
+                if (dgMasterBillList.Columns.Contains("BillNumber"))
+                    row.Cells["BillNumber"].ToolTipText =
+                        Convert.ToString(row.Cells["BillNumber"].Value) ?? string.Empty;
+
+                if (dgMasterBillList.Columns.Contains("PatientName"))
+                    row.Cells["PatientName"].ToolTipText =
+                        Convert.ToString(row.Cells["PatientName"].Value) ?? string.Empty;
+
+                if (dgMasterBillList.Columns.Contains("BillDate"))
+                    row.Cells["BillDate"].ToolTipText =
+                        Convert.ToString(row.Cells["BillDate"].FormattedValue) ?? string.Empty;
+            }
+        }
+
+        private void SetBillColumnLayout(string columnName, int minimumWidth, float fillWeight)
+        {
+            if (!dgMasterBillList.Columns.Contains(columnName))
+                return;
+
+            DataGridViewColumn column = dgMasterBillList.Columns[columnName];
+            column.MinimumWidth = minimumWidth;
+            column.FillWeight = fillWeight;
+        }
 
         private int GetPrescriptionCount(string itemsTotal)
         {
@@ -475,28 +585,37 @@ namespace Clinic.Medical_Services.Casher
             // الزر الأول: الدفع الكامل والإنهاء
             DataGridViewButtonColumn payColumn = new DataGridViewButtonColumn();
             payColumn.Name = "btnPayAction";
-            payColumn.HeaderText = "Full Pay";
-            payColumn.Text = "💳 Pay All";
+            payColumn.HeaderText = "Payment / Receipt";
+            payColumn.Text = "Pay";
             payColumn.UseColumnTextForButtonValue = true;
             payColumn.FlatStyle = FlatStyle.Flat;
+            payColumn.MinimumWidth = 112;
+            payColumn.FillWeight = 115;
+            payColumn.ToolTipText = "Pay an outstanding bill or open its receipt";
             dgMasterBillList.Columns.Add(payColumn);
 
             // الزر الثاني: زر ديناميكي (تعديل ودفع جزئي في حالة المعلق / أو ارتجاع في حالة المدفوع)
             DataGridViewButtonColumn editColumn = new DataGridViewButtonColumn();
             editColumn.Name = "btnEditAction";
-            editColumn.HeaderText = "Adjustment";
-            editColumn.Text = "📝 Edit";
+            editColumn.HeaderText = "Edit / Refund";
+            editColumn.Text = "Edit";
             editColumn.UseColumnTextForButtonValue = true;
             editColumn.FlatStyle = FlatStyle.Flat;
+            editColumn.MinimumWidth = 108;
+            editColumn.FillWeight = 110;
+            editColumn.ToolTipText = "Edit a pending invoice or process a refund";
             dgMasterBillList.Columns.Add(editColumn);
 
             // الزر الثالث: زر الإلغاء النهائي (يظهر فقط للفواتير المعلقة)
             DataGridViewButtonColumn cancelColumn = new DataGridViewButtonColumn();
             cancelColumn.Name = "btnCancelAction";
-            cancelColumn.HeaderText = "Cancel Bill";
-            cancelColumn.Text = "❌ Cancel";
+            cancelColumn.HeaderText = "Cancel Invoice";
+            cancelColumn.Text = "Cancel";
             cancelColumn.UseColumnTextForButtonValue = true;
             cancelColumn.FlatStyle = FlatStyle.Flat;
+            cancelColumn.MinimumWidth = 105;
+            cancelColumn.FillWeight = 105;
+            cancelColumn.ToolTipText = "Cancel an eligible pending invoice";
             dgMasterBillList.Columns.Add(cancelColumn);
 
             // ترتيب الأعمدة لتظهر أقصى اليمين بشكل منظم
@@ -556,8 +675,8 @@ namespace Clinic.Medical_Services.Casher
                 else
                 {
                     e.Value = status == "Paid" || status == "Refunded"
-                        ? "Print"
-                        : "Locked";
+                        ? "Receipt"
+                        : "N/A";
 
                     e.CellStyle.BackColor = Color.FromArgb(28, 58, 68);
                     e.CellStyle.ForeColor = Color.FromArgb(0, 210, 190);
@@ -569,7 +688,7 @@ namespace Clinic.Medical_Services.Casher
                 {
                     bool canEdit = hasItemDetails &&
                         (prescriptionCount > 0 || pharmacySaleCount > 0);
-                    e.Value = canEdit ? "Edit" : "Unavailable";
+                    e.Value = canEdit ? "Edit" : "N/A";
                     e.CellStyle.BackColor = canEdit
                         ? Color.FromArgb(0, 80, 90) : Color.FromArgb(20, 43, 50);
                     e.CellStyle.ForeColor = canEdit ? Color.White : Color.DarkGray;
@@ -582,7 +701,7 @@ namespace Clinic.Medical_Services.Casher
                 }
                 else
                 {
-                    e.Value = "Locked";
+                    e.Value = "N/A";
                     e.CellStyle.BackColor = Color.FromArgb(30, 30, 30);
                     e.CellStyle.ForeColor = Color.DarkGray;
                 }
@@ -591,7 +710,7 @@ namespace Clinic.Medical_Services.Casher
             {
                 bool isLabBill = Regex.IsMatch(itemsTotal ?? "", @"\d+\s+Lab Tests?", RegexOptions.IgnoreCase);
                 bool canCancel = status == "Pending" && hasItemDetails && !hasServices && !isLabBill;
-                e.Value = canCancel ? "Cancel" : "Locked";
+                e.Value = canCancel ? "Cancel" : "N/A";
                 e.CellStyle.BackColor = canCancel
                     ? Color.FromArgb(120, 40, 40) : Color.FromArgb(20, 43, 50);
                 e.CellStyle.ForeColor = canCancel ? Color.White : Color.DarkGray;
@@ -686,14 +805,23 @@ namespace Clinic.Medical_Services.Casher
                         return;
                     }
 
-                    if (prescriptionCount == 0 && pharmacySaleCount == 0)
+                    if (prescriptionCount == 0)
                     {
-                        MessageBox.Show("No medicine items to edit.");
+                        MessageBox.Show(
+                            "No prescription items available to edit.",
+                            "Action Unavailable",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Warning);
+
                         return;
                     }
 
-                    using (frmEditPendingPrescription frm = new frmEditPendingPrescription(billID))
-                        frm.ShowDialog();
+                    using (frmEditPendingPrescription frm =
+         new frmEditPendingPrescription(billID))
+                    {
+                        if (frm.IsPrescriptionLoaded)
+                            frm.ShowDialog(this);
+                    }
 
                     _RefreshBillsList();
                     return;
