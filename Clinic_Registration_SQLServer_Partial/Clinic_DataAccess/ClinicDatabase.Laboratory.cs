@@ -1,6 +1,8 @@
-using System;
-using System.Data;
 using MySql.Data.MySqlClient;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
 
 namespace Clinic_DataAccess
 {
@@ -169,6 +171,7 @@ namespace Clinic_DataAccess
             }
         }
 
+
         public static DataTable GetLabRequests(
             string search = "",
             string status = "All")
@@ -179,15 +182,13 @@ namespace Clinic_DataAccess
         (
             SELECT
                 R.LabRequestID,
+                R.LabOrderID,
                 R.VisitID,
                 R.BillID,
                 PE.FullName AS PatientName,
                 LT.TestName,
-                COALESCE(
-                    R.SavedTestPrice,
-                    LT.TestPrice,
-                    0
-                ) AS SavedTestPrice,
+                COALESCE(R.SavedTestPrice, LT.TestPrice, 0)
+                    AS SavedTestPrice,
                 COALESCE(PAY.PaidAmount, 0) AS PaidAmount,
                 GREATEST(
                     COALESCE(R.SavedTestPrice, LT.TestPrice, 0)
@@ -196,21 +197,23 @@ namespace Clinic_DataAccess
                 ) AS BalanceDue,
                 R.RequestedAt,
                 CASE
-                    WHEN R.Status = 'Cancelled'
-                        THEN 'Cancelled'
-                    WHEN R.Status = 'Completed'
-                        THEN 'Completed'
-                    WHEN COALESCE(
-                        R.SavedTestPrice,
-                        LT.TestPrice,
-                        0
-                    ) > 0
-                    AND COALESCE(PAY.PaidAmount, 0) >=
-                        COALESCE(
-                            R.SavedTestPrice,
-                            LT.TestPrice,
-                            0
-                        )
+                    WHEN R.Status IN
+                        ('Cancelled', 'Completed', 'In Progress')
+                        THEN R.Status
+                    WHEN R.BillID IS NOT NULL
+                         AND COALESCE(PAY.PaidAmount, 0) >=
+                             COALESCE(
+                                 B.TotalAmount,
+                                 R.SavedTestPrice,
+                                 LT.TestPrice,
+                                 0
+                             )
+                         AND COALESCE(
+                             B.TotalAmount,
+                             R.SavedTestPrice,
+                             LT.TestPrice,
+                             0
+                         ) > 0
                         THEN 'Paid'
                     WHEN COALESCE(PAY.PaidAmount, 0) > 0
                         THEN 'Partial Payment'
@@ -220,14 +223,17 @@ namespace Clinic_DataAccess
                 R.ResultNotes,
                 R.ResultedAt
             FROM labrequests R
-            INNER JOIN visits V
+            LEFT JOIN visits V
                 ON V.VisitID = R.VisitID
             INNER JOIN patients P
-                ON P.PatientID = V.PatientID
+                ON P.PatientID =
+                   COALESCE(R.PatientID, V.PatientID)
             INNER JOIN persons PE
                 ON PE.PersonID = P.PersonID
             INNER JOIN laboratorytests LT
                 ON LT.TestID = R.TestID
+            LEFT JOIN bills B
+                ON B.BillID = R.BillID
             LEFT JOIN
             (
                 SELECT
@@ -244,7 +250,9 @@ namespace Clinic_DataAccess
               OR X.PatientName LIKE CONCAT('%', @Search, '%')
               OR X.TestName LIKE CONCAT('%', @Search, '%')
               OR CAST(X.LabRequestID AS CHAR)
-                  LIKE CONCAT('%', @Search, '%')
+                 LIKE CONCAT('%', @Search, '%')
+              OR CAST(X.LabOrderID AS CHAR)
+                 LIKE CONCAT('%', @Search, '%')
           )
         ORDER BY X.RequestedAt DESC,
                  X.LabRequestID DESC;",
@@ -275,6 +283,356 @@ namespace Clinic_DataAccess
         // =====================================================
 
 
+        public static int CreateLabOrder(
+            int patientID,
+            int? visitID,
+            int? doctorID,
+            string requestSource,
+            IEnumerable<int> testIDs,
+            string clinicalNotes = null,
+            int? createdByUserID = null)
+        {
+            if (patientID <= 0)
+                throw new ArgumentException("Select a valid patient.");
+
+            if (testIDs == null)
+                throw new ArgumentNullException(nameof(testIDs));
+
+            int[] tests = testIDs.Distinct().ToArray();
+
+            if (tests.Length == 0 || tests.Any(id => id <= 0))
+                throw new ArgumentException("Select valid laboratory tests.");
+
+            if (requestSource != "Doctor" &&
+                requestSource != "WalkIn")
+                throw new ArgumentException("Invalid laboratory request source.");
+
+            if (requestSource == "Doctor" &&
+                (!visitID.HasValue || visitID.Value <= 0))
+                throw new ArgumentException("Doctor requests require a visit.");
+
+            if (requestSource == "WalkIn" && visitID.HasValue)
+                throw new ArgumentException("Walk-in requests cannot have a visit.");
+
+            using (var con = GetConnection())
+            {
+                con.Open();
+
+                using (var tx = con.BeginTransaction())
+                {
+                    try
+                    {
+                        // Verify patient exists and is active.
+                        using (var cmd = new MySqlCommand(@"
+                    SELECT COUNT(*)
+                    FROM patients
+                    WHERE PatientID = @PatientID
+                      AND IsActive = 1;",
+                            con, tx))
+                        {
+                            cmd.Parameters.AddWithValue("@PatientID", patientID);
+
+                            if (Convert.ToInt32(cmd.ExecuteScalar()) != 1)
+                                throw new InvalidOperationException(
+                                    "Patient does not exist or is inactive.");
+                        }
+
+                        // Verify visit and doctor belong together.
+                        if (visitID.HasValue)
+                        {
+                            using (var cmd = new MySqlCommand(@"
+                        SELECT DoctorID
+                        FROM visits
+                        WHERE VisitID = @VisitID
+                          AND PatientID = @PatientID;",
+                                con, tx))
+                            {
+                                cmd.Parameters.AddWithValue("@VisitID", visitID.Value);
+                                cmd.Parameters.AddWithValue("@PatientID", patientID);
+
+                                object value = cmd.ExecuteScalar();
+
+                                if (value == null || value == DBNull.Value)
+                                    throw new InvalidOperationException(
+                                        "Visit does not belong to this patient.");
+
+                                int actualDoctorID = Convert.ToInt32(value);
+
+                                if (doctorID.HasValue &&
+                                    doctorID.Value != actualDoctorID)
+                                    throw new InvalidOperationException(
+                                        "Doctor does not match the selected visit.");
+
+                                doctorID = actualDoctorID;
+                            }
+                        }
+
+                        // Create order header.
+                        int orderID;
+
+                        using (var cmd = new MySqlCommand(@"
+                    INSERT INTO laborders
+                    (
+                        PatientID,
+                        VisitID,
+                        DoctorID,
+                        RequestSource,
+                        OrderStatus,
+                        ClinicalNotes,
+                        CreatedByUserID
+                    )
+                    VALUES
+                    (
+                        @PatientID,
+                        @VisitID,
+                        @DoctorID,
+                        @RequestSource,
+                        'Ordered',
+                        @ClinicalNotes,
+                        @CreatedByUserID
+                    );",
+                            con, tx))
+                        {
+                            cmd.Parameters.AddWithValue("@PatientID", patientID);
+                            cmd.Parameters.AddWithValue(
+                                "@VisitID", (object)visitID ?? DBNull.Value);
+                            cmd.Parameters.AddWithValue(
+                                "@DoctorID", (object)doctorID ?? DBNull.Value);
+                            cmd.Parameters.AddWithValue(
+                                "@RequestSource", requestSource);
+                            cmd.Parameters.AddWithValue(
+                                "@ClinicalNotes",
+                                (object)clinicalNotes ?? DBNull.Value);
+                            cmd.Parameters.AddWithValue(
+                                "@CreatedByUserID",
+                                (object)createdByUserID ?? DBNull.Value);
+
+                            cmd.ExecuteNonQuery();
+                            orderID = Convert.ToInt32(cmd.LastInsertedId);
+                        }
+
+                        // Insert every selected test with its current price.
+                        foreach (int testID in tests)
+                        {
+                            using (var cmd = new MySqlCommand(@"
+                        INSERT INTO labrequests
+                        (
+                            LabOrderID,
+                            PatientID,
+                            VisitID,
+                            TestID,
+                            Status,
+                            SavedTestPrice
+                        )
+                        SELECT
+                            @LabOrderID,
+                            @PatientID,
+                            @VisitID,
+                            TestID,
+                            'Ordered',
+                            TestPrice
+                        FROM laboratorytests
+                        WHERE TestID = @TestID
+                          AND IsActive = 1;",
+                                con, tx))
+                            {
+                                cmd.Parameters.AddWithValue("@LabOrderID", orderID);
+                                cmd.Parameters.AddWithValue("@PatientID", patientID);
+                                cmd.Parameters.AddWithValue(
+                                    "@VisitID", (object)visitID ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@TestID", testID);
+
+                                if (cmd.ExecuteNonQuery() != 1)
+                                    throw new InvalidOperationException(
+                                        "Laboratory test " + testID +
+                                        " is missing or inactive.");
+                            }
+                        }
+
+                        tx.Commit();
+                        return orderID;
+                    }
+                    catch
+                    {
+                        tx.Rollback();
+                        throw;
+                    }
+                }
+            }
+        }
+
+
+        public static int GetOrCreateLabOrderBill(int labOrderID)
+        {
+            if (labOrderID <= 0)
+                throw new ArgumentException("Invalid laboratory order.");
+
+            using (var con = GetConnection())
+            {
+                con.Open();
+
+                using (var tx = con.BeginTransaction())
+                {
+                    try
+                    {
+                        int patientID;
+                        int? visitID;
+                        int? existingBillID;
+
+                        // Lock the order to prevent duplicate invoices.
+                        using (var cmd = new MySqlCommand(@"
+                    SELECT
+                        PatientID,
+                        VisitID
+                    FROM laborders
+                    WHERE LabOrderID = @OrderID
+                    FOR UPDATE;", con, tx))
+                        {
+                            cmd.Parameters.AddWithValue("@OrderID", labOrderID);
+
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                if (!reader.Read())
+                                    throw new Exception("Lab order not found.");
+
+                                patientID = Convert.ToInt32(reader["PatientID"]);
+
+                                visitID = reader["VisitID"] == DBNull.Value
+                                    ? (int?)null
+                                    : Convert.ToInt32(reader["VisitID"]);
+                            }
+                        }
+
+                        // Check for an existing invoice.
+                        using (var cmd = new MySqlCommand(@"
+                    SELECT BillID
+                    FROM bills
+                    WHERE LabOrderID = @OrderID
+                    LIMIT 1;", con, tx))
+                        {
+                            cmd.Parameters.AddWithValue("@OrderID", labOrderID);
+                            object result = cmd.ExecuteScalar();
+
+                            existingBillID = result == null ||
+                                             result == DBNull.Value
+                                ? (int?)null
+                                : Convert.ToInt32(result);
+                        }
+
+                        if (existingBillID.HasValue)
+                        {
+                            tx.Commit();
+                            return existingBillID.Value;
+                        }
+
+                        // Prevent attaching an additional invoice to
+                        // requests that have already been billed.
+                        using (var cmd = new MySqlCommand(@"
+                    SELECT COUNT(*)
+                    FROM labrequests
+                    WHERE LabOrderID = @OrderID
+                      AND BillID IS NOT NULL;",
+                            con, tx))
+                        {
+                            cmd.Parameters.AddWithValue("@OrderID", labOrderID);
+
+                            if (Convert.ToInt32(cmd.ExecuteScalar()) > 0)
+                                throw new InvalidOperationException(
+                                    "Some tests are already linked to an invoice.");
+                        }
+
+                        decimal total;
+
+                        using (var cmd = new MySqlCommand(@"
+                    SELECT
+                        COUNT(*) AS TestCount,
+                        COALESCE(SUM(SavedTestPrice), 0) AS Total
+                    FROM labrequests
+                    WHERE LabOrderID = @OrderID
+                      AND Status <> 'Cancelled';",
+                            con, tx))
+                        {
+                            cmd.Parameters.AddWithValue("@OrderID", labOrderID);
+
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                reader.Read();
+
+                                int count = Convert.ToInt32(reader["TestCount"]);
+                                total = Convert.ToDecimal(reader["Total"]);
+
+                                if (count == 0 || total <= 0)
+                                    throw new InvalidOperationException(
+                                        "No billable tests found.");
+                            }
+                        }
+
+                        int billID;
+
+                        using (var cmd = new MySqlCommand(@"
+                    INSERT INTO bills
+                    (
+                        PatientID,
+                        VisitID,
+                        LabOrderID,
+                        PaymentStatus,
+                        TotalAmount
+                    )
+                    VALUES
+                    (
+                        @PatientID,
+                        @VisitID,
+                        @LabOrderID,
+                        'Unpaid',
+                        @Total
+                    );", con, tx))
+                        {
+                            cmd.Parameters.AddWithValue("@PatientID", patientID);
+                            cmd.Parameters.AddWithValue(
+                                "@VisitID", (object)visitID ?? DBNull.Value);
+                            cmd.Parameters.AddWithValue("@LabOrderID", labOrderID);
+                            cmd.Parameters.AddWithValue("@Total", total);
+
+                            cmd.ExecuteNonQuery();
+                            billID = Convert.ToInt32(cmd.LastInsertedId);
+                        }
+
+                        using (var cmd = new MySqlCommand(@"
+                    UPDATE bills
+                    SET BillNumber = CONCAT(
+                        'INV-', YEAR(BillDate), '-',
+                        LPAD(BillID, 4, '0'))
+                    WHERE BillID = @BillID;",
+                            con, tx))
+                        {
+                            cmd.Parameters.AddWithValue("@BillID", billID);
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        using (var cmd = new MySqlCommand(@"
+                    UPDATE labrequests
+                    SET BillID = @BillID
+                    WHERE LabOrderID = @OrderID
+                      AND Status <> 'Cancelled'
+                      AND BillID IS NULL;",
+                            con, tx))
+                        {
+                            cmd.Parameters.AddWithValue("@BillID", billID);
+                            cmd.Parameters.AddWithValue("@OrderID", labOrderID);
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        tx.Commit();
+                        return billID;
+                    }
+                    catch
+                    {
+                        tx.Rollback();
+                        throw;
+                    }
+                }
+            }
+        }
 
         public static int GetOrCreateLabRequestBill(int requestID)
         {
@@ -391,6 +749,7 @@ namespace Clinic_DataAccess
 
 
 
+
         public static bool IsLabRequestPaid(int requestID)
         {
             using (MySqlConnection connection = GetConnection())
@@ -399,19 +758,20 @@ namespace Clinic_DataAccess
 
                 using (var cmd = new MySqlCommand(@"
             SELECT
-                COALESCE(lr.SavedTestPrice, lt.TestPrice) AS TestAmount,
-                COALESCE((
-                    SELECT SUM(p.PaymentAmount)
-                    FROM payments p
-                    WHERE p.BillID = lr.BillID
-                ), 0) AS PaidAmount
+                b.TotalAmount,
+                COALESCE(
+                    (
+                        SELECT SUM(p.PaymentAmount)
+                        FROM payments p
+                        WHERE p.BillID = b.BillID
+                    ), 0
+                ) AS PaidAmount
             FROM labrequests lr
-            INNER JOIN laboratorytests lt
-                ON lt.TestID = lr.TestID
+            INNER JOIN bills b
+                ON b.BillID = lr.BillID
             WHERE lr.LabRequestID = @RequestID
-              AND lr.BillID IS NOT NULL
-              AND lr.Status <> 'Cancelled';",
-                    connection))
+              AND lr.Status <> 'Cancelled'
+            LIMIT 1;", connection))
                 {
                     cmd.Parameters.AddWithValue("@RequestID", requestID);
 
@@ -420,49 +780,78 @@ namespace Clinic_DataAccess
                         if (!reader.Read())
                             return false;
 
-                        decimal amount = Convert.ToDecimal(
-                            reader["TestAmount"]);
+                        decimal total = Convert.ToDecimal(
+                            reader["TotalAmount"]);
 
                         decimal paid = Convert.ToDecimal(
                             reader["PaidAmount"]);
 
-                        return amount > 0 && paid >= amount;
+                        return total > 0 && paid >= total;
                     }
                 }
             }
         }
+
 
         public static DataTable GetLabReportDetails(int requestID)
         {
             return ExecuteDataTable(@"
         SELECT
             LR.LabRequestID,
+            LR.LabOrderID,
             LR.VisitID,
             LR.BillID,
+
             P.PatientID,
             PE.FullName AS PatientName,
-            COALESCE(DP.FullName, 'Not Assigned') AS DoctorName,
+
+            COALESCE(
+                DP.FullName,
+                'Not Assigned'
+            ) AS DoctorName,
+
             LT.TestName,
-            COALESCE(LR.SavedTestPrice, LT.TestPrice, 0) AS SavedTestPrice,
+
+            COALESCE(
+                LR.SavedTestPrice,
+                LT.TestPrice,
+                0
+            ) AS SavedTestPrice,
+
             LR.ResultValue,
             LR.ResultNotes,
             LR.RequestedAt,
             LR.ResultedAt,
             LR.Status AS RequestStatus,
-            COALESCE(PAY.PaidAmount, 0) AS PaidAmount
+
+            COALESCE(
+                PAY.PaidAmount,
+                0
+            ) AS PaidAmount
+
         FROM labrequests LR
-        INNER JOIN visits V
+
+        LEFT JOIN visits V
             ON V.VisitID = LR.VisitID
+
         INNER JOIN patients P
-            ON P.PatientID = V.PatientID
+            ON P.PatientID = COALESCE(
+                LR.PatientID,
+                V.PatientID
+            )
+
         INNER JOIN persons PE
             ON PE.PersonID = P.PersonID
+
         INNER JOIN laboratorytests LT
             ON LT.TestID = LR.TestID
+
         LEFT JOIN doctors D
             ON D.DoctorID = V.DoctorID
+
         LEFT JOIN persons DP
             ON DP.PersonID = D.PersonID
+
         LEFT JOIN
         (
             SELECT
@@ -472,9 +861,12 @@ namespace Clinic_DataAccess
             GROUP BY BillID
         ) PAY
             ON PAY.BillID = LR.BillID
-        WHERE LR.LabRequestID = @RequestID;",
+
+        WHERE LR.LabRequestID = @RequestID
+        LIMIT 1;",
                 new MySqlParameter("@RequestID", requestID));
         }
+
 
 
         public static bool SaveLabResult(

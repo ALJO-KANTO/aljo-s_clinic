@@ -1,5 +1,6 @@
 ﻿
 using Clinic.ControlsMain;
+using Clinic_Business;
 using Clinic_DataAccess;
 using MySql.Data.MySqlClient;
 using System;
@@ -476,8 +477,21 @@ namespace Clinic.Medical_Services.Laboratory
     // NEW LAB REQUEST
     // ---------------------------------------------------------
 
+    public enum LabRequestMode
+    {
+        DoctorVisit,
+        Direct
+    }
+
     public class frmLabRequest : Form
     {
+        private readonly LabRequestMode _mode;
+        private readonly int? _patientID;
+        private readonly int? _visitID;
+        private readonly int? _doctorID;
+        private Label lblVisit;
+        private TableLayoutPanel requestLayout;
+
         private ComboBox cmbPatient;
         private ComboBox cmbVisit;
         private TextBox txtSearchTest;
@@ -485,12 +499,24 @@ namespace Clinic.Medical_Services.Laboratory
         private Label lblSelected;
         private Button btnSave;
         private DataTable allTests;
+
         private readonly System.Collections.Generic.HashSet<int> selectedTestIDs =
             new System.Collections.Generic.HashSet<int>();
         private bool loadingTests;
 
-        public frmLabRequest()
+        public frmLabRequest() : this(LabRequestMode.Direct) { }
+
+        public frmLabRequest(
+            LabRequestMode mode,
+            int? patientID = null,
+            int? visitID = null,
+            int? doctorID = null)
         {
+            _mode = mode;
+            _patientID = patientID;
+            _visitID = visitID;
+            _doctorID = doctorID;
+
             bool arabic = TranslationClass.IsArabic;
             Text = LabUi.T("New Lab Request");
             StartPosition = FormStartPosition.CenterParent;
@@ -517,6 +543,7 @@ namespace Clinic.Medical_Services.Laboratory
             table.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
             table.RowStyles.Add(new RowStyle(SizeType.Absolute, 56));
             Controls.Add(table);
+            requestLayout = table;
 
             cmbPatient = new ComboBox
             {
@@ -552,7 +579,8 @@ namespace Clinic.Medical_Services.Laboratory
 
             table.Controls.Add(LabUi.Label("Patient"), 0, 0);
             table.Controls.Add(cmbPatient, 1, 0);
-            table.Controls.Add(LabUi.Label("Patient Visit"), 0, 1);
+            lblVisit = LabUi.Label("Patient Visit");
+            table.Controls.Add(lblVisit, 0, 1);
             table.Controls.Add(cmbVisit, 1, 1);
             table.Controls.Add(LabUi.Label("Search Lab Tests"), 0, 2);
             table.Controls.Add(txtSearchTest, 1, 2);
@@ -566,6 +594,14 @@ namespace Clinic.Medical_Services.Laboratory
             txtSearchTest.TextChanged += (s, e) => RefreshTestList();
             lstTests.ItemCheck += lstTests_ItemCheck;
             btnSave.Click += btnSave_Click;
+
+            if (_mode == LabRequestMode.Direct)
+            {
+                lblVisit.Visible = false;
+                cmbVisit.Visible = false;
+                requestLayout.RowStyles[1].SizeType = SizeType.Absolute;
+                requestLayout.RowStyles[1].Height = 0;
+            }
         }
 
         private void frmLabRequest_Load(object sender, EventArgs e)
@@ -576,6 +612,14 @@ namespace Clinic.Medical_Services.Laboratory
                 cmbPatient.DisplayMember = "PatientName";
                 cmbPatient.ValueMember = "PatientID";
                 cmbPatient.DataSource = patients;
+                if (_patientID.HasValue)
+                {
+                    cmbPatient.SelectedValue = _patientID.Value;
+                    if (!(cmbPatient.SelectedValue is int) ||
+                        (int)cmbPatient.SelectedValue != _patientID.Value)
+                        throw new InvalidOperationException("Selected patient not found.");
+                    cmbPatient.Enabled = false;
+                }
 
                 allTests = ClinicDatabase.GetLabTests();
                 RefreshTestList();
@@ -625,7 +669,6 @@ namespace Clinic.Medical_Services.Laboratory
             public LabTestItem(int id, string name) { ID = id; Name = name; }
             public override string ToString() { return Name; }
         }
-
         private void lstTests_ItemCheck(object sender, ItemCheckEventArgs e)
         {
             if (loadingTests) return;
@@ -645,6 +688,7 @@ namespace Clinic.Medical_Services.Laboratory
 
         private void cmbPatient_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (_mode == LabRequestMode.Direct) return;
             if (!(cmbPatient.SelectedValue is int))
             {
                 cmbVisit.DataSource = null;
@@ -657,6 +701,11 @@ namespace Clinic.Medical_Services.Laboratory
                 cmbVisit.DisplayMember = "VisitDisplay";
                 cmbVisit.ValueMember = "VisitID";
                 cmbVisit.DataSource = visits;
+                if (_visitID.HasValue)
+                {
+                    cmbVisit.SelectedValue = _visitID.Value;
+                    cmbVisit.Enabled = false;
+                }
             }
             catch (Exception ex)
             {
@@ -664,66 +713,69 @@ namespace Clinic.Medical_Services.Laboratory
             }
         }
 
+
         private void btnSave_Click(object sender, EventArgs e)
         {
-            if (!(cmbPatient.SelectedValue is int))
+            if (cmbPatient.SelectedValue == null ||
+                cmbPatient.SelectedValue == DBNull.Value)
             {
                 MessageBox.Show(LabUi.T("Please select a patient."));
                 return;
             }
-            if (!(cmbVisit.SelectedValue is int))
-            {
-                MessageBox.Show(LabUi.T("This patient has no visit. Create a visit first."));
-                return;
-            }
+
             if (selectedTestIDs.Count == 0)
             {
-                MessageBox.Show(LabUi.T("Please select at least one lab test."));
+                MessageBox.Show(
+                    LabUi.T("Please select at least one lab test."));
                 return;
             }
 
-            int visitID = Convert.ToInt32(cmbVisit.SelectedValue);
-            int[] testIDs = new int[selectedTestIDs.Count];
-            selectedTestIDs.CopyTo(testIDs);
-            Array.Sort(testIDs);
-            var created = new System.Collections.Generic.List<int>();
+            int patientID = Convert.ToInt32(cmbPatient.SelectedValue);
+
+            int? visitID = null;
+            int? doctorID = null;
+
+            if (_mode == LabRequestMode.DoctorVisit)
+            {
+                visitID = _visitID;
+                doctorID = _doctorID;
+
+                if (!visitID.HasValue || visitID.Value <= 0)
+                {
+                    MessageBox.Show(
+                        LabUi.T("Please select a valid patient visit."));
+                    return;
+                }
+            }
+
             btnSave.Enabled = false;
+
             try
             {
-                foreach (int testID in testIDs)
-                {
-                    int requestID = ClinicDatabase.CreateLabRequest(visitID, testID);
-                    created.Add(requestID);
-                }
+                int orderID = ClinicDatabase.CreateLabOrder(
+                    patientID: patientID,
+                    visitID: visitID,
+                    doctorID: doctorID,
+                    requestSource:
+                        _mode == LabRequestMode.Direct
+                            ? "WalkIn"
+                            : "Doctor",
+                    testIDs: new System.Collections.Generic.List<int>(selectedTestIDs)
+                );
 
                 MessageBox.Show(
-                    created.Count + " " + LabUi.T("lab requests created successfully."),
+                    LabUi.T("Laboratory order created successfully.") +
+                    "\nOrder ID: " + orderID,
                     LabUi.T("Success"),
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
+
                 DialogResult = DialogResult.OK;
                 Close();
             }
             catch (Exception ex)
             {
-                // The existing CreateLabRequest method saves one request at a time.
-                // Earlier requests in this loop may already be committed.
-                if (created.Count > 0)
-                {
-                    MessageBox.Show(
-                        created.Count + " " + LabUi.T("requests were created before an error occurred.") +
-                        "\n" + LabUi.T("Created request IDs") + ": " +
-                        string.Join(", ", created) + "\n" + ex.Message,
-                        LabUi.T("Partial Success"),
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
-                    DialogResult = DialogResult.OK;
-                    Close();
-                }
-                else
-                {
-                    LabUi.ShowError(ex, "Cannot Create Lab Request");
-                }
+                LabUi.ShowError(ex, "Cannot Create Lab Request");
             }
             finally
             {
@@ -981,36 +1033,79 @@ namespace Clinic.Medical_Services.Laboratory
                     // Get selected test and patient gender.
 
                     using (var cmd = new MySqlCommand(@"
-                    SELECT
-                        lr.TestID,
-                        lt.TestName,
-                        p.Gender
-                    FROM labrequests lr
-                    JOIN laboratorytests lt
-                        ON lt.TestID = lr.TestID
-                    JOIN visits v
-                        ON v.VisitID = lr.VisitID
-                    JOIN patients pa
-                        ON pa.PatientID = v.PatientID
-                    JOIN persons p
-                        ON p.PersonID = pa.PersonID
-                    WHERE lr.LabRequestID = @id
-                    LIMIT 1;", con))
+    SELECT
+        lr.TestID,
+        lt.TestName,
+        p.Gender
+    FROM labrequests lr
+
+    INNER JOIN laboratorytests lt
+        ON lt.TestID = lr.TestID
+
+    
+LEFT JOIN visits v
+    ON v.VisitID = lr.VisitID
+
+LEFT JOIN patients pa
+    ON pa.PatientID = COALESCE(
+        lr.PatientID,
+        v.PatientID
+    )
+
+LEFT JOIN persons pe
+    ON pe.PersonID = pa.PersonID
+
+
+    WHERE lr.LabRequestID = @id
+    LIMIT 1;", con))
                     {
-                        cmd.Parameters.AddWithValue(
-                            "@id", _requestID);
+                        cmd.Parameters.AddWithValue("@id", _requestID);
 
                         using (var r = cmd.ExecuteReader())
                         {
                             if (!r.Read())
+                            {
                                 throw new Exception(
                                     "Laboratory request not found.");
+                            }
 
                             testID = Convert.ToInt32(r["TestID"]);
                             testName = S(r["TestName"]);
                             patientGender = S(r["Gender"]);
                         }
                     }
+
+                    //using (var cmd = new MySqlCommand(@"
+                    //SELECT
+                    //    lr.TestID,
+                    //    lt.TestName,
+                    //    p.Gender
+                    //FROM labrequests lr
+                    //JOIN laboratorytests lt
+                    //    ON lt.TestID = lr.TestID
+                    //JOIN visits v
+                    //    ON v.VisitID = lr.VisitID
+                    //JOIN patients pa
+                    //    ON pa.PatientID = v.PatientID
+                    //JOIN persons p
+                    //    ON p.PersonID = pa.PersonID
+                    //WHERE lr.LabRequestID = @id
+                    //LIMIT 1;", con))
+                    //{
+                    //    cmd.Parameters.AddWithValue(
+                    //        "@id", _requestID);
+
+                    //    using (var r = cmd.ExecuteReader())
+                    //    {
+                    //        if (!r.Read())
+                    //            throw new Exception(
+                    //                "Laboratory request not found.");
+
+                    //        testID = Convert.ToInt32(r["TestID"]);
+                    //        testName = S(r["TestName"]);
+                    //        patientGender = S(r["Gender"]);
+                    //    }
+                    //}
 
                     info.Text =
                         LabUi.T("Lab Request") + " #" +
@@ -1510,4 +1605,3 @@ namespace Clinic.Medical_Services.Laboratory
     }
 
 }
- 
