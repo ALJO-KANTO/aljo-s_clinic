@@ -1429,25 +1429,6 @@ namespace Clinic_DataAccess
                                   COLLATE=utf8mb4_general_ci;
                             "
                         },
-                        //Views  
-                        new DatabaseMigration
-                        {
-                            Version = "20261015_VIEW_001",
-                            Description = "Initial view: view_doctorsdetails",
-                            Sql = @"CREATE OR REPLACE VIEW `view_doctorsdetails` AS select `d`.`DoctorID` AS `DoctorID`,`d`.`PersonID` AS `PersonID`,`p`.`FullName` AS `FullName`,`d`.`LicenseNumber` AS `LicenseNumber`,`d`.`ConsultationFees` AS `ConsultationFees`,coalesce((select group_concat(distinct `s`.`SpecializationName` order by `s`.`SpecializationName` ASC separator ', ') from (`doctorspecialties` `ds` join `specializations` `s` on((`s`.`SpecializationID` = `ds`.`SpecializationID`))) where (`ds`.`DoctorID` = `d`.`DoctorID`)),'') AS `Specializations`,coalesce((select group_concat(`dy`.`DayName` order by `dw`.`DayID` ASC separator ', ') from (`doctorworkingdays` `dw` join `days` `dy` on((`dy`.`DayID` = `dw`.`DayID`))) where (`dw`.`DoctorID` = `d`.`DoctorID`)),'') AS `WorkingDays`,coalesce(`c`.`CountryName`,'') AS `CountryName`,`d`.`IsActive` AS `IsActive` from ((`doctors` `d` left join `persons` `p` on((`p`.`PersonID` = `d`.`PersonID`))) left join `countries` `c` on((`c`.`CountryID` = `p`.`NationalityCountryID`)));"
-                        },
-                        new DatabaseMigration
-                        {
-                            Version = "20261015_VIEW_002",
-                            Description = "Initial view: view_visitdetails",
-                            Sql = @"CREATE OR REPLACE VIEW `view_visitdetails` AS select `v`.`VisitID` AS `VisitID`,`v`.`PatientID` AS `PatientID`,`v`.`DoctorID` AS `DoctorID`,`v`.`AppointmentID` AS `AppointmentID`,`pp`.`FullName` AS `PatientName`,`dp`.`FullName` AS `DoctorName`,`v`.`VisitDate` AS `VisitDate`,`v`.`VisitStatus` AS `VisitStatus`,'' AS `Diagnosis`,(case when (`v`.`VisitStatus` = 'Open') then 'Open' when (`v`.`VisitStatus` = 'Completed') then 'Completed' else coalesce(`v`.`VisitStatus`,'') end) AS `StatusText`,`v`.`CreatedByUserID` AS `CreatedByUserID` from ((((`visits` `v` left join `patients` `p` on((`p`.`PatientID` = `v`.`PatientID`))) left join `persons` `pp` on((`pp`.`PersonID` = `p`.`PersonID`))) left join `doctors` `d` on((`d`.`DoctorID` = `v`.`DoctorID`))) left join `persons` `dp` on((`dp`.`PersonID` = `d`.`PersonID`)));"
-                        },
-                        new DatabaseMigration
-                        {
-                            Version = "20261015_VIEW_003",
-                            Description = "Initial view: view_patientswaitingfordoctors",
-                            Sql = @"CREATE OR REPLACE VIEW `view_patientswaitingfordoctors` AS select `v`.`VisitID` AS `VisitID`,`v`.`AppointmentID` AS `AppointmentID`,`p`.`FullName` AS `PatientName`,`a`.`AppointmentDate` AS `CheckInTime`,`a`.`AppointmentStatus` AS `StatusText`,0 AS `IsCalled`,`d`.`PersonID` AS `DoctorPersonID` from ((((`visits` `v` join `appointments` `a` on((`a`.`AppointmentID` = `v`.`AppointmentID`))) join `patients` `pt` on((`pt`.`PatientID` = `v`.`PatientID`))) join `persons` `p` on((`p`.`PersonID` = `pt`.`PersonID`))) join `doctors` `d` on((`d`.`DoctorID` = `v`.`DoctorID`)));"
-                        },
                        
                         // Paste these entries into your existing List<DatabaseMigration>.
                         // Generated from the supplied ERP createDataBase source.
@@ -2526,7 +2507,16 @@ namespace Clinic_DataAccess
                                     ADD COLUMN HighValue DECIMAL(14,4) NULL;
                             "
                         },
-
+                        //laboratorytests `Unit` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+                        new DatabaseMigration
+                        {
+                            Version = "20261112_LAB_003",
+                            Description = "Add Unit column to laboratorytests table",
+                            Sql = @"
+                                ALTER TABLE laboratorytests
+                                    ADD COLUMN `Unit` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL;
+                            "
+                        },
                         new DatabaseMigration
                         {
                             Version = "20261019_ERP_051",
@@ -3379,9 +3369,41 @@ namespace Clinic_DataAccess
                                 DEFAULT CHARSET=utf8mb4
                                 COLLATE=utf8mb4_unicode_ci;"
                         },
+                        //new DatabaseMigration
+                        //{
+                        //    Version = "20261103_LAB_PARAMETER_RESULTS_002",
+                        //    Description = "Create patient laboratory parameter results",
+                        //    Sql = @"
+                        //        CREATE TABLE IF NOT EXISTS laboratoryparameterresults
+                        //        (
+                        //            ResultID INT NOT NULL AUTO_INCREMENT,
+                        //            LabRequestID INT NOT NULL,
+                        //            ParameterID INT NOT NULL,
+                        //            ResultValue VARCHAR(500) NOT NULL,
+                        //            ResultFlag VARCHAR(30) NULL,
+                        //            UnitSnapshot VARCHAR(50) NULL,
+                        //            ReferenceRangeSnapshot VARCHAR(200) NULL,
+                        //            RecordedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+                        //            PRIMARY KEY (ResultID),
+
+                        //            UNIQUE KEY UQ_LabParameterResult
+                        //                (LabRequestID, ParameterID),
+
+                        //            CONSTRAINT FK_LabParameterResult_Request
+                        //                FOREIGN KEY (LabRequestID)
+                        //                REFERENCES labrequests(LabRequestID),
+
+                        //            CONSTRAINT FK_LabParameterResult_Parameter
+                        //                FOREIGN KEY (ParameterID)
+                        //                REFERENCES laboratorytestparameters(ParameterID)
+                        //        ) ENGINE=InnoDB
+                        //        DEFAULT CHARSET=utf8mb4
+                        //        COLLATE=utf8mb4_unicode_ci;"
+                        //},
                         new DatabaseMigration
                         {
-                            Version = "20261103_LAB_PARAMETER_RESULTS_002",
+                            Version = "20261102_LAB_003",
                             Description = "Create patient laboratory parameter results",
                             Sql = @"
                                 CREATE TABLE IF NOT EXISTS laboratoryparameterresults
@@ -3389,27 +3411,39 @@ namespace Clinic_DataAccess
                                     ResultID INT NOT NULL AUTO_INCREMENT,
                                     LabRequestID INT NOT NULL,
                                     ParameterID INT NOT NULL,
-                                    ResultValue VARCHAR(500) NOT NULL,
+
+                                    ObservedValue VARCHAR(200) NULL,
+                                    NumericValue DECIMAL(14,4) NULL,
+
+                                    SavedParameterName VARCHAR(200) NOT NULL,
+                                    SavedUnit VARCHAR(50) NULL,
+                                    SavedLowLimit DECIMAL(14,4) NULL,
+                                    SavedHighLimit DECIMAL(14,4) NULL,
+                                    SavedReferenceRange VARCHAR(200) NULL,
+
                                     ResultFlag VARCHAR(30) NULL,
-                                    UnitSnapshot VARCHAR(50) NULL,
-                                    ReferenceRangeSnapshot VARCHAR(200) NULL,
-                                    RecordedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                    ResultNotes TEXT NULL,
+                                    EnteredAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
                                     PRIMARY KEY (ResultID),
 
-                                    UNIQUE KEY UQ_LabParameterResult
+                                    UNIQUE KEY UQ_LabResult_RequestParameter
                                         (LabRequestID, ParameterID),
 
-                                    CONSTRAINT FK_LabParameterResult_Request
+                                    INDEX IX_LabResult_ParameterID (ParameterID),
+
+                                    CONSTRAINT FK_LabResult_Request
                                         FOREIGN KEY (LabRequestID)
                                         REFERENCES labrequests(LabRequestID),
 
-                                    CONSTRAINT FK_LabParameterResult_Parameter
+                                    CONSTRAINT FK_LabResult_Parameter
                                         FOREIGN KEY (ParameterID)
                                         REFERENCES laboratorytestparameters(ParameterID)
+
                                 ) ENGINE=InnoDB
-                                DEFAULT CHARSET=utf8mb4
-                                COLLATE=utf8mb4_unicode_ci;"
+                                  DEFAULT CHARSET=utf8mb4
+                                  COLLATE=utf8mb4_unicode_ci;
+                            "
                         },
                         new DatabaseMigration
                         {
@@ -3474,50 +3508,6 @@ namespace Clinic_DataAccess
                                         REFERENCES labrequests(LabRequestID),
 
                                     CONSTRAINT FK_LabEntry_Parameter
-                                        FOREIGN KEY (ParameterID)
-                                        REFERENCES laboratorytestparameters(ParameterID)
-
-                                ) ENGINE=InnoDB
-                                  DEFAULT CHARSET=utf8mb4
-                                  COLLATE=utf8mb4_unicode_ci;
-                            "
-                        },
-                        new DatabaseMigration
-                        {
-                            Version = "20261102_LAB_003",
-                            Description = "Create patient laboratory parameter results",
-                            Sql = @"
-                                CREATE TABLE IF NOT EXISTS laboratoryparameterresults
-                                (
-                                    ResultID INT NOT NULL AUTO_INCREMENT,
-                                    LabRequestID INT NOT NULL,
-                                    ParameterID INT NOT NULL,
-
-                                    ObservedValue VARCHAR(200) NULL,
-                                    NumericValue DECIMAL(14,4) NULL,
-
-                                    SavedParameterName VARCHAR(200) NOT NULL,
-                                    SavedUnit VARCHAR(50) NULL,
-                                    SavedLowLimit DECIMAL(14,4) NULL,
-                                    SavedHighLimit DECIMAL(14,4) NULL,
-                                    SavedReferenceRange VARCHAR(200) NULL,
-
-                                    ResultFlag VARCHAR(30) NULL,
-                                    ResultNotes TEXT NULL,
-                                    EnteredAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-                                    PRIMARY KEY (ResultID),
-
-                                    UNIQUE KEY UQ_LabResult_RequestParameter
-                                        (LabRequestID, ParameterID),
-
-                                    INDEX IX_LabResult_ParameterID (ParameterID),
-
-                                    CONSTRAINT FK_LabResult_Request
-                                        FOREIGN KEY (LabRequestID)
-                                        REFERENCES labrequests(LabRequestID),
-
-                                    CONSTRAINT FK_LabResult_Parameter
                                         FOREIGN KEY (ParameterID)
                                         REFERENCES laboratorytestparameters(ParameterID)
 
@@ -3846,181 +3836,379 @@ namespace Clinic_DataAccess
                             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"
                         },
                         
-// ======================================================
-// LABORATORY WALK-IN AND DOCTOR ORDER SUPPORT
-// ======================================================
+                        // ======================================================
+                        // LABORATORY WALK-IN AND DOCTOR ORDER SUPPORT
+                        // ======================================================
 
-new DatabaseMigration
-{
-    Version = "20261112_LAB_001",
-    Description = "Create laboratory orders table",
-    Sql = @"
-        CREATE TABLE IF NOT EXISTS laborders
-        (
-            LabOrderID INT NOT NULL AUTO_INCREMENT,
-            PatientID INT NOT NULL,
-            VisitID INT NULL,
-            DoctorID INT NULL,
-            RequestSource VARCHAR(30) NOT NULL DEFAULT 'WalkIn',
-            OrderStatus VARCHAR(30) NOT NULL DEFAULT 'Ordered',
-            ClinicalNotes TEXT NULL,
-            RequestedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            CreatedByUserID INT NULL,
+                        new DatabaseMigration
+                        {
+                            Version = "20261112_LAB_001",
+                            Description = "Create laboratory orders table",
+                            Sql = @"
+                                CREATE TABLE IF NOT EXISTS laborders
+                                (
+                                    LabOrderID INT NOT NULL AUTO_INCREMENT,
+                                    PatientID INT NOT NULL,
+                                    VisitID INT NULL,
+                                    DoctorID INT NULL,
+                                    RequestSource VARCHAR(30) NOT NULL DEFAULT 'WalkIn',
+                                    OrderStatus VARCHAR(30) NOT NULL DEFAULT 'Ordered',
+                                    ClinicalNotes TEXT NULL,
+                                    RequestedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                    CreatedByUserID INT NULL,
 
-            PRIMARY KEY (LabOrderID),
+                                    PRIMARY KEY (LabOrderID),
 
-            KEY IX_LabOrders_Patient (PatientID),
-            KEY IX_LabOrders_Visit (VisitID),
-            KEY IX_LabOrders_Doctor (DoctorID),
+                                    KEY IX_LabOrders_Patient (PatientID),
+                                    KEY IX_LabOrders_Visit (VisitID),
+                                    KEY IX_LabOrders_Doctor (DoctorID),
 
-            CONSTRAINT FK_LabOrders_Patient
-                FOREIGN KEY (PatientID)
-                REFERENCES patients(PatientID),
+                                    CONSTRAINT FK_LabOrders_Patient
+                                        FOREIGN KEY (PatientID)
+                                        REFERENCES patients(PatientID),
 
-            CONSTRAINT FK_LabOrders_Visit
-                FOREIGN KEY (VisitID)
-                REFERENCES visits(VisitID),
+                                    CONSTRAINT FK_LabOrders_Visit
+                                        FOREIGN KEY (VisitID)
+                                        REFERENCES visits(VisitID),
 
-            CONSTRAINT FK_LabOrders_Doctor
-                FOREIGN KEY (DoctorID)
-                REFERENCES doctors(DoctorID),
+                                    CONSTRAINT FK_LabOrders_Doctor
+                                        FOREIGN KEY (DoctorID)
+                                        REFERENCES doctors(DoctorID),
 
-            CONSTRAINT FK_LabOrders_Creator
-                FOREIGN KEY (CreatedByUserID)
-                REFERENCES users(UserID)
+                                    CONSTRAINT FK_LabOrders_Creator
+                                        FOREIGN KEY (CreatedByUserID)
+                                        REFERENCES users(UserID)
 
-        ) ENGINE=InnoDB
-          DEFAULT CHARSET=utf8mb4;"
-},
+                                ) ENGINE=InnoDB
+                                  DEFAULT CHARSET=utf8mb4;"
+                        },
 
-new DatabaseMigration
-{
-    Version = "20261112_LAB_002",
-    Description = "Allow lab requests without visit",
-    Sql = @"
-        ALTER TABLE labrequests
-        MODIFY COLUMN VisitID INT NULL;"
-},
+                        new DatabaseMigration
+                        {
+                            Version = "20261112_LAB_002",
+                            Description = "Allow lab requests without visit",
+                            Sql = @"
+                                ALTER TABLE labrequests
+                                MODIFY COLUMN VisitID INT NULL;"
+                        },
 
-new DatabaseMigration
-{
-    Version = "20261112_LAB_003",
-    Description = "Add PatientID and LabOrderID to lab requests",
-    Sql = @"
-        ALTER TABLE labrequests
-        ADD COLUMN PatientID INT NULL,
-        ADD COLUMN LabOrderID INT NULL;"
-},
+                        new DatabaseMigration
+                        {
+                            Version = "20261112_LAB_003",
+                            Description = "Add PatientID and LabOrderID to lab requests",
+                            Sql = @"
+                                ALTER TABLE labrequests
+                                ADD COLUMN PatientID INT NULL,
+                                ADD COLUMN LabOrderID INT NULL;"
+                        },
 
-new DatabaseMigration
-{
-    Version = "20261112_LAB_004",
-    Description = "Update existing lab request patient IDs",
-    Sql = @"
-        UPDATE labrequests LR
-        INNER JOIN visits V
-            ON V.VisitID = LR.VisitID
-        SET LR.PatientID = V.PatientID
-        WHERE LR.PatientID IS NULL;"
-},
+                        new DatabaseMigration
+                        {
+                            Version = "20261112_LAB_004",
+                            Description = "Update existing lab request patient IDs",
+                            Sql = @"
+                                UPDATE labrequests LR
+                                INNER JOIN visits V
+                                    ON V.VisitID = LR.VisitID
+                                SET LR.PatientID = V.PatientID
+                                WHERE LR.PatientID IS NULL;"
+                        },
 
-new DatabaseMigration
-{
-    Version = "20261112_LAB_005",
-    Description = "Make lab request PatientID required",
-    Sql = @"
-        ALTER TABLE labrequests
-        MODIFY COLUMN PatientID INT NOT NULL;"
-},
+                        new DatabaseMigration
+                        {
+                            Version = "20261112_LAB_005",
+                            Description = "Make lab request PatientID required",
+                            Sql = @"
+                                ALTER TABLE labrequests
+                                MODIFY COLUMN PatientID INT NOT NULL;"
+                        },
 
-new DatabaseMigration
-{
-    Version = "20261112_LAB_006",
-    Description = "Add lab request patient foreign key",
-    Sql = @"
-        ALTER TABLE labrequests
-        ADD CONSTRAINT FK_LabRequests_Patient
-        FOREIGN KEY (PatientID)
-        REFERENCES patients(PatientID);"
-},
+                        new DatabaseMigration
+                        {
+                            Version = "20261112_LAB_006",
+                            Description = "Add lab request patient foreign key",
+                            Sql = @"
+                                ALTER TABLE labrequests
+                                ADD CONSTRAINT FK_LabRequests_Patient
+                                FOREIGN KEY (PatientID)
+                                REFERENCES patients(PatientID);"
+                        },
 
-new DatabaseMigration
-{
-    Version = "20261112_LAB_007",
-    Description = "Add lab request order foreign key",
-    Sql = @"
-        ALTER TABLE labrequests
-        ADD CONSTRAINT FK_LabRequests_Order
-        FOREIGN KEY (LabOrderID)
-        REFERENCES laborders(LabOrderID);"
-},
+                        new DatabaseMigration
+                        {
+                            Version = "20261112_LAB_007",
+                            Description = "Add lab request order foreign key",
+                            Sql = @"
+                                ALTER TABLE labrequests
+                                ADD CONSTRAINT FK_LabRequests_Order
+                                FOREIGN KEY (LabOrderID)
+                                REFERENCES laborders(LabOrderID);"
+                        },
 
-new DatabaseMigration
-{
-    Version = "20261112_LAB_008",
-    Description = "Allow bills without visit",
-    Sql = @"
-        ALTER TABLE bills
-        MODIFY COLUMN VisitID INT NULL;"
-},
+                        new DatabaseMigration
+                        {
+                            Version = "20261112_LAB_008",
+                            Description = "Allow bills without visit",
+                            Sql = @"
+                                ALTER TABLE bills
+                                MODIFY COLUMN VisitID INT NULL;"
+                        },
 
-new DatabaseMigration
-{
-    Version = "20261112_LAB_009",
-    Description = "Add PatientID and LabOrderID to bills",
-    Sql = @"
-        ALTER TABLE bills
-        ADD COLUMN PatientID INT NULL,
-        ADD COLUMN LabOrderID INT NULL;"
-},
+                        new DatabaseMigration
+                        {
+                            Version = "20261112_LAB_009",
+                            Description = "Add PatientID and LabOrderID to bills",
+                            Sql = @"
+                                ALTER TABLE bills
+                                ADD COLUMN PatientID INT NULL,
+                                ADD COLUMN LabOrderID INT NULL;"
+                        },
 
-new DatabaseMigration
-{
-    Version = "20261112_LAB_010",
-    Description = "Update existing bill patient IDs",
-    Sql = @"
-        UPDATE bills B
-        INNER JOIN visits V
-            ON V.VisitID = B.VisitID
-        SET B.PatientID = V.PatientID
-        WHERE B.PatientID IS NULL;"
-},
+                        new DatabaseMigration
+                        {
+                            Version = "20261112_LAB_010",
+                            Description = "Update existing bill patient IDs",
+                            Sql = @"
+                                UPDATE bills B
+                                INNER JOIN visits V
+                                    ON V.VisitID = B.VisitID
+                                SET B.PatientID = V.PatientID
+                                WHERE B.PatientID IS NULL;"
+                        },
 
-new DatabaseMigration
-{
-    Version = "20261112_LAB_011",
-    Description = "Add bills patient foreign key",
-    Sql = @"
-        ALTER TABLE bills
-        ADD CONSTRAINT FK_Bills_Patient
-        FOREIGN KEY (PatientID)
-        REFERENCES patients(PatientID);"
-},
+                        new DatabaseMigration
+                        {
+                            Version = "20261112_LAB_011",
+                            Description = "Add bills patient foreign key",
+                            Sql = @"
+                                ALTER TABLE bills
+                                ADD CONSTRAINT FK_Bills_Patient
+                                FOREIGN KEY (PatientID)
+                                REFERENCES patients(PatientID);"
+                        },
 
-new DatabaseMigration
-{
-    Version = "20261112_LAB_012",
-    Description = "Add bills laboratory order foreign key",
-    Sql = @"
-        ALTER TABLE bills
-        ADD CONSTRAINT FK_Bills_LabOrder
-        FOREIGN KEY (LabOrderID)
-        REFERENCES laborders(LabOrderID);"
-},
+                        new DatabaseMigration
+                        {
+                            Version = "20261112_LAB_012",
+                            Description = "Add bills laboratory order foreign key",
+                            Sql = @"
+                                ALTER TABLE bills
+                                ADD CONSTRAINT FK_Bills_LabOrder
+                                FOREIGN KEY (LabOrderID)
+                                REFERENCES laborders(LabOrderID);"
+                        },
 
-new DatabaseMigration
-{
-    Version = "20261112_LAB_013",
-    Description = "Create index for bills laboratory orders",
-    Sql = @"
-        CREATE INDEX IX_Bills_LabOrder
-        ON bills(LabOrderID);"
-},
+                        new DatabaseMigration
+                        {
+                            Version = "20261112_LAB_013",
+                            Description = "Create index for bills laboratory orders",
+                            Sql = @"
+                                CREATE INDEX IX_Bills_LabOrder
+                                ON bills(LabOrderID);"
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261112_INVLOC_001",
+                            Description = "Create warehouse locations table",
+                            Sql = @"
+                                CREATE TABLE IF NOT EXISTS `tbl_warehouse_location` (
+                                    `id` int NOT NULL AUTO_INCREMENT,
+                                    `warehouse_id` int NOT NULL DEFAULT '0',
+                                    `code` varchar(50) NOT NULL DEFAULT '',
+                                    `name` varchar(150) NOT NULL DEFAULT '',
+                                    `active` tinyint(1) NOT NULL DEFAULT '1',
+                                    `state` int NOT NULL DEFAULT '0',
+                                    PRIMARY KEY (`id`),
+                                    KEY `ix_warehouse_location_warehouse` (`warehouse_id`)
+                                ) ENGINE=InnoDB
+                                  DEFAULT CHARSET=utf8mb4
+                                  COLLATE=utf8mb4_0900_ai_ci;"
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261112_INVLOC_002",
+                            Description = "Create inventory location stock table",
+                            Sql = @"
+                                CREATE TABLE IF NOT EXISTS `tbl_inventory_location_stock` (
+                                    `id` int NOT NULL AUTO_INCREMENT,
+                                    `warehouse_id` int NOT NULL DEFAULT '0',
+                                    `location_id` int NOT NULL DEFAULT '0',
+                                    `item_id` int NOT NULL DEFAULT '0',
+                                    `on_hand` decimal(20,4) NOT NULL DEFAULT '0.0000',
+                                    `reserved_qty` decimal(20,4) NOT NULL DEFAULT '0.0000',
+                                    `last_modified` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                    PRIMARY KEY (`id`),
+                                    UNIQUE KEY `uq_inventory_location_stock`
+                                        (`warehouse_id`, `location_id`, `item_id`),
+                                    KEY `ix_inventory_location_stock_item` (`item_id`),
+                                    KEY `ix_inventory_location_stock_location` (`location_id`)
+                                ) ENGINE=InnoDB
+                                  DEFAULT CHARSET=utf8mb4
+                                  COLLATE=utf8mb4_0900_ai_ci;"
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261112_INVLOC_003",
+                            Description = "Create inventory location history table",
+                            Sql = @"
+                                CREATE TABLE IF NOT EXISTS `tbl_inventory_location_history` (
+                                    `id` int NOT NULL AUTO_INCREMENT,
+                                    `movement_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                    `reference_no` varchar(100) NOT NULL DEFAULT '',
+                                    `reference_type` varchar(50) NOT NULL DEFAULT '',
+                                    `item_id` int NOT NULL DEFAULT '0',
+                                    `from_warehouse_id` int NOT NULL DEFAULT '0',
+                                    `from_location_id` int NOT NULL DEFAULT '0',
+                                    `to_warehouse_id` int NOT NULL DEFAULT '0',
+                                    `to_location_id` int NOT NULL DEFAULT '0',
+                                    `quantity` decimal(20,4) NOT NULL DEFAULT '0.0000',
+                                    `status` varchar(30) NOT NULL DEFAULT 'Done',
+                                    `created_by` int NOT NULL DEFAULT '0',
+                                    `note` varchar(500) NOT NULL DEFAULT '',
+                                    PRIMARY KEY (`id`),
+                                    KEY `ix_inventory_location_history_item` (`item_id`),
+                                    KEY `ix_inventory_location_history_date` (`movement_date`)
+                                ) ENGINE=InnoDB
+                                  DEFAULT CHARSET=utf8mb4
+                                  COLLATE=utf8mb4_0900_ai_ci;"
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261112_SCHEMA_001",
+                            Description = "Align sales return details columns with Database 1",
+                            Sql = @"
+                                ALTER TABLE `salesreturndetails`
+                                    CHANGE COLUMN `ReturnDetailsID` `ReturnDetailID` INT NOT NULL AUTO_INCREMENT,
+                                    MODIFY COLUMN `QtyReturned` DECIMAL(12,3) NOT NULL,
+                                    MODIFY COLUMN `UnitPrice` DECIMAL(12,2) NOT NULL;
+                            "
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261112_SCHEMA_002",
+                            Description = "Align lab requests bill and saved test price columns",
+                            Sql = @"
+                                -- First allow BillID to accept NULL
+                                ALTER TABLE `labrequests`
+                                    MODIFY COLUMN `BillID` INT DEFAULT NULL;
 
+                                -- Now convert zero bill references to NULL
+                                UPDATE `labrequests`
+                                SET `BillID` = NULL
+                                WHERE `BillID` = 0;
 
+                                -- Align saved test price
+                                ALTER TABLE `labrequests`
+                                    MODIFY COLUMN `SavedTestPrice` DECIMAL(12,2) DEFAULT NULL;
+
+                                -- Add bill index
+                                ALTER TABLE `labrequests`
+                                    ADD INDEX `IX_LabRequests_BillID` (`BillID`);
+
+                                -- Add bill foreign key
+                                ALTER TABLE `labrequests`
+                                    ADD CONSTRAINT `FK_LabRequests_Bill`
+                                    FOREIGN KEY (`BillID`)
+                                    REFERENCES `bills` (`BillID`);
+                            "
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261112_SCHEMA_003",
+                            Description = "Align visits diagnosis and notes columns",
+                            Sql = @"
+                                ALTER TABLE `visits`
+                                    MODIFY COLUMN `Diagnosis` TEXT NULL,
+                                    MODIFY COLUMN `VisitNotes` TEXT NULL;
+                            "
+                        },
+                        //new DatabaseMigration
+                        //{
+                        //    Version = "20261112_SCHEMA_005",
+                        //    Description = "Align X-ray test price column and unique test name index",
+                        //    Sql = @"
+                        //        -- Check whether Price or TestPrice already exists
+                        //        SET @has_price = (
+                        //            SELECT COUNT(*)
+                        //            FROM information_schema.COLUMNS
+                        //            WHERE TABLE_SCHEMA = DATABASE()
+                        //              AND TABLE_NAME = 'xraytests'
+                        //              AND COLUMN_NAME = 'Price'
+                        //        );
+
+                        //        SET @has_testprice = (
+                        //            SELECT COUNT(*)
+                        //            FROM information_schema.COLUMNS
+                        //            WHERE TABLE_SCHEMA = DATABASE()
+                        //              AND TABLE_NAME = 'xraytests'
+                        //              AND COLUMN_NAME = 'TestPrice'
+                        //        );
+
+                        //        -- Rename Price, modify TestPrice, or create TestPrice
+                        //        SET @xray_sql = CASE
+                        //            WHEN @has_price > 0 AND @has_testprice = 0 THEN
+                        //                'ALTER TABLE `xraytests`
+                        //                 CHANGE COLUMN `Price` `TestPrice`
+                        //                 DECIMAL(12,2) NOT NULL DEFAULT 0.00'
+
+                        //            WHEN @has_testprice > 0 THEN
+                        //                'ALTER TABLE `xraytests`
+                        //                 MODIFY COLUMN `TestPrice`
+                        //                 DECIMAL(12,2) NOT NULL DEFAULT 0.00'
+
+                        //            ELSE
+                        //                'ALTER TABLE `xraytests`
+                        //                 ADD COLUMN `TestPrice`
+                        //                 DECIMAL(12,2) NOT NULL DEFAULT 0.00'
+                        //        END;
+
+                        //        PREPARE xray_stmt FROM @xray_sql;
+                        //        EXECUTE xray_stmt;
+                        //        DEALLOCATE PREPARE xray_stmt;
+
+                        //        -- Add unique index only if it does not already exist
+                        //        SET @has_index = (
+                        //            SELECT COUNT(*)
+                        //            FROM information_schema.STATISTICS
+                        //            WHERE TABLE_SCHEMA = DATABASE()
+                        //              AND TABLE_NAME = 'xraytests'
+                        //              AND INDEX_NAME = 'UQ_XRayTests_Name'
+                        //        );
+
+                        //        SET @index_sql = IF(
+                        //            @has_index = 0,
+                        //            'ALTER TABLE `xraytests`
+                        //             ADD UNIQUE KEY `UQ_XRayTests_Name` (`TestName`)',
+                        //            'SELECT 1'
+                        //        );
+
+                        //        PREPARE index_stmt FROM @index_sql;
+                        //        EXECUTE index_stmt;
+                        //        DEALLOCATE PREPARE index_stmt;
+                        //    "
+                        //},
 
 /*************************************Table Views************************************************/
 
+                        //Views  
+                        new DatabaseMigration
+                        {
+                            Version = "20261015_VIEW_001",
+                            Description = "Initial view: view_doctorsdetails",
+                            Sql = @"CREATE OR REPLACE VIEW `view_doctorsdetails` AS select `d`.`DoctorID` AS `DoctorID`,`d`.`PersonID` AS `PersonID`,`p`.`FullName` AS `FullName`,`d`.`LicenseNumber` AS `LicenseNumber`,`d`.`ConsultationFees` AS `ConsultationFees`,coalesce((select group_concat(distinct `s`.`SpecializationName` order by `s`.`SpecializationName` ASC separator ', ') from (`doctorspecialties` `ds` join `specializations` `s` on((`s`.`SpecializationID` = `ds`.`SpecializationID`))) where (`ds`.`DoctorID` = `d`.`DoctorID`)),'') AS `Specializations`,coalesce((select group_concat(`dy`.`DayName` order by `dw`.`DayID` ASC separator ', ') from (`doctorworkingdays` `dw` join `days` `dy` on((`dy`.`DayID` = `dw`.`DayID`))) where (`dw`.`DoctorID` = `d`.`DoctorID`)),'') AS `WorkingDays`,coalesce(`c`.`CountryName`,'') AS `CountryName`,`d`.`IsActive` AS `IsActive` from ((`doctors` `d` left join `persons` `p` on((`p`.`PersonID` = `d`.`PersonID`))) left join `countries` `c` on((`c`.`CountryID` = `p`.`NationalityCountryID`)));"
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261015_VIEW_002",
+                            Description = "Initial view: view_visitdetails",
+                            Sql = @"CREATE OR REPLACE VIEW `view_visitdetails` AS select `v`.`VisitID` AS `VisitID`,`v`.`PatientID` AS `PatientID`,`v`.`DoctorID` AS `DoctorID`,`v`.`AppointmentID` AS `AppointmentID`,`pp`.`FullName` AS `PatientName`,`dp`.`FullName` AS `DoctorName`,`v`.`VisitDate` AS `VisitDate`,`v`.`VisitStatus` AS `VisitStatus`,'' AS `Diagnosis`,(case when (`v`.`VisitStatus` = 'Open') then 'Open' when (`v`.`VisitStatus` = 'Completed') then 'Completed' else coalesce(`v`.`VisitStatus`,'') end) AS `StatusText`,`v`.`CreatedByUserID` AS `CreatedByUserID` from ((((`visits` `v` left join `patients` `p` on((`p`.`PatientID` = `v`.`PatientID`))) left join `persons` `pp` on((`pp`.`PersonID` = `p`.`PersonID`))) left join `doctors` `d` on((`d`.`DoctorID` = `v`.`DoctorID`))) left join `persons` `dp` on((`dp`.`PersonID` = `d`.`PersonID`)));"
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261015_VIEW_003",
+                            Description = "Initial view: view_patientswaitingfordoctors",
+                            Sql = @"CREATE OR REPLACE VIEW `view_patientswaitingfordoctors` AS select `v`.`VisitID` AS `VisitID`,`v`.`AppointmentID` AS `AppointmentID`,`p`.`FullName` AS `PatientName`,`a`.`AppointmentDate` AS `CheckInTime`,`a`.`AppointmentStatus` AS `StatusText`,0 AS `IsCalled`,`d`.`PersonID` AS `DoctorPersonID` from ((((`visits` `v` join `appointments` `a` on((`a`.`AppointmentID` = `v`.`AppointmentID`))) join `patients` `pt` on((`pt`.`PatientID` = `v`.`PatientID`))) join `persons` `p` on((`p`.`PersonID` = `pt`.`PersonID`))) join `doctors` `d` on((`d`.`DoctorID` = `v`.`DoctorID`)));"
+                        },
                         new DatabaseMigration
                         {
                             Version = "20261014_005",
