@@ -595,7 +595,7 @@ namespace Clinic.Medical_Services.Appointment
             int totalRows = _dtAppointmets?.Rows.Count ?? 0;
             int visibleRows = _dtAppointmets?.DefaultView.Count ?? 0;
 
-          
+
 
             lblRecordsCount.Text = visibleRows.ToString();
 

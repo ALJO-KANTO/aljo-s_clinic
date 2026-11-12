@@ -740,7 +740,7 @@ namespace Clinic
                                 () => doctorToolStripMenuItem2_Click(this, EventArgs.Empty) }
                     ), 0, 0);
             }
-            if (CanShowDashboard(UserRole.Nurse))
+            if (false && CanShowDashboard(UserRole.Nurse))
             {
                 roleRows.Controls.Add(
                     RoleCard("✚", "Nurse Role Dashboard", Color.FromArgb(15, 118, 110),
@@ -844,7 +844,7 @@ namespace Clinic
             {
                 QuickButton(quick, "Find Patient", () => btnFindPatient_Click(this, EventArgs.Empty));
             }
-            if (CanAccessMenu(UserRole.Nurse))
+            if (false && CanAccessMenu(UserRole.Nurse))
             {
                 QuickButton(quick, "Nurse Station", () => OpenIfAuthorized(
                     () => nurseToolStripMenuItem1_Click(this, EventArgs.Empty), UserRole.Nurse));
