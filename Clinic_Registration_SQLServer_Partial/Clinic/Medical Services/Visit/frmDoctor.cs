@@ -36,7 +36,9 @@ namespace Clinic.Medical_Services.Visit
         public enum enMode { AddNew = 1, Update = 2, ShowVisit = 3 }
 
         #region Constructor
-        public frmDoctor(int visitID = -1, enMode mode = enMode.AddNew)
+        public frmDoctor(
+       int visitID = -1,
+       enMode mode = enMode.AddNew)
         {
             InitializeComponent();
 
@@ -44,8 +46,10 @@ namespace Clinic.Medical_Services.Visit
             _Mode = mode;
 
             ApplyModernDoctorDesign();
-            ApplyDoctorArabicMirroring();
 
+            InitializeDoctorVitalsTab();
+
+            ApplyDoctorArabicMirroring();
         }
 
         private void ApplyDoctorArabicMirroring()
@@ -139,14 +143,32 @@ namespace Clinic.Medical_Services.Visit
             RefreshGrid(dgv, dt);
         }
 
+
         private void SetFormControlsState(bool isEnabled)
         {
             pnlVisitInfo.Enabled = isEnabled;
             pnlServicesInfo.Enabled = isEnabled;
             pnlPrescriptionInfo.Enabled = isEnabled;
+
             btnFullSave.Enabled = isEnabled;
+
             tpServices.Enabled = isEnabled;
             tpPrescriptionInfo.Enabled = isEnabled;
+
+            if (_doctorVitalsTab != null)
+                _doctorVitalsTab.Enabled = isEnabled;
+
+            foreach (TextBox txt in _doctorVitalInputs.Values)
+            {
+                txt.Enabled = isEnabled;
+                txt.ReadOnly = !isEnabled;
+            }
+
+            if (_doctorVitalsSave != null)
+                _doctorVitalsSave.Enabled = isEnabled;
+
+            if (_doctorVitalsNext != null)
+                _doctorVitalsNext.Enabled = isEnabled;
         }
 
         #endregion
@@ -173,7 +195,18 @@ namespace Clinic.Medical_Services.Visit
 
             // Apply translations after mode-specific labels and grid columns are initialized.
             ApplyDoctorTranslations();
+            if (_doctorVitalsTab != null &&
+    !tcVisitInfo.TabPages.Contains(_doctorVitalsTab))
+            {
+                tcVisitInfo.TabPages.Insert(0, _doctorVitalsTab);
+            }
 
+            if (_doctorVitalsTab != null)
+            {
+                _doctorVitalsTab.Text = TranslationClass.IsArabic
+                    ? "العلامات الحيوية"
+                    : "Vitals Entry";
+            }
 
         }
 
@@ -360,6 +393,12 @@ namespace Clinic.Medical_Services.Visit
             timer1.Start();
             tpServices.Enabled = false;
             tpPrescriptionInfo.Enabled = false;
+            if (_doctorVitalsTab != null) _doctorVitalsTab.Enabled = false;
+            if (_doctorVitalsSave != null)
+                _doctorVitalsSave.Enabled = false;
+
+            if (_doctorVitalsNext != null)
+                _doctorVitalsNext.Enabled = false;
             dtpPrescriptionDate.Value = DateTime.Now;
             nudQuality.Value = 1;
             btnFullSave.Enabled = false;
@@ -398,10 +437,12 @@ namespace Clinic.Medical_Services.Visit
             pnlWaittingList.Visible = false;
 
             pnlVisitInfo.Enabled = true;
+            if (_doctorVitalsTab != null) _doctorVitalsTab.Enabled = true;
             pnlServicesInfo.Enabled = true;
             tpServices.Enabled = true;
             tpPrescriptionInfo.Enabled = true;
-
+            if (_doctorVitalsNext != null)
+                _doctorVitalsNext.Enabled = true;
             bool canEditPrescription =
                 _Visit.PrescriptionInfo != null &&
                 _Visit.PrescriptionInfo.IsPrescriptionPending();
@@ -430,6 +471,7 @@ namespace Clinic.Medical_Services.Visit
             tcVisitInfo.Dock = DockStyle.Fill;
 
             pnlVisitInfo.Enabled = false;
+            if (_doctorVitalsTab != null) _doctorVitalsTab.Enabled = false;
             btnSaveVisit.Visible = false;
 
             pnlServicesInfo.Enabled = false;
@@ -453,6 +495,12 @@ namespace Clinic.Medical_Services.Visit
         private void _LoadVisitData(int visitID)
         {
             _Visit = clsVisit.Find(visitID);
+            if (_Visit == null)
+            {
+                ShowError($"Visit {visitID} not found.");
+                Close();
+                return;
+            }
             Debug.WriteLine("========== PRESCRIPTION LOAD ==========");
             Debug.WriteLine("Visit ID: " + visitID);
 
@@ -505,6 +553,7 @@ namespace Clinic.Medical_Services.Visit
 
             _FillPatientInfo();
             _FillVitalsInfo();
+            LoadDoctorVitalsInputs();
 
             // Load services
             dgvServices.DataSource = null;
@@ -648,16 +697,17 @@ AND active = 0        ORDER BY name;";
 
         #region Saving Logic
 
+
         private void btnSaveVisit_Click(object sender, EventArgs e)
         {
-            tcVisitInfo.SelectedIndex = 1;
+            tcVisitInfo.SelectedTab = tpServices;
         }
 
         private void btnSaveVisitServices_Click(object sender, EventArgs e)
         {
-            tcVisitInfo.SelectedIndex = 2;
-
+            tcVisitInfo.SelectedTab = tpPrescriptionInfo;
         }
+
 
         private void btnAddService_Click(object sender, EventArgs e)
         {
@@ -996,8 +1046,8 @@ AND active = 0        ORDER BY name;";
             }
 
             DateTime? selectedDate = mdChkToday.Checked
-                ? (DateTime?)null
-                : mdQueueDate.Value.Date;
+     ? DateTime.Today
+     : mdQueueDate.Value.Date;
 
             DataTable dtQueue =
                 clsVisit.GetPatientsWaitingForDoctors(
@@ -1065,7 +1115,8 @@ AND active = 0        ORDER BY name;";
             // 2. تحديث الحالة البصرية أولاً
             SetFormControlsState(false);
             tcVisitInfo.SelectedIndex = 0;
-
+            if (_doctorVitalsNext != null)
+                _doctorVitalsNext.Enabled = false;
             // 3. تنظيف الجداول بأمان (Safe Clearing)
             if (_Visit != null)
             {
@@ -1327,41 +1378,41 @@ AND active = 0        ORDER BY name;";
 
         private string GetAppointmentStatusText(enAppointmentStatus AppointmentStatus)
         {
-           
-                switch ((enAppointmentStatus)AppointmentStatus)
-                {
-                    case enAppointmentStatus.Scheduled:
-                        return "Scheduled";
 
-                    case enAppointmentStatus.InQueue:
-                        return "In Queue";
+            switch ((enAppointmentStatus)AppointmentStatus)
+            {
+                case enAppointmentStatus.Scheduled:
+                    return "Scheduled";
 
-                    case enAppointmentStatus.Progress:
-                        return "In Progress";
+                case enAppointmentStatus.InQueue:
+                    return "In Queue";
 
-                    case enAppointmentStatus.Postponed:
-                        return "Postponed";
+                case enAppointmentStatus.Progress:
+                    return "In Progress";
 
-                    case enAppointmentStatus.Completed:
-                        return "Completed";
+                case enAppointmentStatus.Postponed:
+                    return "Postponed";
 
-                    case enAppointmentStatus.Cancelled:
-                        return "Cancelled";
+                case enAppointmentStatus.Completed:
+                    return "Completed";
 
-                    case enAppointmentStatus.Waiting_For_Vitals:
-                        return "Waiting for Vitals";
+                case enAppointmentStatus.Cancelled:
+                    return "Cancelled";
 
-                    case enAppointmentStatus.Ready_For_Doctor:
-                        return "Ready for Doctor";
+                case enAppointmentStatus.Waiting_For_Vitals:
+                    return "Waiting for Vitals";
 
-                    case enAppointmentStatus.In_Billing:
-                        return "In Billing";
+                case enAppointmentStatus.Ready_For_Doctor:
+                    return "Ready for Doctor";
 
-                    default:
-                        return "Unknown";
-                
-            
-        }
+                case enAppointmentStatus.In_Billing:
+                    return "In Billing";
+
+                default:
+                    return "Unknown";
+
+
+            }
         }
 
         private void btnInProgress_Click(object sender, EventArgs e)
@@ -1418,9 +1469,31 @@ AND active = 0        ORDER BY name;";
             lblPatientID.Text = _Visit.PatientID.ToString();
 
             _FillVitalsInfo();
+            LoadDoctorVitalsInputs();
 
             // Enable the consultation panels.
             SetFormControlsState(true);
+
+
+            if (_doctorVitalsTab != null)
+            {
+                _doctorVitalsTab.Enabled = true;
+                tcVisitInfo.SelectedTab = _doctorVitalsTab;
+            }
+
+            foreach (TextBox txt in _doctorVitalInputs.Values)
+            {
+                txt.Enabled = true;
+                txt.ReadOnly = false;
+            }
+
+            if (_doctorVitalsSave != null)
+                _doctorVitalsSave.Enabled = true;
+
+            if (_doctorVitalsNext != null)
+                _doctorVitalsNext.Enabled = true;
+
+
 
             // Explicitly enable Services.
             tpServices.Enabled = true;
@@ -1441,11 +1514,29 @@ AND active = 0        ORDER BY name;";
             pnlPrescriptionInfo.Enabled = canEditPrescription;
             btnAddMedicen.Enabled = canEditPrescription;
 
-            // Refresh queue without resetting the consultation controls.
+            // Refresh queue without resetting consultation controls.
             _RefreshQueueData();
 
-            tcVisitInfo.SelectedIndex = 0;
-            txtDiagnosis.Focus();
+            // Enable Vitals Entry when consultation starts.
+
+            // Enable Vitals Entry when consultation starts.
+            if (_doctorVitalsTab != null)
+            {
+                _doctorVitalsTab.Enabled = true;
+
+                if (_doctorVitalsNext != null)
+                    _doctorVitalsNext.Enabled = true;
+
+                LoadDoctorVitalsInputs();
+
+                tcVisitInfo.SelectedTab = _doctorVitalsTab;
+            }
+
+            else
+            {
+                tcVisitInfo.SelectedIndex = 0;
+                txtDiagnosis.Focus();
+            }
         }
         private void btnPostpone_Click(object sender, EventArgs e)
         {
@@ -1535,6 +1626,7 @@ AND active = 0        ORDER BY name;";
                 _Visit.PatientID.ToString();
 
             _FillVitalsInfo();
+            LoadDoctorVitalsInputs();
         }
         //private void dgvDoctorQueue_CellContentClick(object sender, DataGridViewCellEventArgs e)
         //{
@@ -1628,5 +1720,237 @@ AND active = 0        ORDER BY name;";
             _FillServicesInCheckBox();
         }
 
+    
+
+        // Doctor-side vitals UI. Storage is delegated to the existing clsVital layer.
+        // Wire SaveDoctorVitalsToExistingDataLayer after confirming clsVital.Save() API.
+        private TabPage _doctorVitalsTab;
+        private readonly System.Collections.Generic.Dictionary<string, TextBox> _doctorVitalInputs =
+            new System.Collections.Generic.Dictionary<string, TextBox>();
+        private Button _doctorVitalsSave;
+        private Button _doctorVitalsNext;
+        private void InitializeDoctorVitalsTab()
+        {
+            if (_doctorVitalsTab != null) return;
+            bool ar = TranslationClass.IsArabic;
+            _doctorVitalsTab = new TabPage(ar ? "العلامات الحيوية" : "Vitals Entry");
+            _doctorVitalsTab.Name = "tpDoctorVitals";
+            _doctorVitalsTab.BackColor = Color.White;
+            var layout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Top,
+                AutoSize = true,
+                ColumnCount = 2,
+                Padding = new Padding(20),
+                BackColor = Color.White
+            };
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 42));
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 58));
+            string[,] fields = {
+                {"Pulse", "Pulse (bpm)", "النبض"},
+                {"Temperature", "Temperature (°C)", "درجة الحرارة"},
+                {"BloodPressure", "Blood Pressure (mmHg)", "ضغط الدم"},
+                {"Weight", "Weight (kg)", "الوزن"}
+            };
+            for (int i = 0; i < fields.GetLength(0); i++)
+            {
+                string key = fields[i, 0];
+                var lbl = new Label
+                {
+                    Text = ar ? fields[i, 2] : fields[i, 1],
+                    Dock = DockStyle.Fill,
+                    TextAlign = ContentAlignment.MiddleLeft,
+                    Font = new Font("Segoe UI", 10F),
+                    Height = 40
+                };
+                var txt = new TextBox
+                {
+                    Name = "txtDoctor" + key,
+                    Dock = DockStyle.Fill,
+                    Font = new Font("Segoe UI", 11F),
+                    Margin = new Padding(4, 6, 4, 6)
+                };
+                _doctorVitalInputs[key] = txt;
+                layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+                layout.Controls.Add(lbl, 0, i);
+                layout.Controls.Add(txt, 1, i);
+            }
+            _doctorVitalsSave = new Button
+            {
+                Text = ar ? "حفظ العلامات الحيوية" : "Save Vitals",
+                Dock = DockStyle.Top,
+                Height = 44,
+                BackColor = Color.Teal,
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
+            };
+            _doctorVitalsSave.Click += (sender, args) => SaveDoctorVitalsToExistingDataLayer();
+            var content = new Panel
+            {
+                Dock = DockStyle.Fill,
+                AutoScroll = true
+            };
+
+            _doctorVitalsSave.Dock = DockStyle.None;
+            _doctorVitalsSave.Height = 44;
+
+            _doctorVitalsNext = new Button
+            {
+                Name = "btnDoctorVitalsNext",
+                Text = ar ? "التالي ←" : "Next →",
+                Height = 44,
+                BackColor = Color.FromArgb(25, 55, 100),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Enabled = false
+            };
+
+            _doctorVitalsNext.Click += (sender, args) =>
+            {
+                if (SaveDoctorVitalsToExistingDataLayer())
+                {
+                    _FillVitalsInfo();
+
+                    pnlVisitInfo.Enabled = true;
+                    tpVisitInfo.Enabled = true;
+
+                    tcVisitInfo.SelectedTab = tpVisitInfo;
+                    txtDiagnosis.Focus();
+                }
+            };
+
+            content.Controls.Add(layout);
+            content.Controls.Add(_doctorVitalsSave);
+            content.Controls.Add(_doctorVitalsNext);
+
+            Action positionButtons = () =>
+            {
+                int top = layout.Bottom + 12;
+                int width = Math.Max(100, content.ClientSize.Width - 40);
+
+                _doctorVitalsSave.SetBounds(20, top, width, 44);
+                _doctorVitalsNext.SetBounds(20, top + 54, width, 44);
+            };
+
+            content.Resize += (sender, args) => positionButtons();
+            layout.Resize += (sender, args) => positionButtons();
+
+            _doctorVitalsTab.Controls.Add(content);
+            positionButtons();
+        }
+
+        private void LoadDoctorVitalsInputs()
+        {
+            if (_doctorVitalInputs.Count == 0) return;
+            foreach (var input in _doctorVitalInputs.Values) input.Clear();
+            if (_VisitID <= 0) return;
+            var vital = clsVital.FindByVisitID(_VisitID);
+            if (vital == null) return;
+            _doctorVitalInputs["Pulse"].Text = Convert.ToString(vital.Pulse);
+            _doctorVitalInputs["Temperature"].Text = Convert.ToString(vital.Temperature);
+            _doctorVitalInputs["BloodPressure"].Text = Convert.ToString(vital.BloodPressure);
+            _doctorVitalInputs["Weight"].Text = Convert.ToString(vital.Weight);
+        }
+
+        private bool SaveDoctorVitals(
+            string bloodPressure,
+            decimal temperature,
+            decimal weight,
+            short pulse)
+        {
+            if (_VisitID <= 0 || _Visit == null ||
+                _Visit.AppointmentID <= 0)
+            {
+                ShowError("Please select a valid visit first.");
+                return false;
+            }
+
+            try
+            {
+                clsVital vital = clsVital.FindByVisitID(_VisitID);
+
+                if (vital == null)
+                {
+                    vital = new clsVital
+                    {
+                        VisitID = _VisitID,
+                        AppointmentID = _Visit.AppointmentID
+                    };
+                }
+
+                vital.BloodPressure = bloodPressure.Trim();
+                vital.Temperature = temperature;
+                vital.Weight = weight;
+                vital.Pulse = pulse;
+                vital.CreatedByUserID =
+                    clsGlobal.CurrentUser.UserID;
+
+                if (!vital.Save())
+                {
+                    ShowError("Failed to save patient vitals.");
+                    return false;
+                }
+
+                _FillVitalsInfo();
+                ShowSuccess("Patient vitals saved successfully.");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                ShowError("Vitals error: " + ex.Message);
+                return false;
+            }
+        }
+
+
+
+        private bool SaveDoctorVitalsToExistingDataLayer()
+        {
+            if (_VisitID <= 0 || _Visit == null ||
+                _Visit.AppointmentID <= 0)
+            {
+                ShowWarning("Please select a patient visit.");
+                return false;
+            }
+
+            if (!short.TryParse(
+                _doctorVitalInputs["Pulse"].Text.Trim(),
+                out short pulse) || pulse <= 0)
+            {
+                ShowWarning("Enter a valid pulse.");
+                return false;
+            }
+
+            if (!decimal.TryParse(
+                _doctorVitalInputs["Temperature"].Text.Trim(),
+                out decimal temperature) || temperature <= 0)
+            {
+                ShowWarning("Enter a valid temperature.");
+                return false;
+            }
+
+            if (!decimal.TryParse(
+                _doctorVitalInputs["Weight"].Text.Trim(),
+                out decimal weight) || weight <= 0)
+            {
+                ShowWarning("Enter a valid weight.");
+                return false;
+            }
+
+            string bloodPressure =
+                _doctorVitalInputs["BloodPressure"].Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(bloodPressure))
+            {
+                ShowWarning("Enter blood pressure.");
+                return false;
+            }
+
+            return SaveDoctorVitals(
+                bloodPressure,
+                temperature,
+                weight,
+                pulse);
+        }
     }
 }

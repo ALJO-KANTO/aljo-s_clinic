@@ -35,12 +35,12 @@ namespace Clinic_DataAccess
 
                             object result = command.ExecuteScalar();
 
-                            // استدعاء تحديث حالة الموعد باستخدام نفس الـ transaction
-                            clsAppointmentData.UpdateAppointmentStatus(
-                                AppointmentID,
-                                "In_Billing",
-                                CreatedByUserID,
-                                transaction);
+                            //// استدعاء تحديث حالة الموعد باستخدام نفس الـ transaction
+                            //clsAppointmentData.UpdateAppointmentStatus(
+                            //    AppointmentID,
+                            //    "In_Billing",
+                            //    CreatedByUserID,
+                            //    transaction);
                             if (result != null && int.TryParse(result.ToString(), out int newVitalID))
                             {
                                 VitalID = newVitalID;

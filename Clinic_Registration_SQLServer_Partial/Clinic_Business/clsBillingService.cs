@@ -12,10 +12,29 @@ namespace Clinic_Business
 {
     public class clsBillingService
     {
-        public static bool CheckInPatient(clsAppointment Appointment, int UserID, string PaymentMethod, int debitAccountId,int creditAccountId)
+
+        public static bool CheckInPatient(
+            clsAppointment appointment,
+            int userID,
+            string paymentMethod,
+            int debitAccountId,
+            int creditAccountId)
         {
-            return clsBillingServiceData.CheckInPatient(Appointment.AppointmentID, Appointment.DoctorID, Appointment.PatientID, Appointment.AppointmentFees, UserID, PaymentMethod, "Waiting_For_Vitals", debitAccountId, creditAccountId);
+            if (appointment == null || appointment.AppointmentID <= 0)
+                return false;
+
+            return clsBillingServiceData.CheckInPatient(
+                appointment.AppointmentID,
+                appointment.DoctorID,
+                appointment.PatientID,
+                appointment.AppointmentFees,
+                userID,
+                paymentMethod,
+                "InQueue",
+                debitAccountId,
+                creditAccountId);
         }
+
         //public static bool InsertBill(int VisitorID,int UserID,decimal Fees,string Type,string PaymentMethod,int AppointmentID)
         //{
         //    return clsBillingServiceData.InsertBill(VisitorID, UserID,Fees,Type,PaymentMethod,AppointmentID);

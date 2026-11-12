@@ -232,18 +232,17 @@ namespace Clinic_Business
             );
         }
 
-        public static void RefreshQueueForDoctor(int DoctorID)
-        {
-            // جلب عدد المرضى الموجودين فعلياً في الحالة 7 لهذا الطبيب
-            int countInVitals = clsAppointmentData.GetCountByStatusForDoctor(7, DoctorID);
 
-            // إذا كان العدد أقل من 3، قم بترقية مرضى من الحالة 2 إلى الحالة 7
-            if (countInVitals < 3)
-            {
-                int needed = 3 - countInVitals;
-                clsAppointmentData.PromotePatientsToVitalsForDoctor(needed, DoctorID);
-            }
+        public static void RefreshQueueForDoctor(int doctorID)
+        {
+            // Direct doctor workflow:
+            // Reception Check-In -> Doctor Queue.
+            //
+            // Do not promote patients to Waiting_For_Vitals.
+            // Doctor queue is loaded by
+             //clsVisit.GetPatientsWaitingForDoctors().
         }
+
 
         public static bool UpdatePatientCallStatus(int AppoinmentID, bool IsCalled,int CallType)
         {
