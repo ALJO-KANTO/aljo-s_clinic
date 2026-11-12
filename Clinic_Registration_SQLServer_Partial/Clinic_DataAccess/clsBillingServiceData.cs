@@ -843,10 +843,11 @@ namespace Clinic_DataAccess
                     finalTotalIncludingAll = ReadAmount("Subtotal");
 
                     // Gross total before discount and tax.
+                    // Use the invoice subtotal, which includes laboratory tests.
                     totalBeforeDiscountAndTax =
-                        appointmentFees +
-                        totalMedicines +
-                        totalServices;
+                        finalTotalIncludingAll +
+                        totalDiscount -
+                        totalTax;
 
                     balanceDue = Math.Max(
                         finalTotalIncludingAll - paymentAmount,
@@ -884,7 +885,7 @@ namespace Clinic_DataAccess
         WHERE BillID = @BillID;
 
         SELECT
-            PD.PrescriptionDetailsID,
+          PD.PrescriptionDetailID AS PrescriptionDetailsID,
             PD.SavedMedicineName,
             PD.SavedMedicinePrice,
             PD.DispensedQuantity
@@ -970,7 +971,7 @@ namespace Clinic_DataAccess
                                    SET PD.DispensedQuantity =PD.DispensedQuantity - T.DispensedQty, 
                                        PD.IsDispensed = CASE WHEN (PD.DispensedQuantity - T.DispensedQty) > 0 THEN 1 ELSE 0 END
                                    FROM PrescriptionDetails PD
-                                   INNER JOIN #TempDispensed T ON PD.PrescriptionDetailsID = T.DetailsID";
+                                   INNER JOIN #TempDispensed T ON PD.PrescriptionDetailID = T.DetailsID";
                     conn.ExecuteNonQuery(updateQuery, transaction);
 
                   
@@ -981,7 +982,7 @@ namespace Clinic_DataAccess
                                 SET M.CurrentStock = M.CurrentStock + T.DispensedQty
                                 FROM Medicines M
                                 INNER JOIN PrescriptionDetails PD ON M.MedicineID = PD.MedicineID
-                                INNER JOIN #TempDispensed T ON PD.PrescriptionDetailsID = T.DetailsID
+                                INNER JOIN #TempDispensed T ON PD.PrescriptionDetailID = T.DetailsID
                                 WHERE T.DispensedQty > 0;";
 
                     using (MySqlCommand cmdUpdateStock = new MySqlCommand(updateStockQuery, conn, transaction))
@@ -999,7 +1000,7 @@ namespace Clinic_DataAccess
                                         NOW(),
                                         @UserID
                                     FROM #TempDispensed T
-                                    INNER JOIN PrescriptionDetails PD ON T.DetailsID = PD.PrescriptionDetailsID
+                                    INNER JOIN PrescriptionDetails PD ON T.DetailsID = PD.PrescriptionDetailID
                                     WHERE T.DispensedQty > 0;";
 
                     using (MySqlCommand cmdInsertTrans = new MySqlCommand(insertTransactionQuery, conn, transaction))

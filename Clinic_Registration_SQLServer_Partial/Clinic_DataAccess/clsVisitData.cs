@@ -428,66 +428,56 @@ namespace Clinic_DataAccess
         }
 
 
+
         public static DataTable GetPatientsWaitingForDoctors(
-       int DoctorPersonID,
-       DateTime? date = null)
+            int DoctorPersonID,
+            DateTime? date = null)
         {
             DataTable dt = new DataTable();
+
+            string query = @"
+        SELECT
+            VisitID,
+            AppointmentID,
+            PatientName,
+            CheckInTime,
+            StatusText,
+            IsCalled
+        FROM View_PatientsWaitingForDoctors
+        WHERE
+            (@DoctorPersonID = 0
+             OR DoctorPersonID = @DoctorPersonID)
+
+            AND StatusText IN
+            (
+                'InQueue',
+                'Ready_For_Doctor',
+                'Progress',
+                'InProgress',
+                'In-Progress'
+            )
+
+        ORDER BY
+            CheckInTime DESC,
+            AppointmentID DESC;";
 
             try
             {
                 using (MySqlConnection connection =
-                    new MySqlConnection(clsDataAccessSettings.ConnectionString))
+                    new MySqlConnection(
+                        clsDataAccessSettings.ConnectionString))
+                using (MySqlCommand cmd =
+                    new MySqlCommand(query, connection))
                 {
-                    string query = @"
-                SELECT
-                    VisitID,
-                    AppointmentID,
-                    PatientName,
-                    CheckInTime,
-                    StatusText,
-                    IsCalled
-                FROM View_PatientsWaitingForDoctors
-                WHERE
-                    (
-                        @DoctorPersonID = 0
-                        OR DoctorPersonID = @DoctorPersonID
-                    )
+                    cmd.Parameters.AddWithValue(
+                        "@DoctorPersonID", DoctorPersonID);
 
-                    AND
-                    (
-                        DATE(CheckInTime) = @Date
-                        OR CheckInTime IS NULL
-                    )
+                    connection.Open();
 
-                    AND StatusText IN
-                    (
-                        'InQueue',
-                        'Ready_For_Doctor',
-                        'Progress',
-                        'InProgress',
-                        'In-Progress'
-                    )
-
-                ORDER BY
-                    CheckInTime,
-                    AppointmentID;";
-
-                    using (MySqlCommand cmd =
-                        new MySqlCommand(query, connection))
+                    using (MySqlDataReader reader =
+                        cmd.ExecuteReader())
                     {
-                        cmd.Parameters.AddWithValue(
-                            "@DoctorPersonID", DoctorPersonID);
-
-                        cmd.Parameters.AddWithValue(
-                            "@Date", (date ?? DateTime.Today).Date);
-
-                        connection.Open();
-
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
-                        {
-                            dt.Load(reader);
-                        }
+                        dt.Load(reader);
                     }
                 }
             }
@@ -503,6 +493,7 @@ namespace Clinic_DataAccess
             return dt;
         }
 
+
         public static bool DeleteVisit(int VisitID, int AppointmentID)
         {
             int rowsAffected = 0;
@@ -511,11 +502,12 @@ namespace Clinic_DataAccess
             {
                 using (MySqlConnection connection = new MySqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    string query = @"UPDATE Vitals 
-                                      SET VisitID=NULL
-                                      WHERE AppointmentID=@AppointmentID;
-                        DELETE FROM Visits WHERE VisitID = @VisitID";
-
+                    string query = @"
+    UPDATE appointments
+    SET
+        AppointmentStatus = 'InQueue',
+        CheckInTime = COALESCE(CheckInTime, NOW())
+    WHERE AppointmentID = @AppointmentID;";
                     using (MySqlCommand command = new MySqlCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@VisitID", VisitID);
