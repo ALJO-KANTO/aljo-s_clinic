@@ -3845,6 +3845,177 @@ namespace Clinic_DataAccess
                                 CONSTRAINT FK_XRayRequests_Test FOREIGN KEY (XRayTestID) REFERENCES xraytests(XRayTestID)
                             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"
                         },
+                        
+// ======================================================
+// LABORATORY WALK-IN AND DOCTOR ORDER SUPPORT
+// ======================================================
+
+new DatabaseMigration
+{
+    Version = "20261112_LAB_001",
+    Description = "Create laboratory orders table",
+    Sql = @"
+        CREATE TABLE IF NOT EXISTS laborders
+        (
+            LabOrderID INT NOT NULL AUTO_INCREMENT,
+            PatientID INT NOT NULL,
+            VisitID INT NULL,
+            DoctorID INT NULL,
+            RequestSource VARCHAR(30) NOT NULL DEFAULT 'WalkIn',
+            OrderStatus VARCHAR(30) NOT NULL DEFAULT 'Ordered',
+            ClinicalNotes TEXT NULL,
+            RequestedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            CreatedByUserID INT NULL,
+
+            PRIMARY KEY (LabOrderID),
+
+            KEY IX_LabOrders_Patient (PatientID),
+            KEY IX_LabOrders_Visit (VisitID),
+            KEY IX_LabOrders_Doctor (DoctorID),
+
+            CONSTRAINT FK_LabOrders_Patient
+                FOREIGN KEY (PatientID)
+                REFERENCES patients(PatientID),
+
+            CONSTRAINT FK_LabOrders_Visit
+                FOREIGN KEY (VisitID)
+                REFERENCES visits(VisitID),
+
+            CONSTRAINT FK_LabOrders_Doctor
+                FOREIGN KEY (DoctorID)
+                REFERENCES doctors(DoctorID),
+
+            CONSTRAINT FK_LabOrders_Creator
+                FOREIGN KEY (CreatedByUserID)
+                REFERENCES users(UserID)
+
+        ) ENGINE=InnoDB
+          DEFAULT CHARSET=utf8mb4;"
+},
+
+new DatabaseMigration
+{
+    Version = "20261112_LAB_002",
+    Description = "Allow lab requests without visit",
+    Sql = @"
+        ALTER TABLE labrequests
+        MODIFY COLUMN VisitID INT NULL;"
+},
+
+new DatabaseMigration
+{
+    Version = "20261112_LAB_003",
+    Description = "Add PatientID and LabOrderID to lab requests",
+    Sql = @"
+        ALTER TABLE labrequests
+        ADD COLUMN PatientID INT NULL,
+        ADD COLUMN LabOrderID INT NULL;"
+},
+
+new DatabaseMigration
+{
+    Version = "20261112_LAB_004",
+    Description = "Update existing lab request patient IDs",
+    Sql = @"
+        UPDATE labrequests LR
+        INNER JOIN visits V
+            ON V.VisitID = LR.VisitID
+        SET LR.PatientID = V.PatientID
+        WHERE LR.PatientID IS NULL;"
+},
+
+new DatabaseMigration
+{
+    Version = "20261112_LAB_005",
+    Description = "Make lab request PatientID required",
+    Sql = @"
+        ALTER TABLE labrequests
+        MODIFY COLUMN PatientID INT NOT NULL;"
+},
+
+new DatabaseMigration
+{
+    Version = "20261112_LAB_006",
+    Description = "Add lab request patient foreign key",
+    Sql = @"
+        ALTER TABLE labrequests
+        ADD CONSTRAINT FK_LabRequests_Patient
+        FOREIGN KEY (PatientID)
+        REFERENCES patients(PatientID);"
+},
+
+new DatabaseMigration
+{
+    Version = "20261112_LAB_007",
+    Description = "Add lab request order foreign key",
+    Sql = @"
+        ALTER TABLE labrequests
+        ADD CONSTRAINT FK_LabRequests_Order
+        FOREIGN KEY (LabOrderID)
+        REFERENCES laborders(LabOrderID);"
+},
+
+new DatabaseMigration
+{
+    Version = "20261112_LAB_008",
+    Description = "Allow bills without visit",
+    Sql = @"
+        ALTER TABLE bills
+        MODIFY COLUMN VisitID INT NULL;"
+},
+
+new DatabaseMigration
+{
+    Version = "20261112_LAB_009",
+    Description = "Add PatientID and LabOrderID to bills",
+    Sql = @"
+        ALTER TABLE bills
+        ADD COLUMN PatientID INT NULL,
+        ADD COLUMN LabOrderID INT NULL;"
+},
+
+new DatabaseMigration
+{
+    Version = "20261112_LAB_010",
+    Description = "Update existing bill patient IDs",
+    Sql = @"
+        UPDATE bills B
+        INNER JOIN visits V
+            ON V.VisitID = B.VisitID
+        SET B.PatientID = V.PatientID
+        WHERE B.PatientID IS NULL;"
+},
+
+new DatabaseMigration
+{
+    Version = "20261112_LAB_011",
+    Description = "Add bills patient foreign key",
+    Sql = @"
+        ALTER TABLE bills
+        ADD CONSTRAINT FK_Bills_Patient
+        FOREIGN KEY (PatientID)
+        REFERENCES patients(PatientID);"
+},
+
+new DatabaseMigration
+{
+    Version = "20261112_LAB_012",
+    Description = "Add bills laboratory order foreign key",
+    Sql = @"
+        ALTER TABLE bills
+        ADD CONSTRAINT FK_Bills_LabOrder
+        FOREIGN KEY (LabOrderID)
+        REFERENCES laborders(LabOrderID);"
+},
+
+new DatabaseMigration
+{
+    Version = "20261112_LAB_013",
+    Description = "Create index for bills laboratory orders",
+    Sql = @"
+        CREATE INDEX IX_Bills_LabOrder
+        ON bills(LabOrderID);"
+},
 
 
 

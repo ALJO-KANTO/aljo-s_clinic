@@ -258,6 +258,9 @@ namespace Clinic.Medical_Services.Laboratory
 
                 _individualRequests = ClinicDatabase.GetLabRequests(txtSearch.Text, cmbStatus.Text);
                 dgvRequests.DataSource = BuildGroupedRequests(_individualRequests);
+                if (dgvRequests.Columns.Contains("GroupKey"))
+                    dgvRequests.Columns["GroupKey"].Visible = false;
+
                 // Add Print button column after loading the requests.
                 if (!dgvRequests.Columns.Contains("PrintLabReport"))
                 {
@@ -314,11 +317,20 @@ namespace Clinic.Medical_Services.Laboratory
             }
         }
 
-        // This is display-only grouping: it does not modify database bills.
-        // Billed tests group by BillID; unbilled tests group by VisitID.
+        // Group new requests by LabOrderID, legacy requests by their own request ID.
+        // Never merge separate orders belonging to the same visit.
+        private static string RequestGroupKey(DataRow r)
+        {
+            if (r.Table.Columns.Contains("LabOrderID") && r["LabOrderID"] != DBNull.Value)
+                return "O:" + Convert.ToString(r["LabOrderID"]);
+            return "R:" + Convert.ToString(r["LabRequestID"]);
+        }
+
         private DataTable BuildGroupedRequests(DataTable source)
         {
             DataTable grouped = new DataTable();
+            grouped.Columns.Add("GroupKey", typeof(string));
+            grouped.Columns.Add("LabOrderID", typeof(int));
             grouped.Columns.Add("LabRequestID", typeof(int));
             grouped.Columns.Add("VisitID", typeof(int));
             grouped.Columns.Add("BillID", typeof(string));
@@ -329,37 +341,28 @@ namespace Clinic.Medical_Services.Laboratory
             grouped.Columns.Add("BalanceDue", typeof(decimal));
             grouped.Columns.Add("RequestedAt", typeof(DateTime));
             grouped.Columns.Add("Status", typeof(string));
-
-            var groups = source.AsEnumerable().GroupBy(r => Convert.ToInt32(r["VisitID"]));
-
-            foreach (var group in groups)
+            foreach (var group in source.AsEnumerable().GroupBy(RequestGroupKey))
             {
                 var rows = group.ToList();
-                var first = rows[0];
-                var billIDs = rows.Where(r => r["BillID"] != DBNull.Value)
-                    .Select(r => Convert.ToString(r["BillID"])).Distinct().ToArray();
-                bool hasUnbilled = rows.Any(r => r["BillID"] == DBNull.Value);
-                bool singleBill = billIDs.Length == 1 && !hasUnbilled;
+                DataRow first = rows[0];
+                var billGroups = rows.Where(r => r["BillID"] != DBNull.Value)
+                    .GroupBy(r => Convert.ToInt32(r["BillID"])).ToList();
                 decimal total = rows.Sum(r => SafeDecimal(r, "SavedTestPrice"));
-                // PaidAmount is the bill-level payment and must not be summed per test.
-                decimal paid = rows.Where(r => r["BillID"] != DBNull.Value)
-                    .GroupBy(r => Convert.ToString(r["BillID"]))
-                    .Sum(g => g.Max(r => SafeDecimal(r, "PaidAmount")));
-                string status = rows.All(r => Convert.ToString(r["Status"]) == "Completed")
-                    ? "Completed"
-                    : rows.Any(r => Convert.ToString(r["Status"]) == "In Progress")
-                        ? "In Progress"
-                        : rows.Any(r => Convert.ToString(r["Status"]) == "Ordered")
-                            ? "Ordered" : Convert.ToString(first["Status"]);
+                // PaidAmount is repeated per bill; count each bill only once.
+                decimal paid = billGroups.Sum(g => g.Max(r => SafeDecimal(r, "PaidAmount")));
+                bool allCompleted = rows.All(r => Convert.ToString(r["Status"]) == "Completed");
+                string status = allCompleted ? "Completed" :
+                    rows.Any(r => Convert.ToString(r["Status"]) == "In Progress") ? "In Progress" :
+                    rows.Any(r => Convert.ToString(r["Status"]) == "Partial Payment") ? "Partial Payment" :
+                    rows.All(r => Convert.ToString(r["Status"]) == "Paid") ? "Paid" : "Ordered";
                 DataRow display = grouped.NewRow();
-                display["LabRequestID"] = Convert.ToInt32(first["LabRequestID"]);
-                display["VisitID"] = Convert.ToInt32(first["VisitID"]);
-                display["BillID"] = billIDs.Length == 0 ? "" :
-                    string.Join(", ", billIDs) + (hasUnbilled ? " + Unbilled" : "");
+                display["GroupKey"] = group.Key;
+                display["LabOrderID"] = first["LabOrderID"];
+                display["LabRequestID"] = first["LabRequestID"];
+                display["VisitID"] = first["VisitID"];
+                display["BillID"] = string.Join(", ", billGroups.Select(g => g.Key.ToString()));
                 display["PatientName"] = Convert.ToString(first["PatientName"]);
-                display["TestName"] = rows.Count == 1
-                    ? Convert.ToString(first["TestName"])
-                    : rows.Count + " Tests";
+                display["TestName"] = rows.Count == 1 ? Convert.ToString(first["TestName"]) : rows.Count + " Tests";
                 display["SavedTestPrice"] = total;
                 display["PaidAmount"] = paid;
                 display["BalanceDue"] = Math.Max(0m, total - paid);
@@ -379,9 +382,9 @@ namespace Clinic.Medical_Services.Laboratory
         private DataRow[] GetGroupRequests(DataGridViewRow gridRow)
         {
             if (_individualRequests == null || gridRow == null) return new DataRow[0];
-            int visitID = Convert.ToInt32(gridRow.Cells["VisitID"].Value);
+            string key = Convert.ToString(gridRow.Cells["GroupKey"].Value);
             return _individualRequests.AsEnumerable()
-                .Where(r => Convert.ToInt32(r["VisitID"]) == visitID).ToArray();
+                .Where(r => RequestGroupKey(r) == key).ToArray();
         }
 
         private DataRow ChooseRequest(DataRow[] rows, bool completedOnly = false)
@@ -465,6 +468,16 @@ namespace Clinic.Medical_Services.Laboratory
             {
                 DataRow[] rows = GetGroupRequests(dgvRequests.CurrentRow);
                 if (rows.Length == 0) return;
+                if (rows[0]["LabOrderID"] != DBNull.Value)
+                {
+                    int orderID = Convert.ToInt32(rows[0]["LabOrderID"]);
+                    int orderBillID = ClinicDatabase.GetOrCreateLabOrderBill(orderID);
+                    using (var form = new frmManageBills(orderBillID))
+                        form.ShowDialog(this);
+                    ReloadData();
+                    return;
+                }
+
 
                 // A grouped visit may contain several EXISTING invoices.
                 // Let the user choose the actual invoice; never combine
