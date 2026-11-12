@@ -62,7 +62,7 @@ namespace Clinic.Medical_Services.Casher
             // 
             // panTitle
             // 
-            this.panTitle.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(14)))), ((int)(((byte)(30)))), ((int)(((byte)(36)))));
+            this.panTitle.BackColor = System.Drawing.Color.FromArgb(16, 68, 119);
             this.panTitle.Controls.Add(this.label5);
             this.panTitle.Controls.Add(this.pictureBox4);
             this.panTitle.Controls.Add(this.btnExit);
@@ -78,7 +78,7 @@ namespace Clinic.Medical_Services.Casher
             // 
             this.label5.AutoSize = true;
             this.label5.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
-            this.label5.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(236)))), ((int)(((byte)(240)))), ((int)(((byte)(241)))));
+            this.label5.ForeColor = System.Drawing.Color.White;
             this.label5.Location = new System.Drawing.Point(1029, 22);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(137, 28);
@@ -101,7 +101,7 @@ namespace Clinic.Medical_Services.Casher
             this.btnExit.BackColor = System.Drawing.Color.Transparent;
             this.btnExit.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnExit.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnExit.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(236)))), ((int)(((byte)(240)))), ((int)(((byte)(241)))));
+            this.btnExit.ForeColor = System.Drawing.Color.White;
             this.btnExit.Image = global::Clinic.Properties.Resources.sign_out_32__2;
             this.btnExit.Location = new System.Drawing.Point(1315, 28);
             this.btnExit.Name = "btnExit";
@@ -114,7 +114,7 @@ namespace Clinic.Medical_Services.Casher
             // 
             this.lbCurrentUser.AutoSize = true;
             this.lbCurrentUser.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
-            this.lbCurrentUser.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(210)))), ((int)(((byte)(190)))));
+            this.lbCurrentUser.ForeColor = System.Drawing.Color.White;
             this.lbCurrentUser.Location = new System.Drawing.Point(1029, 50);
             this.lbCurrentUser.Name = "lbCurrentUser";
             this.lbCurrentUser.Size = new System.Drawing.Size(53, 28);
@@ -134,7 +134,7 @@ namespace Clinic.Medical_Services.Casher
             // 
             // panCardPending
             // 
-            this.panCardPending.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(58)))), ((int)(((byte)(68)))));
+            this.panCardPending.BackColor = System.Drawing.Color.FromArgb(234, 242, 251);
             this.panCardPending.Controls.Add(this.lblCountPending);
             this.panCardPending.Controls.Add(this.lblTitlePending);
             this.panCardPending.Location = new System.Drawing.Point(421, 125);
@@ -146,7 +146,7 @@ namespace Clinic.Medical_Services.Casher
             // 
             this.lblCountPending.AutoSize = true;
             this.lblCountPending.Font = new System.Drawing.Font("Segoe UI", 22F, System.Drawing.FontStyle.Bold);
-            this.lblCountPending.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(210)))), ((int)(((byte)(190)))));
+            this.lblCountPending.ForeColor = System.Drawing.Color.FromArgb(16, 68, 119);
             this.lblCountPending.Location = new System.Drawing.Point(15, 5);
             this.lblCountPending.Name = "lblCountPending";
             this.lblCountPending.Size = new System.Drawing.Size(43, 50);
@@ -157,7 +157,7 @@ namespace Clinic.Medical_Services.Casher
             // 
             this.lblTitlePending.AutoSize = true;
             this.lblTitlePending.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.lblTitlePending.ForeColor = System.Drawing.Color.DarkGray;
+            this.lblTitlePending.ForeColor = System.Drawing.Color.FromArgb(82, 101, 121);
             this.lblTitlePending.Location = new System.Drawing.Point(18, 50);
             this.lblTitlePending.Name = "lblTitlePending";
             this.lblTitlePending.Size = new System.Drawing.Size(106, 23);
@@ -166,7 +166,7 @@ namespace Clinic.Medical_Services.Casher
             // 
             // panCardPartial
             // 
-            this.panCardPartial.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(58)))), ((int)(((byte)(68)))));
+            this.panCardPartial.BackColor = System.Drawing.Color.FromArgb(234, 242, 251);
             this.panCardPartial.Controls.Add(this.lblCountPartial);
             this.panCardPartial.Controls.Add(this.lblTitlePartial);
             this.panCardPartial.Location = new System.Drawing.Point(665, 125);
@@ -189,7 +189,7 @@ namespace Clinic.Medical_Services.Casher
             // 
             this.lblTitlePartial.AutoSize = true;
             this.lblTitlePartial.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.lblTitlePartial.ForeColor = System.Drawing.Color.DarkGray;
+            this.lblTitlePartial.ForeColor = System.Drawing.Color.FromArgb(82, 101, 121);
             this.lblTitlePartial.Location = new System.Drawing.Point(18, 50);
             this.lblTitlePartial.Name = "lblTitlePartial";
             this.lblTitlePartial.Size = new System.Drawing.Size(135, 23);
@@ -198,7 +198,7 @@ namespace Clinic.Medical_Services.Casher
             // 
             // panCardPaid
             // 
-            this.panCardPaid.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(58)))), ((int)(((byte)(68)))));
+            this.panCardPaid.BackColor = System.Drawing.Color.FromArgb(234, 242, 251);
             this.panCardPaid.Controls.Add(this.lblCountPaid);
             this.panCardPaid.Controls.Add(this.lblTitlePaid);
             this.panCardPaid.Location = new System.Drawing.Point(910, 125);
@@ -221,7 +221,7 @@ namespace Clinic.Medical_Services.Casher
             // 
             this.lblTitlePaid.AutoSize = true;
             this.lblTitlePaid.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.lblTitlePaid.ForeColor = System.Drawing.Color.DarkGray;
+            this.lblTitlePaid.ForeColor = System.Drawing.Color.FromArgb(82, 101, 121);
             this.lblTitlePaid.Location = new System.Drawing.Point(18, 50);
             this.lblTitlePaid.Name = "lblTitlePaid";
             this.lblTitlePaid.Size = new System.Drawing.Size(140, 23);
@@ -234,22 +234,22 @@ namespace Clinic.Medical_Services.Casher
             this.dgMasterBillList.AllowUserToDeleteRows = false;
             this.dgMasterBillList.AllowUserToResizeRows = false;
             this.dgMasterBillList.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.dgMasterBillList.BackgroundColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(43)))), ((int)(((byte)(50)))));
+            this.dgMasterBillList.BackgroundColor = System.Drawing.Color.White;
             this.dgMasterBillList.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dgMasterBillList.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
             dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(14)))), ((int)(((byte)(30)))), ((int)(((byte)(36)))));
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(16, 68, 119);
             dataGridViewCellStyle1.Font = new System.Drawing.Font("Segoe UI", 12F);
-            dataGridViewCellStyle1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(210)))), ((int)(((byte)(190)))));
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(14)))), ((int)(((byte)(30)))), ((int)(((byte)(36)))));
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(210)))), ((int)(((byte)(190)))));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.Color.White;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.FromArgb(16, 68, 119);
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.Color.White;
             dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.dgMasterBillList.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dgMasterBillList.ColumnHeadersHeight = 45;
             this.dgMasterBillList.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.dgMasterBillList.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
             this.dgMasterBillList.EnableHeadersVisualStyles = false;
-            this.dgMasterBillList.GridColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(58)))), ((int)(((byte)(68)))));
+            this.dgMasterBillList.GridColor = System.Drawing.Color.FromArgb(217, 227, 239);
             this.dgMasterBillList.Location = new System.Drawing.Point(421, 220);
             this.dgMasterBillList.MultiSelect = false;
             this.dgMasterBillList.Name = "dgMasterBillList";
@@ -257,11 +257,11 @@ namespace Clinic.Medical_Services.Casher
             this.dgMasterBillList.RowHeadersVisible = false;
             this.dgMasterBillList.RowHeadersWidth = 51;
             this.dgMasterBillList.RowTemplate.DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            this.dgMasterBillList.RowTemplate.DefaultCellStyle.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(58)))), ((int)(((byte)(68)))));
+            this.dgMasterBillList.RowTemplate.DefaultCellStyle.BackColor = System.Drawing.Color.White;
             this.dgMasterBillList.RowTemplate.DefaultCellStyle.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.dgMasterBillList.RowTemplate.DefaultCellStyle.ForeColor = System.Drawing.Color.White;
-            this.dgMasterBillList.RowTemplate.DefaultCellStyle.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(80)))), ((int)(((byte)(90)))));
-            this.dgMasterBillList.RowTemplate.DefaultCellStyle.SelectionForeColor = System.Drawing.Color.White;
+            this.dgMasterBillList.RowTemplate.DefaultCellStyle.ForeColor = System.Drawing.Color.FromArgb(36, 54, 75);
+            this.dgMasterBillList.RowTemplate.DefaultCellStyle.SelectionBackColor = System.Drawing.Color.FromArgb(220, 235, 250);
+            this.dgMasterBillList.RowTemplate.DefaultCellStyle.SelectionForeColor = System.Drawing.Color.FromArgb(36, 54, 75);
             this.dgMasterBillList.RowTemplate.DefaultCellStyle.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
             this.dgMasterBillList.RowTemplate.Height = 40;
             this.dgMasterBillList.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
@@ -270,7 +270,7 @@ namespace Clinic.Medical_Services.Casher
             // 
             // panel2
             // 
-            this.panel2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(58)))), ((int)(((byte)(68)))));
+            this.panel2.BackColor = System.Drawing.Color.FromArgb(217, 227, 239);
             this.panel2.Location = new System.Drawing.Point(405, 129);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(3, 680);
@@ -288,7 +288,7 @@ namespace Clinic.Medical_Services.Casher
             // 
             // panel3
             // 
-            this.panel3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(58)))), ((int)(((byte)(68)))));
+            this.panel3.BackColor = System.Drawing.Color.FromArgb(234, 242, 251);
             this.panel3.Controls.Add(this.chePaid);
             this.panel3.Controls.Add(this.chePartial);
             this.panel3.Controls.Add(this.chePending);
@@ -301,7 +301,7 @@ namespace Clinic.Medical_Services.Casher
             // chePaid
             // 
             this.chePaid.Appearance = System.Windows.Forms.Appearance.Button;
-            this.chePaid.FlatAppearance.CheckedBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(80)))), ((int)(((byte)(90)))));
+            this.chePaid.FlatAppearance.CheckedBackColor = System.Drawing.Color.FromArgb(16, 68, 119);
             this.chePaid.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.chePaid.Font = new System.Drawing.Font("Segoe UI Semibold", 11F, System.Drawing.FontStyle.Bold);
             this.chePaid.ForeColor = System.Drawing.Color.White;
@@ -316,7 +316,7 @@ namespace Clinic.Medical_Services.Casher
             // chePartial
             // 
             this.chePartial.Appearance = System.Windows.Forms.Appearance.Button;
-            this.chePartial.FlatAppearance.CheckedBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(80)))), ((int)(((byte)(90)))));
+            this.chePartial.FlatAppearance.CheckedBackColor = System.Drawing.Color.FromArgb(16, 68, 119);
             this.chePartial.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.chePartial.Font = new System.Drawing.Font("Segoe UI Semibold", 11F, System.Drawing.FontStyle.Bold);
             this.chePartial.ForeColor = System.Drawing.Color.White;
@@ -331,7 +331,7 @@ namespace Clinic.Medical_Services.Casher
             // chePending
             // 
             this.chePending.Appearance = System.Windows.Forms.Appearance.Button;
-            this.chePending.FlatAppearance.CheckedBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(80)))), ((int)(((byte)(90)))));
+            this.chePending.FlatAppearance.CheckedBackColor = System.Drawing.Color.FromArgb(16, 68, 119);
             this.chePending.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.chePending.Font = new System.Drawing.Font("Segoe UI Semibold", 11F, System.Drawing.FontStyle.Bold);
             this.chePending.ForeColor = System.Drawing.Color.White;
@@ -347,7 +347,7 @@ namespace Clinic.Medical_Services.Casher
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Segoe UI Semibold", 13F, System.Drawing.FontStyle.Bold);
-            this.label1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(210)))), ((int)(((byte)(190)))));
+            this.label1.ForeColor = System.Drawing.Color.FromArgb(16, 68, 119);
             this.label1.Location = new System.Drawing.Point(15, 15);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(110, 30);
@@ -358,7 +358,7 @@ namespace Clinic.Medical_Services.Casher
             // 
             this.chkAllDates.AutoSize = true;
             this.chkAllDates.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            this.chkAllDates.ForeColor = System.Drawing.Color.DarkGray;
+            this.chkAllDates.ForeColor = System.Drawing.Color.FromArgb(82, 101, 121);
             this.chkAllDates.Location = new System.Drawing.Point(250, 200);
             this.chkAllDates.Name = "chkAllDates";
             this.chkAllDates.Size = new System.Drawing.Size(104, 27);
@@ -370,7 +370,7 @@ namespace Clinic.Medical_Services.Casher
             // 
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Segoe UI Semibold", 12F, System.Drawing.FontStyle.Bold);
-            this.label4.ForeColor = System.Drawing.Color.DarkGray;
+            this.label4.ForeColor = System.Drawing.Color.FromArgb(82, 101, 121);
             this.label4.Location = new System.Drawing.Point(27, 550);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(201, 28);
@@ -381,7 +381,7 @@ namespace Clinic.Medical_Services.Casher
             // 
             this.label6.AutoSize = true;
             this.label6.Font = new System.Drawing.Font("Segoe UI Semibold", 12F, System.Drawing.FontStyle.Bold);
-            this.label6.ForeColor = System.Drawing.Color.DarkGray;
+            this.label6.ForeColor = System.Drawing.Color.FromArgb(82, 101, 121);
             this.label6.Location = new System.Drawing.Point(27, 200);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(133, 28);
@@ -390,9 +390,9 @@ namespace Clinic.Medical_Services.Casher
             // 
             // txtSearchByPatientName
             // 
-            this.txtSearchByPatientName.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(58)))), ((int)(((byte)(68)))));
+            this.txtSearchByPatientName.BackColor = System.Drawing.Color.White;
             this.txtSearchByPatientName.Font = new System.Drawing.Font("Segoe UI", 13F);
-            this.txtSearchByPatientName.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(210)))), ((int)(((byte)(190)))));
+            this.txtSearchByPatientName.ForeColor = System.Drawing.Color.FromArgb(36, 54, 75);
             this.txtSearchByPatientName.Location = new System.Drawing.Point(30, 585);
             this.txtSearchByPatientName.Name = "txtSearchByPatientName";
             this.txtSearchByPatientName.Size = new System.Drawing.Size(328, 36);
@@ -411,7 +411,7 @@ namespace Clinic.Medical_Services.Casher
             // 
             // flowLayoutPanel1
             // 
-            this.flowLayoutPanel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(14)))), ((int)(((byte)(30)))), ((int)(((byte)(36)))));
+            this.flowLayoutPanel1.BackColor = System.Drawing.Color.FromArgb(16, 68, 119);
             this.flowLayoutPanel1.Controls.Add(this.label2);
             this.flowLayoutPanel1.Location = new System.Drawing.Point(20, 132);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
@@ -430,7 +430,7 @@ namespace Clinic.Medical_Services.Casher
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 28F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(43)))), ((int)(((byte)(50)))));
+            this.BackColor = System.Drawing.Color.FromArgb(245, 248, 252);
             this.ClientSize = new System.Drawing.Size(1544, 829);
             this.Controls.Add(this.chkAllDates);
             this.Controls.Add(this.panCardPaid);
@@ -447,7 +447,7 @@ namespace Clinic.Medical_Services.Casher
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.panTitle);
             this.Font = new System.Drawing.Font("Segoe UI", 12F);
-            this.ForeColor = System.Drawing.Color.White;
+            this.ForeColor = System.Drawing.Color.FromArgb(36, 54, 75);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "frmManageBills";
             this.Padding = new System.Windows.Forms.Padding(20);

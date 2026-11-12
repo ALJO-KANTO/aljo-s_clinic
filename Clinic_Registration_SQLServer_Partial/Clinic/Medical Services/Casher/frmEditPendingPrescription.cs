@@ -14,6 +14,7 @@ namespace Clinic.Medical_Services.Casher
 
         private readonly NumericUpDown _qtyEditor = new NumericUpDown();
         private bool _loadingEditorValue = false;
+        public bool IsPrescriptionLoaded { get; private set; } = false;
 
         public frmEditPendingPrescription(int billID)
         {
@@ -56,7 +57,7 @@ namespace Clinic.Medical_Services.Casher
             {
                 _prescription = new clsEDitPendingPrescriptionDetails(_billID);
 
-                if (_prescription == null || _prescription.dtDispensedItems.Rows.Count==0 )
+                if (_prescription == null || _prescription.dtDispensedItems.Rows.Count == 0)
                 {
                     MessageBox.Show(
                         "The prescription could not be loaded.",
@@ -64,7 +65,9 @@ namespace Clinic.Medical_Services.Casher
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
 
-                    Close();
+                    // Do not close/dispose the form inside its constructor.
+                    // The caller checks IsPrescriptionLoaded before showing it.
+                    IsPrescriptionLoaded = false;
                     return;
                 }
 
@@ -78,6 +81,7 @@ namespace Clinic.Medical_Services.Casher
                 ConfigureGridColumns();
 
                 ShowQuantityEditor();
+                IsPrescriptionLoaded = true;
             }
             catch (Exception ex)
             {
@@ -87,7 +91,9 @@ namespace Clinic.Medical_Services.Casher
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
 
-                Close();
+                // Keep the form undisposed; the caller will skip ShowDialog
+                // when IsPrescriptionLoaded is false.
+                IsPrescriptionLoaded = false;
             }
         }
 
