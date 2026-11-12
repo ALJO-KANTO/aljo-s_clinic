@@ -16,67 +16,6 @@ namespace Clinic_DataAccess
             public string Sql { get; set; }
         }
 
-        private static readonly string Migration_20261026_001_FixViewBillItems = @"
-CREATE OR REPLACE VIEW view_billitems AS
-
-SELECT
-    b.BillID AS BillID,
-    _utf8mb4'Medicine' COLLATE utf8mb4_0900_ai_ci AS ItemType,
-    CONVERT(pd.SavedMedicineName USING utf8mb4)
-        COLLATE utf8mb4_0900_ai_ci AS ItemName,
-    pd.Quantity AS Quantity,
-    pd.SavedMedicinePrice AS Price,
-    (pd.SavedMedicinePrice * pd.Quantity) AS Total
-
-FROM prescriptiondetails pd
-
-INNER JOIN prescriptions pr
-    ON pd.PrescriptionID = pr.PrescriptionID
-
-INNER JOIN bills b
-    ON pr.VisitID = b.VisitID
-
-UNION ALL
-
-SELECT
-    b.BillID AS BillID,
-    _utf8mb4'Service' COLLATE utf8mb4_0900_ai_ci AS ItemType,
-    CONVERT(s.ServiceName USING utf8mb4)
-        COLLATE utf8mb4_0900_ai_ci AS ItemName,
-    vs.Quantity AS Quantity,
-    vs.SavedServicePrice AS Price,
-    (vs.SavedServicePrice * vs.Quantity) AS Total
-
-FROM visitservices vs
-
-INNER JOIN services s
-    ON vs.ServiceID = s.ServiceID
-
-INNER JOIN bills b
-    ON vs.VisitID = b.VisitID
-
-UNION ALL
-
-SELECT
-    b.BillID AS BillID,
-    _utf8mb4'Appointment'
-        COLLATE utf8mb4_0900_ai_ci AS ItemType,
-    _utf8mb4'Appointment Fees'
-        COLLATE utf8mb4_0900_ai_ci AS ItemName,
-    1 AS Quantity,
-    a.AppointmentFees AS Price,
-    a.AppointmentFees AS Total
-
-FROM appointments a
-
-INNER JOIN visits v
-    ON a.AppointmentID = v.AppointmentID
-
-INNER JOIN bills b
-    ON v.VisitID = b.VisitID
-
-WHERE a.AppointmentFees > 0;
-";
         public static void ApplyMigrations()
         {
             using (MySqlConnection connection = GetConnection())
@@ -558,61 +497,62 @@ WHERE a.AppointmentFees > 0;
                             Sql = @"ALTER TABLE `prescriptions` ADD COLUMN `BillID` int DEFAULT NULL;"
                         },
                         new DatabaseMigration
-{
-    Version = "20261111_001",
-    Description = "Update missing Prescription BillID for visits with one bill",
-    Sql = @"
-        UPDATE Prescriptions P
-        INNER JOIN
-        (
-            SELECT
-                VisitID,
-                MIN(BillID) AS BillID
-            FROM Bills
-            GROUP BY VisitID
-            HAVING COUNT(*) = 1
-        ) B ON P.VisitID = B.VisitID
-        SET P.BillID = B.BillID
-        WHERE P.BillID IS NULL;
-    "
-},new DatabaseMigration
-{
-    Version = "20261111_002",
-    Description = "Fix missing Prescription BillID for single-bill visits",
-    Sql = @"
-        UPDATE Prescriptions P
-        INNER JOIN
-        (
-            SELECT
-                VisitID,
-                MIN(BillID) AS BillID
-            FROM Bills
-            GROUP BY VisitID
-            HAVING COUNT(*) = 1
-        ) B ON P.VisitID = B.VisitID
-        SET P.BillID = B.BillID
-        WHERE P.BillID IS NULL;
-    "
-},new DatabaseMigration
-{
-    Version = "20261111_003",
-    Description = "Update missing Prescription BillID for visits with one bill",
-    Sql = @"
-        UPDATE Prescriptions P
-        INNER JOIN
-        (
-            SELECT
-                VisitID,
-                MIN(BillID) AS BillID
-            FROM Bills
-            GROUP BY VisitID
-            HAVING COUNT(*) = 1
-        ) B ON P.VisitID = B.VisitID
-        SET P.BillID = B.BillID
-        WHERE P.BillID IS NULL;
-    "
-},
-                        new DatabaseMigration
+                        {
+                            Version = "20261111_001",
+                            Description = "Update missing Prescription BillID for visits with one bill",
+                            Sql = @"
+                                UPDATE Prescriptions P
+                                INNER JOIN
+                                (
+                                    SELECT
+                                        VisitID,
+                                        MIN(BillID) AS BillID
+                                    FROM Bills
+                                    GROUP BY VisitID
+                                    HAVING COUNT(*) = 1
+                                ) B ON P.VisitID = B.VisitID
+                                SET P.BillID = B.BillID
+                                WHERE P.BillID IS NULL;
+                            "
+                        },new DatabaseMigration
+                        {
+                            Version = "20261111_002",
+                            Description = "Fix missing Prescription BillID for single-bill visits",
+                            Sql = @"
+                                UPDATE Prescriptions P
+                                INNER JOIN
+                                (
+                                    SELECT
+                                        VisitID,
+                                        MIN(BillID) AS BillID
+                                    FROM Bills
+                                    GROUP BY VisitID
+                                    HAVING COUNT(*) = 1
+                                ) B ON P.VisitID = B.VisitID
+                                SET P.BillID = B.BillID
+                                WHERE P.BillID IS NULL;
+                            "
+                        },
+                      new DatabaseMigration
+                        {
+                            Version = "20261111_003",
+                            Description = "Update missing Prescription BillID for visits with one bill",
+                            Sql = @"
+                                UPDATE Prescriptions P
+                                INNER JOIN
+                                (
+                                    SELECT
+                                        VisitID,
+                                        MIN(BillID) AS BillID
+                                    FROM Bills
+                                    GROUP BY VisitID
+                                    HAVING COUNT(*) = 1
+                                ) B ON P.VisitID = B.VisitID
+                                SET P.BillID = B.BillID
+                                WHERE P.BillID IS NULL;
+                            "
+                       },
+                      new DatabaseMigration
                         {
                             Version = "20261015_BASE_028",
                             Description = "Initial schema: prescriptiondetails",
@@ -633,10 +573,9 @@ WHERE a.AppointmentFees > 0;
                               CONSTRAINT `fk_prescriptiondetails_master` FOREIGN KEY (`PrescriptionID`) REFERENCES `prescriptions` (`PrescriptionID`),
                               CONSTRAINT `fk_prescriptiondetails_medicine` FOREIGN KEY (`MedicineID`) REFERENCES `medicines` (`MedicineID`)
                             ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
-                        },
-
-                        new DatabaseMigration
-                        {
+                       },
+                      new DatabaseMigration
+                      {
                             Version = "20261019_ERP_034",
                             Description = "Create tbl_items",
                             Sql = @"
@@ -679,25 +618,24 @@ WHERE a.AppointmentFees > 0;
                                             )
                                             COLLATE='utf8mb4_general_ci' ENGINE=InnoDB ;
                             "
-                        },
+                      },
+                      new DatabaseMigration
+                      {
+                            Version = "20261022_CLINIC_00053",
+                            Description = "Link prescriptiondetails MedicineID to tbl_items",
+                            Sql = @"
+                                ALTER TABLE prescriptiondetails
+                                    DROP FOREIGN KEY fk_prescriptiondetails_medicine;
 
-                       new DatabaseMigration
-{
-    Version = "20261022_CLINIC_00053",
-    Description = "Link prescriptiondetails MedicineID to tbl_items",
-    Sql = @"
-        ALTER TABLE prescriptiondetails
-            DROP FOREIGN KEY fk_prescriptiondetails_medicine;
+                                ALTER TABLE prescriptiondetails
+                                    DROP INDEX fk_prescriptiondetails_medicine;
 
-        ALTER TABLE prescriptiondetails
-            DROP INDEX fk_prescriptiondetails_medicine;
-
-        ALTER TABLE prescriptiondetails
-            ADD CONSTRAINT fk_prescriptiondetails_item
-            FOREIGN KEY (MedicineID)
-            REFERENCES tbl_items(id);
-    "
-},
+                                ALTER TABLE prescriptiondetails
+                                    ADD CONSTRAINT fk_prescriptiondetails_item
+                                    FOREIGN KEY (MedicineID)
+                                    REFERENCES tbl_items(id);
+                            "
+                      },
 
                         new DatabaseMigration
                         {
@@ -731,37 +669,37 @@ WHERE a.AppointmentFees > 0;
                                 ) ENGINE=InnoDB;"
                         },
                         new DatabaseMigration
-{
-    Version = "20261016_LAB_001",
-    Description = "Create laboratory requests table",
-    Sql = @"
-        CREATE TABLE IF NOT EXISTS labrequests
-        (
-            LabRequestID INT NOT NULL AUTO_INCREMENT,
-            VisitID INT NOT NULL,
-            TestID INT NOT NULL,
-            RequestedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            Status VARCHAR(30) NOT NULL DEFAULT 'Ordered',
-            ResultValue TEXT NULL,
-            ResultNotes TEXT NULL,
-            ResultedAt DATETIME NULL,
+                        {
+                            Version = "20261016_LAB_001",
+                            Description = "Create laboratory requests table",
+                            Sql = @"
+                                CREATE TABLE IF NOT EXISTS labrequests
+                                (
+                                    LabRequestID INT NOT NULL AUTO_INCREMENT,
+                                    VisitID INT NOT NULL,
+                                    TestID INT NOT NULL,
+                                    RequestedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                    Status VARCHAR(30) NOT NULL DEFAULT 'Ordered',
+                                    ResultValue TEXT NULL,
+                                    ResultNotes TEXT NULL,
+                                    ResultedAt DATETIME NULL,
 
-            PRIMARY KEY (LabRequestID),
+                                    PRIMARY KEY (LabRequestID),
 
-            INDEX IX_LabRequests_Visit (VisitID),
-            INDEX IX_LabRequests_Test (TestID),
-            INDEX IX_LabRequests_Status (Status),
+                                    INDEX IX_LabRequests_Visit (VisitID),
+                                    INDEX IX_LabRequests_Test (TestID),
+                                    INDEX IX_LabRequests_Status (Status),
 
-            CONSTRAINT FK_LabRequests_Visit
-                FOREIGN KEY (VisitID)
-                REFERENCES visits(VisitID),
+                                    CONSTRAINT FK_LabRequests_Visit
+                                        FOREIGN KEY (VisitID)
+                                        REFERENCES visits(VisitID),
 
-            CONSTRAINT FK_LabRequests_Test
-                FOREIGN KEY (TestID)
-                REFERENCES laboratorytests(TestID)
+                                    CONSTRAINT FK_LabRequests_Test
+                                        FOREIGN KEY (TestID)
+                                        REFERENCES laboratorytests(TestID)
 
-        ) ENGINE=InnoDB;"
-},
+                                ) ENGINE=InnoDB;"
+                        },
                         new DatabaseMigration
                         {
                             Version = "20261015_SEED_001",
@@ -1400,63 +1338,63 @@ WHERE a.AppointmentFees > 0;
                                 "
                             },
                         new DatabaseMigration
-{
-    Version = "20261019_0029",
-    Description = "Create Petty Cash Category table",
-    Sql = @"
-        CREATE TABLE IF NOT EXISTS `tbl_petty_cash_category` (
-            `id` int NOT NULL AUTO_INCREMENT,
-            `name` varchar(200)
-                CHARACTER SET utf8mb4
-                COLLATE utf8mb4_general_ci DEFAULT NULL,
-            `description` varchar(500)
-                CHARACTER SET utf8mb4
-                COLLATE utf8mb4_general_ci DEFAULT NULL,
-            PRIMARY KEY (`id`)
-        ) ENGINE=InnoDB
-          DEFAULT CHARSET=utf8mb4
-          COLLATE=utf8mb4_general_ci;
-    "
-},
+                        {
+                            Version = "20261019_0029",
+                            Description = "Create Petty Cash Category table",
+                            Sql = @"
+                                CREATE TABLE IF NOT EXISTS `tbl_petty_cash_category` (
+                                    `id` int NOT NULL AUTO_INCREMENT,
+                                    `name` varchar(200)
+                                        CHARACTER SET utf8mb4
+                                        COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                    `description` varchar(500)
+                                        CHARACTER SET utf8mb4
+                                        COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                    PRIMARY KEY (`id`)
+                                ) ENGINE=InnoDB
+                                  DEFAULT CHARSET=utf8mb4
+                                  COLLATE=utf8mb4_general_ci;
+                            "
+                        },
                         new DatabaseMigration
-{
-    Version = "20261019_0031",
-    Description = "Create Bank table",
-    Sql = @"
-        CREATE TABLE IF NOT EXISTS `tbl_bank` (
-            `id` int NOT NULL AUTO_INCREMENT,
-            `code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-            `name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-            `abb_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-            `ent_id` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-            `route_num` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-            `country_id` int DEFAULT NULL,
-            `state` int DEFAULT NULL,
-            `created_by` int DEFAULT NULL,
-            `created_date` date DEFAULT NULL,
-            PRIMARY KEY (`id`)
-        ) ENGINE=InnoDB
-          DEFAULT CHARSET=utf8mb4
-          COLLATE=utf8mb4_general_ci;
-    "
-},
+                        {
+                            Version = "20261019_0031",
+                            Description = "Create Bank table",
+                            Sql = @"
+                                CREATE TABLE IF NOT EXISTS `tbl_bank` (
+                                    `id` int NOT NULL AUTO_INCREMENT,
+                                    `code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                    `name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                    `abb_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                    `ent_id` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                    `route_num` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                    `country_id` int DEFAULT NULL,
+                                    `state` int DEFAULT NULL,
+                                    `created_by` int DEFAULT NULL,
+                                    `created_date` date DEFAULT NULL,
+                                    PRIMARY KEY (`id`)
+                                ) ENGINE=InnoDB
+                                  DEFAULT CHARSET=utf8mb4
+                                  COLLATE=utf8mb4_general_ci;
+                            "
+                        },
                         new DatabaseMigration
-{
-    Version = "20261019_0030",
-    Description = "Create Vendor Category table",
-    Sql = @"
-        CREATE TABLE IF NOT EXISTS `tbl_vendor_category` (
-            `id` int NOT NULL AUTO_INCREMENT,
-            `name` varchar(200)
-                CHARACTER SET utf8mb4
-                COLLATE utf8mb4_general_ci
-                NOT NULL DEFAULT '0',
-            PRIMARY KEY (`id`)
-        ) ENGINE=InnoDB
-          DEFAULT CHARSET=utf8mb4
-          COLLATE=utf8mb4_general_ci;
-    "
-},
+                        {
+                            Version = "20261019_0030",
+                            Description = "Create Vendor Category table",
+                            Sql = @"
+                                CREATE TABLE IF NOT EXISTS `tbl_vendor_category` (
+                                    `id` int NOT NULL AUTO_INCREMENT,
+                                    `name` varchar(200)
+                                        CHARACTER SET utf8mb4
+                                        COLLATE utf8mb4_general_ci
+                                        NOT NULL DEFAULT '0',
+                                    PRIMARY KEY (`id`)
+                                ) ENGINE=InnoDB
+                                  DEFAULT CHARSET=utf8mb4
+                                  COLLATE=utf8mb4_general_ci;
+                            "
+                        },
                         new DatabaseMigration
                         {
                             Version = "20261019_0026",
@@ -1521,7 +1459,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_001",
                             Description = "Create tbl_coa_level_1",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_coa_level_1` (
+                            CREATE TABLE IF NOT EXISTS `tbl_coa_level_1` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `name` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
                                                   `code` int DEFAULT NULL,
@@ -1536,7 +1474,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_002",
                             Description = "Create tbl_coa_level_2",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_coa_level_2` (
+                            CREATE TABLE IF NOT EXISTS `tbl_coa_level_2` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `name` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
                                                   `code` int NOT NULL,
@@ -1547,21 +1485,11 @@ WHERE a.AppointmentFees > 0;
                             "
                         },
                         new DatabaseMigration
-{
-    Version = "20261103_LAB_003_GENDER_RANGES",
-    Description = "Add male and female reference ranges to laboratory test parameters",
-    Sql = @"
-        ALTER TABLE laboratorytestparameters
-            ADD COLUMN MaleReferenceRange VARCHAR(200) NULL,
-            ADD COLUMN FemaleReferenceRange VARCHAR(200) NULL;
-    "
-},
-                        new DatabaseMigration
                         {
                             Version = "20261019_ERP_003",
                             Description = "Create tbl_coa_level_3",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_coa_level_3` (
+                            CREATE TABLE IF NOT EXISTS `tbl_coa_level_3` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `name` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
                                                   `code` int NOT NULL,
@@ -1577,7 +1505,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_004",
                             Description = "Create tbl_coa_level_4",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_coa_level_4` (
+                            CREATE TABLE IF NOT EXISTS `tbl_coa_level_4` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `name` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
                                                   `code` int NOT NULL,
@@ -1596,7 +1524,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_005",
                             Description = "Create tbl_cost_center",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_cost_center` (
+                            CREATE TABLE IF NOT EXISTS `tbl_cost_center` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `code` int DEFAULT NULL,
                                                   `name` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -1611,7 +1539,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_006",
                             Description = "Create tbl_sub_cost_center",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_sub_cost_center` (
+                            CREATE TABLE IF NOT EXISTS `tbl_sub_cost_center` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `code` int DEFAULT NULL,
                                                   `name` varchar(350) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -1627,7 +1555,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_007",
                             Description = "Create tbl_fixed_assets",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_fixed_assets` (
+                            CREATE TABLE IF NOT EXISTS `tbl_fixed_assets` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `date` date DEFAULT NULL,
                                                   `code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -1662,7 +1590,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_008",
                             Description = "Create tbl_fixed_assets_category",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_fixed_assets_category` (
+                            CREATE TABLE IF NOT EXISTS `tbl_fixed_assets_category` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `category_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
 	                                              `assets_account_id` INT(10) NOT NULL DEFAULT '0',
@@ -1678,7 +1606,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_009",
                             Description = "Create tbl_deleted_records",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS tbl_deleted_records (
+                            CREATE TABLE IF NOT EXISTS tbl_deleted_records (
                                                     id INT AUTO_INCREMENT PRIMARY KEY,
                                                     table_name VARCHAR(100),
                                                     record_data TEXT,
@@ -1693,7 +1621,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_010",
                             Description = "Create tbl_journal_voucher_details",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_journal_voucher_details` (
+                            CREATE TABLE IF NOT EXISTS `tbl_journal_voucher_details` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `date` date NOT NULL,
                                                   `debit` decimal(20,4) NOT NULL DEFAULT '0.000',
@@ -1703,13 +1631,11 @@ WHERE a.AppointmentFees > 0;
                                                   `partner` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
                                                   `account_id` int NOT NULL DEFAULT '0',
                                                   `project_id` INT NOT NULL DEFAULT 0, 
-                          `GlobalId` varchar(36) NOT NULL DEFAULT '0',
-                          `DeviceId` varchar(50) DEFAULT NULL,
-                          `LastModified` datetime DEFAULT CURRENT_TIMESTAMP,
-                          `SyncStatus` tinyint NOT NULL DEFAULT 0,
-
+                                                  `GlobalId` varchar(36) NOT NULL DEFAULT '0',
+                                                  `DeviceId` varchar(50) DEFAULT NULL,
+                                                  `LastModified` datetime DEFAULT CURRENT_TIMESTAMP,
+                                                  `SyncStatus` tinyint NOT NULL DEFAULT 0,
                                                   PRIMARY KEY (`id`)
-
                                                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
                             "
                         },
@@ -1719,7 +1645,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_011",
                             Description = "Create tbl_journal_voucher",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_journal_voucher` (
+                            CREATE TABLE IF NOT EXISTS `tbl_journal_voucher` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `date` date DEFAULT NULL,
                                                   `code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -1731,106 +1657,105 @@ WHERE a.AppointmentFees > 0;
                                                   `modified_date` date DEFAULT NULL,
                                                   `state` int DEFAULT NULL,
                                                   `project_id` INT NOT NULL DEFAULT 0,
-                         `GlobalId` varchar(36) NOT NULL DEFAULT '0',
-                          `DeviceId` varchar(50) DEFAULT NULL,
-                          `LastModified` datetime DEFAULT CURRENT_TIMESTAMP,
-                          `SyncStatus` tinyint NOT NULL DEFAULT 0,
-
+                                                 `GlobalId` varchar(36) NOT NULL DEFAULT '0',
+                                                  `DeviceId` varchar(50) DEFAULT NULL,
+                                                  `LastModified` datetime DEFAULT CURRENT_TIMESTAMP,
+                                                  `SyncStatus` tinyint NOT NULL DEFAULT 0,
                                                   PRIMARY KEY (`id`) USING BTREE
 
                                                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
                             "
                         },
                         new DatabaseMigration
-{
-    Version = "20261019_0032",
-    Description = "Create Bank Card table",
-    Sql = @"
-        CREATE TABLE IF NOT EXISTS `tbl_bank_card` (
-            `id` int NOT NULL AUTO_INCREMENT,
-            `bank_id` int DEFAULT NULL,
-            `account_name` varchar(70) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-            `account_type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-            `account_no` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-            `swift` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-            `iban_no` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-            `branch_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-            `emirates` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-            `currency` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-            `account_manager` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-            `account_sign` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-            `account_mob` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-            `account_id` int DEFAULT NULL,
-            `state` int DEFAULT NULL,
-            `created_by` int DEFAULT NULL,
-            `created_date` date DEFAULT NULL,
-            `company_ac` int DEFAULT '0',
-            PRIMARY KEY (`id`)
-        ) ENGINE=InnoDB
-          DEFAULT CHARSET=utf8mb4
-          COLLATE=utf8mb4_general_ci;
-    "
-},
+                        {
+                            Version = "20261019_0032",
+                            Description = "Create Bank Card table",
+                            Sql = @"
+                                CREATE TABLE IF NOT EXISTS `tbl_bank_card` (
+                                    `id` int NOT NULL AUTO_INCREMENT,
+                                    `bank_id` int DEFAULT NULL,
+                                    `account_name` varchar(70) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                    `account_type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                    `account_no` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                    `swift` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                    `iban_no` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                    `branch_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                    `emirates` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                    `currency` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                    `account_manager` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                    `account_sign` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                    `account_mob` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                    `account_id` int DEFAULT NULL,
+                                    `state` int DEFAULT NULL,
+                                    `created_by` int DEFAULT NULL,
+                                    `created_date` date DEFAULT NULL,
+                                    `company_ac` int DEFAULT '0',
+                                    PRIMARY KEY (`id`)
+                                ) ENGINE=InnoDB
+                                  DEFAULT CHARSET=utf8mb4
+                                  COLLATE=utf8mb4_general_ci;
+                            "
+                        },
                         new DatabaseMigration
-{
-    Version = "20261019_0034",
-    Description = "Create Departments table",
-    Sql = @"
-        CREATE TABLE IF NOT EXISTS `tbl_departments` (
-            `id` int NOT NULL AUTO_INCREMENT,
-            `name` varchar(200)
-                CHARACTER SET utf8mb4
-                COLLATE utf8mb4_general_ci DEFAULT NULL,
-            `Department` varchar(100)
-                CHARACTER SET utf8mb4
-                COLLATE utf8mb4_general_ci DEFAULT NULL,
-            PRIMARY KEY (`id`)
-        ) ENGINE=InnoDB
-          DEFAULT CHARSET=utf8mb4
-          COLLATE=utf8mb4_general_ci;
-    "
-},
+                        {
+                            Version = "20261019_0034",
+                            Description = "Create Departments table",
+                            Sql = @"
+                                CREATE TABLE IF NOT EXISTS `tbl_departments` (
+                                    `id` int NOT NULL AUTO_INCREMENT,
+                                    `name` varchar(200)
+                                        CHARACTER SET utf8mb4
+                                        COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                    `Department` varchar(100)
+                                        CHARACTER SET utf8mb4
+                                        COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                    PRIMARY KEY (`id`)
+                                ) ENGINE=InnoDB
+                                  DEFAULT CHARSET=utf8mb4
+                                  COLLATE=utf8mb4_general_ci;
+                            "
+                        },
                         new DatabaseMigration
-{
-    Version = "20261019_0035",
-    Description = "Create Position table",
-    Sql = @"
-        CREATE TABLE IF NOT EXISTS `tbl_position` (
-            `id` int NOT NULL AUTO_INCREMENT,
-            `name` varchar(200)
-                CHARACTER SET utf8mb4
-                COLLATE utf8mb4_general_ci DEFAULT NULL,
-            `department_id` int DEFAULT NULL,
-            `AnnualLeaveDays` INT DEFAULT 30,
-            `EOSDaysPerYear` INT DEFAULT 0,
-            PRIMARY KEY (`id`)
-        ) ENGINE=InnoDB
-          DEFAULT CHARSET=utf8mb4
-          COLLATE=utf8mb4_general_ci;
-    "
-},
+                        {
+                            Version = "20261019_0035",
+                            Description = "Create Position table",
+                            Sql = @"
+                                CREATE TABLE IF NOT EXISTS `tbl_position` (
+                                    `id` int NOT NULL AUTO_INCREMENT,
+                                    `name` varchar(200)
+                                        CHARACTER SET utf8mb4
+                                        COLLATE utf8mb4_general_ci DEFAULT NULL,
+                                    `department_id` int DEFAULT NULL,
+                                    `AnnualLeaveDays` INT DEFAULT 30,
+                                    `EOSDaysPerYear` INT DEFAULT 0,
+                                    PRIMARY KEY (`id`)
+                                ) ENGINE=InnoDB
+                                  DEFAULT CHARSET=utf8mb4
+                                  COLLATE=utf8mb4_general_ci;
+                            "
+                        },
                         new DatabaseMigration
-{
-    Version = "20261019_0033",
-    Description = "Create Bank Register table",
-    Sql = @"
-        CREATE TABLE IF NOT EXISTS `tbl_bank_register` (
-            `id` int NOT NULL AUTO_INCREMENT,
-            `bank_id` int DEFAULT NULL,
-            `created_by` int DEFAULT NULL,
-            `created_date` date DEFAULT NULL,
-            PRIMARY KEY (`id`)
-        ) ENGINE=InnoDB
-          DEFAULT CHARSET=utf8mb4
-          COLLATE=utf8mb4_general_ci;
-    "
-},
+                        {
+                            Version = "20261019_0033",
+                            Description = "Create Bank Register table",
+                            Sql = @"
+                                CREATE TABLE IF NOT EXISTS `tbl_bank_register` (
+                                    `id` int NOT NULL AUTO_INCREMENT,
+                                    `bank_id` int DEFAULT NULL,
+                                    `created_by` int DEFAULT NULL,
+                                    `created_date` date DEFAULT NULL,
+                                    PRIMARY KEY (`id`)
+                                ) ENGINE=InnoDB
+                                  DEFAULT CHARSET=utf8mb4
+                                  COLLATE=utf8mb4_general_ci;
+                            "
+                        },
                         new DatabaseMigration
                         {
                             Version = "20261019_ERP_012",
                             Description = "Create tbl_check_details",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_check_details` (
+                            CREATE TABLE IF NOT EXISTS `tbl_check_details` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `date` date DEFAULT NULL,
                                                   `check_id` int DEFAULT NULL,
@@ -1855,7 +1780,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_013",
                             Description = "Create tbl_payment_voucher_details",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_payment_voucher_details` (
+                            CREATE TABLE IF NOT EXISTS `tbl_payment_voucher_details` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `date` date DEFAULT NULL,
                                                   `payment_id` int DEFAULT NULL,
@@ -1868,10 +1793,10 @@ WHERE a.AppointmentFees > 0;
                                                   `voucher_type` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
                                                   `cost_center_id` int DEFAULT NULL,
                                                   `project_id` INT NOT NULL DEFAULT 0,
-                        `GlobalId` varchar(36) NOT NULL DEFAULT '0',
-                          `DeviceId` varchar(50) DEFAULT NULL,
-                          `LastModified` datetime DEFAULT CURRENT_TIMESTAMP,
-                          `SyncStatus` tinyint NOT NULL DEFAULT 0,
+                                `GlobalId` varchar(36) NOT NULL DEFAULT '0',
+                                `DeviceId` varchar(50) DEFAULT NULL,
+                              `LastModified` datetime DEFAULT CURRENT_TIMESTAMP,
+                                `SyncStatus` tinyint NOT NULL DEFAULT 0,
 
                                                   PRIMARY KEY (`id`)
 
@@ -1884,7 +1809,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_014",
                             Description = "Create tbl_payment_voucher",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_payment_voucher` (
+                            CREATE TABLE IF NOT EXISTS `tbl_payment_voucher` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `date` date DEFAULT NULL,
                                                   `code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -1920,13 +1845,12 @@ WHERE a.AppointmentFees > 0;
                                                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
                             "
                         },
-
-                                new DatabaseMigration
+                      new DatabaseMigration
                         {
                             Version = "20261019_ERP_015",
                             Description = "Create tbl_advance_payment_voucher_details",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_advance_payment_voucher_details` (
+                            CREATE TABLE IF NOT EXISTS `tbl_advance_payment_voucher_details` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `payment_id` int NOT NULL DEFAULT '0',
                                                   `name` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -1958,7 +1882,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_016",
                             Description = "Create tbl_advance_payment_voucher",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_advance_payment_voucher` (
+                            CREATE TABLE IF NOT EXISTS `tbl_advance_payment_voucher` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `date` date DEFAULT NULL,
                                                   `pv_code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -1990,7 +1914,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_017",
                             Description = "Create tbl_petty_cash_card",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_petty_cash_card` (
+                            CREATE TABLE IF NOT EXISTS `tbl_petty_cash_card` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
                                                   `name` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -2008,7 +1932,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_018",
                             Description = "Create tbl_petty_cash_submition_details",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_petty_cash_submition_details` (
+                            CREATE TABLE IF NOT EXISTS `tbl_petty_cash_submition_details` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `petty_id` int NOT NULL DEFAULT '0',
                                                   `date` date DEFAULT NULL,
@@ -2030,7 +1954,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_019",
                             Description = "Create tbl_petty_cash_submition",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_petty_cash_submition` (
+                            CREATE TABLE IF NOT EXISTS `tbl_petty_cash_submition` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `date` date DEFAULT NULL,
                                                   `code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -2051,7 +1975,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_020",
                             Description = "Create tbl_petty_cash_details",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS tbl_petty_cash_details(
+                            CREATE TABLE IF NOT EXISTS tbl_petty_cash_details(
                                                     id int NOT NULL AUTO_INCREMENT,
                                                     petty_cash_id INT NOT NULL,
                                                     entry_date DATE NOT NULL,
@@ -2077,7 +2001,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_021",
                             Description = "Create tbl_petty_cash",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS tbl_petty_cash(
+                            CREATE TABLE IF NOT EXISTS tbl_petty_cash(
                                                     id int NOT NULL AUTO_INCREMENT,
                                                     code VARCHAR(50) NOT NULL,
                                                     voucher_date DATE NOT NULL,
@@ -2101,7 +2025,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_023",
                             Description = "Create tbl_petty_cash_request",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_petty_cash_request` (
+                            CREATE TABLE IF NOT EXISTS `tbl_petty_cash_request` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `request_date` date DEFAULT NULL,
                                                   `request_ref` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -2126,7 +2050,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_024",
                             Description = "Create tbl_city",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_city` (
+                            CREATE TABLE IF NOT EXISTS `tbl_city` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
                                                   `country_id` int DEFAULT NULL,
@@ -2140,7 +2064,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_025",
                             Description = "Create tbl_salary_adjustments",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_salary_adjustments` (
+                            CREATE TABLE IF NOT EXISTS `tbl_salary_adjustments` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `code` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
                                                   `name` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -2159,7 +2083,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_026",
                             Description = "Create tbl_attendance_salary",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_attendance_salary` (
+                            CREATE TABLE IF NOT EXISTS `tbl_attendance_salary` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `date` date DEFAULT NULL,
                                                   `emp_code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -2184,7 +2108,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_027",
                             Description = "Create tbl_attendancesheet",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_attendancesheet` (
+                            CREATE TABLE IF NOT EXISTS `tbl_attendancesheet` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `attendance_salary_id` int NOT NULL DEFAULT '0',
                                                   `code` int NOT NULL,
@@ -2205,7 +2129,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_028",
                             Description = "Create tbl_end_of_service",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_end_of_service` (
+                            CREATE TABLE IF NOT EXISTS `tbl_end_of_service` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `date` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
                                                   `code` int DEFAULT NULL,
@@ -2227,7 +2151,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_029",
                             Description = "Create tbl_leave_salary",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_leave_salary` (
+                            CREATE TABLE IF NOT EXISTS `tbl_leave_salary` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `date` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
                                                   `code` int DEFAULT NULL,
@@ -2249,7 +2173,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_030",
                             Description = "Create tbl_employee",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_employee` (
+                            CREATE TABLE IF NOT EXISTS `tbl_employee` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `code` int NOT NULL DEFAULT '0',
                                                   `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -2311,7 +2235,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_031",
                             Description = "Create tbl_final_settlement",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_final_settlement` (
+                            CREATE TABLE IF NOT EXISTS `tbl_final_settlement` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
                                                   `Date` date DEFAULT NULL,
@@ -2335,7 +2259,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_032",
                             Description = "Create tbl_loan",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_loan` (
+                            CREATE TABLE IF NOT EXISTS `tbl_loan` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
                                                   `LoanDate` date DEFAULT NULL,
@@ -2363,7 +2287,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_033",
                             Description = "Create tbl_damage_details",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_damage_details` (
+                            CREATE TABLE IF NOT EXISTS `tbl_damage_details` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `damage_id` int NOT NULL,
                                                   `item_id` int NOT NULL,
@@ -2380,7 +2304,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_035",
                             Description = "Create tbl_item_category",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_item_category` (
+                            CREATE TABLE IF NOT EXISTS `tbl_item_category` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '0',
                                                   `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -2448,7 +2372,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_043",
                             Description = "Create tbl_items_warehouse",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_items_warehouse` (
+                            CREATE TABLE IF NOT EXISTS `tbl_items_warehouse` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `warehouse_id` int DEFAULT NULL,
                                                   `item_id` int DEFAULT NULL,
@@ -2463,7 +2387,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_044",
                             Description = "Create tbl_item_stock_settlement_details",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_item_stock_settlement_details` (
+                            CREATE TABLE IF NOT EXISTS `tbl_item_stock_settlement_details` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `settle_id` int DEFAULT NULL,
                                                   `item_id` int DEFAULT NULL,
@@ -2483,7 +2407,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_045",
                             Description = "Create tbl_item_stock_settlement",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_item_stock_settlement` (
+                            CREATE TABLE IF NOT EXISTS `tbl_item_stock_settlement` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
                                                   `date` date DEFAULT NULL,
@@ -2505,7 +2429,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_046",
                             Description = "Create tbl_item_transaction",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_item_transaction` (
+                            CREATE TABLE IF NOT EXISTS `tbl_item_transaction` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `date` date DEFAULT NULL,
                                                   `type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -2535,7 +2459,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_047",
                             Description = "Create tbl_stock_reconciliation",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS tbl_stock_reconciliation
+                            CREATE TABLE IF NOT EXISTS tbl_stock_reconciliation
                                                 (
                                                     reconciliation_id INT AUTO_INCREMENT PRIMARY KEY,
                                                     reconciliation_no VARCHAR(30) NOT NULL,
@@ -2558,7 +2482,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_048",
                             Description = "Create tbl_stock_reconciliation_item",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS tbl_stock_reconciliation_item
+                            CREATE TABLE IF NOT EXISTS tbl_stock_reconciliation_item
                                                 (
                                                     id INT AUTO_INCREMENT PRIMARY KEY,
                                                     reconciliation_id INT NOT NULL,
@@ -2580,7 +2504,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_049",
                             Description = "Create tbl_tax",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_tax` (
+                            CREATE TABLE IF NOT EXISTS `tbl_tax` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
                                                   `value` int DEFAULT NULL,
@@ -2608,7 +2532,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_051",
                             Description = "Create tbl_purchase",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_purchase` (
+                            CREATE TABLE IF NOT EXISTS `tbl_purchase` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `date` date NOT NULL,
                                                   `vendor_id` int NOT NULL DEFAULT '0',
@@ -2658,7 +2582,7 @@ WHERE a.AppointmentFees > 0;
                             Version = "20261019_ERP_050",
                             Description = "Create tbl_purchase_details",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_purchase_details` (
+                            CREATE TABLE IF NOT EXISTS `tbl_purchase_details` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `purchase_id` int DEFAULT NULL,
                                                   `item_id` int DEFAULT NULL,
@@ -2679,55 +2603,54 @@ WHERE a.AppointmentFees > 0;
                                                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
                             "
                         },
-
-new DatabaseMigration
+                        new DatabaseMigration
                         {
                             Version = "20261021_ERP_051",
                             Description = "Create tbl_purchase_return",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_purchase_return` (
-                            `id` int NOT NULL AUTO_INCREMENT,
-                          `date` date NOT NULL,
-                          `vendor_id` int NOT NULL DEFAULT '0',
-                          `invoice_id` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
-                          `warehouse_id` int NOT NULL DEFAULT '0',
-	                      `purchase_ref_id` INT NOT NULL DEFAULT '0',
-                          `po_num` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
-                          `bill_to` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
-                          `city` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
-                          `sales_man` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-                          `ship_date` date DEFAULT NULL,
-                          `ship_via` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-                          `ship_to` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
-                          `payment_method` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
-                          `account_cash_id` int NOT NULL DEFAULT '0',
-                          `payment_terms` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
-                          `payment_date` date NOT NULL,
-                          `total` decimal(20,4) NOT NULL DEFAULT '0.000',
-                          `vat` decimal(20,4) NOT NULL DEFAULT '0.000',
-                          `net` decimal(20,4) NOT NULL DEFAULT '0.000',
-                          `pay` decimal(20,4) NOT NULL DEFAULT '0.000',
-                          `change` decimal(20,4) NOT NULL DEFAULT '0.000',
-                          `created_by` int NOT NULL DEFAULT '0',
-                          `created_date` date NOT NULL,
-                          `modified_by` int DEFAULT NULL,
-                          `modified_date` date DEFAULT NULL,
-                          `state` int NOT NULL DEFAULT '0',
-                          `project_id` INT NOT NULL DEFAULT 0,
-                          `description` varchar(300) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
-                          `GlobalId` varchar(36) NOT NULL DEFAULT '0',
-                          `DeviceId` varchar(50) DEFAULT NULL,
-                          `LastModified` datetime DEFAULT CURRENT_TIMESTAMP,
-                          `SyncStatus` tinyint NOT NULL DEFAULT 0,
-                            PRIMARY KEY (`id`) USING BTREE
-                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;"
+                            CREATE TABLE IF NOT EXISTS `tbl_purchase_return` (
+                                `id` int NOT NULL AUTO_INCREMENT,
+                                `date` date NOT NULL,
+                              `vendor_id` int NOT NULL DEFAULT '0',
+                              `invoice_id` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
+                              `warehouse_id` int NOT NULL DEFAULT '0',
+	                          `purchase_ref_id` INT NOT NULL DEFAULT '0',
+                              `po_num` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
+                              `bill_to` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
+                              `city` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
+                              `sales_man` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+                              `ship_date` date DEFAULT NULL,
+                              `ship_via` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+                              `ship_to` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
+                              `payment_method` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
+                              `account_cash_id` int NOT NULL DEFAULT '0',
+                              `payment_terms` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '0',
+                              `payment_date` date NOT NULL,
+                              `total` decimal(20,4) NOT NULL DEFAULT '0.000',
+                              `vat` decimal(20,4) NOT NULL DEFAULT '0.000',
+                              `net` decimal(20,4) NOT NULL DEFAULT '0.000',
+                              `pay` decimal(20,4) NOT NULL DEFAULT '0.000',
+                              `change` decimal(20,4) NOT NULL DEFAULT '0.000',
+                              `created_by` int NOT NULL DEFAULT '0',
+                              `created_date` date NOT NULL,
+                              `modified_by` int DEFAULT NULL,
+                              `modified_date` date DEFAULT NULL,
+                              `state` int NOT NULL DEFAULT '0',
+                              `project_id` INT NOT NULL DEFAULT 0,
+                              `description` varchar(300) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',
+                              `GlobalId` varchar(36) NOT NULL DEFAULT '0',
+                              `DeviceId` varchar(50) DEFAULT NULL,
+                              `LastModified` datetime DEFAULT CURRENT_TIMESTAMP,
+                              `SyncStatus` tinyint NOT NULL DEFAULT 0,
+                                PRIMARY KEY (`id`) USING BTREE
+                            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;"
                         },
                         new DatabaseMigration
                         {
                             Version = "20261021_ERP_052",
                             Description = "Create tbl_purchase_return_details",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_purchase_return_details` (
+                            CREATE TABLE IF NOT EXISTS `tbl_purchase_return_details` (
                             `id` int NOT NULL AUTO_INCREMENT,
                                                     `purchase_id` int DEFAULT NULL,
                                                     `item_id` int DEFAULT NULL,
@@ -2783,7 +2706,6 @@ new DatabaseMigration
                                 ADD COLUMN cost_center_id int default 0;
                             "
                         },
-
                         new DatabaseMigration
                         {
                             Version = "20261021_ERP_00035",
@@ -2813,7 +2735,7 @@ new DatabaseMigration
                             Version = "20261019_ERP_052",
                             Description = "Create tbl_vendor",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_vendor` (
+                            CREATE TABLE IF NOT EXISTS `tbl_vendor` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `code` int NOT NULL DEFAULT '0',
                                                   `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -2856,7 +2778,7 @@ new DatabaseMigration
                             Version = "20261019_ERP_053",
                             Description = "Create tbl_cost_center_transaction",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_cost_center_transaction` (
+                            CREATE TABLE IF NOT EXISTS `tbl_cost_center_transaction` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `type` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
                                                   `date` datetime DEFAULT NULL,
@@ -2876,7 +2798,7 @@ new DatabaseMigration
                             Version = "20261019_ERP_054",
                             Description = "Create tbl_transaction",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_transaction` (
+                            CREATE TABLE IF NOT EXISTS `tbl_transaction` (
                                                   `id` int NOT NULL AUTO_INCREMENT,
                                                   `date` date DEFAULT NULL,
                                                   `account_id` int DEFAULT NULL,
@@ -2908,7 +2830,7 @@ new DatabaseMigration
                             Version = "20261019_ERP_055",
                             Description = "Create tbl_item_card_details",
                             Sql = @"
-                        CREATE TABLE IF NOT EXISTS `tbl_item_card_details` (
+                            CREATE TABLE IF NOT EXISTS `tbl_item_card_details` (
 	                                                `id` INT(10) NOT NULL AUTO_INCREMENT,
 	                                                `itemId` INT(10) NOT NULL DEFAULT '0',
 	                                                `date` DATE NULL DEFAULT NULL,
@@ -3003,7 +2925,7 @@ new DatabaseMigration
                             Version = "20261019_ERP_SEED_001",
                             Description = "Seed tbl_coa_level_1",
                             Sql = @"
-                        INSERT IGNORE INTO `tbl_coa_level_1` (`id`, `name`, `code`, `category_code`) VALUES
+                            INSERT IGNORE INTO `tbl_coa_level_1` (`id`, `name`, `code`, `category_code`) VALUES
 	                                                (1, 'Assets', 1,'ASSET'),
 	                                                (2, 'Liabilities', 2,'LIABILITY'),
 	                                                (3, 'Equity', 3,'EQUITY'),
@@ -3018,7 +2940,7 @@ new DatabaseMigration
                             Version = "20261019_ERP_SEED_002",
                             Description = "Seed tbl_coa_level_2",
                             Sql = @"
-                        INSERT IGNORE INTO `tbl_coa_level_2` (`id`, `name`, `code`, `main_id`,`SyncStatus`) VALUES
+                            INSERT IGNORE INTO `tbl_coa_level_2` (`id`, `name`, `code`, `main_id`,`SyncStatus`) VALUES
 	                                                (1, 'Current Assets', 11, 1, 1),
 	                                                (2, 'Long-Term Assets', 12, 1, 1),
 	                                                (3, 'Current Liabilities', 21, 2, 1),
@@ -3039,7 +2961,7 @@ new DatabaseMigration
                             Version = "20261019_ERP_SEED_003",
                             Description = "Seed tbl_coa_level_3",
                             Sql = @"
-                        INSERT IGNORE INTO `tbl_coa_level_3` (`id`, `name`, `code`, `main_id`,`SyncStatus`) VALUES
+                            INSERT IGNORE INTO `tbl_coa_level_3` (`id`, `name`, `code`, `main_id`,`SyncStatus`) VALUES
 	                                                (1, 'Banks', 1101, 1,1),
 	                                                (2, 'Petty Cash', 1102, 1,1),
 	                                                (3, 'Accounts Receivable', 1103, 1,1),
@@ -3083,7 +3005,7 @@ new DatabaseMigration
                             Version = "20261019_ERP_SEED_004",
                             Description = "Seed tbl_coa_level_4",
                             Sql = @"
-                        INSERT IGNORE INTO `tbl_coa_level_4` (`id`, `name`, `code`, `main_id`, `debit`, `credit`, `date`,`SyncStatus`) VALUES
+                            INSERT IGNORE INTO `tbl_coa_level_4` (`id`, `name`, `code`, `main_id`, `debit`, `credit`, `date`,`SyncStatus`) VALUES
 	                                                (1, 'Bank Account', 1101001, 1, 0.000, 0.000, NULL,1),
 	                                                (2, 'Petty Cash', 1102001, 2, 0.000, 0.000, NULL,1),
 	                                                (3, 'Accounts Receivable', 1103001, 3, 0.000, 0.000, NULL,1),
@@ -3139,7 +3061,7 @@ new DatabaseMigration
                             Version = "20261019_ERP_SEED_005",
                             Description = "Seed tbl_city",
                             Sql = @"
-                        INSERT INTO `tbl_city` ( `country_id`, `name`) VALUES
+                            INSERT INTO `tbl_city` ( `country_id`, `name`) VALUES
                                                     (1,'Kabul'),
                                                     (2,'Tirana'),
                                                     (3,'Algiers'),
@@ -3427,190 +3349,183 @@ new DatabaseMigration
                                 DEFAULT CHARSET=utf8mb4
                                 COLLATE=utf8mb4_general_ci;"
                         },
+                        new DatabaseMigration
+                        {
+                            Version = "20261103_LAB_PARAMETERS_001",
+                            Description = "Create laboratory test parameters",
+                            Sql = @"
+                                CREATE TABLE IF NOT EXISTS laboratorytestparameters
+                                (
+                                    ParameterID INT NOT NULL AUTO_INCREMENT,
+                                    TestID INT NOT NULL,
+                                    ParameterName VARCHAR(200) NOT NULL,
+                                    Unit VARCHAR(50) NULL,
+                                    LowLimit DECIMAL(18,4) NULL,
+                                    HighLimit DECIMAL(18,4) NULL,
+                                    ReferenceRange VARCHAR(200) NULL,
+                                    MaleReferenceRange VARCHAR(200) NULL,
+                                    FemaleReferenceRange VARCHAR(200) NULL,
+                                    ResultType VARCHAR(30) NOT NULL DEFAULT 'Numeric',
+                                    DisplayOrder INT NOT NULL DEFAULT 0,
+                                    IsActive TINYINT(1) NOT NULL DEFAULT 1,
 
-new DatabaseMigration
-{
-    Version = "20261103_LAB_PARAMETERS_001",
-    Description = "Create laboratory test parameters",
-    Sql = @"
-        CREATE TABLE IF NOT EXISTS laboratorytestparameters
-        (
-            ParameterID INT NOT NULL AUTO_INCREMENT,
-            TestID INT NOT NULL,
-            ParameterName VARCHAR(200) NOT NULL,
-            Unit VARCHAR(50) NULL,
-            LowLimit DECIMAL(18,4) NULL,
-            HighLimit DECIMAL(18,4) NULL,
-            ReferenceRange VARCHAR(200) NULL,
-            MaleReferenceRange VARCHAR(200) NULL,
-            FemaleReferenceRange VARCHAR(200) NULL,
-            ResultType VARCHAR(30) NOT NULL DEFAULT 'Numeric',
-            DisplayOrder INT NOT NULL DEFAULT 0,
-            IsActive TINYINT(1) NOT NULL DEFAULT 1,
+                                    PRIMARY KEY (ParameterID),
+                                    INDEX IX_LabParameters_Test (TestID),
 
-            PRIMARY KEY (ParameterID),
-            INDEX IX_LabParameters_Test (TestID),
+                                    CONSTRAINT FK_LabParameters_Test
+                                        FOREIGN KEY (TestID)
+                                        REFERENCES laboratorytests(TestID)
+                                ) ENGINE=InnoDB
+                                DEFAULT CHARSET=utf8mb4
+                                COLLATE=utf8mb4_unicode_ci;"
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261103_LAB_PARAMETER_RESULTS_002",
+                            Description = "Create patient laboratory parameter results",
+                            Sql = @"
+                                CREATE TABLE IF NOT EXISTS laboratoryparameterresults
+                                (
+                                    ResultID INT NOT NULL AUTO_INCREMENT,
+                                    LabRequestID INT NOT NULL,
+                                    ParameterID INT NOT NULL,
+                                    ResultValue VARCHAR(500) NOT NULL,
+                                    ResultFlag VARCHAR(30) NULL,
+                                    UnitSnapshot VARCHAR(50) NULL,
+                                    ReferenceRangeSnapshot VARCHAR(200) NULL,
+                                    RecordedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-            CONSTRAINT FK_LabParameters_Test
-                FOREIGN KEY (TestID)
-                REFERENCES laboratorytests(TestID)
-        ) ENGINE=InnoDB
-        DEFAULT CHARSET=utf8mb4
-        COLLATE=utf8mb4_unicode_ci;"
-},
+                                    PRIMARY KEY (ResultID),
 
-new DatabaseMigration
-{
-    Version = "20261103_LAB_PARAMETER_RESULTS_002",
-    Description = "Create patient laboratory parameter results",
-    Sql = @"
-        CREATE TABLE IF NOT EXISTS laboratoryparameterresults
-        (
-            ResultID INT NOT NULL AUTO_INCREMENT,
-            LabRequestID INT NOT NULL,
-            ParameterID INT NOT NULL,
-            ResultValue VARCHAR(500) NOT NULL,
-            ResultFlag VARCHAR(30) NULL,
-            UnitSnapshot VARCHAR(50) NULL,
-            ReferenceRangeSnapshot VARCHAR(200) NULL,
-            RecordedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                    UNIQUE KEY UQ_LabParameterResult
+                                        (LabRequestID, ParameterID),
 
-            PRIMARY KEY (ResultID),
+                                    CONSTRAINT FK_LabParameterResult_Request
+                                        FOREIGN KEY (LabRequestID)
+                                        REFERENCES labrequests(LabRequestID),
 
-            UNIQUE KEY UQ_LabParameterResult
-                (LabRequestID, ParameterID),
+                                    CONSTRAINT FK_LabParameterResult_Parameter
+                                        FOREIGN KEY (ParameterID)
+                                        REFERENCES laboratorytestparameters(ParameterID)
+                                ) ENGINE=InnoDB
+                                DEFAULT CHARSET=utf8mb4
+                                COLLATE=utf8mb4_unicode_ci;"
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261102_LAB_002_PARAMETERS",
+                            Description = "Create laboratory test parameters with reference ranges",
+                            Sql = @"
+                                CREATE TABLE IF NOT EXISTS laboratorytestparameters
+                                (
+                                    ParameterID INT NOT NULL AUTO_INCREMENT,
+                                    TestID INT NOT NULL,
+                                    ParameterName VARCHAR(200) NOT NULL,
+                                    Unit VARCHAR(50) NULL,
+                                    LowLimit DECIMAL(14,4) NULL,
+                                    HighLimit DECIMAL(14,4) NULL,
+                                    ReferenceRange VARCHAR(200) NULL,
+                                    ResultType VARCHAR(20) NOT NULL DEFAULT 'Numeric',
+                                    DisplayOrder INT NOT NULL DEFAULT 0,
+                                    IsActive TINYINT(1) NOT NULL DEFAULT 1,
 
-            CONSTRAINT FK_LabParameterResult_Request
-                FOREIGN KEY (LabRequestID)
-                REFERENCES labrequests(LabRequestID),
+                                    PRIMARY KEY (ParameterID),
+                                    INDEX IX_LabParameters_TestID (TestID),
 
-            CONSTRAINT FK_LabParameterResult_Parameter
-                FOREIGN KEY (ParameterID)
-                REFERENCES laboratorytestparameters(ParameterID)
-        ) ENGINE=InnoDB
-        DEFAULT CHARSET=utf8mb4
-        COLLATE=utf8mb4_unicode_ci;"
-},
+                                    CONSTRAINT FK_LabParameters_Test
+                                        FOREIGN KEY (TestID)
+                                        REFERENCES laboratorytests(TestID)
+                                ) ENGINE=InnoDB
+                                  DEFAULT CHARSET=utf8mb4
+                                  COLLATE=utf8mb4_unicode_ci;
+                            "
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261103_LAB_RESULT_ENTRIES_004",
+                            Description = "Create lab parameter result entries for new result form",
+                            Sql = @"
+                                CREATE TABLE IF NOT EXISTS labparameterresultentries
+                                (
+                                    ResultID INT NOT NULL AUTO_INCREMENT,
+                                    LabRequestID INT NOT NULL,
+                                    ParameterID INT NOT NULL,
 
+                                    ObservedValue VARCHAR(500) NULL,
+                                    NumericValue DECIMAL(18,4) NULL,
 
-new DatabaseMigration
-{
-    Version = "20261102_LAB_002_PARAMETERS",
-    Description = "Create laboratory test parameters with reference ranges",
-    Sql = @"
-        CREATE TABLE IF NOT EXISTS laboratorytestparameters
-        (
-            ParameterID INT NOT NULL AUTO_INCREMENT,
-            TestID INT NOT NULL,
-            ParameterName VARCHAR(200) NOT NULL,
-            Unit VARCHAR(50) NULL,
-            LowLimit DECIMAL(14,4) NULL,
-            HighLimit DECIMAL(14,4) NULL,
-            ReferenceRange VARCHAR(200) NULL,
-            ResultType VARCHAR(20) NOT NULL DEFAULT 'Numeric',
-            DisplayOrder INT NOT NULL DEFAULT 0,
-            IsActive TINYINT(1) NOT NULL DEFAULT 1,
+                                    SavedParameterName VARCHAR(200) NOT NULL,
+                                    SavedUnit VARCHAR(50) NULL,
+                                    SavedReferenceRange VARCHAR(200) NULL,
 
-            PRIMARY KEY (ParameterID),
-            INDEX IX_LabParameters_TestID (TestID),
+                                    ResultFlag VARCHAR(30) NULL,
+                                    ResultNotes TEXT NULL,
+                                    EnteredAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-            CONSTRAINT FK_LabParameters_Test
-                FOREIGN KEY (TestID)
-                REFERENCES laboratorytests(TestID)
-        ) ENGINE=InnoDB
-          DEFAULT CHARSET=utf8mb4
-          COLLATE=utf8mb4_unicode_ci;
-    "
-},
+                                    PRIMARY KEY (ResultID),
 
-new DatabaseMigration
-{
-    Version = "20261103_LAB_RESULT_ENTRIES_004",
-    Description = "Create lab parameter result entries for new result form",
-    Sql = @"
-        CREATE TABLE IF NOT EXISTS labparameterresultentries
-        (
-            ResultID INT NOT NULL AUTO_INCREMENT,
-            LabRequestID INT NOT NULL,
-            ParameterID INT NOT NULL,
+                                    UNIQUE KEY UQ_LabEntry_RequestParameter
+                                        (LabRequestID, ParameterID),
 
-            ObservedValue VARCHAR(500) NULL,
-            NumericValue DECIMAL(18,4) NULL,
+                                    INDEX IX_LabEntry_ParameterID (ParameterID),
 
-            SavedParameterName VARCHAR(200) NOT NULL,
-            SavedUnit VARCHAR(50) NULL,
-            SavedReferenceRange VARCHAR(200) NULL,
+                                    CONSTRAINT FK_LabEntry_Request
+                                        FOREIGN KEY (LabRequestID)
+                                        REFERENCES labrequests(LabRequestID),
 
-            ResultFlag VARCHAR(30) NULL,
-            ResultNotes TEXT NULL,
-            EnteredAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                    CONSTRAINT FK_LabEntry_Parameter
+                                        FOREIGN KEY (ParameterID)
+                                        REFERENCES laboratorytestparameters(ParameterID)
 
-            PRIMARY KEY (ResultID),
+                                ) ENGINE=InnoDB
+                                  DEFAULT CHARSET=utf8mb4
+                                  COLLATE=utf8mb4_unicode_ci;
+                            "
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261102_LAB_003",
+                            Description = "Create patient laboratory parameter results",
+                            Sql = @"
+                                CREATE TABLE IF NOT EXISTS laboratoryparameterresults
+                                (
+                                    ResultID INT NOT NULL AUTO_INCREMENT,
+                                    LabRequestID INT NOT NULL,
+                                    ParameterID INT NOT NULL,
 
-            UNIQUE KEY UQ_LabEntry_RequestParameter
-                (LabRequestID, ParameterID),
+                                    ObservedValue VARCHAR(200) NULL,
+                                    NumericValue DECIMAL(14,4) NULL,
 
-            INDEX IX_LabEntry_ParameterID (ParameterID),
+                                    SavedParameterName VARCHAR(200) NOT NULL,
+                                    SavedUnit VARCHAR(50) NULL,
+                                    SavedLowLimit DECIMAL(14,4) NULL,
+                                    SavedHighLimit DECIMAL(14,4) NULL,
+                                    SavedReferenceRange VARCHAR(200) NULL,
 
-            CONSTRAINT FK_LabEntry_Request
-                FOREIGN KEY (LabRequestID)
-                REFERENCES labrequests(LabRequestID),
+                                    ResultFlag VARCHAR(30) NULL,
+                                    ResultNotes TEXT NULL,
+                                    EnteredAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-            CONSTRAINT FK_LabEntry_Parameter
-                FOREIGN KEY (ParameterID)
-                REFERENCES laboratorytestparameters(ParameterID)
+                                    PRIMARY KEY (ResultID),
 
-        ) ENGINE=InnoDB
-          DEFAULT CHARSET=utf8mb4
-          COLLATE=utf8mb4_unicode_ci;
-    "
-},
+                                    UNIQUE KEY UQ_LabResult_RequestParameter
+                                        (LabRequestID, ParameterID),
 
-new DatabaseMigration
-{
-    Version = "20261102_LAB_003",
-    Description = "Create patient laboratory parameter results",
-    Sql = @"
-        CREATE TABLE IF NOT EXISTS laboratoryparameterresults
-        (
-            ResultID INT NOT NULL AUTO_INCREMENT,
-            LabRequestID INT NOT NULL,
-            ParameterID INT NOT NULL,
+                                    INDEX IX_LabResult_ParameterID (ParameterID),
 
-            ObservedValue VARCHAR(200) NULL,
-            NumericValue DECIMAL(14,4) NULL,
+                                    CONSTRAINT FK_LabResult_Request
+                                        FOREIGN KEY (LabRequestID)
+                                        REFERENCES labrequests(LabRequestID),
 
-            SavedParameterName VARCHAR(200) NOT NULL,
-            SavedUnit VARCHAR(50) NULL,
-            SavedLowLimit DECIMAL(14,4) NULL,
-            SavedHighLimit DECIMAL(14,4) NULL,
-            SavedReferenceRange VARCHAR(200) NULL,
+                                    CONSTRAINT FK_LabResult_Parameter
+                                        FOREIGN KEY (ParameterID)
+                                        REFERENCES laboratorytestparameters(ParameterID)
 
-            ResultFlag VARCHAR(30) NULL,
-            ResultNotes TEXT NULL,
-            EnteredAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-            PRIMARY KEY (ResultID),
-
-            UNIQUE KEY UQ_LabResult_RequestParameter
-                (LabRequestID, ParameterID),
-
-            INDEX IX_LabResult_ParameterID (ParameterID),
-
-            CONSTRAINT FK_LabResult_Request
-                FOREIGN KEY (LabRequestID)
-                REFERENCES labrequests(LabRequestID),
-
-            CONSTRAINT FK_LabResult_Parameter
-                FOREIGN KEY (ParameterID)
-                REFERENCES laboratorytestparameters(ParameterID)
-
-        ) ENGINE=InnoDB
-          DEFAULT CHARSET=utf8mb4
-          COLLATE=utf8mb4_unicode_ci;
-    "
-},
-
+                                ) ENGINE=InnoDB
+                                  DEFAULT CHARSET=utf8mb4
+                                  COLLATE=utf8mb4_unicode_ci;
+                            "
+                        },
                         new DatabaseMigration
                         {
                             Version = "20261023_CLINIC_Col_01",
@@ -3747,21 +3662,30 @@ new DatabaseMigration
                             "
                         },
                         new DatabaseMigration
-{
-    Version = "20261028_BASE_028",
-    Description = "Fix InventoryTransactions medicine foreign key to reference tbl_items",
-    Sql = @"
-        ALTER TABLE `inventorytransactions`
-        DROP FOREIGN KEY `fk_inventory_medicine`;
+                        {
+                            Version = "20261028_BASE_028",
+                            Description = "Fix InventoryTransactions medicine foreign key to reference tbl_items",
+                            Sql = @"
+                                ALTER TABLE `inventorytransactions`
+                                DROP FOREIGN KEY `fk_inventory_medicine`;
 
-        ALTER TABLE `inventorytransactions`
-        ADD CONSTRAINT `fk_inventory_medicine`
-        FOREIGN KEY (`MedicineID`)
-        REFERENCES `tbl_items` (`id`);
-    "
-},
+                                ALTER TABLE `inventorytransactions`
+                                ADD CONSTRAINT `fk_inventory_medicine`
+                                FOREIGN KEY (`MedicineID`)
+                                REFERENCES `tbl_items` (`id`);
+                            "
+                        },
 
-/*************************************Table Views************************************************/
+                        new DatabaseMigration
+                        {
+                            Version = "20261103_LAB_003_GENDER_RANGES",
+                            Description = "Add male and female reference ranges to laboratory test parameters",
+                            Sql = @"
+                                ALTER TABLE laboratorytestparameters
+                                    ADD COLUMN MaleReferenceRange VARCHAR(200) NULL,
+                                    ADD COLUMN FemaleReferenceRange VARCHAR(200) NULL;
+                            "
+                        },
 
                         new DatabaseMigration
                         {
@@ -3786,76 +3710,7 @@ new DatabaseMigration
                                   AND COALESCE(PAY.PaidAmount, 0)
                                       >= B.TotalAmount;"
                         },
-                        new DatabaseMigration
-                        {
-                            Version = "20261014_005",
-                            Description = "Create or repair appointments details view",
-                            Sql = @"
-                                CREATE OR REPLACE VIEW View_AppointmentsDetails AS
-                                SELECT
-                                    A.AppointmentID,
-                                    A.PatientID,
-                                    PE.FullName AS PatientName,
-                                    A.DoctorID,
-                                    DPE.FullName AS DoctorName,
-                                    A.AppointmentDate,
-                                    A.AppointmentStatus,
-                                    A.AppointmentStatus AS AppointmentStatusText,
-                                    A.AppointmentTypeID,
-                                    AT.AppointmentTypeName AS TypeName,
-                                    A.AppointmentFees,
-                                    A.CreatedByUserID
 
-                                FROM appointments A
-
-                                LEFT JOIN patients P
-                                    ON A.PatientID = P.PatientID
-
-                                LEFT JOIN persons PE
-                                    ON P.PersonID = PE.PersonID
-
-                                LEFT JOIN doctors D
-                                    ON A.DoctorID = D.DoctorID
-
-                                LEFT JOIN persons DPE
-                                    ON D.PersonID = DPE.PersonID
-
-                                LEFT JOIN appointmenttypes AT
-                                    ON A.AppointmentTypeID = AT.AppointmentTypeID;"
-                        },
-                        new DatabaseMigration
-                        {
-                            Version = "20261014_006",
-                            Description = "Configure working days for Doctor ID 1",
-                            Sql = @"
-                                INSERT INTO doctorworkingdays
-                                (
-                                    DoctorID,
-                                    DayID,
-                                    StartTime,
-                                    EndTime
-                                )
-                                SELECT
-                                    1,
-                                    D.DayID,
-                                    '09:00:00',
-                                    '17:00:00'
-                                FROM days D
-                                WHERE D.DayID IN (3, 4, 5, 6, 7)
-                                  AND EXISTS
-                                  (
-                                      SELECT 1
-                                      FROM doctors DR
-                                      WHERE DR.DoctorID = 1
-                                  )
-                                  AND NOT EXISTS
-                                  (
-                                      SELECT 1
-                                      FROM doctorworkingdays DW
-                                      WHERE DW.DoctorID = 1
-                                        AND DW.DayID = D.DayID
-                                  );"
-                        },
                         new DatabaseMigration
                         {
                             Version = "20261014_007",
@@ -3888,57 +3743,6 @@ new DatabaseMigration
                                       WHERE DW.DoctorID = 2
                                         AND DW.DayID = D.DayID
                                   );"
-                        },
-                        new DatabaseMigration
-                        {
-                            Version = "20261015_008",
-                            Description = "Fix appointment status text in registry",
-                            Sql = @"
-                                CREATE OR REPLACE VIEW View_AppointmentsDetails AS
-                                SELECT
-                                    A.AppointmentID,
-                                    A.PatientID,
-                                    PE.FullName AS PatientName,
-                                    A.DoctorID,
-                                    DPE.FullName AS DoctorName,
-                                    A.AppointmentDate,
-
-                                    A.AppointmentStatus,
-
-                                    CASE CAST(A.AppointmentStatus AS CHAR)
-                                        WHEN '1' THEN 'Scheduled'
-                                        WHEN '2' THEN 'InQueue'
-                                        WHEN '3' THEN 'Progress'
-                                        WHEN '4' THEN 'Postponed'
-                                        WHEN '5' THEN 'Completed'
-                                        WHEN '6' THEN 'Cancelled'
-                                        WHEN '7' THEN 'Waiting_For_Vitals'
-                                        WHEN '8' THEN 'Ready_For_Doctor'
-                                        WHEN '9' THEN 'In_Billing'
-                                        ELSE CAST(A.AppointmentStatus AS CHAR)
-                                    END AS AppointmentStatusText,
-
-                                    A.AppointmentTypeID,
-                                    AT.AppointmentTypeName AS TypeName,
-                                    A.AppointmentFees,
-                                    A.CreatedByUserID
-
-                                FROM appointments A
-
-                                LEFT JOIN patients P
-                                    ON A.PatientID = P.PatientID
-
-                                LEFT JOIN persons PE
-                                    ON P.PersonID = PE.PersonID
-
-                                LEFT JOIN doctors D
-                                    ON A.DoctorID = D.DoctorID
-
-                                LEFT JOIN persons DPE
-                                    ON D.PersonID = DPE.PersonID
-
-                                LEFT JOIN appointmenttypes AT
-                                    ON A.AppointmentTypeID = AT.AppointmentTypeID;"
                         },
                         new DatabaseMigration
                         {
@@ -3990,6 +3794,152 @@ new DatabaseMigration
                                 ADD COLUMN CheckInTime DATETIME NULL;
                             "
                         },
+                        new DatabaseMigration
+                        {
+                            Version = "20261110_LAB_BILL_COLUMNS_001A",
+                            Description = "Add missing direct laboratory billing columns",
+                            // Executed conditionally in ApplyMigrations below.
+                            Sql = @"ALTER TABLE labrequests
+                                    ADD COLUMN BillID INT NOT NULL DEFAULT 0;"
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261110_LAB_BILL_COLUMNS_001B",
+                            Description = "Add missing direct laboratory SavedTestPrice columns",
+                            // Executed conditionally in ApplyMigrations below.
+                            Sql = @"ALTER TABLE labrequests
+                                    ADD COLUMN SavedTestPrice DECIMAL(12,3) NOT NULL DEFAULT 0;"
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261017_XRAY_001",
+                            Description = "Create radiology test catalog",
+                            Sql = @"CREATE TABLE IF NOT EXISTS xraytests (
+                                XRayTestID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                                TestName VARCHAR(200) NOT NULL,
+                                Description TEXT NULL,
+                                Price DECIMAL(12,2) NOT NULL DEFAULT 0,
+                                IsActive TINYINT(1) NOT NULL DEFAULT 1
+                            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261017_XRAY_002",
+                            Description = "Create radiology requests with stored image paths",
+                            Sql = @"CREATE TABLE IF NOT EXISTS xrayrequests (
+                                XRayRequestID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                                VisitID INT NOT NULL,
+                                XRayTestID INT NOT NULL,
+                                RequestedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                Status VARCHAR(30) NOT NULL DEFAULT 'Ordered',
+                                ClinicalNotes TEXT NULL,
+                                Findings TEXT NULL,
+                                Impression TEXT NULL,
+                                ImagePath VARCHAR(1000) NULL,
+                                ResultedAt DATETIME NULL,
+                                INDEX IX_XRayRequests_Visit (VisitID),
+                                INDEX IX_XRayRequests_Test (XRayTestID),
+                                INDEX IX_XRayRequests_Status (Status),
+                                CONSTRAINT FK_XRayRequests_Visit FOREIGN KEY (VisitID) REFERENCES visits(VisitID),
+                                CONSTRAINT FK_XRayRequests_Test FOREIGN KEY (XRayTestID) REFERENCES xraytests(XRayTestID)
+                            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"
+                        },
+
+
+
+/*************************************Table Views************************************************/
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261014_005",
+                            Description = "Create or repair appointments details view",
+                            Sql = @"
+                                CREATE OR REPLACE VIEW View_AppointmentsDetails AS
+                                SELECT
+                                    A.AppointmentID,
+                                    A.PatientID,
+                                    PE.FullName AS PatientName,
+                                    A.DoctorID,
+                                    DPE.FullName AS DoctorName,
+                                    A.AppointmentDate,
+                                    A.AppointmentStatus,
+                                    A.AppointmentStatus AS AppointmentStatusText,
+                                    A.AppointmentTypeID,
+                                    AT.AppointmentTypeName AS TypeName,
+                                    A.AppointmentFees,
+                                    A.CreatedByUserID
+
+                                FROM appointments A
+
+                                LEFT JOIN patients P
+                                    ON A.PatientID = P.PatientID
+
+                                LEFT JOIN persons PE
+                                    ON P.PersonID = PE.PersonID
+
+                                LEFT JOIN doctors D
+                                    ON A.DoctorID = D.DoctorID
+
+                                LEFT JOIN persons DPE
+                                    ON D.PersonID = DPE.PersonID
+
+                                LEFT JOIN appointmenttypes AT
+                                    ON A.AppointmentTypeID = AT.AppointmentTypeID;"
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261015_008",
+                            Description = "Fix appointment status text in registry",
+                            Sql = @"
+                                CREATE OR REPLACE VIEW View_AppointmentsDetails AS
+                                SELECT
+                                    A.AppointmentID,
+                                    A.PatientID,
+                                    PE.FullName AS PatientName,
+                                    A.DoctorID,
+                                    DPE.FullName AS DoctorName,
+                                    A.AppointmentDate,
+
+                                    A.AppointmentStatus,
+
+                                    CASE CAST(A.AppointmentStatus AS CHAR)
+                                        WHEN '1' THEN 'Scheduled'
+                                        WHEN '2' THEN 'InQueue'
+                                        WHEN '3' THEN 'Progress'
+                                        WHEN '4' THEN 'Postponed'
+                                        WHEN '5' THEN 'Completed'
+                                        WHEN '6' THEN 'Cancelled'
+                                        WHEN '7' THEN 'Waiting_For_Vitals'
+                                        WHEN '8' THEN 'Ready_For_Doctor'
+                                        WHEN '9' THEN 'In_Billing'
+                                        ELSE CAST(A.AppointmentStatus AS CHAR)
+                                    END AS AppointmentStatusText,
+
+                                    A.AppointmentTypeID,
+                                    AT.AppointmentTypeName AS TypeName,
+                                    A.AppointmentFees,
+                                    A.CreatedByUserID
+
+                                FROM appointments A
+
+                                LEFT JOIN patients P
+                                    ON A.PatientID = P.PatientID
+
+                                LEFT JOIN persons PE
+                                    ON P.PersonID = PE.PersonID
+
+                                LEFT JOIN doctors D
+                                    ON A.DoctorID = D.DoctorID
+
+                                LEFT JOIN persons DPE
+                                    ON D.PersonID = DPE.PersonID
+
+                                LEFT JOIN appointmenttypes AT
+                                    ON A.AppointmentTypeID = AT.AppointmentTypeID;"
+                        },
+
                         new DatabaseMigration
                         {
                             Version = "20261016_010",
@@ -4157,11 +4107,6 @@ new DatabaseMigration
                                 WHERE P.IsDeleted = 1;
                             "
                         },
-
-
-
-
-
                         new DatabaseMigration
                         {
                             Version = "20261016_016",
@@ -4366,493 +4311,251 @@ new DatabaseMigration
                             "
                         },
                         new DatabaseMigration
-{
-    Version = "20261102_001A",
-    Description = "Separate direct laboratory bill items",
-    Sql = @"
-        CREATE OR REPLACE VIEW View_BillItems AS
+                        {
+                            Version = "20261102_001A",
+                            Description = "Separate direct laboratory bill items",
+                            Sql = @"
+                                CREATE OR REPLACE VIEW View_BillItems AS
 
-        -- Medicines belonging to normal visit bills only
-        SELECT
-            B.BillID,
+                                -- Medicines belonging to normal visit bills only
+                                SELECT
+                                    B.BillID,
 
-            CONVERT('Medicine' USING utf8mb4)
-                COLLATE utf8mb4_unicode_ci AS ItemType,
+                                    CONVERT('Medicine' USING utf8mb4)
+                                        COLLATE utf8mb4_unicode_ci AS ItemType,
 
-            CONVERT(PD.SavedMedicineName USING utf8mb4)
-                COLLATE utf8mb4_unicode_ci AS ItemName,
+                                    CONVERT(PD.SavedMedicineName USING utf8mb4)
+                                        COLLATE utf8mb4_unicode_ci AS ItemName,
 
-            PD.Quantity,
-            PD.SavedMedicinePrice AS Price,
-            PD.SavedMedicinePrice * PD.Quantity AS Total
+                                    PD.Quantity,
+                                    PD.SavedMedicinePrice AS Price,
+                                    PD.SavedMedicinePrice * PD.Quantity AS Total
 
-        FROM prescriptiondetails PD
+                                FROM prescriptiondetails PD
 
-        INNER JOIN prescriptions PR
-            ON PD.PrescriptionID = PR.PrescriptionID
+                                INNER JOIN prescriptions PR
+                                    ON PD.PrescriptionID = PR.PrescriptionID
 
-        INNER JOIN bills B
-            ON PR.VisitID = B.VisitID
+                                INNER JOIN bills B
+                                    ON PR.VisitID = B.VisitID
 
-        WHERE NOT EXISTS
-        (
-            SELECT 1
-            FROM labrequests LR
-            WHERE LR.BillID = B.BillID
-        )
-
-        UNION ALL
-
-        -- Services belonging to normal visit bills only
-        SELECT
-            B.BillID,
-
-            CONVERT('Service' USING utf8mb4)
-                COLLATE utf8mb4_unicode_ci AS ItemType,
-
-            CONVERT(S.ServiceName USING utf8mb4)
-                COLLATE utf8mb4_unicode_ci AS ItemName,
-
-            VS.Quantity,
-            VS.SavedServicePrice AS Price,
-            VS.SavedServicePrice * VS.Quantity AS Total
-
-        FROM visitservices VS
-
-        INNER JOIN services S
-            ON VS.ServiceID = S.ServiceID
-
-        INNER JOIN bills B
-            ON VS.VisitID = B.VisitID
-
-        WHERE NOT EXISTS
-        (
-            SELECT 1
-            FROM labrequests LR
-            WHERE LR.BillID = B.BillID
-        )
-
-        UNION ALL
-
-        -- Appointment fees on normal visit bills only
-        SELECT
-            B.BillID,
-
-            CONVERT('Appointment' USING utf8mb4)
-                COLLATE utf8mb4_unicode_ci AS ItemType,
-
-            CONVERT('Appointment Fees' USING utf8mb4)
-                COLLATE utf8mb4_unicode_ci AS ItemName,
-
-            1 AS Quantity,
-            A.AppointmentFees AS Price,
-            A.AppointmentFees AS Total
-
-        FROM appointments A
-
-        INNER JOIN visits V
-            ON A.AppointmentID = V.AppointmentID
-
-        INNER JOIN bills B
-            ON V.VisitID = B.VisitID
-
-        WHERE A.AppointmentFees > 0
-
-          AND NOT EXISTS
-          (
-              SELECT 1
-              FROM labrequests LR
-              WHERE LR.BillID = B.BillID
-          )
-
-        UNION ALL
-
-        -- Exactly the test linked to this laboratory bill
-        SELECT
-            LR.BillID,
-
-            CONVERT('Laboratory' USING utf8mb4)
-                COLLATE utf8mb4_unicode_ci AS ItemType,
-
-            CONVERT(LT.TestName USING utf8mb4)
-                COLLATE utf8mb4_unicode_ci AS ItemName,
-
-            1 AS Quantity,
-
-            COALESCE(
-                LR.SavedTestPrice,
-                LT.TestPrice,
-                0
-            ) AS Price,
-
-            COALESCE(
-                LR.SavedTestPrice,
-                LT.TestPrice,
-                0
-            ) AS Total
-
-        FROM labrequests LR
-
-        INNER JOIN laboratorytests LT
-            ON LT.TestID = LR.TestID
-
-        WHERE LR.BillID IS NOT NULL;
-    "
-},
-new DatabaseMigration
-{
-    Version = "20261110_LAB_BILL_COLUMNS_001",
-    Description = "Add missing direct laboratory billing columns",
-    // Executed conditionally in ApplyMigrations below.
-    Sql = @"SELECT 1;"
-},
-new DatabaseMigration
-{
-    Version = "20261102_001",
-    Description = "Add separate direct laboratory billing to invoice views",
-    Sql = @"
-
-        CREATE OR REPLACE VIEW View_BillSummaries AS
-        SELECT
-            CONCAT(
-                'INV-',
-                YEAR(B.BillDate),
-                '-',
-                LPAD(B.BillID, 4, '0')
-            ) AS BillNumber,
-
-            B.BillID,
-
-            COALESCE(P.FullName, 'Pharmacy Sale') AS PatientName,
-
-            CASE
-                WHEN LR.LabRequestID IS NOT NULL THEN
-                    CONCAT('1 Lab Test: ', LT.TestName)
-
-                WHEN B.VisitID IS NULL THEN
-                    CONCAT(
-                        COALESCE(M.PrescriptionCount, 0),
-                        ' Pharmacy Sale'
-                    )
-
-                ELSE
-                    CONCAT(
-                        COALESCE(S.ServiceCount, 0),
-                        ' Servs, ',
-                        COALESCE(M.PrescriptionCount, 0),
-                        ' Presc'
-                    )
-            END AS ItemsTotal,
-
-            CASE
-                WHEN LR.LabRequestID IS NOT NULL THEN 0
-                ELSE COALESCE(A.AppointmentFees, 0)
-            END AS AppointmentFees,
-
-            CASE
-                WHEN LR.LabRequestID IS NOT NULL THEN 0
-                ELSE COALESCE(M.TotalMedicinesOnly, 0)
-            END AS MedicinesTotal,
-
-            CASE
-                WHEN LR.LabRequestID IS NOT NULL THEN 0
-                ELSE COALESCE(S.TotalServicesOnly, 0)
-            END AS ServicesTotal,
-
-            CASE
-                WHEN LR.LabRequestID IS NOT NULL THEN 0
-                ELSE
-                    COALESCE(S.ServiceDiscount, 0)
-                    + COALESCE(M.MedsDiscount, 0)
-            END AS TotalDiscount,
-
-            CASE
-                WHEN LR.LabRequestID IS NOT NULL THEN 0
-                ELSE COALESCE(M.TotalTax, 0)
-            END AS TotalTax,
-
-            CASE
-                WHEN LR.LabRequestID IS NOT NULL THEN
-                    COALESCE(
-                        LR.SavedTestPrice,
-                        LT.TestPrice,
-                        0
-                    )
-                ELSE
-                    COALESCE(A.AppointmentFees, 0)
-                    + COALESCE(M.TotalMedicinesNet, 0)
-                    + COALESCE(S.TotalServicesNet, 0)
-            END AS Subtotal,
-
-            COALESCE(Pay.TotalPaid, 0) AS PaymentAmount,
-
-            CASE
-                WHEN LR.LabRequestID IS NOT NULL THEN
-                    COALESCE(
-                        LR.SavedTestPrice,
-                        LT.TestPrice,
-                        0
-                    )
-                    - COALESCE(Pay.TotalPaid, 0)
-                ELSE
-                    COALESCE(A.AppointmentFees, 0)
-                    + COALESCE(M.TotalMedicinesNet, 0)
-                    + COALESCE(S.TotalServicesNet, 0)
-                    - COALESCE(Pay.TotalPaid, 0)
-            END AS BalanceDue
-
-        FROM bills B
-
-        LEFT JOIN labrequests LR
-            ON LR.BillID = B.BillID
-
-        LEFT JOIN laboratorytests LT
-            ON LT.TestID = LR.TestID
-
-        LEFT JOIN visits V
-            ON B.VisitID = V.VisitID
-
-        LEFT JOIN appointments A
-            ON V.AppointmentID = A.AppointmentID
-
-        LEFT JOIN patients PA
-            ON V.PatientID = PA.PatientID
-
-        LEFT JOIN persons P
-            ON PA.PersonID = P.PersonID
-
-        LEFT JOIN
-        (
-            SELECT
-                BillID,
-                SUM(PaymentAmount) AS TotalPaid
-            FROM payments
-            GROUP BY BillID
-        ) Pay
-            ON B.BillID = Pay.BillID
-
-        LEFT JOIN
-        (
-            SELECT
-                VisitID,
-                COUNT(*) AS ServiceCount,
-
-                SUM(
-                    SavedServicePrice * Quantity
-                ) AS TotalServicesOnly,
-
-                SUM(
-                    Discount * Quantity
-                ) AS ServiceDiscount,
-
-                SUM(
-                    (SavedServicePrice * Quantity)
-                    - (Discount * Quantity)
-                ) AS TotalServicesNet
-
-            FROM visitservices
-            GROUP BY VisitID
-        ) S
-            ON B.VisitID = S.VisitID
-
-        LEFT JOIN
-        (
-            SELECT
-                PR.VisitID,
-
-                COUNT(DISTINCT PR.PrescriptionID)
-                    AS PrescriptionCount,
-
-                COALESCE(
-                    SUM(
-                        PD.SavedMedicinePrice
-                        * PD.Quantity
-                    ), 0
-                ) AS TotalMedicinesOnly,
-
-                COALESCE(
-                    SUM(
-                        PD.DiscountAmount
-                        * PD.Quantity
-                    ), 0
-                ) AS MedsDiscount,
-
-                CAST(
-                    ROUND(
-                        COALESCE(
-                            SUM(
-                                CASE
-                                    WHEN PD.Quantity > 0 THEN
-                                        (
-                                            (
-                                                PD.SavedMedicinePrice
-                                                * PD.Quantity
-                                            )
-                                            -
-                                            (
-                                                PD.DiscountAmount
-                                                * PD.Quantity
-                                            )
-                                        )
-                                        *
-                                        (
-                                            COALESCE(MED.TaxRate, 0)
-                                            / 100.0
-                                        )
-                                    ELSE 0
-                                END
-                            ), 0
-                        ),
-                        2
-                    ) AS DECIMAL(18,2)
-                ) AS TotalTax,
-
-                COALESCE(
-                    SUM(
-                        CASE
-                            WHEN PD.Quantity > 0 THEN
+                                WHERE NOT EXISTS
                                 (
-                                    (
-                                        PD.SavedMedicinePrice
-                                        * PD.Quantity
-                                    )
-                                    -
-                                    (
-                                        PD.DiscountAmount
-                                        * PD.Quantity
-                                    )
+                                    SELECT 1
+                                    FROM labrequests LR
+                                    WHERE LR.BillID = B.BillID
                                 )
-                                *
+
+                                UNION ALL
+
+                                -- Services belonging to normal visit bills only
+                                SELECT
+                                    B.BillID,
+
+                                    CONVERT('Service' USING utf8mb4)
+                                        COLLATE utf8mb4_unicode_ci AS ItemType,
+
+                                    CONVERT(S.ServiceName USING utf8mb4)
+                                        COLLATE utf8mb4_unicode_ci AS ItemName,
+
+                                    VS.Quantity,
+                                    VS.SavedServicePrice AS Price,
+                                    VS.SavedServicePrice * VS.Quantity AS Total
+
+                                FROM visitservices VS
+
+                                INNER JOIN services S
+                                    ON VS.ServiceID = S.ServiceID
+
+                                INNER JOIN bills B
+                                    ON VS.VisitID = B.VisitID
+
+                                WHERE NOT EXISTS
                                 (
-                                    1 +
-                                    (
-                                        COALESCE(MED.TaxRate, 0)
-                                        / 100.0
-                                    )
+                                    SELECT 1
+                                    FROM labrequests LR
+                                    WHERE LR.BillID = B.BillID
                                 )
-                            ELSE 0
-                        END
-                    ), 0
-                ) AS TotalMedicinesNet
 
-            FROM prescriptions PR
+                                UNION ALL
 
-            LEFT JOIN prescriptiondetails PD
-                ON PR.PrescriptionID = PD.PrescriptionID
+                                -- Appointment fees on normal visit bills only
+                                SELECT
+                                    B.BillID,
 
-            LEFT JOIN medicines MED
-                ON PD.MedicineID = MED.MedicineID
+                                    CONVERT('Appointment' USING utf8mb4)
+                                        COLLATE utf8mb4_unicode_ci AS ItemType,
 
-            GROUP BY PR.VisitID
-        ) M
-            ON B.VisitID = M.VisitID;
+                                    CONVERT('Appointment Fees' USING utf8mb4)
+                                        COLLATE utf8mb4_unicode_ci AS ItemName,
 
+                                    1 AS Quantity,
+                                    A.AppointmentFees AS Price,
+                                    A.AppointmentFees AS Total
 
-        CREATE OR REPLACE VIEW View_BillItems AS
+                                FROM appointments A
 
-        SELECT
-            B.BillID,
-            'Medicine' AS ItemType,
-            PD.SavedMedicineName AS ItemName,
-            PD.Quantity,
-            PD.SavedMedicinePrice AS Price,
-            PD.SavedMedicinePrice * PD.Quantity AS Total
+                                INNER JOIN visits V
+                                    ON A.AppointmentID = V.AppointmentID
 
-        FROM prescriptiondetails PD
+                                INNER JOIN bills B
+                                    ON V.VisitID = B.VisitID
 
-        INNER JOIN prescriptions PR
-            ON PD.PrescriptionID = PR.PrescriptionID
+                                WHERE A.AppointmentFees > 0
 
-        INNER JOIN bills B
-            ON PR.VisitID = B.VisitID
+                                  AND NOT EXISTS
+                                  (
+                                      SELECT 1
+                                      FROM labrequests LR
+                                      WHERE LR.BillID = B.BillID
+                                  )
 
-        WHERE NOT EXISTS
-        (
-            SELECT 1
-            FROM labrequests LR
-            WHERE LR.BillID = B.BillID
-        )
+                                UNION ALL
 
-        UNION ALL
+                                -- Exactly the test linked to this laboratory bill
+                                SELECT
+                                    LR.BillID,
 
-        SELECT
-            B.BillID,
-            'Service' AS ItemType,
-            S.ServiceName AS ItemName,
-            VS.Quantity,
-            VS.SavedServicePrice AS Price,
-            VS.SavedServicePrice * VS.Quantity AS Total
+                                    CONVERT('Laboratory' USING utf8mb4)
+                                        COLLATE utf8mb4_unicode_ci AS ItemType,
 
-        FROM visitservices VS
+                                    CONVERT(LT.TestName USING utf8mb4)
+                                        COLLATE utf8mb4_unicode_ci AS ItemName,
 
-        INNER JOIN services S
-            ON VS.ServiceID = S.ServiceID
+                                    1 AS Quantity,
 
-        INNER JOIN bills B
-            ON VS.VisitID = B.VisitID
+                                    COALESCE(
+                                        LR.SavedTestPrice,
+                                        LT.TestPrice,
+                                        0
+                                    ) AS Price,
 
-        WHERE NOT EXISTS
-        (
-            SELECT 1
-            FROM labrequests LR
-            WHERE LR.BillID = B.BillID
-        )
+                                    COALESCE(
+                                        LR.SavedTestPrice,
+                                        LT.TestPrice,
+                                        0
+                                    ) AS Total
 
-        UNION ALL
+                                FROM labrequests LR
 
-        SELECT
-            B.BillID,
-            'Appointment' AS ItemType,
-            'Appointment Fees' AS ItemName,
-            1 AS Quantity,
-            A.AppointmentFees AS Price,
-            A.AppointmentFees AS Total
+                                INNER JOIN laboratorytests LT
+                                    ON LT.TestID = LR.TestID
 
-        FROM appointments A
+                                WHERE LR.BillID IS NOT NULL;
+                            "
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261102_001",
+                            Description = "Add separate direct laboratory billing to invoice views",
+                            Sql = @"
+                                    CREATE OR REPLACE VIEW View_BillItems AS
 
-        INNER JOIN visits V
-            ON A.AppointmentID = V.AppointmentID
+                                    SELECT
+                                        B.BillID,
+                                        _utf8mb4'Medicine' COLLATE utf8mb4_general_ci AS ItemType,
+                                        CONVERT(PD.SavedMedicineName USING utf8mb4)
+                                            COLLATE utf8mb4_general_ci AS ItemName,
+                                        PD.Quantity,
+                                        PD.SavedMedicinePrice AS Price,
+                                        PD.SavedMedicinePrice * PD.Quantity AS Total
 
-        INNER JOIN bills B
-            ON V.VisitID = B.VisitID
+                                    FROM prescriptiondetails PD
 
-        WHERE A.AppointmentFees > 0
-          AND NOT EXISTS
-          (
-              SELECT 1
-              FROM labrequests LR
-              WHERE LR.BillID = B.BillID
-          )
+                                    INNER JOIN prescriptions PR
+                                        ON PD.PrescriptionID = PR.PrescriptionID
 
-        UNION ALL
+                                    INNER JOIN bills B
+                                        ON PR.VisitID = B.VisitID
 
-        SELECT
-            LR.BillID,
-            'Laboratory' AS ItemType,
-            LT.TestName AS ItemName,
-            1 AS Quantity,
+                                    WHERE NOT EXISTS
+                                    (
+                                        SELECT 1
+                                        FROM labrequests LR
+                                        WHERE LR.BillID = B.BillID
+                                    )
 
-            COALESCE(
-                LR.SavedTestPrice,
-                LT.TestPrice,
-                0
-            ) AS Price,
+                                    UNION ALL
 
-            COALESCE(
-                LR.SavedTestPrice,
-                LT.TestPrice,
-                0
-            ) AS Total
+                                    SELECT
+                                        B.BillID,
+                                        _utf8mb4'Service' COLLATE utf8mb4_general_ci AS ItemType,
+                                        CONVERT(S.ServiceName USING utf8mb4)
+                                            COLLATE utf8mb4_general_ci AS ItemName,
+                                        VS.Quantity,
+                                        VS.SavedServicePrice AS Price,
+                                        VS.SavedServicePrice * VS.Quantity AS Total
 
-        FROM labrequests LR
+                                    FROM visitservices VS
 
-        INNER JOIN laboratorytests LT
-            ON LT.TestID = LR.TestID
+                                    INNER JOIN services S
+                                        ON VS.ServiceID = S.ServiceID
 
-        WHERE LR.BillID IS NOT NULL;
+                                    INNER JOIN bills B
+                                        ON VS.VisitID = B.VisitID
 
-    "
-},
+                                    WHERE NOT EXISTS
+                                    (
+                                        SELECT 1
+                                        FROM labrequests LR
+                                        WHERE LR.BillID = B.BillID
+                                    )
+
+                                    UNION ALL
+
+                                    SELECT
+                                        B.BillID,
+                                        _utf8mb4'Appointment' COLLATE utf8mb4_general_ci AS ItemType,
+                                        _utf8mb4'Appointment Fees' COLLATE utf8mb4_general_ci AS ItemName,
+                                        1 AS Quantity,
+                                        A.AppointmentFees AS Price,
+                                        A.AppointmentFees AS Total
+
+                                    FROM appointments A
+
+                                    INNER JOIN visits V
+                                        ON A.AppointmentID = V.AppointmentID
+
+                                    INNER JOIN bills B
+                                        ON V.VisitID = B.VisitID
+
+                                    WHERE A.AppointmentFees > 0
+                                      AND NOT EXISTS
+                                      (
+                                          SELECT 1
+                                          FROM labrequests LR
+                                          WHERE LR.BillID = B.BillID
+                                      )
+
+                                    UNION ALL
+
+                                    SELECT
+                                        LR.BillID,
+                                        _utf8mb4'Laboratory' COLLATE utf8mb4_general_ci AS ItemType,
+                                        CONVERT(LT.TestName USING utf8mb4)
+                                            COLLATE utf8mb4_general_ci AS ItemName,
+                                        1 AS Quantity,
+
+                                        COALESCE(
+                                            LR.SavedTestPrice,
+                                            LT.TestPrice,
+                                            0
+                                        ) AS Price,
+
+                                        COALESCE(
+                                            LR.SavedTestPrice,
+                                            LT.TestPrice,
+                                            0
+                                        ) AS Total
+
+                                    FROM labrequests LR
+
+                                    INNER JOIN laboratorytests LT
+                                        ON LT.TestID = LR.TestID
+
+                                    WHERE LR.BillID IS NOT NULL;
+                            "
+                        },
 
                         new DatabaseMigration
                         {
@@ -4985,40 +4688,6 @@ new DatabaseMigration
                                     ON A.DoctorID = D.DoctorID;
                             "
                         },
-                        new DatabaseMigration
-                        {
-                            Version = "20261017_XRAY_001",
-                            Description = "Create radiology test catalog",
-                            Sql = @"CREATE TABLE IF NOT EXISTS xraytests (
-                                XRayTestID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                                TestName VARCHAR(200) NOT NULL,
-                                Description TEXT NULL,
-                                Price DECIMAL(12,2) NOT NULL DEFAULT 0,
-                                IsActive TINYINT(1) NOT NULL DEFAULT 1
-                            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"
-                        },
-                        new DatabaseMigration
-                        {
-                            Version = "20261017_XRAY_002",
-                            Description = "Create radiology requests with stored image paths",
-                            Sql = @"CREATE TABLE IF NOT EXISTS xrayrequests (
-                                XRayRequestID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                                VisitID INT NOT NULL,
-                                XRayTestID INT NOT NULL,
-                                RequestedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                                Status VARCHAR(30) NOT NULL DEFAULT 'Ordered',
-                                ClinicalNotes TEXT NULL,
-                                Findings TEXT NULL,
-                                Impression TEXT NULL,
-                                ImagePath VARCHAR(1000) NULL,
-                                ResultedAt DATETIME NULL,
-                                INDEX IX_XRayRequests_Visit (VisitID),
-                                INDEX IX_XRayRequests_Test (XRayTestID),
-                                INDEX IX_XRayRequests_Status (Status),
-                                CONSTRAINT FK_XRayRequests_Visit FOREIGN KEY (VisitID) REFERENCES visits(VisitID),
-                                CONSTRAINT FK_XRayRequests_Test FOREIGN KEY (XRayTestID) REFERENCES xraytests(XRayTestID)
-                            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"
-                        },
                         // Fix existing nurse queue view without changing previous migrations.
                         new DatabaseMigration
                         {
@@ -5118,633 +4787,689 @@ new DatabaseMigration
                                     REFERENCES `tbl_items` (`id`);
                             "
                         },
+                        new DatabaseMigration
+                        {
+                            Version = "20261103_LAB_BATCH_002",
+                            Description = "Aggregate lab billing summaries",
+                            Sql = @"
+                                CREATE OR REPLACE VIEW View_BillSummaries AS
+                                SELECT
+                                    CONCAT(
+                                        'INV-',
+                                        YEAR(B.BillDate),
+                                        '-',
+                                        LPAD(B.BillID, 4, '0')
+                                    ) AS BillNumber,
 
+                                    B.BillID,
 
-new DatabaseMigration
-{
-    Version = "20261103_LAB_BATCH_002",
-    Description = "Aggregate lab billing summaries",
-    Sql = @"
-        CREATE OR REPLACE VIEW View_BillSummaries AS
-        SELECT
-            CONCAT(
-                'INV-',
-                YEAR(B.BillDate),
-                '-',
-                LPAD(B.BillID, 4, '0')
-            ) AS BillNumber,
+                                    COALESCE(P.FullName, 'Pharmacy Sale') AS PatientName,
 
-            B.BillID,
+                                    CASE
+                                        WHEN LR.TestCount IS NOT NULL THEN
+                                            CONCAT(LR.TestCount, ' Lab Tests')
 
-            COALESCE(P.FullName, 'Pharmacy Sale') AS PatientName,
+                                        WHEN B.VisitID IS NULL THEN
+                                            CONCAT(
+                                                COALESCE(M.PrescriptionCount, 0),
+                                                ' Pharmacy Sale'
+                                            )
 
-            CASE
-                WHEN LR.TestCount IS NOT NULL THEN
-                    CONCAT(LR.TestCount, ' Lab Tests')
+                                        ELSE
+                                            CONCAT(
+                                                COALESCE(S.ServiceCount, 0),
+                                                ' Servs, ',
+                                                COALESCE(M.PrescriptionCount, 0),
+                                                ' Presc'
+                                            )
+                                    END AS ItemsTotal,
 
-                WHEN B.VisitID IS NULL THEN
-                    CONCAT(
-                        COALESCE(M.PrescriptionCount, 0),
-                        ' Pharmacy Sale'
-                    )
+                                    CASE
+                                        WHEN LR.TestCount IS NOT NULL THEN 0
+                                        ELSE COALESCE(A.AppointmentFees, 0)
+                                    END AS AppointmentFees,
 
-                ELSE
-                    CONCAT(
-                        COALESCE(S.ServiceCount, 0),
-                        ' Servs, ',
-                        COALESCE(M.PrescriptionCount, 0),
-                        ' Presc'
-                    )
-            END AS ItemsTotal,
+                                    CASE
+                                        WHEN LR.TestCount IS NOT NULL THEN 0
+                                        ELSE COALESCE(M.TotalMedicinesOnly, 0)
+                                    END AS MedicinesTotal,
 
-            CASE
-                WHEN LR.TestCount IS NOT NULL THEN 0
-                ELSE COALESCE(A.AppointmentFees, 0)
-            END AS AppointmentFees,
+                                    CASE
+                                        WHEN LR.TestCount IS NOT NULL THEN 0
+                                        ELSE COALESCE(S.TotalServicesOnly, 0)
+                                    END AS ServicesTotal,
 
-            CASE
-                WHEN LR.TestCount IS NOT NULL THEN 0
-                ELSE COALESCE(M.TotalMedicinesOnly, 0)
-            END AS MedicinesTotal,
+                                    CASE
+                                        WHEN LR.TestCount IS NOT NULL THEN 0
+                                        ELSE
+                                            COALESCE(S.ServiceDiscount, 0)
+                                            + COALESCE(M.MedsDiscount, 0)
+                                    END AS TotalDiscount,
 
-            CASE
-                WHEN LR.TestCount IS NOT NULL THEN 0
-                ELSE COALESCE(S.TotalServicesOnly, 0)
-            END AS ServicesTotal,
+                                    CASE
+                                        WHEN LR.TestCount IS NOT NULL THEN 0
+                                        ELSE COALESCE(M.TotalTax, 0)
+                                    END AS TotalTax,
 
-            CASE
-                WHEN LR.TestCount IS NOT NULL THEN 0
-                ELSE
-                    COALESCE(S.ServiceDiscount, 0)
-                    + COALESCE(M.MedsDiscount, 0)
-            END AS TotalDiscount,
+                                    CASE
+                                        WHEN LR.TestCount IS NOT NULL THEN
+                                            COALESCE(LR.LabTotal, 0)
+                                        ELSE
+                                            COALESCE(A.AppointmentFees, 0)
+                                            + COALESCE(M.TotalMedicinesNet, 0)
+                                            + COALESCE(S.TotalServicesNet, 0)
+                                    END AS Subtotal,
 
-            CASE
-                WHEN LR.TestCount IS NOT NULL THEN 0
-                ELSE COALESCE(M.TotalTax, 0)
-            END AS TotalTax,
+                                    COALESCE(Pay.TotalPaid, 0) AS PaymentAmount,
 
-            CASE
-                WHEN LR.TestCount IS NOT NULL THEN
-                    COALESCE(LR.LabTotal, 0)
-                ELSE
-                    COALESCE(A.AppointmentFees, 0)
-                    + COALESCE(M.TotalMedicinesNet, 0)
-                    + COALESCE(S.TotalServicesNet, 0)
-            END AS Subtotal,
+                                    CASE
+                                        WHEN LR.TestCount IS NOT NULL THEN
+                                            COALESCE(LR.LabTotal, 0)
+                                            - COALESCE(Pay.TotalPaid, 0)
+                                        ELSE
+                                            COALESCE(A.AppointmentFees, 0)
+                                            + COALESCE(M.TotalMedicinesNet, 0)
+                                            + COALESCE(S.TotalServicesNet, 0)
+                                            - COALESCE(Pay.TotalPaid, 0)
+                                    END AS BalanceDue
 
-            COALESCE(Pay.TotalPaid, 0) AS PaymentAmount,
+                                FROM bills B
 
-            CASE
-                WHEN LR.TestCount IS NOT NULL THEN
-                    COALESCE(LR.LabTotal, 0)
-                    - COALESCE(Pay.TotalPaid, 0)
-                ELSE
-                    COALESCE(A.AppointmentFees, 0)
-                    + COALESCE(M.TotalMedicinesNet, 0)
-                    + COALESCE(S.TotalServicesNet, 0)
-                    - COALESCE(Pay.TotalPaid, 0)
-            END AS BalanceDue
+                                LEFT JOIN
+                                (
+                                    SELECT
+                                        BillID,
+                                        COUNT(*) AS TestCount,
+                                        SUM(
+                                            COALESCE(SavedTestPrice, 0)
+                                        ) AS LabTotal
 
-        FROM bills B
+                                    FROM labrequests
 
-        LEFT JOIN
-        (
-            SELECT
-                BillID,
-                COUNT(*) AS TestCount,
-                SUM(
-                    COALESCE(SavedTestPrice, 0)
-                ) AS LabTotal
+                                    WHERE BillID IS NOT NULL
+                                      AND Status <> 'Cancelled'
 
-            FROM labrequests
+                                    GROUP BY BillID
 
-            WHERE BillID IS NOT NULL
-              AND Status <> 'Cancelled'
+                                ) LR
+                                    ON LR.BillID = B.BillID
 
-            GROUP BY BillID
+                                LEFT JOIN visits V
+                                    ON B.VisitID = V.VisitID
 
-        ) LR
-            ON LR.BillID = B.BillID
+                                LEFT JOIN appointments A
+                                    ON V.AppointmentID = A.AppointmentID
 
-        LEFT JOIN visits V
-            ON B.VisitID = V.VisitID
+                                LEFT JOIN patients PA
+                                    ON V.PatientID = PA.PatientID
 
-        LEFT JOIN appointments A
-            ON V.AppointmentID = A.AppointmentID
+                                LEFT JOIN persons P
+                                    ON PA.PersonID = P.PersonID
 
-        LEFT JOIN patients PA
-            ON V.PatientID = PA.PatientID
+                                LEFT JOIN
+                                (
+                                    SELECT
+                                        BillID,
+                                        SUM(PaymentAmount) AS TotalPaid
 
-        LEFT JOIN persons P
-            ON PA.PersonID = P.PersonID
+                                    FROM payments
 
-        LEFT JOIN
-        (
-            SELECT
-                BillID,
-                SUM(PaymentAmount) AS TotalPaid
+                                    GROUP BY BillID
 
-            FROM payments
+                                ) Pay
+                                    ON B.BillID = Pay.BillID
 
-            GROUP BY BillID
+                                LEFT JOIN
+                                (
+                                    SELECT
+                                        VisitID,
 
-        ) Pay
-            ON B.BillID = Pay.BillID
+                                        COUNT(*) AS ServiceCount,
 
-        LEFT JOIN
-        (
-            SELECT
-                VisitID,
+                                        SUM(
+                                            SavedServicePrice * Quantity
+                                        ) AS TotalServicesOnly,
 
-                COUNT(*) AS ServiceCount,
+                                        SUM(
+                                            Discount * Quantity
+                                        ) AS ServiceDiscount,
 
-                SUM(
-                    SavedServicePrice * Quantity
-                ) AS TotalServicesOnly,
+                                        SUM(
+                                            (SavedServicePrice * Quantity)
+                                            - (Discount * Quantity)
+                                        ) AS TotalServicesNet
 
-                SUM(
-                    Discount * Quantity
-                ) AS ServiceDiscount,
+                                    FROM visitservices
 
-                SUM(
-                    (SavedServicePrice * Quantity)
-                    - (Discount * Quantity)
-                ) AS TotalServicesNet
+                                    GROUP BY VisitID
 
-            FROM visitservices
+                                ) S
+                                    ON B.VisitID = S.VisitID
 
-            GROUP BY VisitID
+                                LEFT JOIN
+                                (
+                                    SELECT
+                                        PR.VisitID,
 
-        ) S
-            ON B.VisitID = S.VisitID
+                                        COUNT(DISTINCT PR.PrescriptionID)
+                                            AS PrescriptionCount,
 
-        LEFT JOIN
-        (
-            SELECT
-                PR.VisitID,
-
-                COUNT(DISTINCT PR.PrescriptionID)
-                    AS PrescriptionCount,
-
-                COALESCE(
-                    SUM(
-                        PD.SavedMedicinePrice
-                        * PD.Quantity
-                    ),
-                    0
-                ) AS TotalMedicinesOnly,
-
-                COALESCE(
-                    SUM(
-                        PD.DiscountAmount
-                        * PD.Quantity
-                    ),
-                    0
-                ) AS MedsDiscount,
-
-                CAST(
-                    ROUND(
-                        COALESCE(
-                            SUM(
-                                CASE
-                                    WHEN PD.Quantity > 0 THEN
-                                        (
-                                            (
+                                        COALESCE(
+                                            SUM(
                                                 PD.SavedMedicinePrice
                                                 * PD.Quantity
-                                            )
-                                            -
-                                            (
+                                            ),
+                                            0
+                                        ) AS TotalMedicinesOnly,
+
+                                        COALESCE(
+                                            SUM(
                                                 PD.DiscountAmount
                                                 * PD.Quantity
+                                            ),
+                                            0
+                                        ) AS MedsDiscount,
+
+                                        CAST(
+                                            ROUND(
+                                                COALESCE(
+                                                    SUM(
+                                                        CASE
+                                                            WHEN PD.Quantity > 0 THEN
+                                                                (
+                                                                    (
+                                                                        PD.SavedMedicinePrice
+                                                                        * PD.Quantity
+                                                                    )
+                                                                    -
+                                                                    (
+                                                                        PD.DiscountAmount
+                                                                        * PD.Quantity
+                                                                    )
+                                                                )
+                                                                *
+                                                                (
+                                                                    COALESCE(MED.TaxRate, 0)
+                                                                    / 100.0
+                                                                )
+                                                            ELSE 0
+                                                        END
+                                                    ),
+                                                    0
+                                                ),
+                                                2
+                                            ) AS DECIMAL(18,2)
+                                        ) AS TotalTax,
+
+                                        COALESCE(
+                                            SUM(
+                                                CASE
+                                                    WHEN PD.Quantity > 0 THEN
+                                                        (
+                                                            (
+                                                                PD.SavedMedicinePrice
+                                                                * PD.Quantity
+                                                            )
+                                                            -
+                                                            (
+                                                                PD.DiscountAmount
+                                                                * PD.Quantity
+                                                            )
+                                                        )
+                                                        *
+                                                        (
+                                                            1 +
+                                                            (
+                                                                COALESCE(MED.TaxRate, 0)
+                                                                / 100.0
+                                                            )
+                                                        )
+                                                    ELSE 0
+                                                END
+                                            ),
+                                            0
+                                        ) AS TotalMedicinesNet
+
+                                    FROM prescriptions PR
+
+                                    LEFT JOIN prescriptiondetails PD
+                                        ON PR.PrescriptionID = PD.PrescriptionID
+
+                                    LEFT JOIN medicines MED
+                                        ON PD.MedicineID = MED.MedicineID
+
+                                    GROUP BY PR.VisitID
+
+                                ) M
+                                    ON B.VisitID = M.VisitID;
+                            "
+                        },
+
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261110_CLINIC_FIX_DOCTORS_VIEW_001",
+                            Description = "Fix View_DoctorsDetails table and restore original view",
+                            Sql = @"
+                                DROP TABLE IF EXISTS `view_doctorsdetails`;
+
+                                CREATE OR REPLACE VIEW `view_doctorsdetails` AS
+                                SELECT
+                                    d.DoctorID AS DoctorID,
+                                    d.PersonID AS PersonID,
+                                    p.FullName AS FullName,
+                                    d.LicenseNumber AS LicenseNumber,
+                                    d.ConsultationFees AS ConsultationFees,
+
+                                    COALESCE(
+                                        (
+                                            SELECT GROUP_CONCAT(
+                                                DISTINCT s.SpecializationName
+                                                ORDER BY s.SpecializationName ASC
+                                                SEPARATOR ', '
                                             )
-                                        )
-                                        *
+                                            FROM doctorspecialties ds
+                                            INNER JOIN specializations s
+                                                ON s.SpecializationID = ds.SpecializationID
+                                            WHERE ds.DoctorID = d.DoctorID
+                                        ),
+                                        ''
+                                    ) AS Specializations,
+
+                                    COALESCE(
                                         (
-                                            COALESCE(MED.TaxRate, 0)
-                                            / 100.0
-                                        )
-                                    ELSE 0
-                                END
-                            ),
-                            0
-                        ),
-                        2
-                    ) AS DECIMAL(18,2)
-                ) AS TotalTax,
+                                            SELECT GROUP_CONCAT(
+                                                dy.DayName
+                                                ORDER BY dw.DayID ASC
+                                                SEPARATOR ', '
+                                            )
+                                            FROM doctorworkingdays dw
+                                            INNER JOIN days dy
+                                                ON dy.DayID = dw.DayID
+                                            WHERE dw.DoctorID = d.DoctorID
+                                        ),
+                                        ''
+                                    ) AS WorkingDays,
 
-                COALESCE(
-                    SUM(
-                        CASE
-                            WHEN PD.Quantity > 0 THEN
+                                    COALESCE(c.CountryName, '') AS CountryName,
+                                    d.IsActive AS IsActive
+
+                                FROM doctors d
+                                LEFT JOIN persons p
+                                    ON p.PersonID = d.PersonID
+                                LEFT JOIN countries c
+                                    ON c.CountryID = p.NationalityCountryID;
+                            "
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261026_001",
+                            Description = "Fix View Bill Items",
+                            Sql = @"
+                                    CREATE OR REPLACE VIEW view_billitems AS
+
+                                    SELECT
+                                        b.BillID AS BillID,
+                                        _utf8mb4'Medicine' COLLATE utf8mb4_0900_ai_ci AS ItemType,
+                                        CONVERT(pd.SavedMedicineName USING utf8mb4)
+                                            COLLATE utf8mb4_0900_ai_ci AS ItemName,
+                                        pd.Quantity AS Quantity,
+                                        pd.SavedMedicinePrice AS Price,
+                                        (pd.SavedMedicinePrice * pd.Quantity) AS Total
+
+                                    FROM prescriptiondetails pd
+
+                                    INNER JOIN prescriptions pr
+                                        ON pd.PrescriptionID = pr.PrescriptionID
+
+                                    INNER JOIN bills b
+                                        ON pr.VisitID = b.VisitID
+
+                                    UNION ALL
+
+                                    SELECT
+                                        b.BillID AS BillID,
+                                        _utf8mb4'Service' COLLATE utf8mb4_0900_ai_ci AS ItemType,
+                                        CONVERT(s.ServiceName USING utf8mb4)
+                                            COLLATE utf8mb4_0900_ai_ci AS ItemName,
+                                        vs.Quantity AS Quantity,
+                                        vs.SavedServicePrice AS Price,
+                                        (vs.SavedServicePrice * vs.Quantity) AS Total
+
+                                    FROM visitservices vs
+
+                                    INNER JOIN services s
+                                        ON vs.ServiceID = s.ServiceID
+
+                                    INNER JOIN bills b
+                                        ON vs.VisitID = b.VisitID
+
+                                    UNION ALL
+
+                                    SELECT
+                                        b.BillID AS BillID,
+                                        _utf8mb4'Appointment'
+                                            COLLATE utf8mb4_0900_ai_ci AS ItemType,
+                                        _utf8mb4'Appointment Fees'
+                                            COLLATE utf8mb4_0900_ai_ci AS ItemName,
+                                        1 AS Quantity,
+                                        a.AppointmentFees AS Price,
+                                        a.AppointmentFees AS Total
+
+                                    FROM appointments a
+
+                                    INNER JOIN visits v
+                                        ON a.AppointmentID = v.AppointmentID
+
+                                    INNER JOIN bills b
+                                        ON v.VisitID = b.VisitID
+
+                                    WHERE a.AppointmentFees > 0;
+                                    "
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261110_CLINIC_REPAIR_BILLING_VIEWS_002",
+                            Description = "Repair billing views and include linked laboratory requests",
+                            Sql = @"
+                        CREATE OR REPLACE VIEW `view_billitems` AS
+                        SELECT B.BillID, _utf8mb4'Medicine' COLLATE utf8mb4_0900_ai_ci AS ItemType,
+                               CONVERT(PD.SavedMedicineName USING utf8mb4) COLLATE utf8mb4_0900_ai_ci AS ItemName,
+                               PD.Quantity, PD.SavedMedicinePrice AS Price,
+                               (PD.Quantity * PD.SavedMedicinePrice) AS Total
+                        FROM prescriptiondetails PD
+                        JOIN prescriptions PR ON PR.PrescriptionID = PD.PrescriptionID
+                        JOIN bills B ON B.VisitID = PR.VisitID
+                        WHERE NOT EXISTS (SELECT 1 FROM labrequests LR WHERE LR.BillID = B.BillID)
+                          AND B.BillID = (SELECT MIN(B2.BillID) FROM bills B2
+                                          WHERE B2.VisitID = B.VisitID
+                                            AND NOT EXISTS (SELECT 1 FROM labrequests L2 WHERE L2.BillID = B2.BillID))
+                        UNION ALL
+                        SELECT B.BillID, _utf8mb4'Service' COLLATE utf8mb4_0900_ai_ci,
+                               CONVERT(S.ServiceName USING utf8mb4) COLLATE utf8mb4_0900_ai_ci,
+                               VS.Quantity, VS.SavedServicePrice, VS.Quantity * VS.SavedServicePrice
+                        FROM visitservices VS
+                        JOIN services S ON S.ServiceID = VS.ServiceID
+                        JOIN bills B ON B.VisitID = VS.VisitID
+                        WHERE NOT EXISTS (SELECT 1 FROM labrequests LR WHERE LR.BillID = B.BillID)
+                          AND B.BillID = (SELECT MIN(B2.BillID) FROM bills B2
+                                          WHERE B2.VisitID = B.VisitID
+                                            AND NOT EXISTS (SELECT 1 FROM labrequests L2 WHERE L2.BillID = B2.BillID))
+                        UNION ALL
+                        SELECT B.BillID, _utf8mb4'Appointment' COLLATE utf8mb4_0900_ai_ci,
+                               _utf8mb4'Appointment Fees' COLLATE utf8mb4_0900_ai_ci,
+                               1, A.AppointmentFees, A.AppointmentFees
+                        FROM appointments A
+                        JOIN visits V ON V.AppointmentID = A.AppointmentID
+                        JOIN bills B ON B.VisitID = V.VisitID
+                        WHERE A.AppointmentFees > 0
+                          AND NOT EXISTS (SELECT 1 FROM labrequests LR WHERE LR.BillID = B.BillID)
+                          AND B.BillID = (SELECT MIN(B2.BillID) FROM bills B2
+                                          WHERE B2.VisitID = B.VisitID
+                                            AND NOT EXISTS (SELECT 1 FROM labrequests L2 WHERE L2.BillID = B2.BillID))
+                        UNION ALL
+                        SELECT LR.BillID, _utf8mb4'Laboratory' COLLATE utf8mb4_0900_ai_ci,
+                               CONVERT(LT.TestName USING utf8mb4) COLLATE utf8mb4_0900_ai_ci,
+                               1, COALESCE(LR.SavedTestPrice, LT.TestPrice),
+                               COALESCE(LR.SavedTestPrice, LT.TestPrice)
+                        FROM labrequests LR
+                        JOIN laboratorytests LT ON LT.TestID = LR.TestID
+                        WHERE LR.BillID IS NOT NULL AND LR.Status <> 'Cancelled';
+
+
+                                CREATE OR REPLACE VIEW View_BillSummaries AS
+                                SELECT
+                                    CONCAT(
+                                        'INV-',
+                                        YEAR(B.BillDate),
+                                        '-',
+                                        LPAD(B.BillID, 4, '0')
+                                    ) AS BillNumber,
+
+                                    B.BillID,
+
+                                    COALESCE(P.FullName, 'Pharmacy Sale') AS PatientName,
+
+                                    CASE
+                                        WHEN LR.TestCount IS NOT NULL THEN
+                                            CONCAT(LR.TestCount, ' Lab Tests')
+
+                                        WHEN B.VisitID IS NULL THEN
+                                            CONCAT(
+                                                COALESCE(M.PrescriptionCount, 0),
+                                                ' Pharmacy Sale'
+                                            )
+
+                                        ELSE
+                                            CONCAT(
+                                                COALESCE(S.ServiceCount, 0),
+                                                ' Servs, ',
+                                                COALESCE(M.PrescriptionCount, 0),
+                                                ' Presc'
+                                            )
+                                    END AS ItemsTotal,
+
+                                    CASE
+                                        WHEN LR.TestCount IS NOT NULL THEN 0
+                                        ELSE COALESCE(A.AppointmentFees, 0)
+                                    END AS AppointmentFees,
+
+                                    CASE
+                                        WHEN LR.TestCount IS NOT NULL THEN 0
+                                        ELSE COALESCE(M.TotalMedicinesOnly, 0)
+                                    END AS MedicinesTotal,
+
+                                    CASE
+                                        WHEN LR.TestCount IS NOT NULL THEN 0
+                                        ELSE COALESCE(S.TotalServicesOnly, 0)
+                                    END AS ServicesTotal,
+
+                                    CASE
+                                        WHEN LR.TestCount IS NOT NULL THEN 0
+                                        ELSE
+                                            COALESCE(S.ServiceDiscount, 0)
+                                            + COALESCE(M.MedsDiscount, 0)
+                                    END AS TotalDiscount,
+
+                                    CASE
+                                        WHEN LR.TestCount IS NOT NULL THEN 0
+                                        ELSE COALESCE(M.TotalTax, 0)
+                                    END AS TotalTax,
+
+                                    CASE
+                                        WHEN LR.TestCount IS NOT NULL THEN
+                                            COALESCE(LR.LabTotal, 0)
+                                        ELSE
+                                            COALESCE(A.AppointmentFees, 0)
+                                            + COALESCE(M.TotalMedicinesNet, 0)
+                                            + COALESCE(S.TotalServicesNet, 0)
+                                    END AS Subtotal,
+
+                                    COALESCE(Pay.TotalPaid, 0) AS PaymentAmount,
+
+                                    CASE
+                                        WHEN LR.TestCount IS NOT NULL THEN
+                                            COALESCE(LR.LabTotal, 0)
+                                            - COALESCE(Pay.TotalPaid, 0)
+                                        ELSE
+                                            COALESCE(A.AppointmentFees, 0)
+                                            + COALESCE(M.TotalMedicinesNet, 0)
+                                            + COALESCE(S.TotalServicesNet, 0)
+                                            - COALESCE(Pay.TotalPaid, 0)
+                                    END AS BalanceDue
+
+                                FROM bills B
+
+                                LEFT JOIN
                                 (
-                                    (
-                                        PD.SavedMedicinePrice
-                                        * PD.Quantity
-                                    )
-                                    -
-                                    (
-                                        PD.DiscountAmount
-                                        * PD.Quantity
-                                    )
-                                )
-                                *
+                                    SELECT
+                                        BillID,
+                                        COUNT(*) AS TestCount,
+                                        SUM(
+                                            COALESCE(SavedTestPrice, 0)
+                                        ) AS LabTotal
+
+                                    FROM labrequests
+
+                                    WHERE BillID IS NOT NULL
+                                      AND Status <> 'Cancelled'
+
+                                    GROUP BY BillID
+
+                                ) LR
+                                    ON LR.BillID = B.BillID
+
+                                LEFT JOIN visits V
+                                    ON B.VisitID = V.VisitID
+
+                                LEFT JOIN appointments A
+                                    ON V.AppointmentID = A.AppointmentID
+
+                                LEFT JOIN patients PA
+                                    ON V.PatientID = PA.PatientID
+
+                                LEFT JOIN persons P
+                                    ON PA.PersonID = P.PersonID
+
+                                LEFT JOIN
                                 (
-                                    1 +
-                                    (
-                                        COALESCE(MED.TaxRate, 0)
-                                        / 100.0
-                                    )
-                                )
-                            ELSE 0
-                        END
-                    ),
-                    0
-                ) AS TotalMedicinesNet
+                                    SELECT
+                                        BillID,
+                                        SUM(PaymentAmount) AS TotalPaid
 
-            FROM prescriptions PR
+                                    FROM payments
 
-            LEFT JOIN prescriptiondetails PD
-                ON PR.PrescriptionID = PD.PrescriptionID
+                                    GROUP BY BillID
 
-            LEFT JOIN medicines MED
-                ON PD.MedicineID = MED.MedicineID
+                                ) Pay
+                                    ON B.BillID = Pay.BillID
 
-            GROUP BY PR.VisitID
+                                LEFT JOIN
+                                (
+                                    SELECT
+                                        VisitID,
 
-        ) M
-            ON B.VisitID = M.VisitID;
-    "
-},
+                                        COUNT(*) AS ServiceCount,
 
+                                        SUM(
+                                            SavedServicePrice * Quantity
+                                        ) AS TotalServicesOnly,
 
-new DatabaseMigration
-{
-    Version = "20261110_CLINIC_FIX_DOCTORS_VIEW_001",
-    Description = "Fix View_DoctorsDetails table and restore original view",
-    Sql = @"
-        DROP TABLE IF EXISTS `view_doctorsdetails`;
+                                        SUM(
+                                            Discount * Quantity
+                                        ) AS ServiceDiscount,
 
-        CREATE OR REPLACE VIEW `view_doctorsdetails` AS
-        SELECT
-            d.DoctorID AS DoctorID,
-            d.PersonID AS PersonID,
-            p.FullName AS FullName,
-            d.LicenseNumber AS LicenseNumber,
-            d.ConsultationFees AS ConsultationFees,
+                                        SUM(
+                                            (SavedServicePrice * Quantity)
+                                            - (Discount * Quantity)
+                                        ) AS TotalServicesNet
 
-            COALESCE(
-                (
-                    SELECT GROUP_CONCAT(
-                        DISTINCT s.SpecializationName
-                        ORDER BY s.SpecializationName ASC
-                        SEPARATOR ', '
-                    )
-                    FROM doctorspecialties ds
-                    INNER JOIN specializations s
-                        ON s.SpecializationID = ds.SpecializationID
-                    WHERE ds.DoctorID = d.DoctorID
-                ),
-                ''
-            ) AS Specializations,
+                                    FROM visitservices
 
-            COALESCE(
-                (
-                    SELECT GROUP_CONCAT(
-                        dy.DayName
-                        ORDER BY dw.DayID ASC
-                        SEPARATOR ', '
-                    )
-                    FROM doctorworkingdays dw
-                    INNER JOIN days dy
-                        ON dy.DayID = dw.DayID
-                    WHERE dw.DoctorID = d.DoctorID
-                ),
-                ''
-            ) AS WorkingDays,
+                                    GROUP BY VisitID
 
-            COALESCE(c.CountryName, '') AS CountryName,
-            d.IsActive AS IsActive
+                                ) S
+                                    ON B.VisitID = S.VisitID
 
-        FROM doctors d
-        LEFT JOIN persons p
-            ON p.PersonID = d.PersonID
-        LEFT JOIN countries c
-            ON c.CountryID = p.NationalityCountryID;
-    "
-},
+                                LEFT JOIN
+                                (
+                                    SELECT
+                                        PR.VisitID,
 
+                                        COUNT(DISTINCT PR.PrescriptionID)
+                                            AS PrescriptionCount,
 
-new DatabaseMigration
-{
-    Version = "20261026_001",
-    Description = "Fix View Bill Items",
-    Sql = Migration_20261026_001_FixViewBillItems
-},
-
-new DatabaseMigration
-{
-    Version = "20261110_CLINIC_REPAIR_BILLING_VIEWS_002",
-    Description = "Repair billing views and include linked laboratory requests",
-    Sql = @"
-CREATE OR REPLACE VIEW `view_billitems` AS
-SELECT B.BillID, _utf8mb4'Medicine' COLLATE utf8mb4_0900_ai_ci AS ItemType,
-       CONVERT(PD.SavedMedicineName USING utf8mb4) COLLATE utf8mb4_0900_ai_ci AS ItemName,
-       PD.Quantity, PD.SavedMedicinePrice AS Price,
-       (PD.Quantity * PD.SavedMedicinePrice) AS Total
-FROM prescriptiondetails PD
-JOIN prescriptions PR ON PR.PrescriptionID = PD.PrescriptionID
-JOIN bills B ON B.VisitID = PR.VisitID
-WHERE NOT EXISTS (SELECT 1 FROM labrequests LR WHERE LR.BillID = B.BillID)
-  AND B.BillID = (SELECT MIN(B2.BillID) FROM bills B2
-                  WHERE B2.VisitID = B.VisitID
-                    AND NOT EXISTS (SELECT 1 FROM labrequests L2 WHERE L2.BillID = B2.BillID))
-UNION ALL
-SELECT B.BillID, _utf8mb4'Service' COLLATE utf8mb4_0900_ai_ci,
-       CONVERT(S.ServiceName USING utf8mb4) COLLATE utf8mb4_0900_ai_ci,
-       VS.Quantity, VS.SavedServicePrice, VS.Quantity * VS.SavedServicePrice
-FROM visitservices VS
-JOIN services S ON S.ServiceID = VS.ServiceID
-JOIN bills B ON B.VisitID = VS.VisitID
-WHERE NOT EXISTS (SELECT 1 FROM labrequests LR WHERE LR.BillID = B.BillID)
-  AND B.BillID = (SELECT MIN(B2.BillID) FROM bills B2
-                  WHERE B2.VisitID = B.VisitID
-                    AND NOT EXISTS (SELECT 1 FROM labrequests L2 WHERE L2.BillID = B2.BillID))
-UNION ALL
-SELECT B.BillID, _utf8mb4'Appointment' COLLATE utf8mb4_0900_ai_ci,
-       _utf8mb4'Appointment Fees' COLLATE utf8mb4_0900_ai_ci,
-       1, A.AppointmentFees, A.AppointmentFees
-FROM appointments A
-JOIN visits V ON V.AppointmentID = A.AppointmentID
-JOIN bills B ON B.VisitID = V.VisitID
-WHERE A.AppointmentFees > 0
-  AND NOT EXISTS (SELECT 1 FROM labrequests LR WHERE LR.BillID = B.BillID)
-  AND B.BillID = (SELECT MIN(B2.BillID) FROM bills B2
-                  WHERE B2.VisitID = B.VisitID
-                    AND NOT EXISTS (SELECT 1 FROM labrequests L2 WHERE L2.BillID = B2.BillID))
-UNION ALL
-SELECT LR.BillID, _utf8mb4'Laboratory' COLLATE utf8mb4_0900_ai_ci,
-       CONVERT(LT.TestName USING utf8mb4) COLLATE utf8mb4_0900_ai_ci,
-       1, COALESCE(LR.SavedTestPrice, LT.TestPrice),
-       COALESCE(LR.SavedTestPrice, LT.TestPrice)
-FROM labrequests LR
-JOIN laboratorytests LT ON LT.TestID = LR.TestID
-WHERE LR.BillID IS NOT NULL AND LR.Status <> 'Cancelled';
-
-
-        CREATE OR REPLACE VIEW View_BillSummaries AS
-        SELECT
-            CONCAT(
-                'INV-',
-                YEAR(B.BillDate),
-                '-',
-                LPAD(B.BillID, 4, '0')
-            ) AS BillNumber,
-
-            B.BillID,
-
-            COALESCE(P.FullName, 'Pharmacy Sale') AS PatientName,
-
-            CASE
-                WHEN LR.TestCount IS NOT NULL THEN
-                    CONCAT(LR.TestCount, ' Lab Tests')
-
-                WHEN B.VisitID IS NULL THEN
-                    CONCAT(
-                        COALESCE(M.PrescriptionCount, 0),
-                        ' Pharmacy Sale'
-                    )
-
-                ELSE
-                    CONCAT(
-                        COALESCE(S.ServiceCount, 0),
-                        ' Servs, ',
-                        COALESCE(M.PrescriptionCount, 0),
-                        ' Presc'
-                    )
-            END AS ItemsTotal,
-
-            CASE
-                WHEN LR.TestCount IS NOT NULL THEN 0
-                ELSE COALESCE(A.AppointmentFees, 0)
-            END AS AppointmentFees,
-
-            CASE
-                WHEN LR.TestCount IS NOT NULL THEN 0
-                ELSE COALESCE(M.TotalMedicinesOnly, 0)
-            END AS MedicinesTotal,
-
-            CASE
-                WHEN LR.TestCount IS NOT NULL THEN 0
-                ELSE COALESCE(S.TotalServicesOnly, 0)
-            END AS ServicesTotal,
-
-            CASE
-                WHEN LR.TestCount IS NOT NULL THEN 0
-                ELSE
-                    COALESCE(S.ServiceDiscount, 0)
-                    + COALESCE(M.MedsDiscount, 0)
-            END AS TotalDiscount,
-
-            CASE
-                WHEN LR.TestCount IS NOT NULL THEN 0
-                ELSE COALESCE(M.TotalTax, 0)
-            END AS TotalTax,
-
-            CASE
-                WHEN LR.TestCount IS NOT NULL THEN
-                    COALESCE(LR.LabTotal, 0)
-                ELSE
-                    COALESCE(A.AppointmentFees, 0)
-                    + COALESCE(M.TotalMedicinesNet, 0)
-                    + COALESCE(S.TotalServicesNet, 0)
-            END AS Subtotal,
-
-            COALESCE(Pay.TotalPaid, 0) AS PaymentAmount,
-
-            CASE
-                WHEN LR.TestCount IS NOT NULL THEN
-                    COALESCE(LR.LabTotal, 0)
-                    - COALESCE(Pay.TotalPaid, 0)
-                ELSE
-                    COALESCE(A.AppointmentFees, 0)
-                    + COALESCE(M.TotalMedicinesNet, 0)
-                    + COALESCE(S.TotalServicesNet, 0)
-                    - COALESCE(Pay.TotalPaid, 0)
-            END AS BalanceDue
-
-        FROM bills B
-
-        LEFT JOIN
-        (
-            SELECT
-                BillID,
-                COUNT(*) AS TestCount,
-                SUM(
-                    COALESCE(SavedTestPrice, 0)
-                ) AS LabTotal
-
-            FROM labrequests
-
-            WHERE BillID IS NOT NULL
-              AND Status <> 'Cancelled'
-
-            GROUP BY BillID
-
-        ) LR
-            ON LR.BillID = B.BillID
-
-        LEFT JOIN visits V
-            ON B.VisitID = V.VisitID
-
-        LEFT JOIN appointments A
-            ON V.AppointmentID = A.AppointmentID
-
-        LEFT JOIN patients PA
-            ON V.PatientID = PA.PatientID
-
-        LEFT JOIN persons P
-            ON PA.PersonID = P.PersonID
-
-        LEFT JOIN
-        (
-            SELECT
-                BillID,
-                SUM(PaymentAmount) AS TotalPaid
-
-            FROM payments
-
-            GROUP BY BillID
-
-        ) Pay
-            ON B.BillID = Pay.BillID
-
-        LEFT JOIN
-        (
-            SELECT
-                VisitID,
-
-                COUNT(*) AS ServiceCount,
-
-                SUM(
-                    SavedServicePrice * Quantity
-                ) AS TotalServicesOnly,
-
-                SUM(
-                    Discount * Quantity
-                ) AS ServiceDiscount,
-
-                SUM(
-                    (SavedServicePrice * Quantity)
-                    - (Discount * Quantity)
-                ) AS TotalServicesNet
-
-            FROM visitservices
-
-            GROUP BY VisitID
-
-        ) S
-            ON B.VisitID = S.VisitID
-
-        LEFT JOIN
-        (
-            SELECT
-                PR.VisitID,
-
-                COUNT(DISTINCT PR.PrescriptionID)
-                    AS PrescriptionCount,
-
-                COALESCE(
-                    SUM(
-                        PD.SavedMedicinePrice
-                        * PD.Quantity
-                    ),
-                    0
-                ) AS TotalMedicinesOnly,
-
-                COALESCE(
-                    SUM(
-                        PD.DiscountAmount
-                        * PD.Quantity
-                    ),
-                    0
-                ) AS MedsDiscount,
-
-                CAST(
-                    ROUND(
-                        COALESCE(
-                            SUM(
-                                CASE
-                                    WHEN PD.Quantity > 0 THEN
-                                        (
-                                            (
+                                        COALESCE(
+                                            SUM(
                                                 PD.SavedMedicinePrice
                                                 * PD.Quantity
-                                            )
-                                            -
-                                            (
+                                            ),
+                                            0
+                                        ) AS TotalMedicinesOnly,
+
+                                        COALESCE(
+                                            SUM(
                                                 PD.DiscountAmount
                                                 * PD.Quantity
-                                            )
-                                        )
-                                        *
-                                        (
-                                            COALESCE(MED.TaxRate, 0)
-                                            / 100.0
-                                        )
-                                    ELSE 0
-                                END
-                            ),
-                            0
-                        ),
-                        2
-                    ) AS DECIMAL(18,2)
-                ) AS TotalTax,
+                                            ),
+                                            0
+                                        ) AS MedsDiscount,
 
-                COALESCE(
-                    SUM(
-                        CASE
-                            WHEN PD.Quantity > 0 THEN
-                                (
-                                    (
-                                        PD.SavedMedicinePrice
-                                        * PD.Quantity
-                                    )
-                                    -
-                                    (
-                                        PD.DiscountAmount
-                                        * PD.Quantity
-                                    )
-                                )
-                                *
-                                (
-                                    1 +
-                                    (
-                                        COALESCE(MED.TaxRate, 0)
-                                        / 100.0
-                                    )
-                                )
-                            ELSE 0
-                        END
-                    ),
-                    0
-                ) AS TotalMedicinesNet
+                                        CAST(
+                                            ROUND(
+                                                COALESCE(
+                                                    SUM(
+                                                        CASE
+                                                            WHEN PD.Quantity > 0 THEN
+                                                                (
+                                                                    (
+                                                                        PD.SavedMedicinePrice
+                                                                        * PD.Quantity
+                                                                    )
+                                                                    -
+                                                                    (
+                                                                        PD.DiscountAmount
+                                                                        * PD.Quantity
+                                                                    )
+                                                                )
+                                                                *
+                                                                (
+                                                                    COALESCE(MED.TaxRate, 0)
+                                                                    / 100.0
+                                                                )
+                                                            ELSE 0
+                                                        END
+                                                    ),
+                                                    0
+                                                ),
+                                                2
+                                            ) AS DECIMAL(18,2)
+                                        ) AS TotalTax,
 
-            FROM prescriptions PR
+                                        COALESCE(
+                                            SUM(
+                                                CASE
+                                                    WHEN PD.Quantity > 0 THEN
+                                                        (
+                                                            (
+                                                                PD.SavedMedicinePrice
+                                                                * PD.Quantity
+                                                            )
+                                                            -
+                                                            (
+                                                                PD.DiscountAmount
+                                                                * PD.Quantity
+                                                            )
+                                                        )
+                                                        *
+                                                        (
+                                                            1 +
+                                                            (
+                                                                COALESCE(MED.TaxRate, 0)
+                                                                / 100.0
+                                                            )
+                                                        )
+                                                    ELSE 0
+                                                END
+                                            ),
+                                            0
+                                        ) AS TotalMedicinesNet
 
-            LEFT JOIN prescriptiondetails PD
-                ON PR.PrescriptionID = PD.PrescriptionID
+                                    FROM prescriptions PR
 
-            LEFT JOIN medicines MED
-                ON PD.MedicineID = MED.MedicineID
+                                    LEFT JOIN prescriptiondetails PD
+                                        ON PR.PrescriptionID = PD.PrescriptionID
 
-            GROUP BY PR.VisitID
+                                    LEFT JOIN medicines MED
+                                        ON PD.MedicineID = MED.MedicineID
 
-        ) M
-            ON B.VisitID = M.VisitID;
-    "
-},
+                                    GROUP BY PR.VisitID
+
+                                ) M
+                                    ON B.VisitID = M.VisitID;
+                            "
+                        },
 
 
                         new DatabaseMigration
@@ -5753,166 +5478,164 @@ WHERE LR.BillID IS NOT NULL AND LR.Status <> 'Cancelled';
                             Description = "Create billing list view",
                             Sql = @"
                                 CREATE OR REPLACE
-                            ALGORITHM = UNDEFINED
-                            SQL SECURITY INVOKER
-                            VIEW view_bills AS
-                            SELECT
-                                b.BillID,
-                                COALESCE(
-                                    b.BillNumber,
-                                    CONCAT(
-                                        'INV-',
-                                        YEAR(b.BillDate),
-                                        '-',
-                                        LPAD(b.BillID, 4, '0')
-                                    )
-                                ) AS BillNumber,
+                                    ALGORITHM = UNDEFINED
+                                    SQL SECURITY INVOKER
+                                    VIEW view_bills AS
+                                    SELECT
+                                        b.BillID,
+                                        COALESCE(
+                                            b.BillNumber,
+                                            CONCAT(
+                                                'INV-',
+                                                YEAR(b.BillDate),
+                                                '-',
+                                                LPAD(b.BillID, 4, '0')
+                                            )
+                                        ) AS BillNumber,
 
-                                b.VisitID,
-                                v.PatientID,
-                                p.PersonID,
-                                COALESCE(pe.FullName, 'Unknown Patient') AS PatientName,
-                                v.DoctorID,
-                                v.AppointmentID,
-                                b.BillDate,
+                                        b.VisitID,
+                                        v.PatientID,
+                                        p.PersonID,
+                                        COALESCE(pe.FullName, 'Unknown Patient') AS PatientName,
+                                        v.DoctorID,
+                                        v.AppointmentID,
+                                        b.BillDate,
 
-                                COALESCE(bs.Subtotal, 0) AS TotalAmount,
-                                b.PaymentStatus,
-                                b.CreatedByUserID,
+                                        COALESCE(bs.Subtotal, 0) AS TotalAmount,
+                                        b.PaymentStatus,
+                                        b.CreatedByUserID,
 
-                                COALESCE(bs.PaymentAmount, 0) AS PaidAmount,
+                                        COALESCE(bs.PaymentAmount, 0) AS PaidAmount,
 
-                                GREATEST(
-                                    COALESCE(bs.Subtotal, 0)
-                                    - COALESCE(bs.PaymentAmount, 0),
-                                    0
-                                ) AS BalanceDue,
+                                        GREATEST(
+                                            COALESCE(bs.Subtotal, 0)
+                                            - COALESCE(bs.PaymentAmount, 0),
+                                            0
+                                        ) AS BalanceDue,
 
-                                COALESCE(bs.ItemsTotal, '') AS ItemsTotal
+                                        COALESCE(bs.ItemsTotal, '') AS ItemsTotal
 
-                            FROM bills b
+                                    FROM bills b
 
-                            LEFT JOIN visits v
-                                ON v.VisitID = b.VisitID
+                                    LEFT JOIN visits v
+                                        ON v.VisitID = b.VisitID
 
-                            LEFT JOIN patients p
-                                ON p.PatientID = v.PatientID
+                                    LEFT JOIN patients p
+                                        ON p.PatientID = v.PatientID
 
-                            LEFT JOIN persons pe
-                                ON pe.PersonID = p.PersonID
+                                    LEFT JOIN persons pe
+                                        ON pe.PersonID = p.PersonID
 
-                            LEFT JOIN view_billsummaries bs
-                                ON bs.BillID = b.BillID;"
+                                    LEFT JOIN view_billsummaries bs
+                                        ON bs.BillID = b.BillID;"
                         },
+                      new DatabaseMigration
+                      {
+                          Version = "20261110_CLINIC_001_FIX_APPOINTMENTS_VIEW",
+                          Description = "Repair View_AppointmentsDetails table and recreate as view",
+                          Sql = @"
+                            CREATE OR REPLACE VIEW View_AppointmentsDetails AS
+                            SELECT
+                                A.AppointmentID,
+                                A.PatientID,
+                                PE.FullName AS PatientName,
+                                A.DoctorID,
+                                DPE.FullName AS DoctorName,
+                                A.AppointmentDate,
+                                A.AppointmentStatus,
 
+                                CASE CAST(A.AppointmentStatus AS CHAR)
+                                    WHEN '1' THEN 'Scheduled'
+                                    WHEN '2' THEN 'InQueue'
+                                    WHEN '3' THEN 'Progress'
+                                    WHEN '4' THEN 'Postponed'
+                                    WHEN '5' THEN 'Completed'
+                                    WHEN '6' THEN 'Cancelled'
+                                    WHEN '7' THEN 'Waiting_For_Vitals'
+                                    WHEN '8' THEN 'Ready_For_Doctor'
+                                    WHEN '9' THEN 'In_Billing'
+                                    ELSE CAST(A.AppointmentStatus AS CHAR)
+                                END AS AppointmentStatusText,
 
-                  new DatabaseMigration
-                  {
-                      Version = "20261110_CLINIC_001_FIX_APPOINTMENTS_VIEW",
-                      Description = "Repair View_AppointmentsDetails table and recreate as view",
-                      Sql = @"
-        CREATE OR REPLACE VIEW View_AppointmentsDetails AS
-        SELECT
-            A.AppointmentID,
-            A.PatientID,
-            PE.FullName AS PatientName,
-            A.DoctorID,
-            DPE.FullName AS DoctorName,
-            A.AppointmentDate,
-            A.AppointmentStatus,
+                                A.AppointmentTypeID,
+                                AT.AppointmentTypeName AS TypeName,
+                                A.AppointmentFees,
+                                A.CreatedByUserID
 
-            CASE CAST(A.AppointmentStatus AS CHAR)
-                WHEN '1' THEN 'Scheduled'
-                WHEN '2' THEN 'InQueue'
-                WHEN '3' THEN 'Progress'
-                WHEN '4' THEN 'Postponed'
-                WHEN '5' THEN 'Completed'
-                WHEN '6' THEN 'Cancelled'
-                WHEN '7' THEN 'Waiting_For_Vitals'
-                WHEN '8' THEN 'Ready_For_Doctor'
-                WHEN '9' THEN 'In_Billing'
-                ELSE CAST(A.AppointmentStatus AS CHAR)
-            END AS AppointmentStatusText,
+                            FROM appointments A
 
-            A.AppointmentTypeID,
-            AT.AppointmentTypeName AS TypeName,
-            A.AppointmentFees,
-            A.CreatedByUserID
+                            LEFT JOIN patients P
+                                ON A.PatientID = P.PatientID
 
-        FROM appointments A
+                            LEFT JOIN persons PE
+                                ON P.PersonID = PE.PersonID
 
-        LEFT JOIN patients P
-            ON A.PatientID = P.PatientID
+                            LEFT JOIN doctors D
+                                ON A.DoctorID = D.DoctorID
 
-        LEFT JOIN persons PE
-            ON P.PersonID = PE.PersonID
+                            LEFT JOIN persons DPE
+                                ON D.PersonID = DPE.PersonID
 
-        LEFT JOIN doctors D
-            ON A.DoctorID = D.DoctorID
-
-        LEFT JOIN persons DPE
-            ON D.PersonID = DPE.PersonID
-
-        LEFT JOIN appointmenttypes AT
-            ON A.AppointmentTypeID = AT.AppointmentTypeID;"
-                  },
-                  new DatabaseMigration
-                  {
-                      Version = "20261110_NURSE_003_FIX_VITALS_QUEUE",
-                      Description = "Repair nurse vitals queue for text appointment statuses",
-                      Sql = @"
-                          CREATE OR REPLACE VIEW View_PatientsWaitingForVitals AS
-                          SELECT
-                              V.VisitID,
-                              A.AppointmentID,
-                              PE.FullName AS PatientName,
-                              A.CheckInTime,
-                              A.AppointmentStatus AS StatusText,
-                              A.IsCalled
-                          FROM appointments A
-                          INNER JOIN visits V
-                              ON V.VisitID = (
-                                  SELECT MAX(V2.VisitID)
-                                  FROM visits V2
-                                  WHERE V2.AppointmentID = A.AppointmentID
-                              )
-                          INNER JOIN patients PT
-                              ON PT.PatientID = A.PatientID
-                          INNER JOIN persons PE
-                              ON PE.PersonID = PT.PersonID
-                          WHERE A.AppointmentStatus IN
-                              ('Waiting_For_Vitals', 'In-Queue', 'In_Queue');"
-                  },
-                  new DatabaseMigration
-                  {
-                      Version = "20261110_DOCTOR_001_FIX_READY_QUEUE",
-                      Description = "Repair doctor queue using ready status and actual call/check-in fields",
-                      Sql = @"
-                          CREATE OR REPLACE VIEW view_patientswaitingfordoctors AS
-                          SELECT
-                              V.VisitID,
-                              A.AppointmentID,
-                              PE.FullName AS PatientName,
-                              COALESCE(A.CheckInTime, A.AppointmentDate) AS CheckInTime,
-                              A.AppointmentStatus AS StatusText,
-                              COALESCE(A.IsCalled, 0) AS IsCalled,
-                              D.PersonID AS DoctorPersonID
-                          FROM appointments A
-                          INNER JOIN visits V
-                              ON V.VisitID = (
-                                  SELECT MAX(V2.VisitID)
-                                  FROM visits V2
-                                  WHERE V2.AppointmentID = A.AppointmentID
-                              )
-                          INNER JOIN patients PT
-                              ON PT.PatientID = A.PatientID
-                          INNER JOIN persons PE
-                              ON PE.PersonID = PT.PersonID
-                          INNER JOIN doctors D
-                              ON D.DoctorID = A.DoctorID
-                          WHERE A.AppointmentStatus IN
-                              ('Ready_For_Doctor', 'In_Progress');"
-                  },
+                            LEFT JOIN appointmenttypes AT
+                                ON A.AppointmentTypeID = AT.AppointmentTypeID;"
+                      },
+                      new DatabaseMigration
+                      {
+                          Version = "20261110_NURSE_003_FIX_VITALS_QUEUE",
+                          Description = "Repair nurse vitals queue for text appointment statuses",
+                          Sql = @"
+                              CREATE OR REPLACE VIEW View_PatientsWaitingForVitals AS
+                              SELECT
+                                  V.VisitID,
+                                  A.AppointmentID,
+                                  PE.FullName AS PatientName,
+                                  A.CheckInTime,
+                                  A.AppointmentStatus AS StatusText,
+                                  A.IsCalled
+                              FROM appointments A
+                              INNER JOIN visits V
+                                  ON V.VisitID = (
+                                      SELECT MAX(V2.VisitID)
+                                      FROM visits V2
+                                      WHERE V2.AppointmentID = A.AppointmentID
+                                  )
+                              INNER JOIN patients PT
+                                  ON PT.PatientID = A.PatientID
+                              INNER JOIN persons PE
+                                  ON PE.PersonID = PT.PersonID
+                              WHERE A.AppointmentStatus IN
+                                  ('Waiting_For_Vitals', 'In-Queue', 'In_Queue');"
+                      },
+                      new DatabaseMigration
+                      {
+                          Version = "20261110_DOCTOR_001_FIX_READY_QUEUE",
+                          Description = "Repair doctor queue using ready status and actual call/check-in fields",
+                          Sql = @"
+                              CREATE OR REPLACE VIEW view_patientswaitingfordoctors AS
+                              SELECT
+                                  V.VisitID,
+                                  A.AppointmentID,
+                                  PE.FullName AS PatientName,
+                                  COALESCE(A.CheckInTime, A.AppointmentDate) AS CheckInTime,
+                                  A.AppointmentStatus AS StatusText,
+                                  COALESCE(A.IsCalled, 0) AS IsCalled,
+                                  D.PersonID AS DoctorPersonID
+                              FROM appointments A
+                              INNER JOIN visits V
+                                  ON V.VisitID = (
+                                      SELECT MAX(V2.VisitID)
+                                      FROM visits V2
+                                      WHERE V2.AppointmentID = A.AppointmentID
+                                  )
+                              INNER JOIN patients PT
+                                  ON PT.PatientID = A.PatientID
+                              INNER JOIN persons PE
+                                  ON PE.PersonID = PT.PersonID
+                              INNER JOIN doctors D
+                                  ON D.DoctorID = A.DoctorID
+                              WHERE A.AppointmentStatus IN
+                                  ('Ready_For_Doctor', 'In_Progress');"
+                      },
                   };
 
                 // STEP 4: Apply pending migrations
@@ -5954,10 +5677,10 @@ WHERE LR.BillID IS NOT NULL AND LR.Status <> 'Cancelled';
                             string tableType;
 
                             using (MySqlCommand check = new MySqlCommand(@"
-        SELECT TABLE_TYPE
-        FROM information_schema.TABLES
-        WHERE TABLE_SCHEMA = DATABASE()
-          AND TABLE_NAME = 'View_AppointmentsDetails';",
+                                    SELECT TABLE_TYPE
+                                    FROM information_schema.TABLES
+                                    WHERE TABLE_SCHEMA = DATABASE()
+                                      AND TABLE_NAME = 'View_AppointmentsDetails';",
                                 connection))
                             {
                                 tableType = Convert.ToString(check.ExecuteScalar());
@@ -5970,10 +5693,10 @@ WHERE LR.BillID IS NOT NULL AND LR.Status <> 'Cancelled';
                                     "View_AppointmentsDetails_Backup_20261110";
 
                                 using (MySqlCommand check = new MySqlCommand(@"
-            SELECT COUNT(*)
-            FROM information_schema.TABLES
-            WHERE TABLE_SCHEMA = DATABASE()
-              AND TABLE_NAME = @name;",
+                                    SELECT COUNT(*)
+                                    FROM information_schema.TABLES
+                                    WHERE TABLE_SCHEMA = DATABASE()
+                                      AND TABLE_NAME = @name;",
                                     connection))
                                 {
                                     check.Parameters.AddWithValue("@name", backupName);
@@ -5986,8 +5709,8 @@ WHERE LR.BillID IS NOT NULL AND LR.Status <> 'Cancelled';
                                 }
 
                                 using (MySqlCommand rename = new MySqlCommand(@"
-            RENAME TABLE `View_AppointmentsDetails`
-            TO `View_AppointmentsDetails_Backup_20261110`;",
+                                    RENAME TABLE `View_AppointmentsDetails`
+                                    TO `View_AppointmentsDetails_Backup_20261110`;",
                                     connection))
                                 {
                                     rename.ExecuteNonQuery();
@@ -5999,11 +5722,11 @@ WHERE LR.BillID IS NOT NULL AND LR.Status <> 'Cancelled';
                         if (migration.Version == "20261016_021")
                         {
                             using (MySqlCommand checkCommand = new MySqlCommand(@"
-            SELECT COUNT(*)
-            FROM information_schema.COLUMNS
-            WHERE TABLE_SCHEMA = DATABASE()
-              AND TABLE_NAME = 'bills'
-              AND COLUMN_NAME = 'BillNumber';",
+                                SELECT COUNT(*)
+                                FROM information_schema.COLUMNS
+                                WHERE TABLE_SCHEMA = DATABASE()
+                                  AND TABLE_NAME = 'bills'
+                                  AND COLUMN_NAME = 'BillNumber';",
                                 connection))
                             {
                                 long columnCount =
