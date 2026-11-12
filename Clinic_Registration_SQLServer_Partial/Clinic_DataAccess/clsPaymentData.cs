@@ -74,32 +74,40 @@ namespace Clinic_DataAccess
                     {
                         decimal totalAmount = 0m;
                         decimal paidBefore = 0m;
-                        int visitID = 0;
 
-                        // STEP 2: Lock the bill.
+                        int? visitID = null;
+                        int? labOrderID = null;
+
+                        // STEP 2: Lock bill and read optional VisitID.
                         string lockBillQuery = @"
-                    SELECT VisitID
-                    FROM bills
-                    WHERE BillID = @BillID
-                    FOR UPDATE;";
+    SELECT BillID, VisitID, LabOrderID
+    FROM bills
+    WHERE BillID = @BillID
+    FOR UPDATE;";
 
                         using (MySqlCommand cmd = new MySqlCommand(
                             lockBillQuery, connection, transaction))
                         {
-                            cmd.Parameters.AddWithValue(
-                                "@BillID", billID);
+                            cmd.Parameters.AddWithValue("@BillID", billID);
 
-                            object result = cmd.ExecuteScalar();
-
-                            if (result == null ||
-                                result == DBNull.Value)
+                            using (MySqlDataReader reader = cmd.ExecuteReader())
                             {
-                                throw new InvalidOperationException(
-                                    "Bill not found: " + billID);
-                            }
+                                if (!reader.Read())
+                                {
+                                    throw new InvalidOperationException(
+                                        "Bill not found: " + billID);
+                                }
 
-                            visitID = Convert.ToInt32(result);
+                                visitID = reader["VisitID"] == DBNull.Value
+                                    ? (int?)null
+                                    : Convert.ToInt32(reader["VisitID"]);
+
+                                labOrderID = reader["LabOrderID"] == DBNull.Value
+                                    ? (int?)null
+                                    : Convert.ToInt32(reader["LabOrderID"]);
+                            }
                         }
+
 
                         // STEP 3: Read bill total and existing payments.
                         string billQuery = @"
@@ -221,31 +229,42 @@ namespace Clinic_DataAccess
                             cmd.ExecuteNonQuery();
                         }
 
-                        // STEP 8: Complete visit and update prescription
-                        // only when bill is fully paid.
+                        // STEP 8: Only visit-based bills complete a visit.
+                        // Direct laboratory orders have no visit/prescription.
                         if (statusText == "Paid")
                         {
-                            string updateVisit = @"
-                        UPDATE visits
-                        SET VisitStatus = 'Completed'
-                        WHERE VisitID = @VisitID
-                          AND VisitStatus = 'Pending_Billing';";
-
-                            using (MySqlCommand cmd = new MySqlCommand(
-                                updateVisit, connection, transaction))
+                            if (visitID.HasValue)
                             {
-                                cmd.Parameters.AddWithValue(
-                                    "@VisitID", visitID);
+                                const string updateVisit = @"
+                                    UPDATE visits
+                                    SET VisitStatus = 'Completed'
+                                    WHERE VisitID = @VisitID
+                                      AND VisitStatus = 'Pending_Billing';";
 
-                                cmd.ExecuteNonQuery();
+                                using (MySqlCommand cmd = new MySqlCommand(
+                                    updateVisit, connection, transaction))
+                                {
+                                    cmd.Parameters.AddWithValue(
+                                        "@VisitID", visitID.Value);
+                                    cmd.ExecuteNonQuery();
+                                }
                             }
 
-                            if (!clsPrescriptionData
-                                .UpdatePrescriptionStatusByBill(
-                                    billID, 3, transaction))
+                            // Keep the original prescription behavior for
+                            // regular bills. Direct lab-only bills have no
+                            // prescriptions and must not be rejected here.
+                            bool isDirectLabBill =
+                                labOrderID.HasValue && !visitID.HasValue;
+
+                            if (!isDirectLabBill)
                             {
-                                throw new InvalidOperationException(
-                                    "Failed to update prescription status.");
+                                if (!clsPrescriptionData
+                                    .UpdatePrescriptionStatusByBill(
+                                        billID, 3, transaction))
+                                {
+                                    throw new InvalidOperationException(
+                                        "Failed to update prescription status.");
+                                }
                             }
                         }
 

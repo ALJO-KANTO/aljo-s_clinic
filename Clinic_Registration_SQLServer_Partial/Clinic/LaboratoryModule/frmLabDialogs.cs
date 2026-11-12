@@ -1033,36 +1033,77 @@ namespace Clinic.Medical_Services.Laboratory
                     // Get selected test and patient gender.
 
                     using (var cmd = new MySqlCommand(@"
-                    SELECT
-                        lr.TestID,
-                        lt.TestName,
-                        p.Gender
-                    FROM labrequests lr
-                    JOIN laboratorytests lt
-                        ON lt.TestID = lr.TestID
-                    JOIN visits v
-                        ON v.VisitID = lr.VisitID
-                    JOIN patients pa
-                        ON pa.PatientID = v.PatientID
-                    JOIN persons p
-                        ON p.PersonID = pa.PersonID
-                    WHERE lr.LabRequestID = @id
-                    LIMIT 1;", con))
+    SELECT
+        lr.TestID,
+        lt.TestName,
+        p.Gender
+    FROM labrequests lr
+
+    INNER JOIN laboratorytests lt
+        ON lt.TestID = lr.TestID
+
+    LEFT JOIN visits v
+        ON v.VisitID = lr.VisitID
+
+    INNER JOIN patients pa
+        ON pa.PatientID = COALESCE(
+            lr.PatientID,
+            v.PatientID
+        )
+
+    INNER JOIN persons p
+        ON p.PersonID = pa.PersonID
+
+    WHERE lr.LabRequestID = @id
+    LIMIT 1;", con))
                     {
-                        cmd.Parameters.AddWithValue(
-                            "@id", _requestID);
+                        cmd.Parameters.AddWithValue("@id", _requestID);
 
                         using (var r = cmd.ExecuteReader())
                         {
                             if (!r.Read())
+                            {
                                 throw new Exception(
                                     "Laboratory request not found.");
+                            }
 
                             testID = Convert.ToInt32(r["TestID"]);
                             testName = S(r["TestName"]);
                             patientGender = S(r["Gender"]);
                         }
                     }
+
+                    //using (var cmd = new MySqlCommand(@"
+                    //SELECT
+                    //    lr.TestID,
+                    //    lt.TestName,
+                    //    p.Gender
+                    //FROM labrequests lr
+                    //JOIN laboratorytests lt
+                    //    ON lt.TestID = lr.TestID
+                    //JOIN visits v
+                    //    ON v.VisitID = lr.VisitID
+                    //JOIN patients pa
+                    //    ON pa.PatientID = v.PatientID
+                    //JOIN persons p
+                    //    ON p.PersonID = pa.PersonID
+                    //WHERE lr.LabRequestID = @id
+                    //LIMIT 1;", con))
+                    //{
+                    //    cmd.Parameters.AddWithValue(
+                    //        "@id", _requestID);
+
+                    //    using (var r = cmd.ExecuteReader())
+                    //    {
+                    //        if (!r.Read())
+                    //            throw new Exception(
+                    //                "Laboratory request not found.");
+
+                    //        testID = Convert.ToInt32(r["TestID"]);
+                    //        testName = S(r["TestName"]);
+                    //        patientGender = S(r["Gender"]);
+                    //    }
+                    //}
 
                     info.Text =
                         LabUi.T("Lab Request") + " #" +
