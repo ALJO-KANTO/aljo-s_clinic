@@ -604,7 +604,7 @@ LEFT JOIN view_billsummaries bs
                     SELECT COUNT(*)
                     FROM labrequests
                     WHERE LabOrderID = @OrderID
-                      AND BillID IS NOT NULL;",
+                      AND BillID IS NOT NULL and BillID > 0;",
                             con, tx))
                         {
                             cmd.Parameters.AddWithValue("@OrderID", labOrderID);
