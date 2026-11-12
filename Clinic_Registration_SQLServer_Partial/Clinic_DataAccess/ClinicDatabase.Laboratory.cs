@@ -48,6 +48,79 @@ namespace Clinic_DataAccess
         ) ENGINE=InnoDB;
     ");
         }
+
+        public static void EnsureBillingViewSupportsLabOrders()
+        {
+            const string query = @"
+CREATE OR REPLACE VIEW View_Bills AS
+SELECT
+    b.BillID,
+
+    COALESCE(
+        b.BillNumber,
+        CONCAT(
+            'INV-',
+            YEAR(b.BillDate),
+            '-',
+            LPAD(b.BillID, 4, '0')
+        )
+    ) AS BillNumber,
+
+    b.VisitID,
+
+    COALESCE(b.PatientID, v.PatientID)
+        AS PatientID,
+
+    p.PersonID,
+
+    COALESCE(
+        pe.FullName,
+        'Unknown Patient'
+    ) AS PatientName,
+
+    v.DoctorID,
+    v.AppointmentID,
+    b.BillDate,
+
+    COALESCE(bs.Subtotal, 0)
+        AS TotalAmount,
+
+    b.PaymentStatus,
+    b.CreatedByUserID,
+
+    COALESCE(bs.PaymentAmount, 0)
+        AS PaidAmount,
+
+    GREATEST(
+        COALESCE(bs.Subtotal, 0)
+        - COALESCE(bs.PaymentAmount, 0),
+        0
+    ) AS BalanceDue,
+
+    COALESCE(bs.ItemsTotal, '')
+        AS ItemsTotal,
+
+    b.LabOrderID AS LabOrderID
+
+FROM bills b
+
+LEFT JOIN visits v
+    ON v.VisitID = b.VisitID
+
+LEFT JOIN patients p
+    ON p.PatientID =
+        COALESCE(b.PatientID, v.PatientID)
+
+LEFT JOIN persons pe
+    ON pe.PersonID = p.PersonID
+
+LEFT JOIN view_billsummaries bs
+    ON bs.BillID = b.BillID;
+";
+
+            ExecuteNonQuery(query);
+        }
+
         public static DataTable GetLabPatients()
         {
             return ExecuteDataTable(@"

@@ -843,10 +843,11 @@ namespace Clinic_DataAccess
                     finalTotalIncludingAll = ReadAmount("Subtotal");
 
                     // Gross total before discount and tax.
+                    // Use the invoice subtotal, which includes laboratory tests.
                     totalBeforeDiscountAndTax =
-                        appointmentFees +
-                        totalMedicines +
-                        totalServices;
+                        finalTotalIncludingAll +
+                        totalDiscount -
+                        totalTax;
 
                     balanceDue = Math.Max(
                         finalTotalIncludingAll - paymentAmount,
