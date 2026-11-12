@@ -1032,29 +1032,28 @@ namespace Clinic.Medical_Services.Laboratory
 
                     // Get selected test and patient gender.
 
+
                     using (var cmd = new MySqlCommand(@"
     SELECT
         lr.TestID,
         lt.TestName,
-        p.Gender
+        pe.Gender AS Gender
     FROM labrequests lr
 
     INNER JOIN laboratorytests lt
         ON lt.TestID = lr.TestID
 
-    
-LEFT JOIN visits v
-    ON v.VisitID = lr.VisitID
+    LEFT JOIN visits v
+        ON v.VisitID = lr.VisitID
 
-LEFT JOIN patients pa
-    ON pa.PatientID = COALESCE(
-        lr.PatientID,
-        v.PatientID
-    )
+    LEFT JOIN patients pa
+        ON pa.PatientID = COALESCE(
+            lr.PatientID,
+            v.PatientID
+        )
 
-LEFT JOIN persons pe
-    ON pe.PersonID = pa.PersonID
-
+    LEFT JOIN persons pe
+        ON pe.PersonID = pa.PersonID
 
     WHERE lr.LabRequestID = @id
     LIMIT 1;", con))
@@ -1074,6 +1073,7 @@ LEFT JOIN persons pe
                             patientGender = S(r["Gender"]);
                         }
                     }
+
 
                     //using (var cmd = new MySqlCommand(@"
                     //SELECT
