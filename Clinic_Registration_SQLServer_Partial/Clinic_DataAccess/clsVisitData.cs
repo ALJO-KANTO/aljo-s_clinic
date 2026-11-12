@@ -502,11 +502,12 @@ namespace Clinic_DataAccess
             {
                 using (MySqlConnection connection = new MySqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    string query = @"UPDATE Vitals 
-                                      SET VisitID=NULL
-                                      WHERE AppointmentID=@AppointmentID;
-                        DELETE FROM Visits WHERE VisitID = @VisitID";
-
+                    string query = @"
+    UPDATE appointments
+    SET
+        AppointmentStatus = 'InQueue',
+        CheckInTime = COALESCE(CheckInTime, NOW())
+    WHERE AppointmentID = @AppointmentID;";
                     using (MySqlCommand command = new MySqlCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@VisitID", VisitID);
