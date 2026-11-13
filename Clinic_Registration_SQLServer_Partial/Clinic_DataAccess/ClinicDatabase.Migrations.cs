@@ -3907,6 +3907,7 @@ namespace Clinic_DataAccess
                             Version = "20261112_LAB_004",
                             Description = "Update existing lab request patient IDs",
                             Sql = @"
+                                ALTER TABLE labrequests add PatientID  int;
                                 UPDATE labrequests LR
                                 INNER JOIN visits V
                                     ON V.VisitID = LR.VisitID
@@ -3928,7 +3929,7 @@ namespace Clinic_DataAccess
                             Description = "Add lab request patient foreign key",
                             Sql = @"
                                 ALTER TABLE labrequests add LabOrderID int;
-                                ALTER TABLE labrequests add PatientID  int;
+                              
                                 ALTER TABLE labrequests
                                 ADD CONSTRAINT FK_LabRequests_Patient
                                 FOREIGN KEY (PatientID)
