@@ -6094,6 +6094,78 @@ namespace Clinic_DataAccess
 
 new DatabaseMigration
 {
+    Version = "20261113_BILLING_PATIENT_001",
+    Description = "Resolve patient names from lab requests for bills without visits",
+    Sql = @"
+        CREATE OR REPLACE
+        ALGORITHM = UNDEFINED
+        SQL SECURITY INVOKER
+        VIEW view_bills AS
+        SELECT
+            b.BillID,
+            COALESCE(
+                b.BillNumber,
+                CONCAT('INV-', YEAR(b.BillDate), '-',
+                       LPAD(b.BillID, 4, '0'))
+            ) AS BillNumber,
+
+            b.VisitID,
+            COALESCE(v.PatientID, lr.PatientID) AS PatientID,
+            COALESCE(p.PersonID, lp.PersonID) AS PersonID,
+            COALESCE(pe.FullName, lpe.FullName, 'Unknown Patient')
+                AS PatientName,
+            v.DoctorID,
+            v.AppointmentID,
+            b.BillDate,
+
+            COALESCE(bs.Subtotal, 0) AS TotalAmount,
+            b.PaymentStatus,
+            b.CreatedByUserID,
+            COALESCE(bs.PaymentAmount, 0) AS PaidAmount,
+
+            GREATEST(
+                COALESCE(bs.Subtotal, 0)
+                - COALESCE(bs.PaymentAmount, 0),
+                0
+            ) AS BalanceDue,
+
+            COALESCE(bs.ItemsTotal, '') AS ItemsTotal
+
+        FROM bills b
+
+        LEFT JOIN visits v
+            ON v.VisitID = b.VisitID
+
+        LEFT JOIN patients p
+            ON p.PatientID = v.PatientID
+
+        LEFT JOIN persons pe
+            ON pe.PersonID = p.PersonID
+
+        LEFT JOIN (
+            SELECT
+                BillID,
+                MIN(PatientID) AS PatientID
+            FROM labrequests
+            WHERE BillID IS NOT NULL
+              AND PatientID IS NOT NULL
+            GROUP BY BillID
+            HAVING COUNT(DISTINCT PatientID) = 1
+        ) lr ON lr.BillID = b.BillID
+
+        LEFT JOIN patients lp
+            ON lp.PatientID = lr.PatientID
+
+        LEFT JOIN persons lpe
+            ON lpe.PersonID = lp.PersonID
+
+        LEFT JOIN view_billsummaries bs
+            ON bs.BillID = b.BillID;
+    "
+},
+
+new DatabaseMigration
+{
     Version = "20261112_DOCTOR_002_FIX_INQUEUE",
     Description = "Fix doctor waiting queue to include InQueue appointments",
     Sql = @"
