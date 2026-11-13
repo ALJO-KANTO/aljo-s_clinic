@@ -6,11 +6,15 @@ using Clinic.Medical_Services.Appointment;
 using Clinic.Medical_Services.Casher;
 using Clinic.Medical_Services.Laboratory;
 using Clinic.Medical_Services.Pharmaciy;
+using Clinic.Medical_Services.Radiology;
 using Clinic.Medical_Services.Visit;
 using Clinic.Medical_Services.Vital;
 using Clinic.Patient;
 using Clinic.Serveces.ServecesType;
 using Clinic.User;
+using Clinic_Business;
+using Clinic_Common;
+using Clinic_DataAccess;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -20,15 +24,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Clinic.Medical_Services.Radiology;
 using YamyProject;
-using Clinic_Common;
 namespace Clinic
 {
     public partial class frmMain : Form
     {
 
         private frmLogin _frmLogin;
+
+        private clsDashboard dashboardStats;
+        private int dashboardRefreshCounter = 0;
+        private Label lblTotalPatients;
+        private Label lblTodayAppointments;
+        private Label lblTodayRevenue;
+        private Label lblActiveVisits;
 
         public frmMain(frmLogin frmLogin)
         {
@@ -53,6 +62,7 @@ namespace Clinic
 
             if (LicenseManager.UsageMode != LicenseUsageMode.Designtime)
             {
+                dashboardStats = clsDashboard.GetDashboardStats();
                 BuildModernDashboardDesign();
                 RemoveProfitAndLossDetailMenu();
                 BindMigratedAdminSubmenus();
@@ -692,8 +702,47 @@ namespace Clinic
             timer1.Interval = 1000;
             lblDateTime.Text = DateTime.Now.ToString();
 
-        }
+            dashboardRefreshCounter++;
 
+            // Refresh dashboard every 60 seconds
+            if (dashboardRefreshCounter >= 60)
+            {
+                dashboardRefreshCounter = 0;
+
+                try
+                {
+                    dashboardStats = clsDashboard.GetDashboardStats();
+
+                    if (dashboardStats != null)
+                    {
+                        UpdateDashboardStats();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(
+                        "Dashboard Refresh Error: " + ex.Message);
+                }
+            }
+        }
+        private void UpdateDashboardStats()
+        {
+            if (dashboardStats == null)
+                return;
+
+            if (lblTotalPatients != null)
+                lblTotalPatients.Text = dashboardStats.TotalPatients.ToString("N0");
+
+            if (lblTodayAppointments != null)
+                lblTodayAppointments.Text = dashboardStats.TodayAppointments.ToString("N0");
+
+            if (lblTodayRevenue != null)
+                lblTodayRevenue.Text = dashboardStats.TodayRevenue.ToString("N0");
+
+            if (lblActiveVisits != null)
+                lblActiveVisits.Text = dashboardStats.ActiveVisits.ToString("N0");
+        }
+        
         private void TranslateSidebar()
         {
             if (modernSidebar == null)
