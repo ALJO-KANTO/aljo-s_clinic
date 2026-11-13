@@ -92,11 +92,11 @@ namespace Clinic.Medical_Services.Casher
         private void _ResetForm()
         {
             dgBill.DataSource = null;
-            lbSubtotal.Text = "$ 0";
-            lbCoPay.Text = "$ 0";
-            lbDiscoutns.Text = "$ 0";
-            lbFinalTotal.Text = "$ 0";
-            lbRemainingAmount.Text = "$ 0";
+            lbSubtotal.Text = " 0";
+            lbCoPay.Text = " 0";
+            lbDiscoutns.Text = " 0";
+            lbFinalTotal.Text = " 0";
+            lbRemainingAmount.Text = " 0";
 
             txtInvoiceNumber.Text = "";
             txtInvoiceDate.Text = "";
@@ -122,12 +122,12 @@ namespace Clinic.Medical_Services.Casher
             }
             dgBill.DataSource = _Invoice.ItemsTable;
             ApplyInvoiceGridLanguage();
-            lbSubtotal.Text = "$ " + _Invoice.Subtotal.ToString("N2");
-            lbCoPay.Text = "$ " + _Invoice.PaymentAmount.ToString("N2");
-            lbDiscoutns.Text = "$ " + _Invoice.TotalDiscount.ToString("N2");
-            lbFinalTotal.Text = "$ " + _Invoice.FinalTotal.ToString("N2");
+            lbSubtotal.Text = _Invoice.Subtotal.ToString("N2");
+            lbCoPay.Text = _Invoice.PaymentAmount.ToString("N2");
+            lbDiscoutns.Text = _Invoice.TotalDiscount.ToString("N2");
+            lbFinalTotal.Text = _Invoice.FinalTotal.ToString("N2");
             _RemainingAmount = (_Invoice.FinalTotal - _Invoice.PaymentAmount);
-            lbRemainingAmount.Text = "$ " + _RemainingAmount.ToString("N2");
+            lbRemainingAmount.Text = _RemainingAmount.ToString("N2");
 
             txtInvoiceNumber.Text = _Invoice.InvoiceNumber.ToString();
             txtInvoiceDate.Text = _Invoice.InvoiceDate.ToString("dd/MM/yyyy");
@@ -174,9 +174,7 @@ namespace Clinic.Medical_Services.Casher
             // ترويسة الفاتورة
             g.DrawString("CLINIC MEDICAL CENTER", fontTitle, brush, startX, startY);
             offset += 25;
-            g.DrawString(
-       Tr("Invoice No:") + " " + _Invoice.InvoiceNumber,
-       fontBody, brush, startX, startY + offset);
+            g.DrawString( Tr("Invoice No:") + " " + _Invoice.InvoiceNumber, fontBody, brush, startX, startY + offset);
             offset += 20;
             g.DrawString($"Patient: {_Invoice.PatientName}", fontBody, brush, startX, startY + offset);
             offset += 20;
@@ -217,7 +215,7 @@ namespace Clinic.Medical_Services.Casher
 
                         g.DrawString(itemName, fontBody, brush, startX, startY + offset);
                         g.DrawString(qty, fontBody, brush, startX + 160, startY + offset);
-                        g.DrawString($"$ {total.ToString("N2")}", fontBody, brush, startX + 210, startY + offset);
+                        g.DrawString($" {total.ToString("N2")}", fontBody, brush, startX + 210, startY + offset);
                     }
 
                     // طباعة خط فاصل بعد الموعد
@@ -243,7 +241,7 @@ namespace Clinic.Medical_Services.Casher
 
                         g.DrawString(itemName, fontBody, brush, startX, startY + offset);
                         g.DrawString(qty, fontBody, brush, startX + 160, startY + offset);
-                        g.DrawString($"$ {total.ToString("N2")}", fontBody, brush, startX + 210, startY + offset);
+                        g.DrawString($" {total.ToString("N2")}", fontBody, brush, startX + 210, startY + offset);
                     }
 
                     // طباعة خط فاصل بعد الخدمات
@@ -269,7 +267,7 @@ namespace Clinic.Medical_Services.Casher
 
                         g.DrawString(itemName, fontBody, brush, startX, startY + offset);
                         g.DrawString(qty, fontBody, brush, startX + 160, startY + offset);
-                        g.DrawString($"$ {total.ToString("N2")}", fontBody, brush, startX + 210, startY + offset);
+                        g.DrawString($" {total.ToString("N2")}", fontBody, brush, startX + 210, startY + offset);
                     }
 
                     // طباعة خط فاصل نهائي بعد الأدوية قبل المربع المالي
@@ -277,6 +275,33 @@ namespace Clinic.Medical_Services.Casher
                     g.DrawString(new string('-', 45), fontBody, brush, startX, startY + offset);
                 }
 
+                // ==========================================
+                // 4️⃣ طباعة التحاليل المخبرية (Laboratory) إن وُجدت
+                // ==========================================
+                dvItems.RowFilter = "ItemType = 'Laboratory'";
+                if (dvItems.Count > 0)
+                {
+                    foreach (DataRowView rowView in dvItems)
+                    {
+                        DataRow row = rowView.Row;
+                        offset += 20;
+
+                        string itemName = row["ItemName"].ToString();
+                        string qty = row["Quantity"].ToString();
+                        decimal total = Convert.ToDecimal(row["Total"]);
+
+                        if (itemName.Length > 20)
+                            itemName = itemName.Substring(0, 18) + "..";
+
+                        g.DrawString(itemName, fontBody, brush, startX, startY + offset);
+                        g.DrawString(qty, fontBody, brush, startX + 160, startY + offset);
+                        g.DrawString($" {total.ToString("N2")}", fontBody, brush, startX + 210, startY + offset);
+                    }
+
+                    // طباعة خط فاصل بعد التحاليل المخبرية
+                    offset += 20;
+                    g.DrawString(new string('-', 45), fontBody, brush, startX, startY + offset);
+                }
                 // 🎯 تصفير الفلتر لإعادة الـ DataView لحالته الطبيعية
                 dvItems.RowFilter = "";
             }
@@ -287,26 +312,26 @@ namespace Clinic.Medical_Services.Casher
             // المربع المالي النهائي المأخوذ من الـ Properties الخاصة بك
             offset += 25;
             g.DrawString("Subtotal:", fontBody, brush, startX, startY + offset);
-            g.DrawString($"$ {_Invoice.Subtotal.ToString("N2")}", fontBody, brush, startX + 180, startY + offset);
+            g.DrawString($" {_Invoice.Subtotal.ToString("N2")}", fontBody, brush, startX + 180, startY + offset);
 
             offset += 20;
             g.DrawString("Total Discount:", fontBody, brush, startX, startY + offset);
-            g.DrawString($"$ {_Invoice.TotalDiscount.ToString("N2")}", fontBody, brush, startX + 180, startY + offset);
+            g.DrawString($" {_Invoice.TotalDiscount.ToString("N2")}", fontBody, brush, startX + 180, startY + offset);
 
             offset += 20;
             g.DrawString("Final Total:", fontHeader, brush, startX, startY + offset);
-            g.DrawString($"$ {_Invoice.FinalTotal.ToString("N2")}", fontHeader, brush, startX + 180, startY + offset);
+            g.DrawString($" {_Invoice.FinalTotal.ToString("N2")}", fontHeader, brush, startX + 180, startY + offset);
 
             offset += 20;
             g.DrawString("Amount Paid:", fontBody, brush, startX, startY + offset);
-            g.DrawString($"$ {_Invoice.PaymentAmount.ToString("N2")}", fontBody, brush, startX + 180, startY + offset);
+            g.DrawString($" {_Invoice.PaymentAmount.ToString("N2")}", fontBody, brush, startX + 180, startY + offset);
 
             // طباعة المتبقي إذا كان دفعاً جزئياً
             if (_RemainingAmount > 0)
             {
                 offset += 20;
                 g.DrawString("Remaining Due:", fontTotal, brush, startX, startY + offset);
-                g.DrawString($"$ {_RemainingAmount.ToString("N2")}", fontTotal, brush, startX + 180, startY + offset);
+                g.DrawString($" {_RemainingAmount.ToString("N2")}", fontTotal, brush, startX + 180, startY + offset);
             }
 
             // ذيل الفاتورة

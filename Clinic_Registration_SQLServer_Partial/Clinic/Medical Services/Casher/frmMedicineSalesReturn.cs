@@ -270,7 +270,7 @@ namespace Clinic.Medical_Services.Casher
                 }
             }
 
-            lblTotalRefundAmount.Text = totalRefund.ToString("F2") + " $";
+            lblTotalRefundAmount.Text = totalRefund.ToString("F2");
         }
 
         private void btnConfirmReturn_Click(object sender, EventArgs e)
@@ -451,7 +451,7 @@ namespace Clinic.Medical_Services.Casher
             lblBillNumber.Text = "---";
             lblBillDate.Text = "---";
             lblPatientName.Text = "---";
-            lblTotalRefundAmount.Text = "0.00 $";
+            lblTotalRefundAmount.Text = "0.00";
             _qtyNumericUpDown.Visible = false;
         }
 
