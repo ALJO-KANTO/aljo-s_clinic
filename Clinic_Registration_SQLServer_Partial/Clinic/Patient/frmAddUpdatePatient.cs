@@ -283,6 +283,14 @@ namespace Clinic.Patient
                 // Keep exact original project icon images, do not replace with emoji.
             }
 
+            // Updated patient information icons from Project Properties > Resources.
+            // Resource keys shown in Visual Studio: "Emergency Contact 31" and "BloodType 34".
+            // Try both display keys and generated underscore variants to support resource naming.
+            pictureBox6.Image = GetPatientIconResource(
+                pictureBox6.Image, "Emergency Contact 31", "Emergency_Contact_31");
+            pictureBox4.Image = GetPatientIconResource(
+                pictureBox4.Image, "BloodType 52", "BloodType 52");
+
             // The nested person card owns its photo and its data display.
             // Never cover, hide or overwrite its controls.
             // Subtle gradients and rounded button shapes to match the reference.
@@ -305,6 +313,18 @@ namespace Clinic.Patient
             btnClose.Size = new Size(154, 50);
             btnPersonInfoNext.Size = new Size(215, 46);
             PositionGuideControls();
+        }
+
+        private static Image GetPatientIconResource(Image fallback, params string[] resourceNames)
+        {
+            var manager = global::Clinic.Properties.Resources.ResourceManager;
+            foreach (string name in resourceNames)
+            {
+                object resource = manager.GetObject(name);
+                if (resource is Image image)
+                    return image;
+            }
+            return fallback;
         }
 
         private enum ActionGlyph { Save, Close, Next }

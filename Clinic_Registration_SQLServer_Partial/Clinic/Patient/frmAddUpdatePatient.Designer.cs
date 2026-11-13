@@ -192,7 +192,7 @@
             // 
             // pictureBox4
             // 
-            this.pictureBox4.Image = global::Clinic.Properties.Resources.BloodType_32;
+            this.pictureBox4.Image = null;
             this.pictureBox4.Location = new System.Drawing.Point(215, 180);
             this.pictureBox4.Name = "pictureBox4";
             this.pictureBox4.Size = new System.Drawing.Size(31, 26);
@@ -212,7 +212,7 @@
             // 
             // pictureBox6
             // 
-            this.pictureBox6.Image = global::Clinic.Properties.Resources.Emergency_Contact_32;
+            this.pictureBox6.Image = null;
             this.pictureBox6.Location = new System.Drawing.Point(215, 121);
             this.pictureBox6.Name = "pictureBox6";
             this.pictureBox6.Size = new System.Drawing.Size(31, 26);

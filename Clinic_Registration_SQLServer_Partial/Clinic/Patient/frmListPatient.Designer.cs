@@ -385,295 +385,465 @@ namespace Clinic.Patient
         }
 
 
-        // Visual-only dashboard styling. All existing data and event handlers are retained.
+        // Reference-inspired presentation. Existing patient logic and event handlers are retained.
         private void ApplyPatientDashboardDesign()
         {
-            System.Drawing.Color navy = System.Drawing.Color.FromArgb(13, 48, 80);
-            System.Drawing.Color blue = System.Drawing.Color.FromArgb(0, 119, 231);
-            System.Drawing.Color muted = System.Drawing.Color.FromArgb(93, 114, 142);
-            System.Drawing.Color pale = System.Drawing.Color.FromArgb(241, 248, 253);
-            System.Drawing.Color white = System.Drawing.Color.White;
-            System.Drawing.Font body = new System.Drawing.Font("Segoe UI", 10F);
-
+            var navy = System.Drawing.Color.FromArgb(5, 47, 85);
+            var blue = System.Drawing.Color.FromArgb(13, 109, 215);
+            var pale = System.Drawing.Color.FromArgb(240, 247, 255);
+            var muted = System.Drawing.Color.FromArgb(86, 115, 145);
+            var white = System.Drawing.Color.White;
             this.SuspendLayout();
-            this.ClientSize = new System.Drawing.Size(1260, 700);
-            this.MinimumSize = new System.Drawing.Size(1200, 700); this.BackColor = pale;
-            this.Font = body;
-            this.Padding = new System.Windows.Forms.Padding(0);
-
-            // Reuse the original controls, not replacements.
             this.Controls.Clear();
             this.panel2.Controls.Clear();
-            this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panel2.Height = 78;
-            this.panel2.BackColor = navy;
-            this.lblTitle.Text = "Manage Patients";
-            this.lblTitle.AutoSize = true;
-            this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 21F, System.Drawing.FontStyle.Bold);
-            this.lblTitle.ForeColor = white;
-            this.lblTitle.BackColor = System.Drawing.Color.Transparent;
-            this.lblTitle.Location = new System.Drawing.Point(94, 8);
-            this.panel2.Controls.Add(this.lblTitle);
-            System.Windows.Forms.Label headerSub = DashLabel("View, search, add, update and manage patients in the clinic", 10F, System.Drawing.Color.FromArgb(192, 220, 240));
-            headerSub.Location = new System.Drawing.Point(97, 47);
-            headerSub.AutoSize = true;
-            this.panel2.Controls.Add(headerSub);
-            this.pbPersonImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pbPersonImage.BackColor = System.Drawing.Color.Transparent;
-            this.pbPersonImage.Size = new System.Drawing.Size(64, 64);
-            this.pbPersonImage.Location = new System.Drawing.Point(20, 7);
-            this.panel2.Controls.Add(this.pbPersonImage);
-            this.btnExit.Size = new System.Drawing.Size(52, 46);
-            this.btnExit.Location = new System.Drawing.Point(this.ClientSize.Width - 70, 15);
-            this.btnExit.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
-            this.btnExit.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnExit.FlatAppearance.BorderSize = 0;
-            this.btnExit.BackColor = System.Drawing.Color.FromArgb(27, 77, 112);
-            this.panel2.Controls.Add(this.btnExit);
-            this.Controls.Add(this.panel2);
+            this.ClientSize = new System.Drawing.Size(1340, 760);
+            this.MinimumSize = new System.Drawing.Size(1000, 650);
+            this.BackColor = pale;
+            this.Padding = new System.Windows.Forms.Padding(0);
 
-            System.Windows.Forms.Panel footer = DashPanel(white);
-            footer.Dock = System.Windows.Forms.DockStyle.Bottom;
-            footer.Height = 52;
-            footer.Padding = new System.Windows.Forms.Padding(16, 7, 20, 7);
-            this.btnClose.Dock = System.Windows.Forms.DockStyle.Right;
-            this.btnClose.Width = 112;
-            this.btnClose.Height = 36;
-            this.btnClose.BackColor = white;
-            this.btnClose.Image = null;
-            this.btnClose.Text = "Close";
-            this.btnClose.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.btnClose.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnClose.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(205, 225, 242);
-            this.btnClose.ForeColor = navy;
-            this.btnClose.Font = new System.Drawing.Font("Segoe UI Semibold", 10F);
-            footer.Controls.Add(this.btnClose);
-            this.Controls.Add(footer);
-
-            System.Windows.Forms.TableLayoutPanel columns = new System.Windows.Forms.TableLayoutPanel();
-            columns.Dock = System.Windows.Forms.DockStyle.Fill;
-            columns.ColumnCount = 2;
-            columns.RowCount = 1;
-            columns.Padding = new System.Windows.Forms.Padding(16, 12, 16, 10);
-            columns.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 73F));
-            columns.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 27F));
-            this.Controls.Add(columns);
-
-            // Correct WinForms docking order:
-            // Header at top, footer at bottom, content fills remaining space.
-            this.Controls.SetChildIndex(columns, 2);
-            this.Controls.SetChildIndex(footer, 1);
-            this.Controls.SetChildIndex(this.panel2, 0);
-
-            System.Windows.Forms.TableLayoutPanel left = new System.Windows.Forms.TableLayoutPanel();
-            left.Dock = System.Windows.Forms.DockStyle.Fill;
-            left.ColumnCount = 1;
-            left.RowCount = 3;
-            left.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 95F));
-            left.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 112F));
-            left.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            columns.Controls.Add(left, 0, 0);
-
-            System.Windows.Forms.Panel banner = DashPanel(System.Drawing.Color.FromArgb(214, 238, 255));
-            banner.Margin = new System.Windows.Forms.Padding(0, 0, 12, 14);
-            banner.Dock = System.Windows.Forms.DockStyle.Fill;
-            System.Windows.Forms.Label bannerTitle = DashLabel("Patient Management", 23F, navy);
-            bannerTitle.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold);
-            bannerTitle.Location = new System.Drawing.Point(24, 9);
-            bannerTitle.AutoSize = true;
-            banner.Controls.Add(bannerTitle);
-            System.Windows.Forms.Label bannerDesc = DashLabel("Keep track of patient information, medical history and visits.", 10F, muted);
-            bannerDesc.Location = new System.Drawing.Point(26, 51);
-            bannerDesc.AutoSize = true;
-            banner.Controls.Add(bannerDesc);
-            left.Controls.Add(banner, 0, 0);
-
-            System.Windows.Forms.Panel search = DashPanel(white);
-            search.Margin = new System.Windows.Forms.Padding(0, 0, 12, 14);
-            search.Dock = System.Windows.Forms.DockStyle.Fill;
-            System.Windows.Forms.Label searchTitle = DashLabel("⌕   Search & Filter", 14F, navy);
-            searchTitle.Font = new System.Drawing.Font("Segoe UI Semibold", 14F, System.Drawing.FontStyle.Bold);
-            searchTitle.Location = new System.Drawing.Point(22, 14);
-            searchTitle.AutoSize = true;
-            search.Controls.Add(searchTitle);
-            this.label1.Text = "Filter By";
-            this.label1.Font = new System.Drawing.Font("Segoe UI Semibold", 10F);
-            this.label1.ForeColor = muted;
-            this.label1.Location = new System.Drawing.Point(22, 59);
-            this.label1.AutoSize = true;
-            search.Controls.Add(this.label1);
-            this.cbFilterBy.Location = new System.Drawing.Point(102, 54);
-            this.cbFilterBy.Size = new System.Drawing.Size(205, 32);
-            this.cbFilterBy.Font = body;
-            search.Controls.Add(this.cbFilterBy);
-            this.txtFilterValue.Location = new System.Drawing.Point(325, 54);
-            this.txtFilterValue.Size = new System.Drawing.Size(330, 32);
-            this.txtFilterValue.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-            this.txtFilterValue.Font = body;
-            search.Controls.Add(this.txtFilterValue);
-            this.cbBloodType.Location = this.txtFilterValue.Location;
-            this.cbBloodType.Size = new System.Drawing.Size(210, 32);
-            search.Controls.Add(this.cbBloodType);
-            search.Resize += (s, e) =>
+            // Header matching the supplied reference: glossy medical icon, navy gradient.
+            panel2.Dock = System.Windows.Forms.DockStyle.None;
+            panel2.Height = 108;
+            panel2.BackColor = navy;
+            panel2.Padding = new System.Windows.Forms.Padding(0);
+            panel2.Paint += (sender, e) =>
             {
-                int availableWidth = Math.Max(
-                    100,
-                    search.ClientSize.Width - 345);
+                if (panel2.ClientRectangle.Width <= 0 || panel2.ClientRectangle.Height <= 0) return;
+                e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                using (var brush = new System.Drawing.Drawing2D.LinearGradientBrush(
+                    panel2.ClientRectangle,
+                    System.Drawing.Color.FromArgb(3, 40, 75),
+                    System.Drawing.Color.FromArgb(3, 62, 106), 0F))
+                    e.Graphics.FillRectangle(brush, panel2.ClientRectangle);
 
-                txtFilterValue.Width = availableWidth;
-
-                cbBloodType.Width = Math.Min(
-                    210,
-                    availableWidth);
+                // Subtle lower-right blue sweep, as in the reference header.
+                using (var sweep = new System.Drawing.Drawing2D.GraphicsPath())
+                {
+                    int w = panel2.ClientSize.Width;
+                    int h = panel2.ClientSize.Height;
+                    sweep.AddPolygon(new System.Drawing.Point[] {
+                        new System.Drawing.Point(System.Math.Max(0, w - 280), h),
+                        new System.Drawing.Point(w, System.Math.Max(0, h - 45)),
+                        new System.Drawing.Point(w, h)
+                    });
+                    using (var sb = new System.Drawing.SolidBrush(System.Drawing.Color.FromArgb(25, 0, 128, 216)))
+                        e.Graphics.FillPath(sb, sweep);
+                }
             };
-            left.Controls.Add(search, 0, 1);
+            // Add ManagePatientsHeaderIcon.png to Project Properties > Resources
+            // with the exact resource name ManagePatientsHeaderIcon.
+            var medicalIcon = new System.Windows.Forms.PictureBox
+            {
+                Location = new System.Drawing.Point(24, 10),
+                Size = new System.Drawing.Size(90, 90),
+                BackColor = System.Drawing.Color.Transparent,
+                SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom,
+                Image = global::Clinic.Properties.Resources.ManagePatientsHeaderIcon
+            };
+            panel2.Controls.Add(medicalIcon);
+            lblTitle.Text = "Manage Patients";
+            lblTitle.AutoSize = true;
+            lblTitle.Location = new System.Drawing.Point(140, 13);
+            lblTitle.BackColor = System.Drawing.Color.Transparent;
+            lblTitle.ForeColor = white;
+            lblTitle.Font = new System.Drawing.Font("Segoe UI", 23F, System.Drawing.FontStyle.Bold);
+            panel2.Controls.Add(lblTitle);
+            var subtitle = UiLabel("View, search, add, update and manage patients in the clinic", 10F,
+                System.Drawing.Color.FromArgb(220, 232, 247), false);
+            subtitle.Location = new System.Drawing.Point(142, 69);
+            panel2.Controls.Add(subtitle);
+            btnExit.Image = null;
+            btnExit.Text = "×";
+            btnExit.Font = new System.Drawing.Font("Segoe UI", 23F);
+            btnExit.ForeColor = white;
+            btnExit.BackColor = System.Drawing.Color.Transparent;
+            btnExit.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            btnExit.FlatAppearance.BorderSize = 0;
+            btnExit.Size = new System.Drawing.Size(50, 50);
+            btnExit.Location = new System.Drawing.Point(ClientSize.Width - 69, 25);
+            btnExit.Anchor = System.Windows.Forms.AnchorStyles.Right | System.Windows.Forms.AnchorStyles.Top;
+            panel2.Controls.Add(btnExit);
 
-            System.Windows.Forms.Panel listCard = DashPanel(white);
-            listCard.Margin = new System.Windows.Forms.Padding(0, 0, 12, 0);
-            listCard.Dock = System.Windows.Forms.DockStyle.Fill;
-            System.Windows.Forms.Label listTitle = DashLabel("☷   Patients List", 14F, navy);
-            listTitle.Font = new System.Drawing.Font("Segoe UI Semibold", 14F, System.Drawing.FontStyle.Bold);
-            listTitle.Location = new System.Drawing.Point(22, 16);
-            listTitle.AutoSize = true;
-            listCard.Controls.Add(listTitle);
-            System.Windows.Forms.Panel listFooter = DashPanel(white);
-            listFooter.Dock = System.Windows.Forms.DockStyle.Bottom;
-            listFooter.Height = 46;
-            this.label2.Text = "# Records:";
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(23, 12);
-            this.label2.ForeColor = muted;
-            this.lblRecordsCount.AutoSize = true;
-            this.lblRecordsCount.Location = new System.Drawing.Point(123, 12);
-            this.lblRecordsCount.ForeColor = blue;
-            listFooter.Controls.Add(this.label2);
-            listFooter.Controls.Add(this.lblRecordsCount);
-            listCard.Controls.Add(listFooter);
-            this.dgvPatient.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dgvPatient.Margin = new System.Windows.Forms.Padding(0);
-            this.dgvPatient.BackgroundColor = white;
-            this.dgvPatient.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.dgvPatient.EnableHeadersVisualStyles = false;
-            this.dgvPatient.ColumnHeadersDefaultCellStyle.BackColor = System.Drawing.Color.FromArgb(16, 84, 132);
-            this.dgvPatient.ColumnHeadersDefaultCellStyle.ForeColor = white;
-            this.dgvPatient.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold);
-            this.dgvPatient.ColumnHeadersDefaultCellStyle.SelectionBackColor = System.Drawing.Color.FromArgb(16, 84, 132);
-            this.dgvPatient.ColumnHeadersDefaultCellStyle.SelectionForeColor = white;
-            this.dgvPatient.ColumnHeadersHeight = 48;
-            this.dgvPatient.RowTemplate.Height = 42;
-            this.dgvPatient.AlternatingRowsDefaultCellStyle.BackColor = System.Drawing.Color.FromArgb(245, 250, 255);
-            this.dgvPatient.DefaultCellStyle.SelectionBackColor = System.Drawing.Color.FromArgb(217, 238, 255);
-            this.dgvPatient.DefaultCellStyle.SelectionForeColor = navy;
-            this.dgvPatient.GridColor = System.Drawing.Color.FromArgb(232, 240, 248);
-            this.dgvPatient.AutoSizeColumnsMode =
-                System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            // Footer is outside the main content area and always visible.
+            var footer = new System.Windows.Forms.Panel
+            {
+                Dock = System.Windows.Forms.DockStyle.None,
+                Height = 67,
+                BackColor = pale,
+                Padding = new System.Windows.Forms.Padding(15, 10, 23, 10)
+            };
+            btnClose.Dock = System.Windows.Forms.DockStyle.Right;
+            btnClose.Width = 172;
+            btnClose.Image = null;
+            btnClose.Text = "Close";
+            btnClose.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            btnClose.BackColor = white;
+            btnClose.ForeColor = navy;
+            btnClose.Font = new System.Drawing.Font("Segoe UI Semibold", 11F, System.Drawing.FontStyle.Bold);
+            btnClose.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            btnClose.FlatAppearance.BorderSize = 0;
+            btnClose.FlatAppearance.MouseOverBackColor = white;
+            btnClose.FlatAppearance.MouseDownBackColor = white;
+            btnClose.UseVisualStyleBackColor = false;
+            btnClose.Margin = new System.Windows.Forms.Padding(0);
+            // Draw the entire rounded outline ourselves; no Region clipping of its edges.
+            btnClose.Paint += (sender, e) =>
+            {
+                var g = e.Graphics;
+                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                var rect = new System.Drawing.Rectangle(2, 2, btnClose.Width - 5, btnClose.Height - 5);
+                using (var path = RoundedRectanglePath(rect, 13))
+                using (var fill = new System.Drawing.SolidBrush(System.Drawing.Color.White))
+                using (var outline = new System.Drawing.Pen(System.Drawing.Color.FromArgb(159, 192, 226), 1.5F))
+                {
+                    g.FillPath(fill, path);
+                    g.DrawPath(outline, path);
+                }
+                using (var pen = new System.Drawing.Pen(System.Drawing.Color.FromArgb(12, 102, 189), 1.8F))
+                {
+                    var cx = 38;
+                    var cy = btnClose.Height / 2;
+                    g.DrawEllipse(pen, cx - 11, cy - 11, 22, 22);
+                    g.DrawLine(pen, cx - 4, cy - 4, cx + 4, cy + 4);
+                    g.DrawLine(pen, cx + 4, cy - 4, cx - 4, cy + 4);
+                }
+                System.Windows.Forms.TextRenderer.DrawText(g, "Close", btnClose.Font,
+                    new System.Drawing.Rectangle(60, 0, btnClose.Width - 68, btnClose.Height),
+                    navy, System.Windows.Forms.TextFormatFlags.VerticalCenter |
+                    System.Windows.Forms.TextFormatFlags.Left |
+                    System.Windows.Forms.TextFormatFlags.SingleLine);
+            };
+            footer.Controls.Add(btnClose);
 
-            this.dgvPatient.AutoSizeRowsMode =
-                System.Windows.Forms.DataGridViewAutoSizeRowsMode.None;
+            var main = new System.Windows.Forms.TableLayoutPanel
+            {
+                Dock = System.Windows.Forms.DockStyle.None,
+                BackColor = pale,
+                Padding = new System.Windows.Forms.Padding(14, 15, 14, 8),
+                ColumnCount = 2,
+                RowCount = 1
+            };
+            main.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 70F));
+            main.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 30F));
+            main.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            Controls.Add(main);
+            Controls.Add(footer);
+            Controls.Add(panel2);
+            // Explicit root layout avoids WinForms docking/z-order overlap.
+            // Header, main content, and footer never occupy the same pixels.
+            System.Action arrangeRoot = () =>
+            {
+                int w = this.ClientSize.Width;
+                int h = this.ClientSize.Height;
+                panel2.SetBounds(0, 0, w, 108);
+                footer.SetBounds(0, h - 67, w, 67);
+                main.SetBounds(0, 108, w, System.Math.Max(0, h - 175));
+                btnExit.Location = new System.Drawing.Point(panel2.ClientSize.Width - 69, 25);
+            };
+            this.Resize += (sender, e) => arrangeRoot();
+            arrangeRoot();
 
-            this.dgvPatient.ScrollBars =
-                System.Windows.Forms.ScrollBars.Both; listCard.Controls.Add(this.dgvPatient);
-            System.Windows.Forms.Panel listHeading = DashPanel(white);
+            var left = new System.Windows.Forms.TableLayoutPanel
+            {
+                Dock = System.Windows.Forms.DockStyle.Fill,
+                BackColor = pale,
+                ColumnCount = 1,
+                RowCount = 2,
+                Margin = new System.Windows.Forms.Padding(0, 0, 12, 0)
+            };
+            left.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 155F));
+            left.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            main.Controls.Add(left, 0, 0);
+
+            var search = UiCard();
+            search.Margin = new System.Windows.Forms.Padding(0, 0, 0, 14);
+            var searchHeading = UiHeading("⌕", "Search Filter", blue, navy);
+            searchHeading.Dock = System.Windows.Forms.DockStyle.Top;
+            search.Controls.Add(searchHeading);
+            label1.Text = "Filter By:";
+            label1.AutoSize = true;
+            label1.Font = new System.Drawing.Font("Segoe UI Semibold", 11F);
+            label1.ForeColor = navy;
+            label1.Location = new System.Drawing.Point(24, 88);
+            search.Controls.Add(label1);
+            cbFilterBy.Location = new System.Drawing.Point(136, 81);
+            cbFilterBy.Size = new System.Drawing.Size(235, 34);
+            cbFilterBy.Font = new System.Drawing.Font("Segoe UI", 11F);
+            cbFilterBy.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            search.Controls.Add(cbFilterBy);
+            txtFilterValue.Location = new System.Drawing.Point(386, 81);
+            txtFilterValue.Size = new System.Drawing.Size(235, 34);
+            txtFilterValue.Font = new System.Drawing.Font("Segoe UI", 11F);
+            search.Controls.Add(txtFilterValue);
+            cbBloodType.Location = txtFilterValue.Location;
+            cbBloodType.Size = txtFilterValue.Size;
+            search.Controls.Add(cbBloodType);
+            search.Resize += (sender, e) =>
+            {
+                int width = System.Math.Max(120, search.ClientSize.Width - 413);
+                txtFilterValue.Width = width;
+                cbBloodType.Width = width;
+            };
+            left.Controls.Add(search, 0, 0);
+
+            var list = UiCard();
+            list.Margin = new System.Windows.Forms.Padding(0);
+            var listHeading = UiHeading("☷", "Patients List", blue, navy);
             listHeading.Dock = System.Windows.Forms.DockStyle.Top;
-            listHeading.Height = 58;
-            listHeading.Controls.Add(listTitle);
-            listCard.Controls.Add(listHeading);
-            left.Controls.Add(listCard, 0, 2);
+            list.Controls.Add(listHeading);
+            var recordFooter = new System.Windows.Forms.Panel
+            {
+                Dock = System.Windows.Forms.DockStyle.Bottom,
+                Height = 40,
+                BackColor = white
+            };
+            label2.Text = "# Records:";
+            label2.Location = new System.Drawing.Point(20, 9);
+            label2.AutoSize = true;
+            label2.ForeColor = muted;
+            lblRecordsCount.Location = new System.Drawing.Point(119, 9);
+            lblRecordsCount.AutoSize = true;
+            lblRecordsCount.ForeColor = blue;
+            recordFooter.Controls.Add(label2);
+            recordFooter.Controls.Add(lblRecordsCount);
+            list.Controls.Add(recordFooter);
+            dgvPatient.Dock = System.Windows.Forms.DockStyle.Fill;
+            dgvPatient.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            dgvPatient.BackgroundColor = white;
+            dgvPatient.EnableHeadersVisualStyles = false;
+            dgvPatient.ColumnHeadersDefaultCellStyle.BackColor = System.Drawing.Color.FromArgb(8, 95, 161);
+            dgvPatient.ColumnHeadersDefaultCellStyle.ForeColor = white;
+            dgvPatient.ColumnHeadersDefaultCellStyle.SelectionBackColor = System.Drawing.Color.FromArgb(8, 95, 161);
+            dgvPatient.ColumnHeadersDefaultCellStyle.SelectionForeColor = white;
+            dgvPatient.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold);
+            dgvPatient.ColumnHeadersHeight = 50;
+            dgvPatient.RowTemplate.Height = 43;
+            dgvPatient.DefaultCellStyle.Font = new System.Drawing.Font("Segoe UI", 10F);
+            dgvPatient.DefaultCellStyle.SelectionBackColor = System.Drawing.Color.FromArgb(215, 235, 255);
+            dgvPatient.DefaultCellStyle.SelectionForeColor = navy;
+            dgvPatient.AlternatingRowsDefaultCellStyle.BackColor = System.Drawing.Color.FromArgb(237, 246, 255);
+            dgvPatient.GridColor = System.Drawing.Color.FromArgb(229, 239, 251);
+            dgvPatient.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            list.Controls.Add(dgvPatient);
+            // Header above grid, record count below grid, no overlap.
+            list.Controls.SetChildIndex(listHeading, 0);
+            list.Controls.SetChildIndex(dgvPatient, 1);
+            list.Controls.SetChildIndex(recordFooter, 2);
+            left.Controls.Add(list, 0, 1);
 
-            System.Windows.Forms.TableLayoutPanel right = new System.Windows.Forms.TableLayoutPanel();
-            right.Dock = System.Windows.Forms.DockStyle.Fill;
-            right.ColumnCount = 1;
-            right.RowCount = 3;
-            right.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 95F));
-            right.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 220F));
+            var right = new System.Windows.Forms.TableLayoutPanel
+            {
+                Dock = System.Windows.Forms.DockStyle.Fill,
+                BackColor = pale,
+                ColumnCount = 1,
+                RowCount = 2,
+                Margin = new System.Windows.Forms.Padding(0)
+            };
+            right.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 278F));
             right.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            columns.Controls.Add(right, 1, 0);
+            main.Controls.Add(right, 1, 0);
 
-            System.Windows.Forms.Panel stats = DashPanel(white);
-            stats.Dock = System.Windows.Forms.DockStyle.Fill;
-            stats.Margin = new System.Windows.Forms.Padding(0, 0, 0, 14);
-            stats.Controls.Add(DashLabel("PATIENT OVERVIEW", 10F, muted, 18, 10));
-            stats.Controls.Add(DashLabel("Patient records", 12F, navy, 18, 35));
-            stats.Controls.Add(DashLabel("Use the list to view all patients", 9F, muted, 18, 62));
-            right.Controls.Add(stats, 0, 0);
-
-            System.Windows.Forms.Panel actions = DashPanel(white);
-            actions.Dock = System.Windows.Forms.DockStyle.Fill;
+            var actions = UiCard();
             actions.Margin = new System.Windows.Forms.Padding(0, 0, 0, 14);
-            actions.Controls.Add(DashLabel("Patient Actions", 14F, navy, 18, 15));
-            System.Windows.Forms.TableLayoutPanel actionGrid = new System.Windows.Forms.TableLayoutPanel();
-            actionGrid.Dock = System.Windows.Forms.DockStyle.Bottom;
-            actionGrid.Height = 157;
-            actionGrid.Padding = new System.Windows.Forms.Padding(12, 0, 12, 12);
-            actionGrid.ColumnCount = 2;
-            actionGrid.RowCount = 2;
-            actionGrid.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            actionGrid.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            actionGrid.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            actionGrid.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.btnAddPatient.Text = "＋  Add New Patient";
-            this.btnAddPatient.Image = null;
-            StyleActionButton(this.btnAddPatient, System.Drawing.Color.FromArgb(218, 250, 238), System.Drawing.Color.FromArgb(0, 125, 83));
-            actionGrid.Controls.Add(this.btnAddPatient, 0, 0);
-            System.Windows.Forms.Button btnEditVisual = DashAction("✎  Update Patient", System.Drawing.Color.FromArgb(227, 242, 255), blue);
-            btnEditVisual.Click += new System.EventHandler(this.editToolStripMenuItem_Click);
-            actionGrid.Controls.Add(btnEditVisual, 1, 0);
-            System.Windows.Forms.Button btnViewVisual = DashAction("▣  View Details", System.Drawing.Color.FromArgb(255, 246, 222), System.Drawing.Color.FromArgb(158, 104, 0));
-            btnViewVisual.Click += new System.EventHandler(this.showDetailsToolStripMenuItem_Click);
-            actionGrid.Controls.Add(btnViewVisual, 0, 1);
-            System.Windows.Forms.Button btnDeleteVisual = DashAction("✕  Delete Patient", System.Drawing.Color.FromArgb(255, 233, 239), System.Drawing.Color.FromArgb(192, 44, 74));
-            btnDeleteVisual.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
-            actionGrid.Controls.Add(btnDeleteVisual, 1, 1);
-            actions.Controls.Add(actionGrid);
-            right.Controls.Add(actions, 0, 1);
+            var actionsHeading = UiHeading("⚙", "Patient Actions", blue, navy);
+            actionsHeading.Dock = System.Windows.Forms.DockStyle.Top;
+            actions.Controls.Add(actionsHeading);
+            var grid = new System.Windows.Forms.TableLayoutPanel
+            {
+                Dock = System.Windows.Forms.DockStyle.Bottom,
+                Height = 196,
+                ColumnCount = 2,
+                RowCount = 2,
+                BackColor = white,
+                Padding = new System.Windows.Forms.Padding(12, 0, 12, 12)
+            };
+            grid.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50));
+            grid.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50));
+            grid.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50));
+            grid.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50));
+            btnAddPatient.Image = null;
+            btnAddPatient.Text = "✚  Add New\nPatient";
+            StyleTile(btnAddPatient, System.Drawing.Color.FromArgb(218, 250, 237), System.Drawing.Color.FromArgb(0, 133, 76));
+            grid.Controls.Add(btnAddPatient, 0, 0);
+            var edit = UiAction("✎  Update\nPatient", System.Drawing.Color.FromArgb(225, 239, 255), blue);
+            edit.Click += editToolStripMenuItem_Click;
+            grid.Controls.Add(edit, 1, 0);
+            var view = UiAction("⌕  View\nDetails", System.Drawing.Color.FromArgb(255, 244, 220), System.Drawing.Color.FromArgb(199, 113, 0));
+            view.Click += showDetailsToolStripMenuItem_Click;
+            grid.Controls.Add(view, 0, 1);
+            var delete = UiAction("⊗  Delete\nPatient", System.Drawing.Color.FromArgb(255, 230, 237), System.Drawing.Color.FromArgb(192, 30, 59));
+            delete.Click += deleteToolStripMenuItem_Click;
+            grid.Controls.Add(delete, 1, 1);
+            actions.Controls.Add(grid);
+            actions.Controls.SetChildIndex(actionsHeading, 0);
+            actions.Controls.SetChildIndex(grid, 1);
+            right.Controls.Add(actions, 0, 0);
 
-            System.Windows.Forms.Panel details = DashPanel(white);
-            details.Dock = System.Windows.Forms.DockStyle.Fill;
-            details.Margin = new System.Windows.Forms.Padding(0);
-            details.Controls.Add(DashLabel("Selected Patient", 14F, navy, 18, 18));
-            details.Controls.Add(DashLabel("Select a row to view patient information", 10F, muted, 18, 66));
-            details.Controls.Add(DashLabel("Right-click a row for more options", 9F, muted, 18, 106));
-            right.Controls.Add(details, 0, 2);
-
+            var selected = UiCard();
+            selected.Margin = new System.Windows.Forms.Padding(0);
+            selected.Controls.Add(UiHeading("♙", "Selected Patient", blue, navy));
+            var selectedBody = new System.Windows.Forms.Label
+            {
+                Dock = System.Windows.Forms.DockStyle.Fill,
+                Text = "Select a row to view patient information",
+                TextAlign = System.Drawing.ContentAlignment.MiddleCenter,
+                ForeColor = muted,
+                Font = new System.Drawing.Font("Segoe UI", 11F),
+                Padding = new System.Windows.Forms.Padding(15),
+                BackColor = white
+            };
+            selected.Controls.Add(selectedBody);
+            // The heading must be docked and placed before the filling body.
+            var selectedHeading = selected.Controls[0];
+            selectedHeading.Dock = System.Windows.Forms.DockStyle.Top;
+            selected.Controls.SetChildIndex(selectedHeading, 0);
+            selected.Controls.SetChildIndex(selectedBody, 1);
+            dgvPatient.SelectionChanged += (sender, e) =>
+            {
+                if (dgvPatient.CurrentRow == null || dgvPatient.CurrentRow.IsNewRow) return;
+                var row = dgvPatient.CurrentRow;
+                string id = dgvPatient.Columns.Contains("PatientID")
+                    ? System.Convert.ToString(row.Cells["PatientID"].Value) : "";
+                string name = dgvPatient.Columns.Contains("FullName")
+                    ? System.Convert.ToString(row.Cells["FullName"].Value) : "";
+                selectedBody.Text = "Patient ID: " + id + "\n" + name + "\n\nRight-click for more options";
+            };
+            right.Controls.Add(selected, 0, 1);
             this.ResumeLayout(true);
         }
 
-        private static System.Windows.Forms.Panel DashPanel(System.Drawing.Color background)
+        private static System.Windows.Forms.Panel UiCard()
         {
-            return new System.Windows.Forms.Panel { BackColor = background };
+            var panel = new System.Windows.Forms.Panel
+            {
+                Dock = System.Windows.Forms.DockStyle.Fill,
+                BackColor = System.Drawing.Color.White
+            };
+            RoundControl(panel, 16);
+            return panel;
         }
 
-        private static System.Windows.Forms.Label DashLabel(string text, float size, System.Drawing.Color color, int x = 0, int y = 0)
+        private static System.Windows.Forms.Label UiLabel(string text, float size,
+            System.Drawing.Color color, bool bold)
         {
             return new System.Windows.Forms.Label
             {
                 Text = text,
                 AutoSize = true,
-                Location = new System.Drawing.Point(x, y),
-                Font = new System.Drawing.Font("Segoe UI", size),
+                BackColor = System.Drawing.Color.Transparent,
                 ForeColor = color,
-                BackColor = System.Drawing.Color.Transparent
+                Font = new System.Drawing.Font("Segoe UI", size,
+                    bold ? System.Drawing.FontStyle.Bold : System.Drawing.FontStyle.Regular)
             };
         }
 
-        private static void StyleActionButton(System.Windows.Forms.Button button, System.Drawing.Color back, System.Drawing.Color fore)
+        private static System.Windows.Forms.Panel UiHeading(string icon, string title,
+            System.Drawing.Color iconColor, System.Drawing.Color textColor)
         {
-            button.Dock = System.Windows.Forms.DockStyle.Fill;
-            button.Margin = new System.Windows.Forms.Padding(5);
-            button.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            button.FlatAppearance.BorderSize = 0;
-            button.BackColor = back;
-            button.ForeColor = fore;
-            button.Font = new System.Drawing.Font("Segoe UI Semibold", 9.5F, System.Drawing.FontStyle.Bold);
-            button.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            button.Cursor = System.Windows.Forms.Cursors.Hand;
-            button.UseVisualStyleBackColor = false;
+            var panel = new System.Windows.Forms.Panel
+            {
+                Height = 66,
+                BackColor = System.Drawing.Color.FromArgb(233, 243, 255)
+            };
+            // Docked row avoids the first letter being covered by the icon at DPI scaling.
+            var layout = new System.Windows.Forms.TableLayoutPanel
+            {
+                Dock = System.Windows.Forms.DockStyle.Fill,
+                ColumnCount = 2,
+                RowCount = 1,
+                BackColor = System.Drawing.Color.Transparent,
+                Padding = new System.Windows.Forms.Padding(18, 0, 10, 0),
+                Margin = new System.Windows.Forms.Padding(0)
+            };
+            layout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(
+                System.Windows.Forms.SizeType.Absolute, 52F));
+            layout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(
+                System.Windows.Forms.SizeType.Percent, 100F));
+            layout.RowStyles.Add(new System.Windows.Forms.RowStyle(
+                System.Windows.Forms.SizeType.Percent, 100F));
+            var symbol = new System.Windows.Forms.Label
+            {
+                Text = icon,
+                Dock = System.Windows.Forms.DockStyle.Fill,
+                Font = new System.Drawing.Font("Segoe UI Symbol", 23F, System.Drawing.FontStyle.Regular),
+                ForeColor = iconColor,
+                TextAlign = System.Drawing.ContentAlignment.MiddleCenter,
+                Margin = new System.Windows.Forms.Padding(0),
+                AutoSize = false
+            };
+            var heading = new System.Windows.Forms.Label
+            {
+                Text = title,
+                Dock = System.Windows.Forms.DockStyle.Fill,
+                Font = new System.Drawing.Font("Segoe UI Semibold", 15F, System.Drawing.FontStyle.Bold),
+                ForeColor = textColor,
+                TextAlign = System.Drawing.ContentAlignment.MiddleLeft,
+                Margin = new System.Windows.Forms.Padding(8, 0, 0, 0),
+                AutoSize = false,
+                AutoEllipsis = true
+            };
+            layout.Controls.Add(symbol, 0, 0);
+            layout.Controls.Add(heading, 1, 0);
+            panel.Controls.Add(layout);
+            return panel;
         }
 
-        private static System.Windows.Forms.Button DashAction(string text, System.Drawing.Color back, System.Drawing.Color fore)
+        private static System.Drawing.Drawing2D.GraphicsPath RoundedRectanglePath(
+            System.Drawing.Rectangle rect, int radius)
         {
-            System.Windows.Forms.Button button = new System.Windows.Forms.Button { Text = text };
-            StyleActionButton(button, back, fore);
+            int d = radius * 2;
+            var path = new System.Drawing.Drawing2D.GraphicsPath();
+            path.AddArc(rect.Left, rect.Top, d, d, 180, 90);
+            path.AddArc(rect.Right - d, rect.Top, d, d, 270, 90);
+            path.AddArc(rect.Right - d, rect.Bottom - d, d, d, 0, 90);
+            path.AddArc(rect.Left, rect.Bottom - d, d, d, 90, 90);
+            path.CloseFigure();
+            return path;
+        }
+
+        private static void RoundControl(System.Windows.Forms.Control control, int radius)
+        {
+            System.Action update = () => {
+                if (control.Width < 2 || control.Height < 2) return;
+                using (var path = new System.Drawing.Drawing2D.GraphicsPath())
+                {
+                    int d = System.Math.Min(radius * 2, System.Math.Min(control.Width, control.Height));
+                    path.AddArc(0, 0, d, d, 180, 90);
+                    path.AddArc(control.Width - d, 0, d, d, 270, 90);
+                    path.AddArc(control.Width - d, control.Height - d, d, d, 0, 90);
+                    path.AddArc(0, control.Height - d, d, d, 90, 90);
+                    path.CloseFigure();
+                    var old = control.Region;
+                    control.Region = new System.Drawing.Region(path);
+                    if (old != null) old.Dispose();
+                }
+            };
+            control.SizeChanged += (sender, e) => update();
+            update();
+        }
+
+        private static void StyleTile(System.Windows.Forms.Button button,
+            System.Drawing.Color background, System.Drawing.Color foreground)
+        {
+            button.Dock = System.Windows.Forms.DockStyle.Fill;
+            button.Margin = new System.Windows.Forms.Padding(6);
+            button.Image = null;
+            button.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            button.FlatAppearance.BorderSize = 0;
+            button.UseVisualStyleBackColor = false;
+            button.BackColor = background;
+            button.ForeColor = foreground;
+            button.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            button.Font = new System.Drawing.Font("Segoe UI Semibold", 10.5F, System.Drawing.FontStyle.Bold);
+            button.Cursor = System.Windows.Forms.Cursors.Hand;
+            RoundControl(button, 12);
+        }
+
+        private static System.Windows.Forms.Button UiAction(string text,
+            System.Drawing.Color background, System.Drawing.Color foreground)
+        {
+            var button = new System.Windows.Forms.Button { Text = text };
+            StyleTile(button, background, foreground);
             return button;
         }
 

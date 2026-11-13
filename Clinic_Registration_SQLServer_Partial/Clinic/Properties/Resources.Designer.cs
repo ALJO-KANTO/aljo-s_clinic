@@ -463,9 +463,29 @@ namespace Clinic.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        public static System.Drawing.Bitmap BloodType_32 {
+        public static System.Drawing.Bitmap BloodType_34 {
             get {
-                object obj = ResourceManager.GetObject("BloodType 32", resourceCulture);
+                object obj = ResourceManager.GetObject("BloodType 34", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap BloodType_52 {
+            get {
+                object obj = ResourceManager.GetObject("BloodType 52", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap c8dc0a95a7f4ba55f696df35c20e38f8 {
+            get {
+                object obj = ResourceManager.GetObject("c8dc0a95a7f4ba55f696df35c20e38f8", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -916,6 +936,16 @@ namespace Clinic.Properties {
         public static System.Drawing.Bitmap emailN {
             get {
                 object obj = ResourceManager.GetObject("emailN", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap Emergency_Contact_31 {
+            get {
+                object obj = ResourceManager.GetObject("Emergency Contact 31", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -1420,6 +1450,16 @@ namespace Clinic.Properties {
         public static System.Drawing.Bitmap Manage_People {
             get {
                 object obj = ResourceManager.GetObject("Manage People", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap ManagePatientsHeaderIcon {
+            get {
+                object obj = ResourceManager.GetObject("ManagePatientsHeaderIcon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

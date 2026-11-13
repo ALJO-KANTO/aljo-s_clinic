@@ -436,9 +436,6 @@
   <data name="role2 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\role2 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="BloodType 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\BloodType 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="Trash" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Trash.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -594,9 +591,6 @@
   </data>
   <data name="High Tech PNG Image, High Tech Brain, Science And Technology, High Tech PNG Image For Free Download1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\High Tech PNG Image, High Tech Brain, Science And Technology, High Tech PNG Image For Free Download1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Emergency Contact 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Emergency Contact 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Glossy Teal Glass User Avatar Icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Glossy Teal Glass User Avatar Icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -771,5 +765,23 @@
   </data>
   <data name="DefaultPersonAvatar" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\DefaultPersonAvatar.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ManagePatientsHeaderIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ManagePatientsHeaderIcon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Emergency Contact 32" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Emergency Contact 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="BloodType 34" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\BloodType 32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="c8dc0a95a7f4ba55f696df35c20e38f8" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\c8dc0a95a7f4ba55f696df35c20e38f8.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Emergency Contact 31" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Emergency Contact 32.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="BloodType 52" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\BloodType 34.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>
