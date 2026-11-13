@@ -1,4 +1,6 @@
 using Clinic_Common;
+using Clinic_DataAccess;
+using MySql.Data.MySqlClient;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -650,7 +652,7 @@ namespace Clinic
 
             menu.Controls.Add(group);
         }
-
+        
         private void BuildDashboardRows()
         {
             Panel welcome = Rounded(Color.FromArgb(214, 237, 251));
@@ -692,10 +694,10 @@ namespace Clinic
                 Margin = new Padding(0, 0, 0, 16)
             };
             for (int i = 0; i < 4; i++) stats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
-            AddStat(stats, 0, "♙", "Total Patients", "—", Color.FromArgb(17, 123, 234));
-            AddStat(stats, 1, "▦", "Today's Appointments", "—", Color.FromArgb(3, 177, 110));
-            AddStat(stats, 2, "$", "Today's Revenue", "—", Color.FromArgb(190, 38, 202));
-            AddStat(stats, 3, "♡", "Active Visits", "—", Color.FromArgb(246, 137, 22));
+            AddStat(stats, 0, "♙", "Total Patients", dashboardStats.TotalPatients.ToString("N0"), Color.FromArgb(17, 123, 234), lbl => lblTotalPatients = lbl);
+            AddStat(stats, 1, "▦", "Today's Appointments", dashboardStats.TodayAppointments.ToString("N0"), Color.FromArgb(3, 177, 110), lbl => lblTodayAppointments = lbl);
+            AddStat(stats, 2, "💵", "Today's Revenue", dashboardStats.TodayRevenue.ToString("N0"), Color.FromArgb(190, 38, 202), lbl => lblTodayRevenue = lbl);
+            AddStat(stats, 3, "♡", "Active Visits", dashboardStats.ActiveVisits.ToString("N0"), Color.FromArgb(246, 137, 22), lbl => lblActiveVisits = lbl);
             modernDashboard.Controls.Add(stats);
 
             bool isAdmin = clsGlobal.CurrentUser.RoleID == (int)UserRole.Admin;
@@ -887,7 +889,7 @@ namespace Clinic
         }
 
         private static void AddStat(TableLayoutPanel row, int index, string symbol,
-            string title, string value, Color accent)
+            string title, string value, Color accent, Action<Label> registerValueLabel = null)
         {
             Panel card = Rounded(Color.White);
             card.Dock = DockStyle.Fill; card.Margin = new Padding(0, 0, 12, 0);
@@ -899,6 +901,9 @@ namespace Clinic
             Place(card, titleLabel, 85, 18, 135, 35);
             Label valueLabel = TextLabel(value, 23, Color.FromArgb(9, 38, 77), true);
             valueLabel.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top;
+            // After creating your value label:
+            registerValueLabel?.Invoke(valueLabel);
+
             Place(card, valueLabel, 85, 55, 135, 45);
             card.Resize += (s, e) =>
             {
@@ -922,6 +927,7 @@ namespace Clinic
                     ? ContentAlignment.MiddleRight
                     : ContentAlignment.MiddleLeft;
             }; row.Controls.Add(card, index, 0);
+
         }
 
         private Panel RoleCard(string symbol, string title, Color accent, string[] labels, Action[] actions)
