@@ -1800,7 +1800,7 @@ namespace YamyProject
                 //    MessageBox.Show("Cost Price Must Be Less Than Sale Price");
                 //    return false;
                 //}
-                if (!Utilities.AreDefaultAccountsSet(new List<string> { "COGS", "Sales", "Inventory" }))
+                if (!Utilities.AreDefaultAccountsSet(new List<string> { "COGS", "Consultation Revenue", "Inventory" }))
                 {
                     MessageBox.Show("Default accounts for Item are not properly configured. Please check your settings.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return false;
@@ -2243,11 +2243,35 @@ namespace YamyProject
                 pnlOP.Size = new System.Drawing.Size(1475, 212);
 
                 // Restore normal pricing positions.
-                label16.Location = new System.Drawing.Point(365, 149);
-                txtSalesPrice.Location = new System.Drawing.Point(456, 139);
-                txtSalesPrice.Size = new System.Drawing.Size(175, 39);
+              //  label16.// Arrange Pricing & Quantity fields neatly.
+
+// First row: Opening Qty, As Of, Item Active
+lblOpeningQty.Location = new System.Drawing.Point(25, 76);
+                txtOnHand.Location = new System.Drawing.Point(162, 66);
+                txtOnHand.Size = new System.Drawing.Size(175, 39);
+
+                label11.Location = new System.Drawing.Point(365, 76);
+                dtStart.Location = new System.Drawing.Point(431, 68);
+                dtStart.Size = new System.Drawing.Size(230, 27);
 
                 chkActive.Location = new System.Drawing.Point(725, 66);
+                lblActiveHint.AutoSize = false;
+                lblActiveHint.Location = new System.Drawing.Point(725, 105);
+                lblActiveHint.Size = new System.Drawing.Size(245, 25);
+                lblActiveHint.TextAlign = ContentAlignment.MiddleLeft;
+
+                // Second row: Cost Price, Sales Price, Total Value
+                lblCostPrice.Location = new System.Drawing.Point(25, 149);
+                txtCostPrice.Location = new System.Drawing.Point(162, 139);
+                txtCostPrice.Size = new System.Drawing.Size(175, 39);
+
+                label16.Location = new System.Drawing.Point(365, 149);
+                txtSalesPrice.Location = new System.Drawing.Point(431, 139);
+                txtSalesPrice.Size = new System.Drawing.Size(175, 39);
+
+                lblTotalValue.Location = new System.Drawing.Point(650, 149);
+                txtTotalValue.Location = new System.Drawing.Point(750, 139);
+                txtTotalValue.Size = new System.Drawing.Size(185, 39);
 
                 pnlAdditionalCard.Location = new System.Drawing.Point(0, 0);
                 pnlAdditionalCard.Size = new System.Drawing.Size(737, 237);

@@ -950,16 +950,15 @@
             // 
             // lblActiveHint
             // 
-            this.lblActiveHint.AutoSize = true;
-            this.lblActiveHint.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(145)))), ((int)(((byte)(89)))));
-            this.lblActiveHint.Location = new System.Drawing.Point(725, 105);
+            this.lblActiveHint.AutoSize = false;
+            this.lblActiveHint.ForeColor = System.Drawing.Color.FromArgb(49, 145, 89);
+            this.lblActiveHint.Location = new System.Drawing.Point(690, 105);
             this.lblActiveHint.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblActiveHint.Name = "lblActiveHint";
-            this.lblActiveHint.Size = new System.Drawing.Size(242, 20);
+            this.lblActiveHint.Size = new System.Drawing.Size(280, 25);
             this.lblActiveHint.TabIndex = 7;
             this.lblActiveHint.Text = "Active and available in transactions";
-            // 
-            // lblCostPrice
+            this.lblActiveHint.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;            // lblCostPrice
             // 
             this.lblCostPrice.AutoSize = true;
             this.lblCostPrice.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(63)))), ((int)(((byte)(66)))), ((int)(((byte)(113)))));
