@@ -112,6 +112,7 @@
     <Compile Include="clsBillingServiceData.cs" />
     <Compile Include="clsBloodTypeData.cs" />
     <Compile Include="clsCountryData.cs" />
+    <Compile Include="clsDashboardData.cs" />
     <Compile Include="clsDataAccessSettings.cs" />
     <Compile Include="clsDoctorData.cs" />
     <Compile Include="clsGlobleData.cs" />

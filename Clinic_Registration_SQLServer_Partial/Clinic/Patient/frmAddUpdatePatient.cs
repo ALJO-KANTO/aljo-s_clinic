@@ -3,6 +3,7 @@ using System;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
 namespace Clinic.Patient
@@ -59,14 +60,14 @@ namespace Clinic.Patient
         {
             SuspendLayout();
             // Enlarging the window gives the original person card room to breathe.
-            ClientSize = new Size(960, 760);
-            MinimumSize = new Size(960, 760);
-            panelHeaderContainer.Height = 198;
+            ClientSize = new Size(1080, 790);
+            MinimumSize = new Size(980, 740);
+            panelHeaderContainer.Height = 208;
             panelHeaderContainer.Dock = DockStyle.Top;
-            tcPatient.Bounds = new Rectangle(16, 214, 928, 460);
+            tcPatient.Bounds = new Rectangle(18, 225, ClientSize.Width - 36, ClientSize.Height - 315);
             tcPatient.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
-            btnClose.Bounds = new Rectangle(634, 700, 144, 42);
-            btnSave.Bounds = new Rectangle(790, 700, 154, 42);
+            btnClose.Bounds = new Rectangle(ClientSize.Width - 338, ClientSize.Height - 70, 150, 48);
+            btnSave.Bounds = new Rectangle(ClientSize.Width - 176, ClientSize.Height - 70, 154, 48);
             btnClose.Anchor = AnchorStyles.Right | AnchorStyles.Bottom;
             btnSave.Anchor = AnchorStyles.Right | AnchorStyles.Bottom;
 
@@ -80,10 +81,10 @@ namespace Clinic.Patient
             };
             panelHeaderContainer.Controls.Add(_brand);
             lblTitle.AutoSize = false;
-            lblTitle.Bounds = new Rectangle(30, 36, 850, 44);
+            lblTitle.Bounds = new Rectangle(42, 37, ClientSize.Width - 110, 52);
             lblTitle.Font = new Font("Segoe UI Semibold", 23F, FontStyle.Bold);
             lblTitle.TextAlign = ContentAlignment.MiddleLeft;
-            btnExit.Bounds = new Rectangle(904, 20, 40, 38);
+            btnExit.Bounds = new Rectangle(ClientSize.Width - 64, 20, 42, 40);
             btnExit.Image = null;
             btnExit.Text = "×";
             btnExit.Font = new Font("Segoe UI", 23F);
@@ -92,7 +93,7 @@ namespace Clinic.Patient
             _progressPanel = new Panel
             {
                 BackColor = Color.White,
-                Bounds = new Rectangle(18, 91, 924, 96),
+                Bounds = new Rectangle(18, 105, ClientSize.Width - 36, 94),
                 Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top
             };
             _progressPanel.Paint += (sender, e) =>
@@ -102,20 +103,20 @@ namespace Clinic.Patient
             };
             _stepOne = new Label
             {
-                Bounds = new Rectangle(20, 11, 420, 36),
+                Bounds = new Rectangle(20, 11, 480, 36),
                 Font = new Font("Segoe UI Semibold", 11F, FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleCenter
             };
             _stepTwo = new Label
             {
-                Bounds = new Rectangle(470, 11, 420, 36),
+                Bounds = new Rectangle(510, 11, 480, 36),
                 Font = new Font("Segoe UI Semibold", 11F, FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleCenter
             };
             _guideBanner = new Panel
             {
                 BackColor = Pale,
-                Bounds = new Rectangle(14, 52, 896, 34),
+                Bounds = new Rectangle(14, 52, ClientSize.Width - 64, 34),
                 Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right
             };
             _stepHint = new Label
@@ -178,7 +179,7 @@ namespace Clinic.Patient
                 _stepHint.Text = arabic ? "أدخل بيانات المريض ثم اضغط حفظ لإنشاء رقم المريض." : "Enter the patient details and click Save to generate the Patient ID.";
             else
                 _stepHint.Text = arabic ? "احفظ الشخص من بطاقة الشخص أولاً، ثم اضغط التالي. يُنشأ رقم المريض عند حفظ الخطوة الثانية." : "Save the person record in the person card, then click Next. Patient ID is generated after saving Step 2.";
-            btnPersonInfoNext.Text = arabic ? "التالي: معلومات المريض  ←" : "Next: Patient Info  →";
+            btnPersonInfoNext.Text = arabic ? "التالي: معلومات المريض" : "Next: Patient Info";
             btnSave.Text = arabic ? Tr("Save") : "Save";
             PositionGuideControls();
             RefreshEmptyState();
@@ -224,11 +225,15 @@ namespace Clinic.Patient
                 button.FlatAppearance.MouseOverBackColor = Teal;
                 button.Font = new Font("Segoe UI Semibold", 10F, FontStyle.Bold);
                 button.Cursor = Cursors.Hand;
-                button.Image = null;
+                // Keep the existing resource images (Save_32 / Next_32).
+                button.ImageAlign = ContentAlignment.MiddleLeft;
+                button.TextImageRelation = TextImageRelation.ImageBeforeText;
                 button.TextAlign = ContentAlignment.MiddleCenter;
                 button.UseVisualStyleBackColor = false;
             }
             btnClose.Image = null;
+            btnClose.ImageAlign = ContentAlignment.MiddleLeft;
+            btnClose.TextImageRelation = TextImageRelation.ImageBeforeText;
             btnClose.Text = "Close";
             btnClose.BackColor = Color.White;
             btnClose.ForeColor = Ink;
@@ -242,9 +247,9 @@ namespace Clinic.Patient
             cbBloodType.BackColor = Color.White;
             cbBloodType.ForeColor = Ink;
             cbBloodType.FlatStyle = FlatStyle.Standard;
-            cbBloodType.Width = 280;
-            txtEmergencyContact.Width = 280;
-            txtMedicalHistory.Size = new Size(425, 108);
+            cbBloodType.Width = 325;
+            txtEmergencyContact.Width = 325;
+            txtMedicalHistory.Size = new Size(450, 112);
             foreach (TextBox field in new[] { txtEmergencyContact, txtMedicalHistory })
             {
                 field.BackColor = Color.White;
@@ -259,24 +264,153 @@ namespace Clinic.Patient
                 field.Font = new Font("Segoe UI Semibold", 10.5F, FontStyle.Bold);
             }
             // Align the existing fields into a neat two-column label/input grid.
-            label8.Location = new Point(45, 60);
-            pictureBox5.Location = new Point(242, 60);
-            lblPatientID.Location = new Point(286, 62);
-            label15.Location = new Point(45, 134);
-            pictureBox6.Location = new Point(242, 134);
-            txtEmergencyContact.Location = new Point(286, 132);
-            label6.Location = new Point(45, 205);
-            pictureBox4.Location = new Point(242, 205);
-            cbBloodType.Location = new Point(286, 202);
-            label7.Location = new Point(45, 277);
-            pictureBox7.Location = new Point(242, 277);
-            txtMedicalHistory.Location = new Point(286, 273);
+            label8.Location = new Point(55, 66);
+            pictureBox5.Location = new Point(260, 65);
+            lblPatientID.Location = new Point(310, 67);
+            label15.Location = new Point(55, 139);
+            pictureBox6.Location = new Point(260, 138);
+            txtEmergencyContact.Location = new Point(310, 135);
+            label6.Location = new Point(55, 212);
+            pictureBox4.Location = new Point(260, 211);
+            cbBloodType.Location = new Point(310, 207);
+            label7.Location = new Point(55, 285);
+            pictureBox7.Location = new Point(260, 284);
+            txtMedicalHistory.Location = new Point(310, 279);
             foreach (PictureBox picture in new[] { pictureBox4, pictureBox5, pictureBox6, pictureBox7 })
-                picture.Size = new Size(28, 28);
+            {
+                picture.Size = new Size(32, 32);
+                picture.SizeMode = PictureBoxSizeMode.Zoom;
+                // Keep exact original project icon images, do not replace with emoji.
+            }
 
             // The nested person card owns its photo and its data display.
             // Never cover, hide or overwrite its controls.
+            // Subtle gradients and rounded button shapes to match the reference.
+            panelHeaderContainer.Paint += (sender, e) =>
+            {
+                using (var brush = new LinearGradientBrush(
+                    panelHeaderContainer.ClientRectangle,
+                    Color.FromArgb(8, 54, 102), Color.FromArgb(4, 77, 135), 0f))
+                    e.Graphics.FillRectangle(brush, panelHeaderContainer.ClientRectangle);
+            };
+            // Draw modern buttons ourselves. The old bitmap icons are intentionally
+            // removed: their backgrounds and pixelated edges caused the ugly result.
+            ConfigureActionButton(btnSave, ActionGlyph.Save, true);
+            ConfigureActionButton(btnClose, ActionGlyph.Close, false);
+            ConfigureActionButton(btnPersonInfoNext, ActionGlyph.Next, true);
+            btnSave.Text = "Save";
+            btnClose.Text = "Close";
+            btnPersonInfoNext.Text = "Next: Patient Info";
+            btnSave.Size = new Size(154, 50);
+            btnClose.Size = new Size(154, 50);
+            btnPersonInfoNext.Size = new Size(215, 46);
             PositionGuideControls();
+        }
+
+        private enum ActionGlyph { Save, Close, Next }
+
+        private void ConfigureActionButton(Button button, ActionGlyph glyph, bool primary)
+        {
+            button.Image = null;
+            button.BackgroundImage = null;
+            button.TextImageRelation = TextImageRelation.Overlay;
+            button.FlatStyle = FlatStyle.Flat;
+            button.FlatAppearance.BorderSize = 0;
+            button.UseVisualStyleBackColor = false;
+            button.Cursor = Cursors.Hand;
+            button.Font = new Font("Segoe UI Semibold", 10.5F, FontStyle.Bold);
+            button.BackColor = primary ? Blue : Color.White;
+            button.ForeColor = primary ? Color.White : Navy;
+            button.TextAlign = ContentAlignment.MiddleCenter;
+            button.Padding = Padding.Empty;
+            button.Paint += (sender, e) => PaintActionButton(button, e.Graphics, glyph, primary);
+            button.Resize += (sender, e) => button.Invalidate();
+            button.MouseEnter += (sender, e) => button.Invalidate();
+            button.MouseLeave += (sender, e) => button.Invalidate();
+            button.EnabledChanged += (sender, e) => button.Invalidate();
+        }
+
+        private static GraphicsPath RoundedRect(RectangleF rect, float radius)
+        {
+            var path = new GraphicsPath();
+            float d = radius * 2;
+            path.AddArc(rect.Left, rect.Top, d, d, 180, 90);
+            path.AddArc(rect.Right - d, rect.Top, d, d, 270, 90);
+            path.AddArc(rect.Right - d, rect.Bottom - d, d, d, 0, 90);
+            path.AddArc(rect.Left, rect.Bottom - d, d, d, 90, 90);
+            path.CloseFigure();
+            return path;
+        }
+
+        private static void PaintActionButton(Button button, Graphics g, ActionGlyph glyph, bool primary)
+        {
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+            RectangleF rect = new RectangleF(1, 1, button.Width - 3, button.Height - 3);
+            if (rect.Width < 20 || rect.Height < 20) return;
+
+            bool enabled = button.Enabled;
+            bool hovered = button.ClientRectangle.Contains(button.PointToClient(Cursor.Position));
+            Color bg = !enabled ? Color.FromArgb(183, 204, 225)
+                : primary ? (hovered ? Color.FromArgb(6, 91, 182) : Color.FromArgb(13, 111, 207))
+                : (hovered ? Color.FromArgb(235, 244, 252) : Color.White);
+            Color fg = primary ? Color.White : Color.FromArgb(10, 62, 110);
+            if (!enabled) fg = Color.FromArgb(240, 245, 250);
+
+            using (var shape = RoundedRect(rect, 11))
+            using (var fill = new SolidBrush(bg))
+            using (var border = new Pen(primary ? bg : Color.FromArgb(185, 208, 229), 1.3F))
+            {
+                g.FillPath(fill, shape);
+                g.DrawPath(border, shape);
+            }
+
+            // One unified icon/text group, centered together, not stretched.
+            string caption = button.Text ?? "";
+            Size textSize = TextRenderer.MeasureText(g, caption, button.Font,
+                new Size(1000, button.Height), TextFormatFlags.SingleLine | TextFormatFlags.NoPadding);
+            int iconSize = 20;
+            int gap = 11;
+            int groupWidth = iconSize + gap + textSize.Width;
+            int iconX = Math.Max(10, (button.Width - groupWidth) / 2);
+            int iconY = (button.Height - iconSize) / 2;
+            DrawActionGlyph(g, glyph, new Rectangle(iconX, iconY, iconSize, iconSize), fg);
+            var textRect = new Rectangle(iconX + iconSize + gap, 0,
+                Math.Max(1, button.Width - iconX - iconSize - gap - 6), button.Height);
+            TextRenderer.DrawText(g, caption, button.Font, textRect, fg,
+                TextFormatFlags.Left | TextFormatFlags.VerticalCenter |
+                TextFormatFlags.SingleLine | TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis);
+        }
+
+        private static void DrawActionGlyph(Graphics g, ActionGlyph glyph, Rectangle box, Color color)
+        {
+            using (var pen = new Pen(color, 1.9F))
+            {
+                pen.StartCap = LineCap.Round;
+                pen.EndCap = LineCap.Round;
+                pen.LineJoin = LineJoin.Round;
+                float x = box.X, y = box.Y;
+                if (glyph == ActionGlyph.Close)
+                {
+                    g.DrawEllipse(pen, x + 1.5F, y + 1.5F, 17, 17);
+                    g.DrawLine(pen, x + 6, y + 6, x + 14, y + 14);
+                    g.DrawLine(pen, x + 14, y + 6, x + 6, y + 14);
+                }
+                else if (glyph == ActionGlyph.Next)
+                {
+                    g.DrawEllipse(pen, x + 1.5F, y + 1.5F, 17, 17);
+                    g.DrawLine(pen, x + 5, y + 10, x + 15, y + 10);
+                    g.DrawLine(pen, x + 11, y + 6, x + 15, y + 10);
+                    g.DrawLine(pen, x + 15, y + 10, x + 11, y + 14);
+                }
+                else
+                {
+                    // Minimal vector floppy-disk icon; no embedded bitmap required.
+                    g.DrawRectangle(pen, x + 2, y + 2, 16, 16);
+                    g.DrawRectangle(pen, x + 6, y + 3, 9, 6);
+                    g.DrawRectangle(pen, x + 6, y + 12, 9, 6);
+                }
+            }
         }
 
         private void RefreshEmptyState()
@@ -427,12 +561,12 @@ namespace Clinic.Patient
         }
         private void btnClose_Click(object sender, EventArgs e) { Close(); }
 
-     //   private void txtEmergencyContact_Validating(
-     //object sender, CancelEventArgs e)
-     //   {
-     //       e.Cancel = false;
-     //       errorProvider1.SetError(txtEmergencyContact, "");
-     //   }
+        //   private void txtEmergencyContact_Validating(
+        //object sender, CancelEventArgs e)
+        //   {
+        //       e.Cancel = false;
+        //       errorProvider1.SetError(txtEmergencyContact, "");
+        //   }
 
         private void txtEmergencyContact_KeyPress(object sender, KeyPressEventArgs e)
         {
@@ -448,7 +582,7 @@ namespace Clinic.Patient
                     Tr("Validation Error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-           
+
 
             // Existing database assignment and save logic intentionally unchanged.
             _Patient.PersonID = ctrlPersonCardWithFilter1.PersonID;
