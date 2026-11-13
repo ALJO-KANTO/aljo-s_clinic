@@ -285,8 +285,31 @@ namespace Clinic.Medical_Services.Appointment
 
         private void btnCheckIn_Click(object sender, EventArgs e)
         {
-            if (HasSelectedAppointment() && btnCheckIn.Enabled)
-                checkINToolStripMenuItem_Click(sender, e);
+            if (!btnCheckIn.Enabled || !HasSelectedAppointment())
+                return;
+
+            if (dgvAppointments.CurrentRow == null)
+                return;
+
+            object value =
+                dgvAppointments.CurrentRow.Cells["AppointmentID"].Value;
+
+            if (value == null ||
+                value == DBNull.Value ||
+                !int.TryParse(value.ToString(), out int appointmentID) ||
+                appointmentID <= 0)
+            {
+                MessageBox.Show(
+                    "Invalid Appointment ID. Please refresh the list.",
+                    "Check-in Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
+                _RefreshAppointmentsList();
+                return;
+            }
+
+            checkINToolStripMenuItem_Click(sender, e);
         }
 
         private string Tr(string text)
@@ -548,9 +571,17 @@ namespace Clinic.Medical_Services.Appointment
 
         private void btnAddAppointment_Click(object sender, EventArgs e)
         {
-            frmAddUpdateAppointment frm = new frmAddUpdateAppointment();
-            frm.DatatBack += _DatatBackToAdd;
-            frm.ShowDialog();
+            using (frmAddUpdateAppointment frm = new frmAddUpdateAppointment())
+            {
+                frm.DatatBack += _DatatBackToAdd;
+                frm.ShowDialog(this);
+                frm.DatatBack -= _DatatBackToAdd;
+            }
+
+            _RefreshAppointmentsList();
+
+            dgvAppointments.ClearSelection();
+            dgvAppointments.CurrentCell = null;
         }
 
         private void _RefreshAppointmentsList()
@@ -564,12 +595,12 @@ namespace Clinic.Medical_Services.Appointment
         _dtAppointmets.Columns["AppointmentID"]
                 };
             }
-            MessageBox.Show(
-    string.Join(", ",
-        _dtAppointmets.Columns
-            .Cast<DataColumn>()
-            .Select(c => c.ColumnName)),
-    "Appointment Columns");
+    //        MessageBox.Show(
+    //string.Join(", ",
+    //    _dtAppointmets.Columns
+    //        .Cast<DataColumn>()
+    //        .Select(c => c.ColumnName)),
+    //"Appointment Columns");
             _dtAppointmets.PrimaryKey = new DataColumn[] { _dtAppointmets.Columns["AppointmentID"] };
             _dtAppointmets.Columns["AppointmentStatusText"].ReadOnly = false;
             lblRecordsCount.Text = _dtAppointmets.Rows.Count.ToString();

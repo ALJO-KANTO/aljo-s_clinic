@@ -78,7 +78,7 @@ namespace Clinic_DataAccess
                                       `CountryName` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
                                       PRIMARY KEY (`CountryID`),
                                       UNIQUE KEY `CountryName` (`CountryName`)
-                                    ) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;"
+                                    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;"
                         },
                         new DatabaseMigration
                         {
@@ -89,7 +89,7 @@ namespace Clinic_DataAccess
                                       `CountryName` varchar(120) NOT NULL,
                                       PRIMARY KEY (`CountryID`),
                                       UNIQUE KEY `CountryName` (`CountryName`)
-                                    ) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
+                                    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
                         },
                         new DatabaseMigration
                         {
@@ -99,7 +99,7 @@ namespace Clinic_DataAccess
                                       `BloodTypeID` int NOT NULL AUTO_INCREMENT,
                                       `BloodTypeName` varchar(20) NOT NULL,
                                       PRIMARY KEY (`BloodTypeID`)
-                                    ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
+                                    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
                         },
                         new DatabaseMigration
                         {
@@ -120,7 +120,7 @@ namespace Clinic_DataAccess
                                       `RoleName` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
                                       PRIMARY KEY (`RoleID`),
                                       UNIQUE KEY `RoleName` (`RoleName`)
-                                    ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;"
+                                    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;"
                         },
                         new DatabaseMigration
                         {
@@ -130,7 +130,7 @@ namespace Clinic_DataAccess
                                       `SpecializationID` int NOT NULL AUTO_INCREMENT,
                                       `SpecializationName` varchar(150) NOT NULL,
                                       PRIMARY KEY (`SpecializationID`)
-                                    ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
+                                    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
                         },
                         new DatabaseMigration
                         {
@@ -141,7 +141,7 @@ namespace Clinic_DataAccess
                                       `AppointmentTypeName` varchar(150) NOT NULL,
                                       `Description` varchar(500) DEFAULT NULL,
                                       PRIMARY KEY (`AppointmentTypeID`)
-                                    ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
+                                    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
                         },
                         new DatabaseMigration
                         {
@@ -153,7 +153,7 @@ namespace Clinic_DataAccess
                                       `DiscountPercentage` decimal(5,2) NOT NULL DEFAULT '0.00',
                                       `IsActive` tinyint(1) NOT NULL DEFAULT '1',
                                       PRIMARY KEY (`DiscountID`)
-                                    ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
+                                    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
                         },
                         new DatabaseMigration
                         {
@@ -165,7 +165,7 @@ namespace Clinic_DataAccess
                                       `ServicePrice` decimal(12,2) NOT NULL DEFAULT '0.00',
                                       `IsActive` tinyint(1) NOT NULL DEFAULT '1',
                                       PRIMARY KEY (`ServiceID`)
-                                    ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
+                                    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
                         },
                         new DatabaseMigration
                         {
@@ -179,7 +179,7 @@ namespace Clinic_DataAccess
                                   `ReorderLevel` decimal(14,3) NOT NULL DEFAULT '0.000',
                                   `TaxRate` decimal(6,3) NOT NULL DEFAULT '0.000',
                                   PRIMARY KEY (`MedicineID`)
-                                ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
+                                ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
                         },
                         new DatabaseMigration
                         {
@@ -197,7 +197,7 @@ namespace Clinic_DataAccess
                               `NationalityCountryID` int DEFAULT NULL,
                               `CreatedAt` datetime DEFAULT CURRENT_TIMESTAMP,
                               PRIMARY KEY (`PersonID`)
-                            ) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;"
+                            ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;"
                         },
                         new DatabaseMigration
                         {
@@ -214,7 +214,7 @@ namespace Clinic_DataAccess
                               `Timestamp` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
                               PRIMARY KEY (`LogID`),
                               KEY `ix_systemlogs_timestamp` (`Timestamp`)
-                            ) ENGINE=InnoDB AUTO_INCREMENT=132 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
+                            ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
                         },
                         new DatabaseMigration
                         {
@@ -234,7 +234,7 @@ namespace Clinic_DataAccess
                               KEY `FK_Users_Roles` (`RoleID`),
                               CONSTRAINT `FK_Users_Persons` FOREIGN KEY (`PersonID`) REFERENCES `persons` (`PersonID`),
                               CONSTRAINT `FK_Users_Roles` FOREIGN KEY (`RoleID`) REFERENCES `roles` (`RoleID`)
-                            ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;"
+                            ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;"
                         },
                         new DatabaseMigration
                         {
@@ -260,7 +260,7 @@ namespace Clinic_DataAccess
                               UNIQUE KEY `Username` (`Username`),
                               KEY `fk_registration_country` (`CountryID`),
                               CONSTRAINT `fk_registration_country` FOREIGN KEY (`CountryID`) REFERENCES `countries` (`CountryID`)
-                            ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
+                            ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
                         },
                         new DatabaseMigration
                         {
@@ -282,7 +282,7 @@ namespace Clinic_DataAccess
                               CONSTRAINT `fk_patients_blood` FOREIGN KEY (`BloodTypeID`) REFERENCES `bloodtypes` (`BloodTypeID`),
                               CONSTRAINT `fk_patients_creator` FOREIGN KEY (`CreatedByUserID`) REFERENCES `users` (`UserID`),
                               CONSTRAINT `fk_patients_person` FOREIGN KEY (`PersonID`) REFERENCES `persons` (`PersonID`)
-                            ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
+                            ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
                         },
                         new DatabaseMigration
                         {
@@ -303,7 +303,7 @@ namespace Clinic_DataAccess
                               CONSTRAINT `fk_doctors_creator` FOREIGN KEY (`CreatedByUserID`) REFERENCES `users` (`UserID`),
                               CONSTRAINT `fk_doctors_person` FOREIGN KEY (`PersonID`) REFERENCES `persons` (`PersonID`),
                               CONSTRAINT `fk_doctors_specialization` FOREIGN KEY (`SpecializationID`) REFERENCES `specializations` (`SpecializationID`)
-                            ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
+                            ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
                         },
                         new DatabaseMigration
                         {
@@ -356,7 +356,7 @@ namespace Clinic_DataAccess
                               CONSTRAINT `fk_appointments_doctor` FOREIGN KEY (`DoctorID`) REFERENCES `doctors` (`DoctorID`),
                               CONSTRAINT `fk_appointments_patient` FOREIGN KEY (`PatientID`) REFERENCES `patients` (`PatientID`),
                               CONSTRAINT `fk_appointments_type` FOREIGN KEY (`AppointmentTypeID`) REFERENCES `appointmenttypes` (`AppointmentTypeID`)
-                            ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
+                            ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
                         },
                         new DatabaseMigration
                         {
@@ -379,7 +379,7 @@ namespace Clinic_DataAccess
                               CONSTRAINT `fk_visits_creator` FOREIGN KEY (`CreatedByUserID`) REFERENCES `users` (`UserID`),
                               CONSTRAINT `fk_visits_doctor` FOREIGN KEY (`DoctorID`) REFERENCES `doctors` (`DoctorID`),
                               CONSTRAINT `fk_visits_patient` FOREIGN KEY (`PatientID`) REFERENCES `patients` (`PatientID`)
-                            ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
+                            ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
                         },
                         new DatabaseMigration
                         {
@@ -402,7 +402,7 @@ namespace Clinic_DataAccess
                               CONSTRAINT `fk_vitals_appointment` FOREIGN KEY (`AppointmentID`) REFERENCES `appointments` (`AppointmentID`),
                               CONSTRAINT `fk_vitals_creator` FOREIGN KEY (`CreatedByUserID`) REFERENCES `users` (`UserID`),
                               CONSTRAINT `fk_vitals_visit` FOREIGN KEY (`VisitID`) REFERENCES `visits` (`VisitID`)
-                            ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
+                            ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
                         },
                         new DatabaseMigration
                         {
@@ -420,7 +420,7 @@ namespace Clinic_DataAccess
                               KEY `fk_bills_creator` (`CreatedByUserID`),
                               CONSTRAINT `fk_bills_creator` FOREIGN KEY (`CreatedByUserID`) REFERENCES `users` (`UserID`),
                               CONSTRAINT `fk_bills_visit` FOREIGN KEY (`VisitID`) REFERENCES `visits` (`VisitID`)
-                            ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
+                            ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
                         },
                         new DatabaseMigration
                         {
@@ -438,7 +438,7 @@ namespace Clinic_DataAccess
                               KEY `fk_billservices_service` (`ServiceID`),
                               CONSTRAINT `fk_billservices_bill` FOREIGN KEY (`BillID`) REFERENCES `bills` (`BillID`),
                               CONSTRAINT `fk_billservices_service` FOREIGN KEY (`ServiceID`) REFERENCES `services` (`ServiceID`)
-                            ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
+                            ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
                         },
                         new DatabaseMigration
                         {
@@ -456,7 +456,7 @@ namespace Clinic_DataAccess
                               KEY `fk_payments_creator` (`CreatedByUserID`),
                               CONSTRAINT `fk_payments_bill` FOREIGN KEY (`BillID`) REFERENCES `bills` (`BillID`),
                               CONSTRAINT `fk_payments_creator` FOREIGN KEY (`CreatedByUserID`) REFERENCES `users` (`UserID`)
-                            ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
+                            ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
                         },
                         new DatabaseMigration
                         {
@@ -471,7 +471,7 @@ namespace Clinic_DataAccess
                               PRIMARY KEY (`InvoiceID`),
                               KEY `fk_invoices_bill` (`BillID`),
                               CONSTRAINT `fk_invoices_bill` FOREIGN KEY (`BillID`) REFERENCES `bills` (`BillID`)
-                            ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
+                            ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
                         },
                         new DatabaseMigration
                         {
@@ -487,7 +487,7 @@ namespace Clinic_DataAccess
                               PRIMARY KEY (`PrescriptionID`),
                               KEY `fk_prescriptions_visit` (`VisitID`),
                               CONSTRAINT `fk_prescriptions_visit` FOREIGN KEY (`VisitID`) REFERENCES `visits` (`VisitID`)
-                            ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
+                            ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
                         },
                         new DatabaseMigration
 
@@ -572,7 +572,7 @@ namespace Clinic_DataAccess
                               KEY `fk_prescriptiondetails_medicine` (`MedicineID`),
                               CONSTRAINT `fk_prescriptiondetails_master` FOREIGN KEY (`PrescriptionID`) REFERENCES `prescriptions` (`PrescriptionID`),
                               CONSTRAINT `fk_prescriptiondetails_medicine` FOREIGN KEY (`MedicineID`) REFERENCES `medicines` (`MedicineID`)
-                            ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
+                            ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
                        },
                       new DatabaseMigration
                       {
@@ -653,7 +653,7 @@ namespace Clinic_DataAccess
                               KEY `fk_inventory_user` (`UserID`),
                               CONSTRAINT `fk_inventory_medicine` FOREIGN KEY (`MedicineID`) REFERENCES `medicines` (`MedicineID`),
                               CONSTRAINT `fk_inventory_user` FOREIGN KEY (`UserID`) REFERENCES `users` (`UserID`)
-                            ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
+                            ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
                         },
                          new DatabaseMigration
                         {
@@ -2873,7 +2873,7 @@ namespace Clinic_DataAccess
                               KEY `fk_salesreturns_cashier` (`CashierID`),
                               CONSTRAINT `fk_salesreturns_bill` FOREIGN KEY (`BillID`) REFERENCES `bills` (`BillID`),
                               CONSTRAINT `fk_salesreturns_cashier` FOREIGN KEY (`CashierID`) REFERENCES `users` (`UserID`)
-                            ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
+                            ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
                         },
 
                         new DatabaseMigration
@@ -4322,70 +4322,164 @@ namespace Clinic_DataAccess
                                 WHERE P.IsDeleted = 0;
                             "
                         },
-                        new DatabaseMigration
-                        {
-                            Version = "20261016_011",
-                            Description = "Create View_PrescriptionDetails",
-                            Sql = @"
-                                CREATE OR REPLACE VIEW View_PrescriptionDetails AS
-                                SELECT
-                                    P.PrescriptionID,
+                       new DatabaseMigration
+{
+    Version = "20261016_011",
+    Description = "Create View_PrescriptionDetails",
+    Sql = @"
+        CREATE OR REPLACE VIEW View_PrescriptionDetails AS
+        SELECT
+            P.PrescriptionID,
 
-                                    DATE_FORMAT(
-                                        P.PrescriptionDate,
-                                        '%Y-%m-%d'
-                                    ) AS PrescriptionDate,
+            DATE_FORMAT(
+                P.PrescriptionDate,
+                '%Y-%m-%d'
+            ) AS PrescriptionDate,
 
-                                    CASE
-                                        WHEN P.PrescriptionType = 2
-                                            THEN 'Pharmacy Sale'
-                                        ELSE COALESCE(
-                                            PP.FullName,
-                                            'Unknown Patient'
-                                        )
-                                    END AS PatientName,
+            CASE
+                WHEN P.PrescriptionType = 2
+                    THEN 'Pharmacy Sale'
+                ELSE COALESCE(
+                    PP.FullName,
+                    'Unknown Patient'
+                )
+            END AS PatientName,
 
-                                    CASE
-                                        WHEN P.PrescriptionType = 2
-                                            THEN 'Pharmacy System'
-                                        ELSE COALESCE(
-                                            PD.FullName,
-                                            'Unknown Doctor'
-                                        )
-                                    END AS DoctorName,
+            CASE
+                WHEN P.PrescriptionType = 2
+                    THEN 'Pharmacy System'
+                ELSE COALESCE(
+                    PD.FullName,
+                    'Unknown Doctor'
+                )
+            END AS DoctorName,
 
-                                    P.VisitID,
+            P.VisitID,
 
-                                    CASE P.PrescriptionStatus
-                                        WHEN 1 THEN 'Pending'
-                                        WHEN 2 THEN 'Waiting For Payment'
-                                        WHEN 3 THEN 'Ready For Dispensing'
-                                        WHEN 4 THEN 'Dispensed'
-                                        WHEN 5 THEN 'Partially Dispensed'
-                                        WHEN 6 THEN 'Cancelled'
-                                        ELSE 'Unknown'
-                                    END AS Status,
+            CASE
+                WHEN TRIM(P.PrescriptionStatus) IN ('1', 'Pending')
+                    THEN 'Pending'
 
-                                    P.PrescriptionNotes AS Notes
+                WHEN TRIM(P.PrescriptionStatus) IN ('2', 'Waiting For Payment')
+                    THEN 'Waiting For Payment'
 
-                                FROM prescriptions P
+                WHEN TRIM(P.PrescriptionStatus) IN ('3', 'Ready For Dispensing')
+                    THEN 'Ready For Dispensing'
 
-                                LEFT JOIN visits V
-                                    ON P.VisitID = V.VisitID
+                WHEN TRIM(P.PrescriptionStatus) IN ('4', 'Dispensed')
+                    THEN 'Dispensed'
 
-                                LEFT JOIN patients Pat
-                                    ON V.PatientID = Pat.PatientID
+                WHEN TRIM(P.PrescriptionStatus) IN
+                     ('5', 'Partially Dispensed', 'PartiallyDispensed')
+                    THEN 'Partially Dispensed'
 
-                                LEFT JOIN persons PP
-                                    ON Pat.PersonID = PP.PersonID
+                WHEN TRIM(P.PrescriptionStatus) IN ('6', 'Cancelled')
+                    THEN 'Cancelled'
 
-                                LEFT JOIN doctors D
-                                    ON V.DoctorID = D.DoctorID
+                ELSE 'Unknown'
+            END AS Status,
 
-                                LEFT JOIN persons PD
-                                    ON D.PersonID = PD.PersonID;
-                            "
-                        },
+            P.PrescriptionNotes AS Notes
+
+        FROM prescriptions P
+
+        LEFT JOIN visits V
+            ON P.VisitID = V.VisitID
+
+        LEFT JOIN patients Pat
+            ON V.PatientID = Pat.PatientID
+
+        LEFT JOIN persons PP
+            ON Pat.PersonID = PP.PersonID
+
+        LEFT JOIN doctors D
+            ON V.DoctorID = D.DoctorID
+
+        LEFT JOIN persons PD
+            ON D.PersonID = PD.PersonID;
+    "
+},
+                       new DatabaseMigration
+{
+    Version = "20261113_PHARMACY_001",
+    Description = "Update prescription status view",
+    Sql = @"
+        CREATE OR REPLACE VIEW View_PrescriptionDetails AS
+        SELECT
+            P.PrescriptionID,
+
+            DATE_FORMAT(
+                P.PrescriptionDate,
+                '%Y-%m-%d'
+            ) AS PrescriptionDate,
+
+            CASE
+                WHEN P.PrescriptionType = 2
+                    THEN 'Pharmacy Sale'
+                ELSE COALESCE(
+                    PP.FullName,
+                    'Unknown Patient'
+                )
+            END AS PatientName,
+
+            CASE
+                WHEN P.PrescriptionType = 2
+                    THEN 'Pharmacy System'
+                ELSE COALESCE(
+                    PD.FullName,
+                    'Unknown Doctor'
+                )
+            END AS DoctorName,
+
+            P.VisitID,
+
+            CASE
+                WHEN TRIM(P.PrescriptionStatus) IN ('1', 'Pending')
+                    THEN 'Pending'
+
+                WHEN TRIM(P.PrescriptionStatus) IN
+                     ('2', 'Waiting For Payment')
+                    THEN 'Waiting For Payment'
+
+                WHEN TRIM(P.PrescriptionStatus) IN
+                     ('3', 'Ready For Dispensing')
+                    THEN 'Ready For Dispensing'
+
+                WHEN TRIM(P.PrescriptionStatus) IN
+                     ('4', 'Dispensed')
+                    THEN 'Dispensed'
+
+                WHEN TRIM(P.PrescriptionStatus) IN
+                     ('5', 'Partially Dispensed', 'PartiallyDispensed')
+                    THEN 'Partially Dispensed'
+
+                WHEN TRIM(P.PrescriptionStatus) IN
+                     ('6', 'Cancelled')
+                    THEN 'Cancelled'
+
+                ELSE 'Unknown'
+            END AS Status,
+
+            P.PrescriptionNotes AS Notes
+
+        FROM prescriptions P
+
+        LEFT JOIN visits V
+            ON P.VisitID = V.VisitID
+
+        LEFT JOIN patients Pat
+            ON V.PatientID = Pat.PatientID
+
+        LEFT JOIN persons PP
+            ON Pat.PersonID = PP.PersonID
+
+        LEFT JOIN doctors D
+            ON V.DoctorID = D.DoctorID
+
+        LEFT JOIN persons PD
+            ON D.PersonID = PD.PersonID;
+    "
+},
                         new DatabaseMigration
                         {
                             Version = "20261016_012",
