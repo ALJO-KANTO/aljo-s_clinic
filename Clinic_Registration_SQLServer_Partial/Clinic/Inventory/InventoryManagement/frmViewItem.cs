@@ -1442,7 +1442,17 @@ namespace YamyProject
                 else
                     radAvg.Checked = true;
                 //cmbCategory.Enabled = cmbType.Enabled = cmbWarehouse.Enabled = false;
-                cmbCategory.SelectedValue = int.Parse(reader["category_id"].ToString());
+                object categoryValue = reader["category_id"];
+
+                if (categoryValue != DBNull.Value &&
+                    int.TryParse(categoryValue.ToString(), out int categoryId))
+                {
+                    cmbCategory.SelectedValue = categoryId;
+                }
+                else
+                {
+                    cmbCategory.SelectedIndex = -1;
+                }
                 txtName.Text = reader["name"].ToString();
                 txtBarcode.Text = reader["barcode"].ToString();
                 txtCostPrice.Text = reader["cost_price"].ToString();
@@ -1763,12 +1773,12 @@ namespace YamyProject
                 cmbWarehouse.Focus();
                 return false;
             }
-            if (cmbCategory.Text.Trim() == "")
-            {
-                MessageBox.Show("Enter Category First");
-                cmbCategory.Focus();
-                return false;
-            }
+            //if (cmbCategory.Text.Trim() == "")
+            //{
+            //    MessageBox.Show("Enter Category First");
+            //    cmbCategory.Focus();
+            //    return false;
+            //}
 
             if (txtOnHand.Text != "" && txtCostPrice.Text == "")
             {

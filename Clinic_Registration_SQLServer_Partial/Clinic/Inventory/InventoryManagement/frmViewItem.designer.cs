@@ -472,6 +472,8 @@
             this.label3.Size = new System.Drawing.Size(56, 20);
             this.label3.TabIndex = 8;
             this.label3.Text = "Vendor";
+            this.label3.Visible = false;
+            this.cmbVendorAccount.Visible = false;
             // 
             // label7
             // 
