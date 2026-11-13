@@ -3922,12 +3922,13 @@ namespace Clinic_DataAccess
                                 ALTER TABLE labrequests
                                 MODIFY COLUMN PatientID INT NOT NULL;"
                         },
-
                         new DatabaseMigration
                         {
                             Version = "20261112_LAB_006",
                             Description = "Add lab request patient foreign key",
                             Sql = @"
+                                ALTER TABLE labrequests add LabOrderID int;
+                                ALTER TABLE labrequests add PatientID  int;
                                 ALTER TABLE labrequests
                                 ADD CONSTRAINT FK_LabRequests_Patient
                                 FOREIGN KEY (PatientID)
