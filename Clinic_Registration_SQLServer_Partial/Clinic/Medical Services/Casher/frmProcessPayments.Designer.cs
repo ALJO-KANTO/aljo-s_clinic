@@ -235,7 +235,7 @@
             this.lbTotalBillAmount.Name = "lbTotalBillAmount";
             this.lbTotalBillAmount.Size = new System.Drawing.Size(46, 31);
             this.lbTotalBillAmount.TabIndex = 268;
-            this.lbTotalBillAmount.Text = "$ 0";
+            this.lbTotalBillAmount.Text = " 0";
             // 
             // label2
             // 
@@ -310,7 +310,7 @@
             this.txtAmountToPay.ReadOnly = true;
             this.txtAmountToPay.Size = new System.Drawing.Size(295, 38);
             this.txtAmountToPay.TabIndex = 261;
-            this.txtAmountToPay.Text = "$ 0";
+            this.txtAmountToPay.Text = " 0";
             this.txtAmountToPay.TextChanged += new System.EventHandler(this.txtAmountToPay_TextChanged);
             // 
             // label4
@@ -430,7 +430,7 @@
             this.txtAmountReceived.Name = "txtAmountReceived";
             this.txtAmountReceived.Size = new System.Drawing.Size(289, 38);
             this.txtAmountReceived.TabIndex = 276;
-            this.txtAmountReceived.Text = "$ 0";
+            this.txtAmountReceived.Text = " 0";
             this.txtAmountReceived.TextChanged += new System.EventHandler(this.txtAmountReceived_TextChanged);
             // 
             // panel6
@@ -510,7 +510,7 @@
             this.lblSubtotal.Name = "lblSubtotal";
             this.lblSubtotal.Size = new System.Drawing.Size(46, 31);
             this.lblSubtotal.TabIndex = 283;
-            this.lblSubtotal.Text = "$ 0";
+            this.lblSubtotal.Text = " 0";
             // 
             // lblDiscount
             // 
@@ -521,7 +521,7 @@
             this.lblDiscount.Name = "lblDiscount";
             this.lblDiscount.Size = new System.Drawing.Size(46, 31);
             this.lblDiscount.TabIndex = 287;
-            this.lblDiscount.Text = "$ 0";
+            this.lblDiscount.Text = " 0";
             // 
             // label13
             // 
@@ -552,7 +552,7 @@
             this.lblFinalPaymentDue.Name = "lblFinalPaymentDue";
             this.lblFinalPaymentDue.Size = new System.Drawing.Size(46, 31);
             this.lblFinalPaymentDue.TabIndex = 289;
-            this.lblFinalPaymentDue.Text = "$ 0";
+            this.lblFinalPaymentDue.Text = " 0";
             // 
             // label15
             // 
@@ -585,7 +585,7 @@
             this.lbAmmountToPay.Name = "lbAmmountToPay";
             this.lbAmmountToPay.Size = new System.Drawing.Size(46, 31);
             this.lbAmmountToPay.TabIndex = 291;
-            this.lbAmmountToPay.Text = "$ 0";
+            this.lbAmmountToPay.Text = " 0";
             // 
             // pictureBox2
             // 
@@ -662,7 +662,7 @@
             this.lblTax.Name = "lblTax";
             this.lblTax.Size = new System.Drawing.Size(46, 31);
             this.lblTax.TabIndex = 297;
-            this.lblTax.Text = "$ 0";
+            this.lblTax.Text = " 0";
             // 
             // lblMedicines
             // 
@@ -673,7 +673,7 @@
             this.lblMedicines.Name = "lblMedicines";
             this.lblMedicines.Size = new System.Drawing.Size(46, 31);
             this.lblMedicines.TabIndex = 300;
-            this.lblMedicines.Text = "$ 0";
+            this.lblMedicines.Text = " 0";
             // 
             // lblAppoinmentFees
             // 
@@ -684,7 +684,7 @@
             this.lblAppoinmentFees.Name = "lblAppoinmentFees";
             this.lblAppoinmentFees.Size = new System.Drawing.Size(46, 31);
             this.lblAppoinmentFees.TabIndex = 301;
-            this.lblAppoinmentFees.Text = "$ 0";
+            this.lblAppoinmentFees.Text = " 0";
             // 
             // lblServices
             // 
@@ -695,7 +695,7 @@
             this.lblServices.Name = "lblServices";
             this.lblServices.Size = new System.Drawing.Size(46, 31);
             this.lblServices.TabIndex = 302;
-            this.lblServices.Text = "$ 0";
+            this.lblServices.Text = " 0";
             // 
             // panel8
             // 
@@ -724,7 +724,7 @@
             this.lblFinalTotal.Name = "lblFinalTotal";
             this.lblFinalTotal.Size = new System.Drawing.Size(46, 31);
             this.lblFinalTotal.TabIndex = 304;
-            this.lblFinalTotal.Text = "$ 0";
+            this.lblFinalTotal.Text = " 0";
             // 
             // label19
             // 
@@ -746,7 +746,7 @@
             this.lblPaymentAmmount.Name = "lblPaymentAmmount";
             this.lblPaymentAmmount.Size = new System.Drawing.Size(46, 31);
             this.lblPaymentAmmount.TabIndex = 306;
-            this.lblPaymentAmmount.Text = "$ 0";
+            this.lblPaymentAmmount.Text = " 0";
             // 
             // lblPayment
             // 

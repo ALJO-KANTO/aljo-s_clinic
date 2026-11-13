@@ -312,7 +312,8 @@ namespace Clinic.Medical_Services.Pharmaciy
                 lbX.Text = "✓";
                 panbtnDispense.Enabled = true;
             }
-            else if (Status == "PartiallyDispensed")
+            else if (Status == "Partially Dispensed" ||
+           Status == "PartiallyDispensed")
             {
                 lbStatus.ForeColor = Color.GreenYellow;
                 lbNotReady.ForeColor = Color.GreenYellow;

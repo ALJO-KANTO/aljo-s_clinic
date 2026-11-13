@@ -372,54 +372,77 @@ namespace Clinic_DataAccess
             return dt;
         }
 
+
         public static DataTable GetAllActivePrescriptions()
         {
             DataTable dt = new DataTable();
-            try
+
+            using (MySqlConnection connection =
+                new MySqlConnection(clsDataAccessSettings.ConnectionString))
             {
-                using (MySqlConnection connection = new MySqlConnection(clsDataAccessSettings.ConnectionString))
+                string query = @"
+            SELECT
+                P.PrescriptionID,
+                IFNULL(P.VisitID, -1) AS VisitID,
+                IFNULL(V.AppointmentID, -1) AS AppointmentID,
+                IFNULL(PP.FullName, 'Not Found') AS PatientName,
+                IFNULL(PD.FullName, 'Pharmacy') AS DoctorName,
+
+                DATE_FORMAT(P.PrescriptionDate, '%H:%i')
+                    AS PrescriptionTime,
+
+                CASE
+                    WHEN TRIM(P.PrescriptionStatus)
+                         IN ('1', 'Pending')
+                        THEN 'Pending'
+                    WHEN TRIM(P.PrescriptionStatus)
+                         IN ('2', 'Waiting For Payment')
+                        THEN 'Waiting For Payment'
+                    WHEN TRIM(P.PrescriptionStatus)
+                         IN ('3', 'Ready For Dispensing')
+                        THEN 'Ready For Dispensing'
+                    WHEN TRIM(P.PrescriptionStatus)
+                         IN ('4', 'Dispensed')
+                        THEN 'Dispensed'
+                    WHEN TRIM(P.PrescriptionStatus)
+                         IN ('5', 'Partially Dispensed',
+                             'PartiallyDispensed')
+                        THEN 'Partially Dispensed'
+                    WHEN TRIM(P.PrescriptionStatus)
+                         IN ('6', 'Cancelled')
+                        THEN 'Cancelled'
+                    ELSE 'Unknown'
+                END AS Status,
+
+                CASE P.PrescriptionType
+                    WHEN 1 THEN 'Doctor Prescription'
+                    WHEN 2 THEN 'Pharmacy Direct'
+                    ELSE 'Unknown'
+                END AS PrescriptionType
+
+            FROM Prescriptions P
+            LEFT JOIN Visits V ON P.VisitID = V.VisitID
+            LEFT JOIN Patients Pat ON V.PatientID = Pat.PatientID
+            LEFT JOIN Persons PP ON Pat.PersonID = PP.PersonID
+            LEFT JOIN Doctors D ON V.DoctorID = D.DoctorID
+            LEFT JOIN Persons PD ON D.PersonID = PD.PersonID
+
+            WHERE TRIM(P.PrescriptionStatus) NOT IN
+                ('4', 'Dispensed', '6', 'Cancelled')
+
+            ORDER BY P.PrescriptionDate DESC;";
+
+                using (MySqlCommand command =
+                    new MySqlCommand(query, connection))
                 {
-                    string query = @"SELECT 
-                                        P.PrescriptionID,
-                                        IFNULL(P.VisitID, -1) AS VisitID,
-                                        IFNULL(V.AppointmentID, -1) AS AppointmentID, 
-                                        IFNULL(PP.FullName, 'Not Found') AS PatientName,
-                                        IFNULL(PD.FullName, 'Pharmacy') AS DoctorName,
-                                       FORMAT(P.PrescriptionDate, 'HH:mm') AS PrescriptionTime,
-                                        CASE P.PrescriptionStatus
-                                            WHEN 1 THEN 'Pending'
-                                            WHEN 2 THEN 'Waiting For Payment'
-                                            WHEN 3 THEN 'Ready For Dispensing'
-                                            WHEN 5 THEN 'Partially Dispensed'
-                                            ELSE 'Unknown'
-                                        END AS Status,
-                                        CASE P.PrescriptionType
-                                            WHEN 1 THEN 'Doctor Prescription'
-                                            WHEN 2 THEN 'Pharmacy Direct'
-                                            ELSE 'Unknown'
-                                        END AS PrescriptionType
-                                    FROM Prescriptions AS P
-                                    LEFT JOIN Visits AS V ON P.VisitID = V.VisitID
-                                    LEFT JOIN Patients AS Pat ON V.PatientID = Pat.PatientID
-                                    LEFT JOIN Persons AS PP ON Pat.PersonID = PP.PersonID
-                                    LEFT JOIN Doctors AS D ON V.DoctorID = D.DoctorID
-                                    LEFT JOIN Persons AS PD ON D.PersonID = PD.PersonID
-                                    WHERE P.PrescriptionStatus NOT IN (4, 6);";
+                    connection.Open();
 
-
-                    using (MySqlCommand command = new MySqlCommand(query, connection))
+                    using (MySqlDataReader reader =
+                        command.ExecuteReader())
                     {
-                        connection.Open();
-                        using (MySqlDataReader reader = command.ExecuteReader())
-                        {
-                            if (reader.HasRows) dt.Load(reader);
-                        }
+                        dt.Load(reader);
                     }
                 }
-            }
-            catch (MySqlException ex)
-            {
-                clsGlobalLogger.LogMySqlException(ex, clsGlobalLogger.LogLevel.Error);
             }
 
             return dt;
@@ -453,7 +476,7 @@ namespace Clinic_DataAccess
                     COALESCE(M.on_hand, 0) AS AvailableStock,
 
                     CASE
-                        WHEN P.PrescriptionStatus = 1 THEN
+                       WHEN TRIM(P.PrescriptionStatus) IN ('1', 'Pending') THEN
                             CASE
                                 WHEN COALESCE(M.on_hand, 0) <= 0
                                     THEN 0
@@ -467,7 +490,7 @@ namespace Clinic_DataAccess
                     END AS DispensedQuantity,
 
                     CASE
-                        WHEN P.PrescriptionStatus = 1 THEN
+                     WHEN TRIM(P.PrescriptionStatus) IN ('1', 'Pending') THEN
                             CASE
                                 WHEN COALESCE(M.on_hand, 0) <= 0
                                     THEN 0
@@ -477,7 +500,7 @@ namespace Clinic_DataAccess
                     END AS IsDispensed,
 
                     CASE
-                        WHEN P.PrescriptionStatus = 1 THEN
+                      WHEN TRIM(P.PrescriptionStatus) IN ('1', 'Pending') THEN
                             CASE
                                 WHEN M.id IS NULL
                                     THEN 'Out of Stock'
