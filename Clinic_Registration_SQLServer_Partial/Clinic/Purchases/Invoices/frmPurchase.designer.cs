@@ -38,6 +38,16 @@ namespace YamyProject
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle15 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle16 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle17 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle18 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle19 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle20 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle21 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle22 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle23 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle24 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle25 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle26 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle27 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
@@ -50,16 +60,6 @@ namespace YamyProject
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle12 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle13 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle14 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle18 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle19 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle20 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle21 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle22 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle23 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle24 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle25 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle26 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle27 = new System.Windows.Forms.DataGridViewCellStyle();
             this.panel1 = new System.Windows.Forms.Panel();
             this.txtBarcodeScan = new Guna.UI2.WinForms.Guna2TextBox();
             this.btnSaveClose = new Guna.UI2.WinForms.Guna2Button();
@@ -67,26 +67,6 @@ namespace YamyProject
             this.btnSave = new Guna.UI2.WinForms.Guna2Button();
             this.guna2GroupBox4 = new Guna.UI2.WinForms.Guna2GroupBox();
             this.dgvItems = new Guna.UI2.WinForms.Guna2DataGridView();
-            this.itemId = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.no = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.code = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.name = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.qty = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.unit_id = new System.Windows.Forms.DataGridViewComboBoxColumn();
-            this.factor = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.base_qty = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.batch_no = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.expiry_date = new YamyProject.frmPurchase.DataGridViewCalendarColumn();
-            this.cost = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.price = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.discount = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.net_price = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.vat = new System.Windows.Forms.DataGridViewComboBoxColumn();
-            this.VatP = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.total = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.method = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.type = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.delete = new System.Windows.Forms.DataGridViewButtonColumn();
             this.guna2GroupBox1 = new Guna.UI2.WinForms.Guna2GroupBox();
             this.cmbCostCenter = new Guna.UI2.WinForms.Guna2ComboBox();
             this.label19 = new System.Windows.Forms.Label();
@@ -202,6 +182,24 @@ namespace YamyProject
             this.dataGridViewTextBoxColumn12 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumn13 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.itemId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.no = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.code = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.name = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.qty = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.unit_id = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.batch_no = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.expiry_date = new YamyProject.frmPurchase.DataGridViewCalendarColumn();
+            this.cost = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.price = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.discount = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.net_price = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.vat = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.VatP = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.total = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.method = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.type = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.delete = new System.Windows.Forms.DataGridViewButtonColumn();
             this.panel1.SuspendLayout();
             this.guna2GroupBox4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvItems)).BeginInit();
@@ -242,6 +240,7 @@ namespace YamyProject
             this.txtBarcodeScan.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtBarcodeScan.HoverState.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(94)))), ((int)(((byte)(148)))), ((int)(((byte)(255)))));
             this.txtBarcodeScan.Location = new System.Drawing.Point(12, 10);
+            this.txtBarcodeScan.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.txtBarcodeScan.Name = "txtBarcodeScan";
             this.txtBarcodeScan.PlaceholderText = "Scan Barcode or Enter Code";
             this.txtBarcodeScan.SelectedText = "";
@@ -347,8 +346,6 @@ namespace YamyProject
             this.name,
             this.qty,
             this.unit_id,
-            this.factor,
-            this.base_qty,
             this.batch_no,
             this.expiry_date,
             this.cost,
@@ -422,217 +419,6 @@ namespace YamyProject
             this.dgvItems.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dgvItems_DataError);
             this.dgvItems.EditingControlShowing += new System.Windows.Forms.DataGridViewEditingControlShowingEventHandler(this.dgvItems_EditingControlShowing);
             this.dgvItems.RowPostPaint += new System.Windows.Forms.DataGridViewRowPostPaintEventHandler(this.dgvItems_RowPostPaint);
-            // 
-            // itemId
-            // 
-            this.itemId.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.itemId.HeaderText = "id";
-            this.itemId.MinimumWidth = 100;
-            this.itemId.Name = "itemId";
-            this.itemId.Visible = false;
-            this.itemId.Width = 125;
-            // 
-            // no
-            // 
-            this.no.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.no.FillWeight = 30F;
-            this.no.HeaderText = "#Sn";
-            this.no.MinimumWidth = 30;
-            this.no.Name = "no";
-            this.no.ReadOnly = true;
-            this.no.Width = 30;
-            // 
-            // code
-            // 
-            this.code.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            dataGridViewCellStyle3.Font = new System.Drawing.Font("Segoe UI", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.code.DefaultCellStyle = dataGridViewCellStyle3;
-            this.code.HeaderText = "Code";
-            this.code.MinimumWidth = 100;
-            this.code.Name = "code";
-            this.code.Width = 125;
-            // 
-            // name
-            // 
-            this.name.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.name.HeaderText = "Item Name";
-            this.name.MinimumWidth = 100;
-            this.name.Name = "name";
-            // 
-            // qty
-            // 
-            this.qty.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            this.qty.DefaultCellStyle = dataGridViewCellStyle4;
-            this.qty.FillWeight = 75F;
-            this.qty.HeaderText = "Qty";
-            this.qty.MinimumWidth = 55;
-            this.qty.Name = "qty";
-            this.qty.Width = 55;
-            // 
-            // unit_id
-            // 
-            this.unit_id.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopCenter;
-            this.unit_id.DefaultCellStyle = dataGridViewCellStyle5;
-            this.unit_id.HeaderText = "Unit";
-            this.unit_id.MinimumWidth = 85;
-            this.unit_id.Name = "unit_id";
-            this.unit_id.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.unit_id.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            this.unit_id.Width = 85;
-            // 
-            // factor
-            // 
-            this.factor.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.factor.HeaderText = "Factor";
-            this.factor.MinimumWidth = 20;
-            this.factor.Name = "factor";
-            this.factor.ReadOnly = true;
-            this.factor.Visible = false;
-            this.factor.Width = 20;
-            // 
-            // base_qty
-            // 
-            this.base_qty.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.base_qty.HeaderText = "base_qty";
-            this.base_qty.MinimumWidth = 15;
-            this.base_qty.Name = "base_qty";
-            this.base_qty.ReadOnly = true;
-            this.base_qty.Visible = false;
-            this.base_qty.Width = 15;
-            // 
-            // batch_no
-            // 
-            this.batch_no.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.batch_no.HeaderText = "BatchNo";
-            this.batch_no.MinimumWidth = 65;
-            this.batch_no.Name = "batch_no";
-            this.batch_no.Width = 65;
-            // 
-            // expiry_date
-            // 
-            this.expiry_date.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.expiry_date.HeaderText = "ExpiryDate";
-            this.expiry_date.MinimumWidth = 65;
-            this.expiry_date.Name = "expiry_date";
-            this.expiry_date.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.expiry_date.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            this.expiry_date.Width = 65;
-            // 
-            // cost
-            // 
-            this.cost.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle6.Format = "N2";
-            dataGridViewCellStyle6.NullValue = "0";
-            this.cost.DefaultCellStyle = dataGridViewCellStyle6;
-            this.cost.HeaderText = "Cost";
-            this.cost.MinimumWidth = 100;
-            this.cost.Name = "cost";
-            // 
-            // price
-            // 
-            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle7.Format = "N2";
-            dataGridViewCellStyle7.NullValue = "0";
-            this.price.DefaultCellStyle = dataGridViewCellStyle7;
-            this.price.HeaderText = "Price";
-            this.price.MinimumWidth = 6;
-            this.price.Name = "price";
-            this.price.Visible = false;
-            // 
-            // discount
-            // 
-            this.discount.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle8.Format = "N2";
-            dataGridViewCellStyle8.NullValue = "0";
-            this.discount.DefaultCellStyle = dataGridViewCellStyle8;
-            this.discount.HeaderText = "Disc";
-            this.discount.MinimumWidth = 100;
-            this.discount.Name = "discount";
-            // 
-            // net_price
-            // 
-            this.net_price.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle9.Format = "N2";
-            dataGridViewCellStyle9.NullValue = "0";
-            this.net_price.DefaultCellStyle = dataGridViewCellStyle9;
-            this.net_price.HeaderText = "Net Price";
-            this.net_price.MinimumWidth = 110;
-            this.net_price.Name = "net_price";
-            this.net_price.ReadOnly = true;
-            this.net_price.Width = 110;
-            // 
-            // vat
-            // 
-            this.vat.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            dataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopCenter;
-            this.vat.DefaultCellStyle = dataGridViewCellStyle10;
-            this.vat.FillWeight = 75F;
-            this.vat.HeaderText = "Vat";
-            this.vat.MinimumWidth = 75;
-            this.vat.Name = "vat";
-            this.vat.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.vat.Width = 75;
-            // 
-            // VatP
-            // 
-            this.VatP.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            dataGridViewCellStyle11.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle11.Format = "N2";
-            dataGridViewCellStyle11.NullValue = "0";
-            this.VatP.DefaultCellStyle = dataGridViewCellStyle11;
-            this.VatP.HeaderText = "~";
-            this.VatP.MinimumWidth = 70;
-            this.VatP.Name = "VatP";
-            this.VatP.Width = 70;
-            // 
-            // total
-            // 
-            this.total.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            dataGridViewCellStyle12.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle12.Format = "N2";
-            dataGridViewCellStyle12.NullValue = "0";
-            this.total.DefaultCellStyle = dataGridViewCellStyle12;
-            this.total.HeaderText = "Amount";
-            this.total.MinimumWidth = 90;
-            this.total.Name = "total";
-            this.total.ReadOnly = true;
-            this.total.Width = 90;
-            // 
-            // method
-            // 
-            this.method.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            dataGridViewCellStyle13.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopCenter;
-            this.method.DefaultCellStyle = dataGridViewCellStyle13;
-            this.method.HeaderText = "method";
-            this.method.MinimumWidth = 100;
-            this.method.Name = "method";
-            this.method.Visible = false;
-            this.method.Width = 125;
-            // 
-            // type
-            // 
-            this.type.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            dataGridViewCellStyle14.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopCenter;
-            this.type.DefaultCellStyle = dataGridViewCellStyle14;
-            this.type.HeaderText = "type";
-            this.type.MinimumWidth = 100;
-            this.type.Name = "type";
-            this.type.Visible = false;
-            this.type.Width = 125;
-            // 
-            // delete
-            // 
-            this.delete.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.delete.HeaderText = "DEL";
-            this.delete.MinimumWidth = 50;
-            this.delete.Name = "delete";
-            this.delete.Text = "x";
-            this.delete.Width = 50;
             // 
             // guna2GroupBox1
             // 
@@ -764,7 +550,7 @@ namespace YamyProject
             this.dtPaymentTerms.Location = new System.Drawing.Point(563, 27);
             this.dtPaymentTerms.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.dtPaymentTerms.Name = "dtPaymentTerms";
-            this.dtPaymentTerms.Size = new System.Drawing.Size(205, 23);
+            this.dtPaymentTerms.Size = new System.Drawing.Size(205, 26);
             this.dtPaymentTerms.TabIndex = 47;
             // 
             // cmbPurchasetype
@@ -830,11 +616,11 @@ namespace YamyProject
             this.cmbAccountCashName.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.cmbAccountCashName.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.cmbAccountCashName.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(68)))), ((int)(((byte)(88)))), ((int)(((byte)(112)))));
-            this.cmbAccountCashName.ItemHeight = 15;
+            this.cmbAccountCashName.ItemHeight = 20;
             this.cmbAccountCashName.Location = new System.Drawing.Point(405, 79);
             this.cmbAccountCashName.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.cmbAccountCashName.Name = "cmbAccountCashName";
-            this.cmbAccountCashName.Size = new System.Drawing.Size(230, 23);
+            this.cmbAccountCashName.Size = new System.Drawing.Size(230, 28);
             this.cmbAccountCashName.TabIndex = 42;
             this.cmbAccountCashName.SelectedIndexChanged += new System.EventHandler(this.cmbAccountCashName_SelectedIndexChanged);
             // 
@@ -967,7 +753,7 @@ namespace YamyProject
             this.dtInv.Location = new System.Drawing.Point(1260, 82);
             this.dtInv.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.dtInv.Name = "dtInv";
-            this.dtInv.Size = new System.Drawing.Size(110, 22);
+            this.dtInv.Size = new System.Drawing.Size(110, 25);
             this.dtInv.TabIndex = 29;
             this.dtInv.ValueChanged += new System.EventHandler(this.dtInv_ValueChanged);
             // 
@@ -1172,7 +958,7 @@ namespace YamyProject
             this.dtShip.Location = new System.Drawing.Point(982, 9);
             this.dtShip.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.dtShip.Name = "dtShip";
-            this.dtShip.Size = new System.Drawing.Size(106, 23);
+            this.dtShip.Size = new System.Drawing.Size(106, 26);
             this.dtShip.TabIndex = 53;
             // 
             // txtShipTo
@@ -1422,10 +1208,11 @@ namespace YamyProject
             // 
             // headerUC1
             // 
+            this.headerUC1.ArabicLayout = false;
             this.headerUC1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(23)))), ((int)(((byte)(41)))), ((int)(((byte)(83)))));
             this.headerUC1.Dock = System.Windows.Forms.DockStyle.Top;
-            this.headerUC1.FormText = "";
-            this.headerUC1.HeaderText = "";
+            this.headerUC1.FormText = "Title";
+            this.headerUC1.HeaderText = "Title";
             this.headerUC1.Location = new System.Drawing.Point(3, 0);
             this.headerUC1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.headerUC1.Name = "headerUC1";
@@ -1539,11 +1326,11 @@ namespace YamyProject
             this.tabPage3.Controls.Add(this.chkPrint);
             this.tabPage3.Controls.Add(this.guna2TileButton18);
             this.tabPage3.Controls.Add(this.guna2TileButton17);
-            this.tabPage3.Location = new System.Drawing.Point(4, 21);
+            this.tabPage3.Location = new System.Drawing.Point(4, 26);
             this.tabPage3.Margin = new System.Windows.Forms.Padding(4);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Padding = new System.Windows.Forms.Padding(4);
-            this.tabPage3.Size = new System.Drawing.Size(1336, 84);
+            this.tabPage3.Size = new System.Drawing.Size(1336, 79);
             this.tabPage3.TabIndex = 0;
             this.tabPage3.Text = "Main";
             // 
@@ -1559,7 +1346,7 @@ namespace YamyProject
             this.CbSubcontractors.Location = new System.Drawing.Point(351, 65);
             this.CbSubcontractors.Margin = new System.Windows.Forms.Padding(2);
             this.CbSubcontractors.Name = "CbSubcontractors";
-            this.CbSubcontractors.Size = new System.Drawing.Size(104, 17);
+            this.CbSubcontractors.Size = new System.Drawing.Size(118, 21);
             this.CbSubcontractors.TabIndex = 59;
             this.CbSubcontractors.Text = "Subcontractors";
             this.CbSubcontractors.UncheckedState.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(125)))), ((int)(((byte)(137)))), ((int)(((byte)(149)))));
@@ -1930,7 +1717,7 @@ namespace YamyProject
             this.checkBox3.Location = new System.Drawing.Point(602, 44);
             this.checkBox3.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.checkBox3.Name = "checkBox3";
-            this.checkBox3.Size = new System.Drawing.Size(68, 16);
+            this.checkBox3.Size = new System.Drawing.Size(87, 19);
             this.checkBox3.TabIndex = 28;
             this.checkBox3.Text = "Email Later";
             this.checkBox3.UseVisualStyleBackColor = true;
@@ -1952,7 +1739,7 @@ namespace YamyProject
             this.chkPrint.Location = new System.Drawing.Point(603, 16);
             this.chkPrint.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.chkPrint.Name = "chkPrint";
-            this.chkPrint.Size = new System.Drawing.Size(64, 16);
+            this.chkPrint.Size = new System.Drawing.Size(83, 19);
             this.chkPrint.TabIndex = 27;
             this.chkPrint.Text = "Print Later";
             this.chkPrint.UseVisualStyleBackColor = true;
@@ -2017,11 +1804,11 @@ namespace YamyProject
             this.tabPage4.Controls.Add(this.guna2TileButton26);
             this.tabPage4.Controls.Add(this.guna2TileButton25);
             this.tabPage4.Controls.Add(this.guna2TileButton24);
-            this.tabPage4.Location = new System.Drawing.Point(4, 21);
+            this.tabPage4.Location = new System.Drawing.Point(4, 26);
             this.tabPage4.Margin = new System.Windows.Forms.Padding(4);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Padding = new System.Windows.Forms.Padding(4);
-            this.tabPage4.Size = new System.Drawing.Size(1336, 84);
+            this.tabPage4.Size = new System.Drawing.Size(1336, 79);
             this.tabPage4.TabIndex = 1;
             this.tabPage4.Text = "Reports";
             // 
@@ -2234,11 +2021,11 @@ namespace YamyProject
             this.cmbVendor.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.cmbVendor.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.cmbVendor.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(68)))), ((int)(((byte)(88)))), ((int)(((byte)(112)))));
-            this.cmbVendor.ItemHeight = 15;
+            this.cmbVendor.ItemHeight = 20;
             this.cmbVendor.Location = new System.Drawing.Point(166, 10);
             this.cmbVendor.Margin = new System.Windows.Forms.Padding(4);
             this.cmbVendor.Name = "cmbVendor";
-            this.cmbVendor.Size = new System.Drawing.Size(260, 23);
+            this.cmbVendor.Size = new System.Drawing.Size(260, 28);
             this.cmbVendor.TabIndex = 4;
             this.cmbVendor.SelectedIndexChanged += new System.EventHandler(this.cmbVendor_SelectedIndexChanged);
             // 
@@ -2422,9 +2209,10 @@ namespace YamyProject
             // 
             this.lstAccountSuggestions.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lstAccountSuggestions.FormattingEnabled = true;
+            this.lstAccountSuggestions.ItemHeight = 19;
             this.lstAccountSuggestions.Location = new System.Drawing.Point(471, 351);
             this.lstAccountSuggestions.Name = "lstAccountSuggestions";
-            this.lstAccountSuggestions.Size = new System.Drawing.Size(308, 30);
+            this.lstAccountSuggestions.Size = new System.Drawing.Size(308, 23);
             this.lstAccountSuggestions.TabIndex = 58;
             this.lstAccountSuggestions.TabStop = false;
             this.lstAccountSuggestions.Visible = false;
@@ -2579,9 +2367,202 @@ namespace YamyProject
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
             // 
+            // itemId
+            // 
+            this.itemId.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.itemId.HeaderText = "id";
+            this.itemId.MinimumWidth = 100;
+            this.itemId.Name = "itemId";
+            this.itemId.Visible = false;
+            this.itemId.Width = 125;
+            // 
+            // no
+            // 
+            this.no.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.no.FillWeight = 30F;
+            this.no.HeaderText = "#Sn";
+            this.no.MinimumWidth = 30;
+            this.no.Name = "no";
+            this.no.ReadOnly = true;
+            this.no.Width = 30;
+            // 
+            // code
+            // 
+            this.code.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("Segoe UI", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.code.DefaultCellStyle = dataGridViewCellStyle3;
+            this.code.HeaderText = "Code";
+            this.code.MinimumWidth = 100;
+            this.code.Name = "code";
+            this.code.Width = 125;
+            // 
+            // name
+            // 
+            this.name.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.name.HeaderText = "Item Name";
+            this.name.MinimumWidth = 100;
+            this.name.Name = "name";
+            // 
+            // qty
+            // 
+            this.qty.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            this.qty.DefaultCellStyle = dataGridViewCellStyle4;
+            this.qty.FillWeight = 75F;
+            this.qty.HeaderText = "Qty";
+            this.qty.MinimumWidth = 55;
+            this.qty.Name = "qty";
+            this.qty.Width = 55;
+            // 
+            // unit_id
+            // 
+            this.unit_id.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopCenter;
+            this.unit_id.DefaultCellStyle = dataGridViewCellStyle5;
+            this.unit_id.HeaderText = "Unit";
+            this.unit_id.MinimumWidth = 85;
+            this.unit_id.Name = "unit_id";
+            this.unit_id.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.unit_id.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.unit_id.Width = 85;
+            // 
+            // batch_no
+            // 
+            this.batch_no.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.batch_no.HeaderText = "BatchNo";
+            this.batch_no.MinimumWidth = 65;
+            this.batch_no.Name = "batch_no";
+            this.batch_no.Width = 65;
+            // 
+            // expiry_date
+            // 
+            this.expiry_date.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.expiry_date.HeaderText = "ExpiryDate";
+            this.expiry_date.MinimumWidth = 65;
+            this.expiry_date.Name = "expiry_date";
+            this.expiry_date.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.expiry_date.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.expiry_date.Width = 65;
+            // 
+            // cost
+            // 
+            this.cost.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle6.Format = "N2";
+            dataGridViewCellStyle6.NullValue = "0";
+            this.cost.DefaultCellStyle = dataGridViewCellStyle6;
+            this.cost.HeaderText = "Cost";
+            this.cost.MinimumWidth = 100;
+            this.cost.Name = "cost";
+            this.cost.Width = 125;
+            // 
+            // price
+            // 
+            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle7.Format = "N2";
+            dataGridViewCellStyle7.NullValue = "0";
+            this.price.DefaultCellStyle = dataGridViewCellStyle7;
+            this.price.HeaderText = "Price";
+            this.price.MinimumWidth = 6;
+            this.price.Name = "price";
+            this.price.Visible = false;
+            // 
+            // discount
+            // 
+            this.discount.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle8.Format = "N2";
+            dataGridViewCellStyle8.NullValue = "0";
+            this.discount.DefaultCellStyle = dataGridViewCellStyle8;
+            this.discount.HeaderText = "Disc";
+            this.discount.MinimumWidth = 100;
+            this.discount.Name = "discount";
+            this.discount.Width = 125;
+            // 
+            // net_price
+            // 
+            this.net_price.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle9.Format = "N2";
+            dataGridViewCellStyle9.NullValue = "0";
+            this.net_price.DefaultCellStyle = dataGridViewCellStyle9;
+            this.net_price.HeaderText = "Net Price";
+            this.net_price.MinimumWidth = 110;
+            this.net_price.Name = "net_price";
+            this.net_price.ReadOnly = true;
+            this.net_price.Width = 110;
+            // 
+            // vat
+            // 
+            this.vat.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            dataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopCenter;
+            this.vat.DefaultCellStyle = dataGridViewCellStyle10;
+            this.vat.FillWeight = 75F;
+            this.vat.HeaderText = "Vat";
+            this.vat.MinimumWidth = 75;
+            this.vat.Name = "vat";
+            this.vat.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.vat.Width = 75;
+            // 
+            // VatP
+            // 
+            this.VatP.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            dataGridViewCellStyle11.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle11.Format = "N2";
+            dataGridViewCellStyle11.NullValue = "0";
+            this.VatP.DefaultCellStyle = dataGridViewCellStyle11;
+            this.VatP.HeaderText = "~";
+            this.VatP.MinimumWidth = 70;
+            this.VatP.Name = "VatP";
+            this.VatP.Width = 70;
+            // 
+            // total
+            // 
+            this.total.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            dataGridViewCellStyle12.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle12.Format = "N2";
+            dataGridViewCellStyle12.NullValue = "0";
+            this.total.DefaultCellStyle = dataGridViewCellStyle12;
+            this.total.HeaderText = "Amount";
+            this.total.MinimumWidth = 90;
+            this.total.Name = "total";
+            this.total.ReadOnly = true;
+            this.total.Width = 90;
+            // 
+            // method
+            // 
+            this.method.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            dataGridViewCellStyle13.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopCenter;
+            this.method.DefaultCellStyle = dataGridViewCellStyle13;
+            this.method.HeaderText = "method";
+            this.method.MinimumWidth = 100;
+            this.method.Name = "method";
+            this.method.Visible = false;
+            this.method.Width = 125;
+            // 
+            // type
+            // 
+            this.type.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            dataGridViewCellStyle14.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopCenter;
+            this.type.DefaultCellStyle = dataGridViewCellStyle14;
+            this.type.HeaderText = "type";
+            this.type.MinimumWidth = 100;
+            this.type.Name = "type";
+            this.type.Visible = false;
+            this.type.Width = 125;
+            // 
+            // delete
+            // 
+            this.delete.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.delete.HeaderText = "DEL";
+            this.delete.MinimumWidth = 50;
+            this.delete.Name = "delete";
+            this.delete.Text = "x";
+            this.delete.Width = 50;
+            // 
             // frmPurchase
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Gainsboro;
             this.ClientSize = new System.Drawing.Size(1350, 749);
@@ -2751,9 +2732,8 @@ namespace YamyProject
         private DataGridViewTextBoxColumn name;
         private DataGridViewTextBoxColumn qty;
         private DataGridViewComboBoxColumn unit_id;
-        private DataGridViewTextBoxColumn factor;
-        private DataGridViewTextBoxColumn base_qty;
         private DataGridViewTextBoxColumn batch_no;
+        private DataGridViewCalendarColumn expiry_date;
         private DataGridViewTextBoxColumn cost;
         private DataGridViewTextBoxColumn price;
         private DataGridViewTextBoxColumn discount;
@@ -2764,6 +2744,5 @@ namespace YamyProject
         private DataGridViewTextBoxColumn method;
         private DataGridViewTextBoxColumn type;
         private DataGridViewButtonColumn delete;
-        private DataGridViewCalendarColumn expiry_date;
     }
 }

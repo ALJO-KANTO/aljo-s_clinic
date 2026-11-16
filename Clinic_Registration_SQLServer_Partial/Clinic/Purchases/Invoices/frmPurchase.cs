@@ -283,7 +283,7 @@ namespace YamyProject
                                                             ClinicDatabase.CreateParameterNew("id", id)))
                 while (reader.Read())
                 {
-                    int rowIndex = dgvItems.Rows.Add(reader["item_id"].ToString(), "", reader["code"].ToString(), reader["name"].ToString(), Utilities.FormatDecimal(reader["qty"]), null, Utilities.FormatDecimal(reader["factor"]), Utilities.FormatDecimal(Convert.ToDecimal(reader["factor"]) * Convert.ToDecimal(reader["qty"])), reader["batch_no"], Convert.ToDateTime(reader["expiry_date"]),
+                    int rowIndex = dgvItems.Rows.Add(reader["item_id"].ToString(), "", reader["code"].ToString(), reader["name"].ToString(), Utilities.FormatDecimal(reader["qty"]), null, reader["batch_no"], Convert.ToDateTime(reader["expiry_date"]),
                                                     Utilities.FormatDecimal(reader["cost_price"]), Utilities.FormatDecimal(reader["price"]), Utilities.FormatDecimal(reader["discount"]));
                     
                     DataGridViewRow row = dgvItems.Rows[rowIndex];
@@ -294,24 +294,7 @@ namespace YamyProject
                         row.Cells["vatp"].Value = decimal.Parse(reader["vatP"].ToString());
                     }
                     int itemId = Convert.ToInt32(reader["item_id"]);
-                    int savedUnitId =
-                            reader["item_unit_id"] == DBNull.Value
-                                ? 0
-                                : Convert.ToInt32(reader["item_unit_id"]);
-
-                    decimal savedUnitFactor =
-                        reader["factor"] == DBNull.Value
-                            ? 1m
-                            : Convert.ToDecimal(reader["factor"]);
-
-                    if (savedUnitFactor <= 0)
-                        savedUnitFactor = 1m;
-                    LoadUnitsForExistingRow(
-                            row,
-                            itemId,
-                            savedUnitId,
-                            savedUnitFactor
-                        );
+                    
                     //DataGridViewComboBoxCell comboCellItemUnit = dgvItems.Rows[dgvItems.Rows.Count - 2].Cells["unit_id"] as DataGridViewComboBoxCell;
                     //if (comboCellItemUnit != null && reader["item_unit_id"].ToString() != "0")
                     //{
@@ -329,222 +312,7 @@ namespace YamyProject
                     row.Cells["type"].Value = reader["type"].ToString();
                 }
         }
-        private void LoadUnitsForExistingRow(
-              DataGridViewRow row,
-              int itemId,
-              int savedUnitId,
-              decimal savedUnitFactor)
-        {
-            if (row == null)
-                return;
 
-            if (!(row.Cells["unit_id"]
-                is DataGridViewComboBoxCell unitCell))
-                return;
-
-            DataTable units = GetItemUnits(itemId);
-
-            // =========================================================
-            // If an old invoice contains a UOM that is no longer active,
-            // temporarily add it so the old invoice can still display.
-            // =========================================================
-            if (savedUnitId > 0)
-            {
-                bool exists = units.AsEnumerable().Any(r =>
-                    Convert.ToInt32(r["id"]) == savedUnitId);
-
-                if (!exists)
-                {
-                    DataTable oldUnit = ClinicDatabase.ExecuteDataTable(@"
-                        SELECT
-                            id AS unit_id,
-                            name AS unit_name,
-                            @factor AS factor,
-                            0 AS is_default
-                        FROM tbl_uom
-                        WHERE id = @unitId
-                        LIMIT 1;",
-                        ClinicDatabase.CreateParameterNew(
-                            "@unitId",
-                            savedUnitId),
-                        ClinicDatabase.CreateParameterNew(
-                            "@factor",
-                            savedUnitFactor > 0
-                                ? savedUnitFactor
-                                : 1m));
-
-                    if (oldUnit.Rows.Count > 0)
-                    {
-                        DataRow newRow = units.NewRow();
-
-                        newRow["id"] =
-                            oldUnit.Rows[0]["unit_id"];
-
-                        newRow["name"] =
-                            oldUnit.Rows[0]["unit_name"];
-
-                        newRow["factor"] =
-                            oldUnit.Rows[0]["factor"];
-
-                        newRow["is_default"] = 0;
-
-                        units.Rows.Add(newRow);
-                    }
-                }
-            }
-
-            unitCell.DataSource = null;
-
-            unitCell.DisplayMember = "name";
-            unitCell.ValueMember = "id";
-            unitCell.DataSource = units;
-
-            if (units.Rows.Count == 0)
-            {
-                unitCell.Value = null;
-
-                row.Cells["unit_id"].Value = 0;
-                row.Cells["unit_factor"].Value = 1m;
-
-                return;
-            }
-
-            DataRow selectedUnit = null;
-
-            // =========================================================
-            // First preference:
-            // previously saved invoice UOM
-            // =========================================================
-            if (savedUnitId > 0)
-            {
-                selectedUnit = units.AsEnumerable()
-                    .FirstOrDefault(r =>
-                        Convert.ToInt32(r["id"])
-                            == savedUnitId);
-            }
-
-            // =========================================================
-            // Second preference:
-            // item's reference/default UOM
-            // =========================================================
-            if (selectedUnit == null)
-            {
-                selectedUnit = units.AsEnumerable()
-                    .FirstOrDefault(r =>
-                        Convert.ToInt32(r["is_default"]) == 1);
-            }
-
-            // =========================================================
-            // Final fallback
-            // =========================================================
-            if (selectedUnit == null)
-                selectedUnit = units.Rows[0];
-
-            int selectedUnitId =
-                Convert.ToInt32(
-                    selectedUnit["id"]);
-
-            decimal factor;
-
-            // Keep the historical factor from the invoice.
-            if (savedUnitId == selectedUnitId &&
-                savedUnitFactor > 0)
-            {
-                factor = savedUnitFactor;
-            }
-            else
-            {
-                factor =
-                    selectedUnit["factor"] == DBNull.Value
-                        ? 1m
-                        : Convert.ToDecimal(
-                            selectedUnit["factor"]);
-            }
-
-            if (factor <= 0)
-                factor = 1m;
-
-            unitCell.Value = selectedUnitId;
-
-            row.Cells["unit_id"].Value =
-                selectedUnitId;
-
-            row.Cells["factor"].Value =
-                factor;
-        }
-        private string GetUnitName(int unitId)
-        {
-            if (unitId <= 0)
-                return "";
-
-            object result = ClinicDatabase.ExecuteScalar(@"
-        SELECT name
-        FROM tbl_uom
-        WHERE id = @id
-        LIMIT 1;",
-                ClinicDatabase.CreateParameter(
-                    "@id",
-                    unitId));
-
-            if (result == null ||
-                result == DBNull.Value)
-            {
-                return "";
-            }
-
-            return result.ToString();
-        }
-        private void UpdateSelectedUnitFactor(
-        DataGridViewRow row,
-        int unitId)
-        {
-            if (row == null ||
-                row.IsNewRow ||
-                unitId <= 0)
-                return;
-
-            object result = ClinicDatabase.ExecuteScalar(@"
-        SELECT
-            CASE
-                WHEN uom_type = 'reference'
-                    THEN 1
-                ELSE IFNULL(ratio, 1)
-            END
-        FROM tbl_uom
-        WHERE id = @id
-          AND state = 0
-        LIMIT 1;",
-                ClinicDatabase.CreateParameter(
-                    "@id",
-                    unitId));
-
-            decimal factor = 1m;
-
-            if (result != null &&
-                result != DBNull.Value)
-            {
-                factor =
-                    Convert.ToDecimal(result);
-            }
-
-            if (factor <= 0)
-                factor = 1m;
-
-            row.Cells["unit_id"].Value =
-                unitId;
-
-            row.Cells["unit_factor"].Value =
-                factor;
-            row.Cells["factor"].Value = factor;
-            decimal qty =
-                GetDecimalValue(row, "qty");
-
-            if (dgvItems.Columns.Contains("base_qty"))
-            {
-                row.Cells["base_qty"].Value =
-                    qty * factor;
-            }
-        }
         private DataTable GetFilteredProductsByName(string name = "")
         {
             string option = Utilities.GeneralSettingsState("ALL ITEMS IN PURCHASE");
@@ -648,98 +416,8 @@ namespace YamyProject
         }
         string defaultTax = "";
 
-        private void loadItemUnits(int itemId)
-        {
-            DataGridViewRow row = dgvItems.CurrentRow;
-
-            if (row == null || row.IsNewRow)
-                return;
-
-            if (!(row.Cells["unit_id"] is DataGridViewComboBoxCell unitCell))
-                return;
-
-            DataTable units = GetItemUnits(itemId);
-
-            unitCell.Value = null;
-            unitCell.DataSource = null;
-
-            if (units == null || units.Rows.Count == 0)
-            {
-                row.Cells["factor"].Value = 0m;
-
-                if (dgvItems.Columns.Contains("unit_factor"))
-                    row.Cells["unit_factor"].Value = 0m;
-
-                return;
-            }
-
-            unitCell.DisplayMember = "name";
-            unitCell.ValueMember = "id";
-            unitCell.DataSource = units;
-
-            DataRow selectedUnit = units.AsEnumerable()
-                .FirstOrDefault(r =>
-                    Convert.ToInt32(r["is_default"]) == 1)
-                ?? units.Rows[0];
-
-            int unitId = Convert.ToInt32(selectedUnit["id"]);
-            decimal factor = Convert.ToDecimal(selectedUnit["factor"]);
-
-            if (factor <= 0)
-                throw new InvalidOperationException(
-                    $"Invalid conversion factor for item {itemId}.");
-
-            unitCell.Value = unitId;
-            row.Cells["factor"].Value = factor;
-
-            if (dgvItems.Columns.Contains("unit_factor"))
-                row.Cells["unit_factor"].Value = factor;
-
-            if (dgvItems.Columns.Contains("base_qty"))
-            {
-                decimal qty = GetDecimalValue(row, "qty");
-                row.Cells["base_qty"].Value = qty * factor;
-            }
-        }
-        private DataTable GetItemUnits(int itemId)
-        {
-            return ClinicDatabase.ExecuteDataTable(@"
-                    SELECT
-                        u.id AS id,
-                        u.name AS name,
-                        CASE
-                            WHEN u.uom_type = 'reference'
-                                THEN 1
-                            ELSE IFNULL(u.ratio, 1)
-                        END AS factor,
-                        CASE
-                            WHEN u.id = i.unit_id
-                                THEN 1
-                            ELSE 0
-                        END AS is_default
-                    FROM tbl_items i
-                    INNER JOIN tbl_uom reference_uom
-                        ON reference_uom.id = i.unit_id
-                       AND reference_uom.state = 0
-                    INNER JOIN tbl_uom u
-                        ON u.category_id = reference_uom.category_id
-                       AND u.state = 0
-                       AND u.active = 1
-                    WHERE i.id = @itemId
-                    ORDER BY
-                        CASE
-                            WHEN u.id = i.unit_id THEN 0
-                            ELSE 1
-                        END,
-
-                        CASE
-                            WHEN u.uom_type = 'reference' THEN 0
-                            ELSE 1
-                        END,
-
-                        u.name;",
-                ClinicDatabase.CreateParameter("@itemId", itemId));
-        }
+        
+        
         private void bindCombo()
         {
             BindCombos.PopulateVendors(cmbVendor);
@@ -1053,8 +731,8 @@ namespace YamyProject
                 parameters.Add(ClinicDatabase.CreateParameterNew($"@vat", row.Cells["vat"].Value?.ToString()));
                 parameters.Add(ClinicDatabase.CreateParameterNew($"@vatp", row.Cells["vatp"].Value?.ToString()));
                 parameters.Add(ClinicDatabase.CreateParameterNew($"@total", row.Cells["total"].Value?.ToString()));
-                parameters.Add(ClinicDatabase.CreateParameterNew($"@unitName", row.Cells["unit_id"].Value ?? 0));
-                parameters.Add(ClinicDatabase.CreateParameterNew($"@factor", row.Cells["factor"].Value ?? 0));
+                parameters.Add(ClinicDatabase.CreateParameterNew($"@unitName", 0));
+                parameters.Add(ClinicDatabase.CreateParameterNew($"@factor", "1"));
                 parameters.Add(ClinicDatabase.CreateParameterNew($"@batch", batch));
                 parameters.Add(ClinicDatabase.CreateParameterNew($"@expiry", expiry.Date));
                 string sql = $@"
@@ -1124,57 +802,7 @@ namespace YamyProject
                     $"Invalid quantity for item {itemId}.");
             }
 
-            int unitId;
-            if (!int.TryParse(row.Cells["unit_id"].Value?.ToString(), out unitId)
-                || unitId <= 0)
-            {
-                throw new InvalidOperationException(
-                    $"Please select a valid unit for item {itemId}.");
-            }
-
-            decimal factor = 0m;
-
-            // Read the factor used by purchase saving.
-            decimal.TryParse(
-                row.Cells["factor"].Value?.ToString(),
-                out factor);
-
-            // Recover from the alternate UOM column if available.
-            if (factor <= 0 && dgvItems.Columns.Contains("unit_factor"))
-            {
-                decimal.TryParse(
-                    row.Cells["unit_factor"].Value?.ToString(),
-                    out factor);
-            }
-
-            // Do not silently assume factor 1 for an unknown unit.
-            if (factor <= 0)
-            {
-                throw new InvalidOperationException(
-                    $"Invalid unit conversion factor for item {itemId}. " +
-                    "Please reselect the unit before saving.");
-            }
-
-          
-
-            row.Cells["factor"].Value = factor;
-
-            if (dgvItems.Columns.Contains("unit_factor"))
-            {
-                row.Cells["unit_factor"].Value = factor;
-            }
-
-            // qty is already declared above.
-            // Reuse the existing variable.
-
-            if (dgvItems.Columns.Contains("base_qty"))
-            {
-                row.Cells["base_qty"].Value = qty * factor;
-            }
-            if (dgvItems.Columns.Contains("base_qty"))
-            {
-                row.Cells["base_qty"].Value = qty * factor;
-            }
+            int unitId=0;
             decimal cost;
             decimal salePrice;
 
@@ -1192,8 +820,8 @@ namespace YamyProject
                     $"Invalid sale price for item {itemId}.");
             }
 
-            decimal baseQty = qty * factor;
-            decimal baseCost = cost / factor;
+            decimal baseQty = qty;
+            decimal baseCost = cost;
 
             string batch = row.Cells["batch_no"].Value?.ToString() ?? "";
 
@@ -1234,7 +862,7 @@ namespace YamyProject
                         cmbWarehouse.SelectedValue),
                     new MySqlParameter("@date", DateTime.Now),
                     new MySqlParameter("@qty", baseQty),
-                    new MySqlParameter("@factor", factor)
+                    new MySqlParameter("@factor", "1")
                 )
             );
 
@@ -1252,7 +880,7 @@ namespace YamyProject
                 cmbWarehouse.SelectedValue.ToString(),
                 batchId.ToString(),
                 unitId.ToString(),
-                factor.ToString(),
+                "1",
                 qty.ToString()
             );
         }
@@ -1734,40 +1362,7 @@ namespace YamyProject
                 //string unitName = selectedRow["name"].ToString();
 
                 decimal qty = GetDecimalValue(row, "qty");
-                decimal factor = GetUnitFactor(Convert.ToInt32(row.Cells["itemId"].Value), unitId);
-                row.Cells["factor"].Value = factor;
-                decimal baseQty = qty * factor;
-                row.Cells["base_qty"].Value = baseQty;
             }
-        }
-        private decimal GetUnitFactor(int itemId, int unitId)
-        {
-            if (unitId <= 0)
-                return 1m;
-
-            object result = ClinicDatabase.ExecuteScalar(@"
-                    SELECT
-                        CASE
-                            WHEN LOWER(TRIM(uom_type)) = 'reference'
-                                THEN 1
-                            ELSE IFNULL(ratio, 1)
-                        END
-                    FROM tbl_uom
-                    WHERE id = @id AND IFNULL(state, 0) = 0 AND IFNULL(active, 1) = 1
-                    LIMIT 1;", ClinicDatabase.CreateParameter("@id", unitId)
-            );
-
-            if (result == null || result == DBNull.Value)
-                return 1m;
-
-            decimal factor;
-
-            if (!decimal.TryParse(result.ToString(), out factor))
-            {
-                return 1m;
-            }
-
-            return factor > 0 ? factor : 1m;
         }
         private void ComboBoxTax_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -2540,13 +2135,11 @@ namespace YamyProject
                 {
                     DataGridViewRow row = dgvItems.CurrentRow;
                     row.Cells["code"].Value = selectedCode;
-                    loadItemUnits(selectedItemId);
                 }
                 else if (dgvItems.CurrentCell != null && dgvItems.CurrentCell.OwningColumn.Name == "name")
                 {
                     DataGridViewRow row = dgvItems.CurrentRow;
                     row.Cells["name"].Value = selectedName;
-                    loadItemUnits(selectedItemId);
                 }
             }
 
