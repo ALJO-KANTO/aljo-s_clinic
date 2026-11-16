@@ -116,10 +116,10 @@ namespace Clinic.Medical_Services.Laboratory
                 using (Font heading = new Font("Segoe UI", 23f, FontStyle.Bold))
                 using (Font subheading = new Font("Segoe UI", 11f))
                 {
-                    TextRenderer.DrawText(g, "Laboratory Management", heading,
+                    TextRenderer.DrawText(g, TranslationClass.Translate("Laboratory Management", TranslationClass.IsArabic), heading,
                         new Rectangle(132, 25, textWidth, 48), Color.White,
                         TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPadding);
-                    TextRenderer.DrawText(g, "Lab requests, tests and patient results", subheading,
+                    TextRenderer.DrawText(g, TranslationClass.Translate("Lab requests, tests and patient results", TranslationClass.IsArabic), subheading,
                         new Rectangle(134, 75, textWidth, 27), Color.FromArgb(216, 235, 255),
                         TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPadding);
                 }
@@ -139,7 +139,7 @@ namespace Clinic.Medical_Services.Laboratory
                     g.DrawPath(outline, buttonPath);
                 }
                 using (Font buttonFont = new Font("Segoe UI", 10f, FontStyle.Bold))
-                    TextRenderer.DrawText(g, "Close  ×", buttonFont, bounds, Color.White,
+                    TextRenderer.DrawText(g, TranslationClass.IsArabic ? "إغلاق  ×" : "Close  ×", buttonFont, bounds, Color.White,
                         TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter |
                         TextFormatFlags.NoPadding);
 
@@ -249,6 +249,8 @@ namespace Clinic.Medical_Services.Laboratory
 
         private static Label MakeLabel(string text, float size, bool bold = false)
         {
+            bool isArabic = TranslationClass.IsArabic;
+            text = TranslationClass.Translate(text, isArabic);
             return new Label
             {
                 Text = text,
@@ -261,6 +263,8 @@ namespace Clinic.Medical_Services.Laboratory
         }
         private static Button MakeAction(string name, string text, Color first, Color last, int width)
         {
+            bool isArabic = TranslationClass.IsArabic;
+            text = TranslationClass.Translate(text, isArabic);
             return new ModernButton
             {
                 Name = name,
@@ -296,6 +300,49 @@ namespace Clinic.Medical_Services.Laboratory
                 else if (key.Contains("print")) width = 135;
                 column.Width = width;
             }
+        }
+
+        // Translate displayed captions only; keep column names and DataPropertyName unchanged.
+        private void TranslateLaboratoryGridHeaders()
+        {
+            if (dgvRequests == null || dgvRequests.IsDisposed) return;
+            bool arabic = TranslationClass.IsArabic;
+            var headers = new System.Collections.Generic.Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "LabOrderID", "رقم مجموعة طلب المختبر" },
+                { "LabRequestID", "معرّف طلب المختبر" },
+                { "VisitID", "رقم الزيارة" },
+                { "BillID", "رقم الفاتورة" },
+                { "BillNumber", "رقم الفاتورة" },
+                { "PatientName", "اسم المريض" },
+                { "TestName", "اسم الفحص" },
+                { "SavedTestPrice", "سعر الفحص" },
+                { "PaidAmount", "المبلغ المدفوع" },
+                { "BalanceDue", "الرصيد المستحق" },
+                { "RequestedAt", "تاريخ الطلب" },
+                { "Status", "الحالة" },
+                { "Print", "طباعة" },
+                { "PrintReport", "طباعة التقرير" }
+            };
+            foreach (DataGridViewColumn column in dgvRequests.Columns)
+            {
+                string key = !string.IsNullOrWhiteSpace(column.DataPropertyName)
+                    ? column.DataPropertyName : column.Name;
+                if (arabic)
+                {
+                    if (headers.TryGetValue(key, out string translated))
+                        column.HeaderText = translated;
+                    else
+                        column.HeaderText = TranslationClass.Translate(column.HeaderText, true);
+                }
+                else if (headers.ContainsKey(key))
+                {
+                    column.HeaderText = key;
+                }
+            }
+            dgvRequests.ColumnHeadersDefaultCellStyle.Alignment = arabic
+                ? DataGridViewContentAlignment.MiddleCenter
+                : DataGridViewContentAlignment.MiddleCenter;
         }
 
         // Draw only the Print Report cell contents; the existing CellClick logic
@@ -335,7 +382,7 @@ namespace Clinic.Medical_Services.Laboratory
             }
             using (Font font = new Font("Segoe UI", 9.5f,
                 canPrint ? FontStyle.Bold : FontStyle.Regular))
-                TextRenderer.DrawText(e.Graphics, canPrint ? "Print" : "—", font, r,
+                TextRenderer.DrawText(e.Graphics, canPrint ? TranslationClass.Translate("Print", TranslationClass.IsArabic) : "—", font, r,
                     canPrint ? Color.White : Color.FromArgb(133, 151, 170),
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter |
                     TextFormatFlags.NoPadding);
@@ -352,7 +399,7 @@ namespace Clinic.Medical_Services.Laboratory
             ClientSize = new Size(1440, 850);
             MinimumSize = new Size(820, 570);
             FormBorderStyle = FormBorderStyle.None;
-            Text = "Laboratory";
+            Text = TranslationClass.Translate("Laboratory", TranslationClass.IsArabic);
             Padding = new Padding(18, 14, 18, 18);
 
             TableLayoutPanel body = new TableLayoutPanel
@@ -517,6 +564,25 @@ namespace Clinic.Medical_Services.Laboratory
             };
             cmbStatus.Items.AddRange(new object[] { "All", "Ordered", "In Progress", "Completed", "Cancelled" });
             cmbStatus.SelectedIndex = 0;
+            cmbStatus.DrawMode = DrawMode.OwnerDrawFixed;
+            cmbStatus.DrawItem += (sender, e) =>
+            {
+                if (e.Index < 0) return;
+                e.DrawBackground();
+                string raw = Convert.ToString(cmbStatus.Items[e.Index]) ?? "";
+                string display = TranslationClass.Translate(raw, TranslationClass.IsArabic);
+                using (Brush brush = new SolidBrush(e.ForeColor))
+                {
+                    var format = new StringFormat
+                    {
+                        Alignment = TranslationClass.IsArabic ? StringAlignment.Far : StringAlignment.Near,
+                        LineAlignment = StringAlignment.Center,
+                        FormatFlags = TranslationClass.IsArabic ? StringFormatFlags.DirectionRightToLeft : 0
+                    };
+                    e.Graphics.DrawString(display, e.Font ?? cmbStatus.Font, brush, e.Bounds, format);
+                }
+                e.DrawFocusRectangle();
+            };
             filters.Controls.Add(searchLabel);
             filters.Controls.Add(txtSearch);
             filters.Controls.Add(statusLabel);
@@ -570,7 +636,7 @@ namespace Clinic.Medical_Services.Laboratory
             dgvRequests.AlternatingRowsDefaultCellStyle.SelectionForeColor = TextInk;
             // Set practical minimum widths so the grid can scroll horizontally rather
             // than squeezing all columns and truncating important data.
-            dgvRequests.DataBindingComplete += (s, e) => ApplyLaboratoryGridWidths();
+            dgvRequests.DataBindingComplete += (s, e) => { ApplyLaboratoryGridWidths(); TranslateLaboratoryGridHeaders(); };
             dgvRequests.ColumnAdded += (s, e) =>
             {
                 e.Column.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;

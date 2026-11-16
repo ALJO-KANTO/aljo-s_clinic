@@ -1,4 +1,5 @@
 ﻿using Clinic.Patient;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -147,6 +148,7 @@ namespace Clinic
 { "Emer. Cont:", "جهة اتصال الطوارئ:" },
 { "Reg. Date:", "تاريخ التسجيل:" },
 { "Created By:", "تم الإنشاء بواسطة:" },
+
 
 // Person information card
 { "Person Information", "معلومات الشخص" },
@@ -529,6 +531,12 @@ namespace Clinic
 {"Lab requests, tests and patient results","طلبات المختبر والفحوصات ونتائج المرضى" },
 {"Active Lab Tests","الفحوصات المخبرية النشطة" },
 {"New Lab Request","طلب مختبر جديد" },
+           {"+   New Lab Request","إضافة طلب مختبر جديد"  },
+           {"▤   Manage Lab Tests", "إدارة الفحوصات المخبرية"  },
+           {"▣   Send to Billing","إرسال إلى الفوترة" },
+           { "⚗   Enter Result","إدخال نتيجة المختبر" },
+           {"↻   Refresh","تحديث" },
+           
 {"Manage Lab Tests","إدارة الفحوصات المخبرية" },
 {"Enter Lab Result","إدخال نتيجة المختبر" },
             {"Patient","المريض" },
