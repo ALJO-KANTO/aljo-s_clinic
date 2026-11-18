@@ -10,36 +10,94 @@ namespace Clinic_DataAccess
 {
     public class clsInvoiceData
     {
+
         public static DataSet GetInvoiceFullData(int billID)
         {
             DataSet ds = new DataSet();
-            using (MySqlConnection connection = new MySqlConnection(clsDataAccessSettings.ConnectionString))
-            {
-                // استعلام واحد يجمع كل الجداول المطلوبة للفاتورة
-                string query = @"
-                                SELECT (Subtotal+TotalDiscount) AS Subtotal,PaymentAmount ,TotalDiscount,Subtotal AS FinalTotal FROM View_BillSummaries WHERE BillID = @BillID;
-                              Select  B.BillNumber As InvoiceNumber,
-                                B.BillDate As InvoiceDate,
-                                IFNULL(Per.FullName,'Pharmysy Sales')AS PatienName,
-                                IFNULL(Pat.PatientID,-1)AS PatientID
-                                From Bills B
-                                 Left JOIN Visits V ON B.VisitID=V.VisitID
-                                 left Join Patients Pat ON V.PatientID=Pat.PatientID
-                                 left join Persons Per ON Pat.PersonID=Per.PersonID
-                                  Where B.BillID=@BillID;
-                                SELECT * FROM View_BillItems WHERE BillID = @BillID;";
 
-                using (MySqlCommand command = new MySqlCommand(query, connection))
+            using (MySqlConnection connection =
+                new MySqlConnection(clsDataAccessSettings.ConnectionString))
+            {
+                connection.Open();
+
+                // TABLE 0: Financial Summary
+                string summaryQuery = @"
+            SELECT
+                (Subtotal + TotalDiscount) AS Subtotal,
+                PaymentAmount,
+                TotalDiscount,
+                Subtotal AS FinalTotal
+            FROM View_BillSummaries
+            WHERE BillID = @BillID;";
+
+                using (MySqlCommand command =
+                    new MySqlCommand(summaryQuery, connection))
                 {
                     command.Parameters.AddWithValue("@BillID", billID);
-                    using (MySqlDataAdapter adapter = new MySqlDataAdapter(command))
+
+                    using (MySqlDataAdapter adapter =
+                        new MySqlDataAdapter(command))
                     {
-                        adapter.Fill(ds);
+                        adapter.Fill(ds, "Summary");
+                    }
+                }
+
+                // TABLE 1: Invoice Header and Patient Details
+                string headerQuery = @"
+            SELECT
+                B.BillNumber AS InvoiceNumber,
+                B.BillDate AS InvoiceDate,
+                COALESCE(Per.FullName, 'Pharmacy Sales') AS PatientName,
+                COALESCE(Pat.PatientID, -1) AS PatientID
+
+            FROM Bills B
+
+            LEFT JOIN Visits V
+                ON B.VisitID = V.VisitID
+
+            LEFT JOIN Patients Pat
+                ON Pat.PatientID = COALESCE(B.PatientID, V.PatientID)
+
+            LEFT JOIN Persons Per
+                ON Pat.PersonID = Per.PersonID
+
+            WHERE B.BillID = @BillID
+            LIMIT 1;";
+
+                using (MySqlCommand command =
+                    new MySqlCommand(headerQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@BillID", billID);
+
+                    using (MySqlDataAdapter adapter =
+                        new MySqlDataAdapter(command))
+                    {
+                        adapter.Fill(ds, "Header");
+                    }
+                }
+
+                // TABLE 2: Invoice Items
+                string itemsQuery = @"
+            SELECT *
+            FROM View_BillItems
+            WHERE BillID = @BillID;";
+
+                using (MySqlCommand command =
+                    new MySqlCommand(itemsQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@BillID", billID);
+
+                    using (MySqlDataAdapter adapter =
+                        new MySqlDataAdapter(command))
+                    {
+                        adapter.Fill(ds, "Items");
                     }
                 }
             }
+
             return ds;
         }
+
 
         #region IssueInvoice
         public static bool GetBillSummariesToIssueInvoice(int BillID, ref decimal FinalTotal, ref decimal Subtotal,

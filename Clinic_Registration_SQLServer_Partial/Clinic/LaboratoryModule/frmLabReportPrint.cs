@@ -132,34 +132,63 @@ namespace Clinic.Medical_Services.Laboratory
                 DataTable entries = new DataTable();
                 using (var con = new MySqlConnection(clsDataAccessSettings.ConnectionString))
                 using (var cmd = new MySqlCommand(@"
-                    SELECT
-                        p.ParameterID,
-                        p.ParameterName,
-                        COALESCE(NULLIF(e.ObservedValue, ''),
-                                 NULLIF(r.ObservedValue, ''), '') AS ObservedValue,
-                        COALESCE(NULLIF(e.SavedUnit, ''),
-                                 NULLIF(r.SavedUnit, ''), p.Unit, '') AS Unit,
-                        COALESCE(NULLIF(e.SavedReferenceRange, ''),
-                                 NULLIF(r.SavedReferenceRange, ''),
-                                 NULLIF(p.ReferenceRange, ''),
-                                 CONCAT('Male: ', COALESCE(p.MaleReferenceRange, '-'),
-                                        ' / Female: ', COALESCE(p.FemaleReferenceRange, '-')))
-                                 AS ReferenceRange,
-                        COALESCE(NULLIF(e.ResultFlag, ''),
-                                 NULLIF(r.ResultFlag, ''), '') AS ResultFlag,
-                        COALESCE(NULLIF(e.ResultNotes, ''),
-                                 NULLIF(r.ResultNotes, ''), '') AS ResultNotes
-                    FROM labrequests lr
-                    INNER JOIN laboratorytestparameters p
-                        ON p.TestID = lr.TestID AND p.IsActive = 1
-                    LEFT JOIN labparameterresultentries e
-                        ON e.LabRequestID = lr.LabRequestID
-                       AND e.ParameterID = p.ParameterID
-                    LEFT JOIN laboratoryparameterresults r
-                        ON r.LabRequestID = lr.LabRequestID
-                       AND r.ParameterID = p.ParameterID
-                    WHERE lr.LabRequestID = @requestID
-                    ORDER BY p.DisplayOrder, p.ParameterID;", con))
+                  
+SELECT
+    p.ParameterID,
+    p.ParameterName,
+
+    COALESCE(
+        NULLIF(e.ObservedValue, ''),
+        NULLIF(r.ResultValue, ''),
+        ''
+    ) AS ObservedValue,
+
+    COALESCE(
+        NULLIF(e.SavedUnit, ''),
+        NULLIF(r.UnitSnapshot, ''),
+        p.Unit,
+        ''
+    ) AS Unit,
+
+    COALESCE(
+        NULLIF(e.SavedReferenceRange, ''),
+        NULLIF(r.ReferenceRangeSnapshot, ''),
+        NULLIF(p.ReferenceRange, ''),
+        CONCAT(
+            'Male: ', COALESCE(p.MaleReferenceRange, '-'),
+            ' / Female: ', COALESCE(p.FemaleReferenceRange, '-')
+        )
+    ) AS ReferenceRange,
+
+    COALESCE(
+        NULLIF(e.ResultFlag, ''),
+        NULLIF(r.ResultFlag, ''),
+        ''
+    ) AS ResultFlag,
+
+    COALESCE(
+        NULLIF(e.ResultNotes, ''),
+        ''
+    ) AS ResultNotes
+
+FROM labrequests lr
+
+INNER JOIN laboratorytestparameters p
+    ON p.TestID = lr.TestID
+    AND p.IsActive = 1
+
+LEFT JOIN labparameterresultentries e
+    ON e.LabRequestID = lr.LabRequestID
+    AND e.ParameterID = p.ParameterID
+
+LEFT JOIN laboratoryparameterresults r
+    ON r.LabRequestID = lr.LabRequestID
+    AND r.ParameterID = p.ParameterID
+
+WHERE lr.LabRequestID = @requestID
+
+ORDER BY p.DisplayOrder, p.ParameterID;
+", con))
                 {
                     cmd.Parameters.AddWithValue("@requestID", _requestID);
                     using (var adapter = new MySqlDataAdapter(cmd))
