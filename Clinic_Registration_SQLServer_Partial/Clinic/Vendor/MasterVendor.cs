@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
 using System.Drawing.Printing;
+using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
 //using YamyProject.DAL;
@@ -26,20 +27,105 @@ namespace YamyProject
         {
             InitializeComponent();
             LocalizationManager.LocalizeForm(this);
-            vendorUpdatedHandler = PaymentVoucherHandler= InvoiceUpdatedHandler = (sender, args) => BindVendor();
-            
+            ApplyVendorArabicTranslations();
+            vendorUpdatedHandler = PaymentVoucherHandler = InvoiceUpdatedHandler = (sender, args) => BindVendor();
+
             headerUC1.FormText = this.Text;
         }
+        // Vendor-specific fallback for strings not yet present in the shared .resx.
+        // The shared LocalizationManager remains the primary translator.
+        private bool IsVendorArabic =>
+            (Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en")
+                .StartsWith("ar", StringComparison.OrdinalIgnoreCase);
+
+        private void ApplyVendorArabicTranslations()
+        {
+            if (!IsVendorArabic) return;
+
+            Text = "مركز الموردين";
+            headerUC1.FormText = Text;
+            label3.Text = "معلومات المورد";
+            label2.Text = "رمز المورد";
+            label8.Text = "اسم المورد";
+            label5.Text = "الرقم الضريبي";
+            label4.Text = "البريد الإلكتروني";
+            label7.Text = "هاتف العمل";
+            label1.Text = "فئة المورد";
+            label12.Text = "العنوان";
+            label6.Text = "الهاتف الرئيسي";
+            tabPage2.Text = "المعاملات";
+            tabPage3.Text = "الفواتير النقدية";
+            txtSearch.PlaceholderText = "البحث بالاسم أو الرمز";
+
+            newCustomerToolStripMenuItem.Text = "عمليات الموردين ▼";
+            nToolStripMenuItem.Text = "مورد جديد";
+            editCustomerToolStripMenuItem1.Text = "تعديل المورد";
+            deleteVendorToolStripMenuItem.Text = "حذف المورد";
+            newTransactionToolStripMenuItem.Text = "معاملات جديدة ▼";
+            createInvoiceToolStripMenuItem.Text = "إنشاء فاتورة";
+            receivePaymentToolStripMenuItem.Text = "سداد الفواتير";
+            printToolStripMenuItem.Text = "طباعة ▼";
+            cToolStripMenuItem.Text = "قائمة الموردين";
+            transactionListToolStripMenuItem.Text = "قائمة المعاملات";
+            creditPaymentToolStripMenuItem.Text = "الائتمان والمدفوعات";
+            cashToolStripMenuItem.Text = "نقدي";
+            excelToolStripMenuItem.Text = "إكسل ▼";
+            importToolStripMenuItem.Text = "استيراد وتصدير";
+            toolStripMenuItem1.Text = "قائمة المعاملات";
+            toolStripMenuItem2.Text = "الائتمان والمدفوعات";
+            toolStripMenuItem3.Text = "نقدي";
+            wordToolStripMenuItem.Text = "وورد ▼";
+            customerListToolStripMenuItem1.Text = "قائمة الموردين";
+            toolStripMenuItem4.Text = "قائمة المعاملات";
+            toolStripMenuItemword.Text = "الائتمان والمدفوعات";
+            toolStripMenuItemCashWord.Text = "نقدي";
+
+            int selected = cmbState.SelectedIndex;
+            cmbState.Items.Clear();
+            cmbState.Items.AddRange(new object[] { "الكل", "الموردون النشطون", "الموردون غير النشطين" });
+            cmbState.SelectedIndex = selected >= 0 && selected < cmbState.Items.Count ? selected : 1;
+            ApplyVendorArabicGridHeaders();
+        }
+
+        private void ApplyVendorArabicGridHeaders()
+        {
+            if (!IsVendorArabic) return;
+            TranslateVendorGrid(dgvCustomer);
+            TranslateVendorGrid(dgvTransactions);
+            TranslateVendorGrid(dgvInvoiceCash);
+        }
+
+        private static void TranslateVendorGrid(DataGridView grid)
+        {
+            var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "Name", "الاسم" }, { "Amount", "المبلغ" },
+                { "SN", "م" },
+                { "Date", "التاريخ" }, { "No", "رقم السند" },
+                { "V - No", "رقم السند" }, { "Type", "نوع السند" },
+                { "Description", "الوصف" }, { "Debit", "مدين" },
+                { "Credit", "دائن" }, { "Balance", "الرصيد" },
+                { "Account Name", "اسم الحساب" }, { "Invoice Id", "رقم الفاتورة" }
+            };
+            foreach (DataGridViewColumn col in grid.Columns)
+            {
+                string translated;
+                if (headers.TryGetValue(col.Name, out translated))
+                    col.HeaderText = translated;
+            }
+        }
+
         private void MasterVendor_FormClosing(object sender, FormClosingEventArgs e)
         {
-           
+
 
         }
         private void MasterVendor_Load(object sender, EventArgs e)
         {
-           
+
             ConfigureDataGridViews();
             BindVendor();
+            ApplyVendorArabicTranslations();
         }
         private void ConfigureDataGridViews()
         {
@@ -98,14 +184,14 @@ namespace YamyProject
                             GROUP BY hum_id
                         ) t ON t.hum_id = c.id
                         LEFT JOIN tbl_vendor_category tc ON c.Cat_id = tc.id WHERE c.type='Vendor' ";
-            if (cmbState.Text == "Active Vendor")
+            if (cmbState.SelectedIndex == 1)
                 query += " AND c.active = 0";
-            else if (cmbState.Text == "Inactive Vendor")
+            else if (cmbState.SelectedIndex == 2)
                 query += " AND c.active != 0";
 
             //query += " GROUP BY c.id, c.name, c.work_phone, c.main_phone, tc.name, c.region, c.email, c.trn;";
             DataTable dt = ClinicDatabase.ExecuteDataTable(query);
-            if(dt==null)
+            if (dt == null)
             {
                 dgvCustomer.DataSource = null;
                 ClearVendorDetails();
@@ -126,6 +212,7 @@ namespace YamyProject
                 ClearVendorDetails();
 
             LocalizationManager.LocalizeDataGridViewHeaders(dgvCustomer);
+            ApplyVendorArabicGridHeaders();
         }
 
         private void HideUnusedColumns()
@@ -147,7 +234,7 @@ namespace YamyProject
         {
             dgvTransactions.Rows.Clear();
             var parameters = new List<MySqlParameter> { new MySqlParameter("@id", dgvCustomer.SelectedRows[0].Cells["id"].Value.ToString()) };
-            
+
             string query = @"SELECT 
                             ROW_NUMBER() OVER (ORDER BY t.id) AS `SN#`,
                             t.`Date`,
@@ -186,15 +273,16 @@ namespace YamyProject
             DataTable dt = ClinicDatabase.ExecuteDataTable(query, parameters.ToArray());
             decimal totalAmount = 0, totalPaidAmount = 0, amount = 0, paidAmount = 0;
             string _type = "";
-            foreach(DataRow row in dt.Rows)
+            foreach (DataRow row in dt.Rows)
             {
                 _type = string.IsNullOrEmpty(row["Type"]?.ToString()) ? "" : row["Type"]?.ToString();
-                dgvTransactions.Rows.Add(row["id"], dgvTransactions.Rows.Count + 1, row["Invoice Id"], 
+                dgvTransactions.Rows.Add(row["id"], dgvTransactions.Rows.Count + 1, row["Invoice Id"],
                     DateTime.Parse(row["Date"].ToString()).ToShortDateString(),
-                    (string.IsNullOrEmpty(row["No"].ToString()) ? ("GV-00" + row["Invoice Id"]) : row["No"]), 
+                    (string.IsNullOrEmpty(row["No"].ToString()) ? ("GV-00" + row["Invoice Id"]) : row["No"]),
                     _type, row["Description"], row["Debit"], row["Credit"], row["Balance"]);
             }
             LocalizationManager.LocalizeDataGridViewHeaders(dgvTransactions);
+            ApplyVendorArabicGridHeaders();
         }
         private void BindCashInvoice()
         {
@@ -260,6 +348,7 @@ namespace YamyProject
             }
             dgvInvoiceCash.Columns["id"].Visible = dgvInvoiceCash.Columns["Invoice Id"].Visible = false;
             LocalizationManager.LocalizeDataGridViewHeaders(dgvInvoiceCash);
+            ApplyVendorArabicGridHeaders();
         }
         private void AdjustColumnWidths()
         {
@@ -285,7 +374,7 @@ namespace YamyProject
             lblPhone.Text = string.IsNullOrWhiteSpace(row["main_phone"].Value?.ToString()) ? "-" : row["main_phone"].Value.ToString();
             lblWorkPhone.Text = string.IsNullOrWhiteSpace(row["work_phone"].Value?.ToString()) ? "-" : row["work_phone"].Value.ToString();
             lblTRN.Text = string.IsNullOrWhiteSpace(row["trn"].Value?.ToString()) ? "-" : row["trn"].Value.ToString();
-            
+
             string nameAndCode = row["name"].Value?.ToString();
             lblCode.Text = nameAndCode.Split('-')[0];
             lblName.Text = nameAndCode.Split('-')[1];
@@ -332,13 +421,13 @@ namespace YamyProject
                 }
             }
         }
-     
+
         private void createInvoiceToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (dgvCustomer.Rows.Count <= 0)
                 return;
 
-            frmMain.openChildForm(new frmPurchase(0,"",int.Parse(dgvCustomer.SelectedRows[0].Cells["id"].Value.ToString())));
+            frmMain.openChildForm(new frmPurchase(0, "", int.Parse(dgvCustomer.SelectedRows[0].Cells["id"].Value.ToString())));
         }
         private void cToolStripMenuItem_Click(object sender, EventArgs e)
         {

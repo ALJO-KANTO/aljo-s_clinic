@@ -4,6 +4,8 @@ using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Drawing;
+using System.Globalization;
 using System.Windows.Forms;
 using YamyProject.DAL;
 using YamyProject.Localization;
@@ -20,11 +22,12 @@ namespace YamyProject
         int _pageSize = 50; // Or any default rows per page
         int _totalRecords = 0;
         int _totalPages = 0;
-        
-        public MasterPurchases(bool _cbSubcontractorsChecked=false)
+
+        public MasterPurchases(bool _cbSubcontractorsChecked = false)
         {
             InitializeComponent();
             LocalizationManager.LocalizeForm(this);
+            ApplyPurchasesArabicLabels();
             vendorUpdatedHandler = (sender, args) => BindCombos.PopulateVendors(cmbCustomer);
             invoiceUpdatedHandler = (sender, args) => BindInvoices();
             EventHub.Vendor += vendorUpdatedHandler;
@@ -32,6 +35,95 @@ namespace YamyProject
             headerUC1.FormText = this.Text;
             CbSubcontractorsChecked = _cbSubcontractorsChecked;
         }
+
+        // Display-only localization: combo values remain English for database filters.
+        private bool IsPurchasesArabic =>
+            (Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en")
+                .StartsWith("ar", StringComparison.OrdinalIgnoreCase);
+
+        private void ApplyPurchasesArabicLabels()
+        {
+            if (!IsPurchasesArabic) return;
+
+            this.Text = "مركز فواتير المشتريات";
+            btnNew.Text = "فاتورة جديدة";
+            btnEdit.Text = "تعديل الفاتورة";
+            btnDelete.Text = "حذف";
+            btnRecycle.Text = "سلة المحذوفات";
+            CbSubcontractors.Text = "المقاولون من الباطن";
+            label1.Text = "اسم المورد";
+            label2.Text = "إلى";
+            label11.Text = "من";
+            label3.Text = "طريقة الدفع";
+            label4.Text = "طريقة العرض";
+            chkDate.Text = "الكل";
+            chkPayment.Text = "الكل";
+            chkCustomer.Text = "الكل";
+
+            // OwnerDraw translates visible combo text without changing .Text,
+            // SelectedValue, or stored English values used by SQL conditions.
+            cmbSelectionMethod.DrawMode = DrawMode.OwnerDrawFixed;
+            cmbPaymentMethod.DrawMode = DrawMode.OwnerDrawFixed;
+            cmbSelectionMethod.DrawItem -= PurchasesCombo_DrawItem;
+            cmbPaymentMethod.DrawItem -= PurchasesCombo_DrawItem;
+            cmbSelectionMethod.DrawItem += PurchasesCombo_DrawItem;
+            cmbPaymentMethod.DrawItem += PurchasesCombo_DrawItem;
+            headerUC1.FormText = this.Text;
+        }
+
+        private void PurchasesCombo_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            if (e.Index < 0) return;
+            var combo = (ComboBox)sender;
+            string value = Convert.ToString(combo.Items[e.Index]);
+            string display = value;
+            switch (value)
+            {
+                case "Default": display = "افتراضي"; break;
+                case "Item Wise": display = "حسب الصنف"; break;
+                case "Cash": display = "نقدي"; break;
+                case "Credit": display = "آجل"; break;
+            }
+            e.DrawBackground();
+            using (var brush = new SolidBrush(e.ForeColor))
+            {
+                var bounds = e.Bounds;
+                using (var format = new StringFormat
+                {
+                    Alignment = StringAlignment.Near,
+                    LineAlignment = StringAlignment.Center,
+                    FormatFlags = StringFormatFlags.DirectionRightToLeft
+                })
+                {
+                    e.Graphics.DrawString(display, e.Font, brush, bounds, format);
+                }
+            }
+            e.DrawFocusRectangle();
+        }
+
+        private void TranslatePurchaseGridHeaders(DataGridView grid)
+        {
+            if (!IsPurchasesArabic || grid == null) return;
+            var translations = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                {"SN", "م"}, {"JV NO", "رقم القيد"},
+                {"Date", "التاريخ"}, {"INV NO", "رقم الفاتورة"},
+                {"Vendor Name", "اسم المورد"}, {"Payment Method", "طريقة الدفع"},
+                {"Total", "الإجمالي"}, {"Vat", "الضريبة"},
+                {"Net", "الصافي"}, {"Item Name", "اسم الصنف"},
+                {"Qty", "الكمية"}, {"Cost Price", "سعر التكلفة"},
+                {"Item Vat", "ضريبة الصنف"}, {"Item Total", "إجمالي الصنف"},
+                {"View Doc", "عرض المستند"}
+            };
+            foreach (DataGridViewColumn column in grid.Columns)
+            {
+                string translated;
+                if (translations.TryGetValue(column.Name, out translated) ||
+                    translations.TryGetValue(column.HeaderText, out translated))
+                    column.HeaderText = translated;
+            }
+        }
+
         private void MasterPurchases_FormClosing(object sender, FormClosingEventArgs e)
         {
             EventHub.Vendor -= vendorUpdatedHandler;
@@ -100,7 +192,9 @@ namespace YamyProject
             if (CbSubcontractors.Checked)
             {
                 query += " and tbl_vendor.type = 'Subcontractor'";
-            }else { 
+            }
+            else
+            {
                 query += " and tbl_vendor.type = 'Vendor'";
             }
 
@@ -114,7 +208,7 @@ namespace YamyProject
                 query += " and tbl_purchase.payment_method = @payment";
                 parameters.Add(ClinicDatabase.CreateParameterNew("payment", cmbPaymentMethod.Text));
             }
-            
+
             if (!chkDate.Checked)
                 query += " and tbl_purchase.date >= @dateFrom and tbl_purchase.date <= @dateTo";
             if (cmbSelectionMethod.Text == "Default")
@@ -122,7 +216,7 @@ namespace YamyProject
 
             else
                 query += " GROUP BY tbl_purchase.id, tbl_purchase.date, tbl_purchase.invoice_id, tbl_vendor.code, tbl_vendor.name, tbl_purchase.total,ti.code,ti.name,ts.qty,ts.cost_price,ts.vat,ts.total ";
-            
+
             parameters.Add(ClinicDatabase.CreateParameterNew("dateFrom", dtFrom.Value.Date));
             parameters.Add(ClinicDatabase.CreateParameterNew("dateTo", dtTo.Value.Date));
 
@@ -172,10 +266,13 @@ namespace YamyProject
                     dgvItems.DataSource = null;
 
                 LocalizationManager.LocalizeDataGridViewHeaders(dgvCustomer);
+                TranslatePurchaseGridHeaders(dgvCustomer);
                 AddViewDocImageColumn();
             }
 
-            lblPageInfo.Text = $"Page {_currentPage} of {_totalPages}";
+            lblPageInfo.Text = IsPurchasesArabic
+                ? $"صفحة {_currentPage} من {_totalPages}"
+                : $"Page {_currentPage} of {_totalPages}";
             btnPrev.Enabled = btnFirst.Enabled = _currentPage > 1;
             btnNext.Enabled = btnLast.Enabled = _currentPage < _totalPages;
 
@@ -190,6 +287,7 @@ namespace YamyProject
             dgvItems.Columns["item name"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
 
             LocalizationManager.LocalizeDataGridViewHeaders(dgvItems);
+            TranslatePurchaseGridHeaders(dgvItems);
         }
         private void dgv_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
         {
@@ -198,7 +296,7 @@ namespace YamyProject
                 SetViewDocIcons();
             }
         }
-        System.Drawing.Image enabledIcon =Clinic.Properties.Resources.doc_icon;   // regular icon
+        System.Drawing.Image enabledIcon = Clinic.Properties.Resources.doc_icon;   // regular icon
         System.Drawing.Image disabledIcon = null; // or Properties.Resources.doc_icon_disabled
 
         private void SetViewDocIcons()
@@ -219,7 +317,7 @@ namespace YamyProject
             {
                 DataGridViewImageColumn imgColumn = new DataGridViewImageColumn();
                 imgColumn.Name = "ViewDoc";
-                imgColumn.HeaderText = "View Doc";
+                imgColumn.HeaderText = IsPurchasesArabic ? "عرض المستند" : "View Doc";
                 //imgColumn.Image = Properties.Resources.doc_icon; // <-- your image here
                 imgColumn.ImageLayout = DataGridViewImageCellLayout.Zoom; // fit nicely
                 dgvCustomer.Columns.Add(imgColumn);
@@ -247,7 +345,7 @@ namespace YamyProject
         {
             if (dgvCustomer.Rows.Count == 0)
                 return;
-            frmMain.openChildForm(new frmPurchase( int.Parse(dgvCustomer.SelectedRows[0].Cells["id"].Value.ToString())));
+            frmMain.openChildForm(new frmPurchase(int.Parse(dgvCustomer.SelectedRows[0].Cells["id"].Value.ToString())));
         }
         private void dgvCustomer_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {

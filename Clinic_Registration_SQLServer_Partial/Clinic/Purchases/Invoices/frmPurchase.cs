@@ -36,6 +36,7 @@ namespace YamyProject
             //AppTheme.DefaultFont(dgvItems);
             headerUC1.FormText = this.Text;
             LocalizationManager.LocalizeForm(this);
+            ApplyPurchaseArabicText();
             vendorUpdatedHandler = (sender, args) => BindCombos.PopulateVendors(cmbVendor);
             itemUpdatedHandler = (sender, args) => RefreshItems();
             warehouseUpdatedHandler = (sender, args) => BindCombos.PopulateWarehouse(cmbWarehouse);
@@ -122,6 +123,98 @@ namespace YamyProject
                 txtBarcodeScan.Visible = true;
                 this.ActiveControl = txtBarcodeScan;
             }
+            ApplyPurchaseArabicText();
+        }
+
+
+        // Display-only Arabic localization; do not translate stored combo values.
+        private void ApplyPurchaseArabicText()
+        {
+            bool arabic = (Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en")
+                .StartsWith("ar", StringComparison.OrdinalIgnoreCase);
+            if (!arabic) return;
+            this.Text = "فاتورة مشتريات";
+            headerUC1.FormText = this.Text;
+            btnSaveClose.Text = "حفظ وإغلاق";
+            btnClose.Text = "إغلاق";
+            btnSave.Text = "حفظ";
+            label19.Text = "مركز التكلفة";
+            label5.Text = "شروط الدفع";
+            label15.Text = "نوع الفاتورة";
+            label4.Text = "رقم الفاتورة";
+            label21.Text = "التاريخ";
+            label22.Text = "مندوب المبيعات";
+            label2.Text = "رقم أمر الشراء";
+            label3.Text = "تاريخ الاستحقاق";
+            label9.Text = "الإمارة";
+            label20.Text = "المستودع";
+            label13.Text = "اسم الحساب";
+            label8.Text = "نوع المشتريات";
+            labelFixedAssetCategory.Text = "فئة الأصول الثابتة";
+            label12.Text = "الرقم المرجعي";
+            label29.Text = "ملاحظات";
+            label1.Text = "الإجمالي قبل الضريبة";
+            label17.Text = "إجمالي الضريبة";
+            label16.Text = "صافي المبلغ";
+            tabPage3.Text = "الرئيسية";
+            CbSubcontractors.Text = "مقاولو الباطن";
+            guna2TileButton12.Text = "استرداد / دفع";
+            guna2TileButton13.Text = "استلام المدفوعات";
+            guna2TileButton14.Text = "إنشاء نسخة";
+            guna2TileButton23.Text = "جديد";
+            guna2TileButton15.Text = "إضافة وقت / تكاليف";
+            guna2TileButton22.Text = "حفظ";
+            guna2TileButton21.Text = "حذف";
+            guna2TileButton16.Text = "إرفاق ملف";
+            guna2TileButton20.Text = "إنشاء نسخة";
+            guna2TileButton19.Text = "حفظ كقالب";
+            checkBox3.Text = "إرسال البريد لاحقاً";
+            chkPrint.Text = "الطباعة لاحقاً";
+            guna2TileButton18.Text = "طباعة";
+            guna2TileButton17.Text = "بريد إلكتروني";
+            tabPage4.Text = "التقارير";
+            guna2TileButton27.Text = "ملخص متوسط أيام السداد";
+            guna2TileButton28.Text = "تفاصيل المشتريات حسب المورد";
+            guna2TileButton29.Text = "عرض الفواتير المفتوحة";
+            guna2TileButton26.Text = "يومية المعاملات";
+            guna2TileButton25.Text = "سجل المعاملات";
+            guna2TileButton24.Text = "تقرير سريع";
+            label6.Text = "بواسطة";
+            label18.Text = "فاتورة إلى";
+            lnkNewVendor.Text = "جديد";
+            label11.Text = "الرمز";
+            label14.Text = "المورد";
+            label10.Text = "تاريخ الشحن";
+            label7.Text = "الشحن";
+            guna2TileButton31.Text = "تقرير الاستلام";
+            guna2TileButton30.Text = "تقرير الفاتورة";
+            txtBarcodeScan.PlaceholderText = "امسح الباركود أو أدخل الرمز";
+            txtPONO.PlaceholderText = "رقم أمر الشراء";
+            txtSalesMan.PlaceholderText = "مندوب المبيعات";
+            txtShipTo.PlaceholderText = "الشحن إلى";
+            txtBillTo.PlaceholderText = "فاتورة إلى";
+            txtTotalVat.PlaceholderText = "إجمالي الضريبة";
+            txtTotalBefore.PlaceholderText = "الإجمالي قبل الضريبة";
+            txtTotal.PlaceholderText = "صافي المبلغ";
+            if (dgvItems.Columns.Contains("no")) dgvItems.Columns["no"].HeaderText = "م";
+            if (dgvItems.Columns.Contains("code")) dgvItems.Columns["code"].HeaderText = "الرمز";
+            if (dgvItems.Columns.Contains("name")) dgvItems.Columns["name"].HeaderText = "اسم الصنف";
+            if (dgvItems.Columns.Contains("qty")) dgvItems.Columns["qty"].HeaderText = "الكمية";
+            if (dgvItems.Columns.Contains("unit_id")) dgvItems.Columns["unit_id"].HeaderText = "الوحدة";
+            if (dgvItems.Columns.Contains("batch_no")) dgvItems.Columns["batch_no"].HeaderText = "رقم الدفعة";
+            if (dgvItems.Columns.Contains("expiry_date")) dgvItems.Columns["expiry_date"].HeaderText = "تاريخ الانتهاء";
+            if (dgvItems.Columns.Contains("cost")) dgvItems.Columns["cost"].HeaderText = "التكلفة";
+            if (dgvItems.Columns.Contains("price")) dgvItems.Columns["price"].HeaderText = "السعر";
+            if (dgvItems.Columns.Contains("discount")) dgvItems.Columns["discount"].HeaderText = "الخصم";
+            if (dgvItems.Columns.Contains("net_price")) dgvItems.Columns["net_price"].HeaderText = "صافي السعر";
+            if (dgvItems.Columns.Contains("vat")) dgvItems.Columns["vat"].HeaderText = "الضريبة";
+            if (dgvItems.Columns.Contains("VatP")) dgvItems.Columns["VatP"].HeaderText = "قيمة الضريبة";
+            if (dgvItems.Columns.Contains("total")) dgvItems.Columns["total"].HeaderText = "المبلغ";
+            if (dgvItems.Columns.Contains("delete")) dgvItems.Columns["delete"].HeaderText = "حذف";
+            if (dgvItems.Columns.Contains("itemId")) dgvItems.Columns["itemId"].HeaderText = "معرف الصنف";
+            if (dgvItems.Columns.Contains("method")) dgvItems.Columns["method"].HeaderText = "الطريقة";
+            if (dgvItems.Columns.Contains("type")) dgvItems.Columns["type"].HeaderText = "النوع";
+            // The grid's Name/DataPropertyName and combo SelectedValue are not changed.
         }
 
         private bool suppressCellValueChanged = false;
@@ -285,7 +378,7 @@ namespace YamyProject
                 {
                     int rowIndex = dgvItems.Rows.Add(reader["item_id"].ToString(), "", reader["code"].ToString(), reader["name"].ToString(), Utilities.FormatDecimal(reader["qty"]), null, reader["batch_no"], Convert.ToDateTime(reader["expiry_date"]),
                                                     Utilities.FormatDecimal(reader["cost_price"]), Utilities.FormatDecimal(reader["price"]), Utilities.FormatDecimal(reader["discount"]));
-                    
+
                     DataGridViewRow row = dgvItems.Rows[rowIndex];
                     DataGridViewComboBoxCell comboCell = row.Cells["vat"] as DataGridViewComboBoxCell;
                     if (comboCell != null && reader["vat"].ToString() != "0")
@@ -294,19 +387,19 @@ namespace YamyProject
                         row.Cells["vatp"].Value = decimal.Parse(reader["vatP"].ToString());
                     }
                     int itemId = Convert.ToInt32(reader["item_id"]);
-                    
+
                     //DataGridViewComboBoxCell comboCellItemUnit = dgvItems.Rows[dgvItems.Rows.Count - 2].Cells["unit_id"] as DataGridViewComboBoxCell;
                     //if (comboCellItemUnit != null && reader["item_unit_id"].ToString() != "0")
                     //{
                     //    comboCellItemUnit.Value = int.Parse(reader["item_unit_id"].ToString());
                     //}
                     //net_price
-                    decimal netPrice = 
-                        (decimal.Parse(row.Cells["qty"].Value.ToString()) 
+                    decimal netPrice =
+                        (decimal.Parse(row.Cells["qty"].Value.ToString())
                         * decimal.Parse(row.Cells["cost"].Value.ToString())
                         - decimal.Parse(row.Cells["discount"].Value.ToString()));
                     row.Cells["net_price"].Value = netPrice;
-                    row.Cells["total"].Value = netPrice 
+                    row.Cells["total"].Value = netPrice
                         + decimal.Parse(row.Cells["vatp"].Value == null ? "0" : row.Cells["vatp"].Value.ToString());
                     row.Cells["method"].Value = reader["method"].ToString();
                     row.Cells["type"].Value = reader["type"].ToString();
@@ -416,8 +509,8 @@ namespace YamyProject
         }
         string defaultTax = "";
 
-        
-        
+
+
         private void bindCombo()
         {
             BindCombos.PopulateVendors(cmbVendor);
@@ -804,7 +897,7 @@ namespace YamyProject
                     $"Invalid quantity for item {itemId}.");
             }
 
-            int unitId=0;
+            int unitId = 0;
             decimal cost;
             decimal salePrice;
 
