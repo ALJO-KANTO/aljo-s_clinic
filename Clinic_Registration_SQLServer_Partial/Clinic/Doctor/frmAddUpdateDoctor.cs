@@ -439,7 +439,41 @@ namespace Clinic.Doctor
             };
             dgvWeeklySchedule.Columns.Add(column);
         }
+        private void EnsureScheduleTimeOption(string columnName, string timeValue)
+        {
+            if (string.IsNullOrWhiteSpace(timeValue))
+                return;
 
+            var column = dgvWeeklySchedule.Columns[columnName]
+                         as DataGridViewComboBoxColumn;
+
+            if (column == null)
+                return;
+
+            var options = column.DataSource as List<string>;
+
+            if (options == null)
+                return;
+
+            if (!options.Contains(timeValue))
+            {
+                options.Add(timeValue);
+
+                options.Sort((a, b) =>
+                {
+                    if (string.IsNullOrEmpty(a)) return -1;
+                    if (string.IsNullOrEmpty(b)) return 1;
+
+                    DateTime timeA = DateTime.ParseExact(
+                        a, "hh:mm tt", CultureInfo.InvariantCulture);
+
+                    DateTime timeB = DateTime.ParseExact(
+                        b, "hh:mm tt", CultureInfo.InvariantCulture);
+
+                    return timeA.CompareTo(timeB);
+                });
+            }
+        }
         private Label CreateScheduleLabel(string text, int x, int y, bool bold, float size)
         {
             return new Label
@@ -498,8 +532,18 @@ namespace Clinic.Doctor
                     DataRow[] shifts = _Doctor.dtWorkDays.Select("DayID = " + dayID, "StartTime ASC");
                     if (shifts.Length > 0)
                     {
-                        weeklyRow["Start1"] = FormatScheduleTime(shifts[0]["StartTime"]);
-                        weeklyRow["End1"] = FormatScheduleTime(shifts[0]["EndTime"]);
+                        string startTime =
+                            FormatScheduleTime(shifts[0]["StartTime"]);
+
+                        string endTime =
+                            FormatScheduleTime(shifts[0]["EndTime"]);
+
+                        // Ensure saved times exist in ComboBox options
+                        EnsureScheduleTimeOption("Start1", startTime);
+                        EnsureScheduleTimeOption("End1", endTime);
+
+                        weeklyRow["Start1"] = startTime;
+                        weeklyRow["End1"] = endTime;
                         weeklyRow["IsWorking"] = true;
                     }
                 }
@@ -545,16 +589,37 @@ namespace Clinic.Doctor
                 return "";
 
             TimeSpan time;
-            if (value is TimeSpan)
-                time = (TimeSpan)value;
-            else if (value is DateTime)
-                time = ((DateTime)value).TimeOfDay;
-            else if (!TimeSpan.TryParse(Convert.ToString(value), out time))
-                return "";
 
-            return DateTime.Today.Add(time).ToString("hh:mm tt", CultureInfo.InvariantCulture);
+            if (value is TimeSpan ts)
+            {
+                time = ts;
+            }
+            else if (value is DateTime dt)
+            {
+                time = dt.TimeOfDay;
+            }
+            else
+            {
+                string text = Convert.ToString(value)?.Trim();
+
+                if (TimeSpan.TryParse(text, out time))
+                {
+                    // Successfully parsed database TIME
+                }
+                else if (DateTime.TryParse(text, out DateTime parsed))
+                {
+                    time = parsed.TimeOfDay;
+                }
+                else
+                {
+                    return "";
+                }
+            }
+
+            return DateTime.Today
+                .Add(time)
+                .ToString("hh:mm tt", CultureInfo.InvariantCulture);
         }
-
         private bool TryParseScheduleTime(string value, out TimeSpan time)
         {
             time = TimeSpan.Zero;

@@ -332,22 +332,66 @@ namespace Clinic.Medical_Services.Visit
             dgvVisit.CellFormatting += dgvVisit_CellFormatting;
         }
 
-        private void dgvVisit_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        private void dgvVisit_CellFormatting(
+     object sender,
+     DataGridViewCellFormattingEventArgs e)
         {
-            if (!TranslationClass.IsArabic || e.Value == null || e.Value == DBNull.Value)
+            if (e.Value == null || e.Value == DBNull.Value)
                 return;
 
             string columnName = dgvVisit.Columns[e.ColumnIndex].Name;
-            string value = e.Value.ToString();
 
-            if (columnName == "StatusText")
+            if (columnName != "StatusText")
+                return;
+
+            string status = e.Value.ToString().Trim();
+
+            // Normalize existing text statuses.
+            switch (status.ToLowerInvariant())
             {
-                if (value == "Open") e.Value = Tr("Open");
-                else if (value == "Completed") e.Value = Tr("Completed");
-                else if (value == "Closed") e.Value = Tr("Closed");
-                else if (value == "Cancelled") e.Value = Tr("Cancelled");
-                e.FormattingApplied = true;
+                case "1":
+                case "open":
+                    status = "Open";
+                    break;
+
+                case "completed":
+                    status = "Completed";
+                    break;
+
+                case "closed":
+                    status = "Closed";
+                    break;
+
+                case "cancelled":
+                case "canceled":
+                    status = "Cancelled";
+                    break;
+
+                case "pending_billing":
+                    status = "Pending Billing";
+                    break;
+
+                case "in_billing":
+                    status = "In Billing";
+                    break;
             }
+
+            // Translate recognized text statuses when Arabic is selected.
+            if (TranslationClass.IsArabic)
+            {
+                switch (status)
+                {
+                    case "Open": status = "مفتوحة"; break;
+                    case "Completed": status = "مكتملة"; break;
+                    case "Closed": status = "مغلقة"; break;
+                    case "Cancelled": status = "ملغاة"; break;
+                    case "Pending Billing": status = "بانتظار الفوترة"; break;
+                    case "In Billing": status = "قيد الفوترة"; break;
+                }
+            }
+
+            e.Value = status;
+            e.FormattingApplied = true;
         }
 
         private void cbFilterBy_SelectedIndexChanged(object sender, EventArgs e)

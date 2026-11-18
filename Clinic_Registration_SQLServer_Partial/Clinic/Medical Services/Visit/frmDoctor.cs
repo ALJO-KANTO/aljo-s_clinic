@@ -437,7 +437,15 @@ namespace Clinic.Medical_Services.Visit
 
             tcVisitInfo.Dock = DockStyle.Fill;
             pnlWaittingList.Visible = false;
+            LoadSavedLabTests(_VisitID); 
+            // Ensure Laboratory Tests tab is available in Edit Visit mode.
+            if (!tcVisitInfo.TabPages.Contains(tpLabTestInfo))
+            {
+                tcVisitInfo.TabPages.Add(tpLabTestInfo);
+            }
 
+            tpLabTestInfo.Enabled = true;
+            pnlLabTestInfo.Enabled = true;
             pnlVisitInfo.Enabled = true;
             if (_doctorVitalsTab != null) _doctorVitalsTab.Enabled = true;
             pnlServicesInfo.Enabled = true;
@@ -446,9 +454,9 @@ namespace Clinic.Medical_Services.Visit
             if (_doctorVitalsNext != null)
                 _doctorVitalsNext.Enabled = true;
             bool canEditPrescription =
-                _Visit.PrescriptionInfo != null &&
-                _Visit.PrescriptionInfo.IsPrescriptionPending();
-
+     _Visit.PrescriptionInfo == null ||
+     _Visit.PrescriptionInfo.PrescriptionID <= 0 ||
+     _Visit.PrescriptionInfo.IsPrescriptionPending();
             pnlPrescriptionInfo.Enabled = canEditPrescription;
             btnAddMedicen.Enabled = canEditPrescription;
 
@@ -825,8 +833,9 @@ AND active = 0        ORDER BY name;";
             bool isUpdate = _Mode == enMode.Update;
 
             bool canEditPrescription = !isUpdate ||
-                (_Visit.PrescriptionInfo != null &&
-                 _Visit.PrescriptionInfo.IsPrescriptionPending());
+      _Visit.PrescriptionInfo == null ||
+      _Visit.PrescriptionInfo.PrescriptionID <= 0 ||
+      _Visit.PrescriptionInfo.IsPrescriptionPending();
 
             if (!isUpdate && !canEditPrescription)
             {
@@ -1965,7 +1974,35 @@ AND active = 0        ORDER BY name;";
                 weight,
                 pulse);
         }
+        private void LoadSavedLabTests(int visitID)
+        {
+            selectedTestIDs.Clear();
 
+            const string query = @"
+        SELECT DISTINCT TestID
+        FROM labrequests
+        WHERE VisitID = @VisitID;";
+
+            using (var connection = ClinicDatabase.GetConnection())
+            using (var command =
+                new MySql.Data.MySqlClient.MySqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@VisitID", visitID);
+
+                connection.Open();
+
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        selectedTestIDs.Add(
+                            Convert.ToInt32(reader["TestID"]));
+                    }
+                }
+            }
+
+            LoadLabTestForm();
+        }
         private void LoadLabTestForm()
         {
             allTests = ClinicDatabase.GetLabTests();

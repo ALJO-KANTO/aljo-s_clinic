@@ -1066,7 +1066,371 @@
             this.panel10.ResumeLayout(false);
             this.panel10.PerformLayout();
             this.ResumeLayout(false);
+            ApplyModernPharmacyLayout();
 
+        }
+
+
+        // Responsive pharmacy layout; keeps original controls and their event handlers.
+        private void ApplyModernPharmacyLayout()
+        {
+            var navy = System.Drawing.Color.FromArgb(17, 55, 101);
+            var teal = System.Drawing.Color.FromArgb(0, 137, 145);
+            var blue = System.Drawing.Color.FromArgb(32, 105, 198);
+            var amber = System.Drawing.Color.FromArgb(193, 126, 24);
+            var red = System.Drawing.Color.FromArgb(190, 62, 74);
+            var ink = System.Drawing.Color.FromArgb(35, 55, 76);
+            var pale = System.Drawing.Color.FromArgb(239, 245, 250);
+            this.SuspendLayout();
+            this.Controls.Clear();
+            this.Padding = new System.Windows.Forms.Padding(12);
+            this.BackColor = pale;
+            this.AutoScroll = false;
+            this.MinimumSize = new System.Drawing.Size(900, 620);
+
+            var root = new System.Windows.Forms.TableLayoutPanel
+            {
+                Dock = System.Windows.Forms.DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 4,
+                BackColor = pale,
+                Margin = new System.Windows.Forms.Padding(0),
+                Padding = new System.Windows.Forms.Padding(0)
+            };
+            root.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100));
+            root.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 112));
+            root.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 84));
+            root.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100));
+            root.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 67));
+            this.Controls.Add(root);
+
+            var header = new System.Windows.Forms.TableLayoutPanel
+            {
+                Dock = System.Windows.Forms.DockStyle.Fill,
+                ColumnCount = 2,
+                RowCount = 1,
+                BackColor = navy,
+                Margin = new System.Windows.Forms.Padding(0, 0, 0, 8)
+            };
+            header.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100));
+            header.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 265));
+            root.Controls.Add(header, 0, 0);
+            var heading = new System.Windows.Forms.TableLayoutPanel
+            {
+                Dock = System.Windows.Forms.DockStyle.Fill,
+                RowCount = 2,
+                ColumnCount = 1,
+                Padding = new System.Windows.Forms.Padding(20, 10, 0, 10),
+                BackColor = navy
+            };
+            heading.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 57));
+            heading.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 43));
+            heading.Controls.Add(new System.Windows.Forms.Label
+            {
+                Text = "Pharmacy Management",
+                Dock = System.Windows.Forms.DockStyle.Fill,
+                ForeColor = System.Drawing.Color.White,
+                Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold),
+                TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+            }, 0, 0);
+            heading.Controls.Add(new System.Windows.Forms.Label
+            {
+                Text = "Prescription dispensing  •  Billing  •  Stock availability",
+                Dock = System.Windows.Forms.DockStyle.Fill,
+                ForeColor = System.Drawing.Color.FromArgb(210, 230, 247),
+                Font = new System.Drawing.Font("Segoe UI", 9.5F),
+                TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+            }, 0, 1);
+            header.Controls.Add(heading, 0, 0);
+            var account = new System.Windows.Forms.TableLayoutPanel
+            {
+                Dock = System.Windows.Forms.DockStyle.Fill,
+                ColumnCount = 2,
+                RowCount = 1,
+                Padding = new System.Windows.Forms.Padding(0, 22, 12, 22),
+                BackColor = navy
+            };
+            account.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100));
+            account.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 96));
+            header.Controls.Add(account, 1, 0);
+            lbCurrentUser.Parent = account;
+            lbCurrentUser.Dock = System.Windows.Forms.DockStyle.Fill;
+            lbCurrentUser.AutoSize = false;
+            lbCurrentUser.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            lbCurrentUser.ForeColor = System.Drawing.Color.White;
+            lbCurrentUser.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            account.Controls.Add(lbCurrentUser, 0, 0);
+            btnExit.Parent = account;
+            btnExit.Dock = System.Windows.Forms.DockStyle.Fill;
+            btnExit.Text = "Close";
+            btnExit.Image = null;
+            btnExit.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            btnExit.BackColor = System.Drawing.Color.FromArgb(39, 94, 156);
+            btnExit.ForeColor = System.Drawing.Color.White;
+            btnExit.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            btnExit.FlatAppearance.BorderSize = 0;
+            btnExit.Margin = new System.Windows.Forms.Padding(6, 0, 0, 0);
+            btnExit.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            account.Controls.Add(btnExit, 1, 0);
+
+            var toolbar = new System.Windows.Forms.TableLayoutPanel
+            {
+                Dock = System.Windows.Forms.DockStyle.Fill,
+                ColumnCount = 4,
+                RowCount = 1,
+                BackColor = System.Drawing.Color.White,
+                Padding = new System.Windows.Forms.Padding(9),
+                Margin = new System.Windows.Forms.Padding(0, 0, 0, 8)
+            };
+            for (int i = 0; i < 4; i++) toolbar.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25));
+            root.Controls.Add(toolbar, 0, 1);
+            var buttons = new[] { btnSendToAccounting, btnDispense, btnPrintShotageSlip, btnCancelOrder };
+            var captions = new[] { "Send to Billing", "Dispense Medication", "Print Shortage Slip", "Cancel Prescription" };
+            var colors = new[] { teal, blue, amber, red };
+            for (int i = 0; i < buttons.Length; i++)
+            {
+                // Put the caption on a separate sibling Label, NOT inside the Button.
+                // This avoids WinForms native Button painting over child controls.
+                var tile = new System.Windows.Forms.Panel
+                {
+                    Dock = System.Windows.Forms.DockStyle.Fill,
+                    Margin = new System.Windows.Forms.Padding(5, 2, 5, 2),
+                    BackColor = colors[i],
+                    Cursor = System.Windows.Forms.Cursors.Hand
+                };
+                toolbar.Controls.Add(tile, i, 0);
+
+                var button = buttons[i];
+                button.Parent = tile;
+                button.Dock = System.Windows.Forms.DockStyle.Fill;
+                button.Margin = new System.Windows.Forms.Padding(0);
+                button.Text = captions[i];
+                button.Image = null;
+                button.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
+                button.ForeColor = System.Drawing.Color.White;
+                button.BackColor = colors[i];
+                button.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+                button.FlatAppearance.BorderSize = 0;
+                button.UseVisualStyleBackColor = false;
+                button.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+
+                var captionLabel = new System.Windows.Forms.Label
+                {
+                    Name = "lblPharmacyAction_" + i,
+                    Text = captions[i],
+                    Dock = System.Windows.Forms.DockStyle.Fill,
+                    AutoSize = false,
+                    BackColor = colors[i],
+                    ForeColor = System.Drawing.Color.White,
+                    Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold),
+                    TextAlign = System.Drawing.ContentAlignment.MiddleCenter,
+                    Cursor = System.Windows.Forms.Cursors.Hand,
+                    UseMnemonic = false
+                };
+                tile.Controls.Add(captionLabel);
+                captionLabel.BringToFront();
+                var target = button;
+                captionLabel.Click += (sender, args) =>
+                {
+                    if (target.Enabled) target.PerformClick();
+                };
+                tile.Resize += (sender, args) => captionLabel.BringToFront();
+            }
+
+            var workArea = new System.Windows.Forms.TableLayoutPanel
+            {
+                Dock = System.Windows.Forms.DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 2,
+                BackColor = pale,
+                Margin = new System.Windows.Forms.Padding(0)
+            };
+            workArea.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100));
+            workArea.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 48));
+            workArea.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 52));
+            root.Controls.Add(workArea, 0, 2);
+
+            var prescriptionBox = new System.Windows.Forms.TableLayoutPanel
+            {
+                Dock = System.Windows.Forms.DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 3,
+                BackColor = System.Drawing.Color.White,
+                Padding = new System.Windows.Forms.Padding(12),
+                Margin = new System.Windows.Forms.Padding(0, 0, 0, 7)
+            };
+            prescriptionBox.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100));
+            prescriptionBox.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 42));
+            prescriptionBox.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 43));
+            prescriptionBox.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100));
+            workArea.Controls.Add(prescriptionBox, 0, 0);
+            var prescriptionHeading = new System.Windows.Forms.FlowLayoutPanel
+            {
+                Dock = System.Windows.Forms.DockStyle.Fill,
+                FlowDirection = System.Windows.Forms.FlowDirection.LeftToRight,
+                WrapContents = false,
+                AutoScroll = true
+            };
+            prescriptionBox.Controls.Add(prescriptionHeading, 0, 0);
+            label1.Parent = prescriptionHeading;
+            label1.Text = "Pending Prescriptions";
+            label1.AutoSize = true;
+            label1.BackColor = System.Drawing.Color.Transparent;
+            label1.ForeColor = ink;
+            label1.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold);
+            label1.Margin = new System.Windows.Forms.Padding(0, 3, 22, 0);
+            prescriptionHeading.Controls.Add(label1);
+            lbPatientName.Parent = prescriptionHeading;
+            lbPatientName.AutoSize = true;
+            lbPatientName.BackColor = System.Drawing.Color.Transparent;
+            lbPatientName.ForeColor = teal;
+            lbPatientName.Font = new System.Drawing.Font("Segoe UI", 10.5F, System.Drawing.FontStyle.Bold);
+            lbPatientName.Margin = new System.Windows.Forms.Padding(0, 9, 0, 0);
+            prescriptionHeading.Controls.Add(lbPatientName);
+
+            var searchRow = new System.Windows.Forms.TableLayoutPanel
+            {
+                Dock = System.Windows.Forms.DockStyle.Fill,
+                ColumnCount = 2,
+                RowCount = 1,
+                Margin = new System.Windows.Forms.Padding(0, 0, 0, 5)
+            };
+            searchRow.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 170));
+            searchRow.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100));
+            prescriptionBox.Controls.Add(searchRow, 0, 1);
+            searchRow.Controls.Add(new System.Windows.Forms.Label
+            {
+                Text = "Search patient",
+                Dock = System.Windows.Forms.DockStyle.Fill,
+                TextAlign = System.Drawing.ContentAlignment.MiddleLeft,
+                ForeColor = ink,
+                Font = new System.Drawing.Font("Segoe UI", 10F)
+            }, 0, 0);
+            txtSearch.Parent = searchRow;
+            txtSearch.Multiline = false;
+            txtSearch.Dock = System.Windows.Forms.DockStyle.Left;
+            txtSearch.Width = 320;
+            txtSearch.Font = new System.Drawing.Font("Segoe UI", 11F);
+            txtSearch.BackColor = System.Drawing.Color.FromArgb(247, 250, 253);
+            txtSearch.Margin = new System.Windows.Forms.Padding(0, 4, 0, 4);
+            searchRow.Controls.Add(txtSearch, 1, 0);
+            lblPlaceholderSer.Visible = false;
+            dgvPrescription.Parent = prescriptionBox;
+            ConfigurePharmacyGrid(dgvPrescription);
+            prescriptionBox.Controls.Add(dgvPrescription, 0, 2);
+
+            var detailsBox = new System.Windows.Forms.TableLayoutPanel
+            {
+                Dock = System.Windows.Forms.DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 2,
+                BackColor = System.Drawing.Color.White,
+                Padding = new System.Windows.Forms.Padding(12),
+                Margin = new System.Windows.Forms.Padding(0, 0, 0, 7)
+            };
+            detailsBox.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100));
+            detailsBox.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 44));
+            detailsBox.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100));
+            workArea.Controls.Add(detailsBox, 0, 1);
+            var detailHeading = new System.Windows.Forms.FlowLayoutPanel
+            {
+                Dock = System.Windows.Forms.DockStyle.Fill,
+                FlowDirection = System.Windows.Forms.FlowDirection.LeftToRight,
+                WrapContents = false,
+                AutoScroll = true
+            };
+            detailsBox.Controls.Add(detailHeading, 0, 0);
+            label2.Parent = detailHeading;
+            label2.Text = "Prescription Medicine Details";
+            label2.AutoSize = true;
+            label2.BackColor = System.Drawing.Color.Transparent;
+            label2.ForeColor = ink;
+            label2.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold);
+            label2.Margin = new System.Windows.Forms.Padding(0, 3, 24, 0);
+            detailHeading.Controls.Add(label2);
+            lbPatientNameDetalis.Parent = detailHeading;
+            lbPatientNameDetalis.AutoSize = true;
+            lbPatientNameDetalis.BackColor = System.Drawing.Color.Transparent;
+            lbPatientNameDetalis.ForeColor = teal;
+            lbPatientNameDetalis.Font = new System.Drawing.Font("Segoe UI", 10.5F, System.Drawing.FontStyle.Bold);
+            lbPatientNameDetalis.Margin = new System.Windows.Forms.Padding(0, 9, 0, 0);
+            detailHeading.Controls.Add(lbPatientNameDetalis);
+            dgPrescriptionDetails.Parent = detailsBox;
+            ConfigurePharmacyGrid(dgPrescriptionDetails);
+            detailsBox.Controls.Add(dgPrescriptionDetails, 0, 1);
+
+            var footer = new System.Windows.Forms.TableLayoutPanel
+            {
+                Dock = System.Windows.Forms.DockStyle.Fill,
+                ColumnCount = 4,
+                RowCount = 1,
+                BackColor = System.Drawing.Color.White,
+                Padding = new System.Windows.Forms.Padding(15, 9, 12, 9),
+                Margin = new System.Windows.Forms.Padding(0)
+            };
+            footer.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 155));
+            footer.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 165));
+            footer.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 35));
+            footer.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 65));
+            root.Controls.Add(footer, 0, 3);
+            footer.Controls.Add(new System.Windows.Forms.Label
+            {
+                Text = "Total Medicines:",
+                Dock = System.Windows.Forms.DockStyle.Fill,
+                TextAlign = System.Drawing.ContentAlignment.MiddleLeft,
+                ForeColor = ink,
+                Font = new System.Drawing.Font("Segoe UI", 10.5F, System.Drawing.FontStyle.Bold)
+            }, 0, 0);
+            lbTotalMedicen.Parent = footer;
+            lbTotalMedicen.Dock = System.Windows.Forms.DockStyle.Fill;
+            lbTotalMedicen.AutoSize = false;
+            lbTotalMedicen.BackColor = System.Drawing.Color.Transparent;
+            lbTotalMedicen.ForeColor = teal;
+            lbTotalMedicen.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            lbTotalMedicen.Font = new System.Drawing.Font("Segoe UI", 16F, System.Drawing.FontStyle.Bold);
+            footer.Controls.Add(lbTotalMedicen, 1, 0);
+            lbStatus.Parent = footer;
+            lbStatus.Dock = System.Windows.Forms.DockStyle.Fill;
+            lbStatus.AutoSize = false;
+            lbStatus.BackColor = System.Drawing.Color.Transparent;
+            lbStatus.ForeColor = red;
+            lbStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            lbStatus.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            footer.Controls.Add(lbStatus, 2, 0);
+            lbNotReady.Parent = footer;
+            lbNotReady.Dock = System.Windows.Forms.DockStyle.Fill;
+            lbNotReady.AutoSize = false;
+            lbNotReady.BackColor = System.Drawing.Color.Transparent;
+            lbNotReady.ForeColor = red;
+            lbNotReady.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            lbNotReady.Font = new System.Drawing.Font("Segoe UI", 10F);
+            footer.Controls.Add(lbNotReady, 3, 0);
+            this.ResumeLayout(true);
+        }
+
+        private void ConfigurePharmacyGrid(System.Windows.Forms.DataGridView grid)
+        {
+            grid.Dock = System.Windows.Forms.DockStyle.Fill;
+            grid.Margin = new System.Windows.Forms.Padding(0);
+            grid.BackgroundColor = System.Drawing.Color.White;
+            grid.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            grid.EnableHeadersVisualStyles = false;
+            grid.ColumnHeadersVisible = true;
+            grid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            grid.ColumnHeadersHeight = 38;
+            grid.ColumnHeadersDefaultCellStyle.BackColor = System.Drawing.Color.FromArgb(21, 53, 94);
+            grid.ColumnHeadersDefaultCellStyle.ForeColor = System.Drawing.Color.White;
+            grid.ColumnHeadersDefaultCellStyle.SelectionBackColor = System.Drawing.Color.FromArgb(21, 53, 94);
+            grid.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            grid.ColumnHeadersDefaultCellStyle.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            grid.RowTemplate.Height = 35;
+            grid.RowsDefaultCellStyle.BackColor = System.Drawing.Color.White;
+            grid.AlternatingRowsDefaultCellStyle.BackColor = System.Drawing.Color.FromArgb(242, 248, 251);
+            grid.RowsDefaultCellStyle.SelectionBackColor = System.Drawing.Color.FromArgb(214, 237, 239);
+            grid.RowsDefaultCellStyle.SelectionForeColor = System.Drawing.Color.FromArgb(27, 55, 76);
+            grid.RowHeadersWidth = 24;
+            grid.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            grid.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
         }
 
         #endregion
