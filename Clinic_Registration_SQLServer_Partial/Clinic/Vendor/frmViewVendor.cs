@@ -14,7 +14,7 @@ namespace YamyProject
         int id;
         private EventHandler vendorCategoryUpdatedHandler;
 
-        public frmViewVendor( int id = 0)
+        public frmViewVendor(int id = 0)
         {
             InitializeComponent();
             LocalizationManager.LocalizeForm(this);
@@ -23,6 +23,7 @@ namespace YamyProject
             EventHub.VendorCategory += vendorCategoryUpdatedHandler;
             this.Text = id != 0 ? "Vendor - Edit Vendor" : "Vendor - New Vendor";
             headerUC1.FormText = this.Text;
+            ApplyVendorArabicText();
         }
 
         private void btnClose_Click(object sender, EventArgs e)
@@ -337,11 +338,11 @@ namespace YamyProject
                     resetTextBox();
             }
             else
-               if (updateVendor())
-            {
-                id = 0;
-                resetTextBox();
-            }
+                if (updateVendor())
+                {
+                    id = 0;
+                    resetTextBox();
+                }
             EventHub.RefreshVendor();
         }
 
@@ -404,6 +405,52 @@ namespace YamyProject
         private void label7_Click(object sender, EventArgs e)
         {
 
+        }
+
+        // Arabic display text only. Control names and database values stay unchanged.
+        private void ApplyVendorArabicText()
+        {
+            bool arabic = (Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en")
+                .StartsWith("ar", StringComparison.OrdinalIgnoreCase);
+            if (!arabic) return;
+            this.Text = id == 0 ? "المورد - مورد جديد" : "المورد - تعديل المورد";
+            headerUC1.FormText = this.Text;
+            guna2GroupBox1.Text = "البيانات الأساسية";
+            guna2GroupBox2.Text = "بيانات الاتصال والعنوان";
+            guna2GroupBox3.Text = "إعدادات الحساب وأخرى";
+            label1.Text = "فئة المورد";
+            lblBalance.Text = "الرصيد الافتتاحي";
+            label3.Text = "اسم المورد";
+            lnkNewCategory.Text = "إضافة جديد";
+            label12.Text = "العنوان";
+            label8.Text = "المدينة";
+            label4.Text = "البريد الإلكتروني";
+            label7.Text = "الدولة";
+            label5.Text = "الموقع الإلكتروني";
+            label6.Text = "الهاتف";
+            label2.Text = "المشروع";
+            chkActive.Text = "نشط";
+            label11.Text = "اسم المنشأة";
+            label9.Text = "الحساب";
+            label10.Text = "الرقم الضريبي";
+            btnClose.Text = "إغلاق";
+            btnSaveAndNew.Text = "حفظ وجديد";
+            btnSave.Text = "حفظ";
+            txtCredit.PlaceholderText = "دائن";
+            txtDepit.PlaceholderText = "مدين";
+            txtCode.PlaceholderText = "رمز المورد";
+            txtName.PlaceholderText = "اسم المورد";
+            txtBuildingName.PlaceholderText = "اسم المبنى";
+            txtRegion.PlaceholderText = "المنطقة";
+            txtWebsite.PlaceholderText = "الموقع الإلكتروني";
+            txtFax.PlaceholderText = "الجوال أو الفاكس";
+            txtWorkPhone.PlaceholderText = "هاتف العمل";
+            txtCCEmail.PlaceholderText = "بريد إلكتروني إضافي";
+            txtEmail.PlaceholderText = "البريد الإلكتروني";
+            txtMainPhone.PlaceholderText = "الهاتف الرئيسي";
+            txtFacilty.PlaceholderText = "اسم المنشأة";
+            txtTRN.PlaceholderText = "الرقم الضريبي";
+            // Keep input and dropdown values in their original order.
         }
     }
 }

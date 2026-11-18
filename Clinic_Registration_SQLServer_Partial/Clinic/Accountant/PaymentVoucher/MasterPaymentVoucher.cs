@@ -1,5 +1,6 @@
 ﻿using Clinic;
 using Clinic_DataAccess;
+using Guna.UI2.WinForms;
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
@@ -139,7 +140,7 @@ namespace YamyProject
             //.PaymentVoucher +=
             //   PaymentVoucherUpdatedHandler;
 
-            headerUC1.FormText = this.Text;
+            headerUC1.FormText = IsArabicCulture() ? "مركز سندات الدفع" : "Payment Voucher Center";
         }
         private void MasterPaymentVoucher_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -162,6 +163,8 @@ namespace YamyProject
         private void ApplyLanguageLayout()
         {
             bool arabic = IsArabicCulture();
+            this.Text = arabic ? "مركز سندات الدفع" : "Payment Voucher Center";
+            headerUC1.FormText = this.Text;
 
             if (arabic)
             {
@@ -205,11 +208,9 @@ namespace YamyProject
             }
             else
             {
-                guna2HtmlLabel2.Text =
-                    "Master Payment Voucher";
-
+                guna2HtmlLabel2.Text = "Master Payment Voucher";
                 guna2HtmlLabel2.RightToLeft =
-                    RightToLeft.No;
+                        RightToLeft.No;
 
                 guna2HtmlLabel2.TextAlign =
                     ContentAlignment.MiddleLeft;
@@ -401,7 +402,7 @@ namespace YamyProject
             else
                 dgvDetails.DataSource = null;
 
-           // LocalizationManager.LocalizeDataGridViewHeaders(
+            // LocalizationManager.LocalizeDataGridViewHeaders(
 
             if (dt != null)
                 AddViewDocImageColumn();
@@ -618,7 +619,7 @@ namespace YamyProject
             //dgvDetails.Columns["Total"].Width = 100;
             dgvDetails.Columns["Total"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dgvDetails.Columns["Payment"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-             LocalizationManager.LocalizeDataGridViewHeaders(dgvDetails);
+            LocalizationManager.LocalizeDataGridViewHeaders(dgvDetails);
         }
 
         private void btnDelete_Click(object sender, EventArgs e)
