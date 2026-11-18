@@ -1267,15 +1267,39 @@ namespace YamyProject
         {
             new frmViewCity().ShowDialog();
         }
+        private static bool ContainsArabicCharacters(string value)
+        {
+            if (string.IsNullOrEmpty(value)) return false;
+            foreach (char c in value)
+            {
+                if ((c >= '\u0600' && c <= '\u06FF') ||
+                    (c >= '\u0750' && c <= '\u077F') ||
+                    (c >= '\u08A0' && c <= '\u08FF'))
+                    return true;
+            }
+            return false;
+        }
+
         public void ApplyEmployeeLanguageLayout()
         {
             string language =
                 Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en";
 
+            // The application can localize section captions through RESX even when
+            // its saved language or current thread culture is still English.
+            // Detect the language already displayed by the employee page as well.
+            bool hasArabicCaption =
+                ContainsArabicCharacters(label13.Text) ||
+                ContainsArabicCharacters(label11.Text) ||
+                ContainsArabicCharacters(label14.Text) ||
+                ContainsArabicCharacters(label2.Text) ||
+                ContainsArabicCharacters(label8.Text);
+
             bool isArabic =
                 language.StartsWith("ar", StringComparison.OrdinalIgnoreCase) ||
                 System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith(
-                    "ar", StringComparison.OrdinalIgnoreCase);
+                    "ar", StringComparison.OrdinalIgnoreCase) ||
+                hasArabicCaption;
 
             SuspendLayout();
             modernHeader.SuspendLayout();
@@ -1391,10 +1415,67 @@ namespace YamyProject
             label14.Text = arabic ? "جواز السفر" : "Passport";
             TabPage1.Text = arabic ? "معلومات الموظف" : "Employee Information";
             TabPage2.Text = arabic ? "المستندات القانونية" : "Legal Document";
+            // The Employee Type caption is created separately from the designer labels.
+            // Find it recursively so its parent panel does not matter.
+            TranslateEmployeeTypeControls(this, arabic);
             if (cmbEmployeeType != null)
             {
-                // Do not replace the combo items here: their values may be database-bound.
                 cmbEmployeeType.RightToLeft = arabic ? RightToLeft.Yes : RightToLeft.No;
+
+                // Keep actual item values unchanged when the combo is data-bound.
+                if (cmbEmployeeType.DataSource != null)
+                {
+                    cmbEmployeeType.FormattingEnabled = true;
+                    cmbEmployeeType.Format -= CmbEmployeeType_Format;
+                    cmbEmployeeType.Format += CmbEmployeeType_Format;
+                    cmbEmployeeType.Refresh();
+                }
+                else
+                {
+                    int selectedIndex = cmbEmployeeType.SelectedIndex;
+                    for (int i = 0; i < cmbEmployeeType.Items.Count; i++)
+                    {
+                        if (!(cmbEmployeeType.Items[i] is string item)) continue;
+                        string translated = TranslateEmployeeTypeValue(item, arabic);
+                        if (translated != item) cmbEmployeeType.Items[i] = translated;
+                    }
+                    if (selectedIndex >= 0 && selectedIndex < cmbEmployeeType.Items.Count)
+                        cmbEmployeeType.SelectedIndex = selectedIndex;
+                }
+            }
+        }
+
+        private static string TranslateEmployeeTypeValue(string value, bool arabic)
+        {
+            if (string.Equals(value, "Employee", StringComparison.OrdinalIgnoreCase) || value == "موظف")
+                return arabic ? "موظف" : "Employee";
+            if (string.Equals(value, "Teacher", StringComparison.OrdinalIgnoreCase) || value == "معلم")
+                return arabic ? "معلم" : "Teacher";
+            return value;
+        }
+
+        private void CmbEmployeeType_Format(object sender, ListControlConvertEventArgs e)
+        {
+            if (e.ListItem == null) return;
+            string language = Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en";
+            bool arabic = language.StartsWith("ar", StringComparison.OrdinalIgnoreCase) ||
+                          ContainsArabicCharacters(label13.Text);
+            string displayed = e.Value == null ? "" : e.Value.ToString();
+            e.Value = TranslateEmployeeTypeValue(displayed, arabic);
+        }
+
+        private static void TranslateEmployeeTypeControls(Control root, bool arabic)
+        {
+            foreach (Control child in root.Controls)
+            {
+                if ((child is Label || child is Guna.UI2.WinForms.Guna2HtmlLabel) &&
+                    (string.Equals(child.Text.Trim(), "Employee Type", StringComparison.OrdinalIgnoreCase) ||
+                     child.Text.Trim() == "نوع الموظف"))
+                {
+                    child.Text = arabic ? "نوع الموظف" : "Employee Type";
+                    child.RightToLeft = arabic ? RightToLeft.Yes : RightToLeft.No;
+                }
+                if (child.HasChildren) TranslateEmployeeTypeControls(child, arabic);
             }
         }
 
