@@ -704,6 +704,8 @@ namespace YamyProject
                 var parameters = new List<MySqlParameter>();
                 string itemId = row.Cells["itemId"].Value.ToString();
                 decimal qty = row.Cells["qty"].Value == null ? 0 : Convert.ToDecimal(row.Cells["qty"].Value);
+                decimal cost = row.Cells["cost"].Value == null ? 0 : Convert.ToDecimal(row.Cells["cost"].Value);
+                decimal price = row.Cells["price"].Value == null ? 0 : Convert.ToDecimal(row.Cells["price"].Value);
                 string batch = row.Cells["batch_no"].Value == null ? "" : row.Cells["batch_no"].Value.ToString();
                 DateTime expiry = Convert.ToDateTime(row.Cells["expiry_date"].Value);
 
@@ -725,8 +727,8 @@ namespace YamyProject
                 parameters.Add(ClinicDatabase.CreateParameterNew($"@purchase_id", invId));
                 parameters.Add(ClinicDatabase.CreateParameterNew($"@item_id", itemId));
                 parameters.Add(ClinicDatabase.CreateParameterNew($"@qty", qty));
-                parameters.Add(ClinicDatabase.CreateParameterNew($"@cost_price", row.Cells["cost"].Value?.ToString()));
-                parameters.Add(ClinicDatabase.CreateParameterNew($"@price", row.Cells["price"].Value?.ToString()));
+                parameters.Add(ClinicDatabase.CreateParameterNew($"@cost_price", cost));
+                parameters.Add(ClinicDatabase.CreateParameterNew($"@price", price));
                 parameters.Add(ClinicDatabase.CreateParameterNew($"@discount", row.Cells["discount"].Value?.ToString()));
                 parameters.Add(ClinicDatabase.CreateParameterNew($"@vat", row.Cells["vat"].Value?.ToString()));
                 parameters.Add(ClinicDatabase.CreateParameterNew($"@vatp", row.Cells["vatp"].Value?.ToString()));
