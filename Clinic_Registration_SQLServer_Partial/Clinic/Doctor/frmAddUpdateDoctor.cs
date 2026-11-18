@@ -55,10 +55,12 @@ namespace Clinic.Doctor
         public frmAddUpdateDoctor()
         {
             InitializeComponent();
+            IsArabic = TranslationClass.IsArabic;
             InitializeWeeklySchedulePage();
             InitializeDoctorInfoNextButton();
             tcDoctor.SelectedIndexChanged += tcDoctor_SelectedIndexChanged;
             _Mode = enMode.AddNew;
+            TranslateDoctorControls(this);
         }
 
         private class SpecializationItem
@@ -75,11 +77,14 @@ namespace Clinic.Doctor
         public frmAddUpdateDoctor(int DoctorID)
         {
             InitializeComponent();
+            IsArabic = TranslationClass.IsArabic;
             InitializeWeeklySchedulePage();
             InitializeDoctorInfoNextButton();
             tcDoctor.SelectedIndexChanged += tcDoctor_SelectedIndexChanged;
             _DoctorID = DoctorID;
             _Mode = enMode.Update;
+
+            TranslateDoctorControls(this);
         }
 
         private void LoadSpecializations()
@@ -162,6 +167,7 @@ namespace Clinic.Doctor
             }
 
             this.Text = lblTitle.Text;
+            TranslateDoctorControls(this);
         }
 
 
@@ -485,17 +491,64 @@ namespace Clinic.Doctor
                 ForeColor = Color.FromArgb(55, 65, 81)
             };
         }
-
+        bool IsArabic = false;
         private void ApplyWeeklyScheduleTranslation()
         {
-            tpWorkingSchedule.RightToLeft = RightToLeft.No;
+            bool arabic = TranslationClass.IsArabic;
+            if (tpWorkingSchedule == null || dgvWeeklySchedule == null)
+                return;
+
+            // Translate existing controls and tab pages using the shared dictionary.
+            TranslationHelper.TranslateControls(this, arabic);
+
+            // Keep time editing left-to-right (AM/PM) in both languages.
             dgvWeeklySchedule.RightToLeft = RightToLeft.No;
-            dgvWeeklySchedule.Columns[0].HeaderText = "Day";
-            dgvWeeklySchedule.Columns[1].HeaderText = "From";
-            dgvWeeklySchedule.Columns[2].HeaderText = "To";
-            dgvWeeklySchedule.Columns[3].HeaderText = "Active";
             if (cmbCopyFromDay != null) cmbCopyFromDay.RightToLeft = RightToLeft.No;
-            if (clbCopyToDays != null) clbCopyToDays.RightToLeft = RightToLeft.No;
+            if (clbCopyToDays != null) clbCopyToDays.RightToLeft =
+                arabic ? RightToLeft.Yes : RightToLeft.No;
+
+            // Day names are display-only. DayID and DayName stay unchanged.
+            if (_dtWeeklySchedule != null)
+            {
+                foreach (DataRow row in _dtWeeklySchedule.Rows)
+                    row["DisplayDayName"] = TranslationClass.Translate(
+                        Convert.ToString(row["DayName"]), arabic);
+
+                if (cmbCopyFromDay != null && cmbCopyFromDay.DataSource is DataTable comboDays)
+                {
+                    foreach (DataRow row in comboDays.Rows)
+                        row["DisplayDayName"] = TranslationClass.Translate(
+                            Convert.ToString(row["DayName"]), arabic);
+                }
+
+                if (clbCopyToDays != null)
+                {
+                    var checkedIds = clbCopyToDays.CheckedItems
+                        .Cast<ScheduleDayItem>().Select(x => x.DayID).ToList();
+                    clbCopyToDays.Items.Clear();
+                    foreach (DataRow row in _dtWeeklySchedule.Rows)
+                    {
+                        int dayId = Convert.ToInt32(row["DayID"]);
+                        clbCopyToDays.Items.Add(
+                            new ScheduleDayItem(dayId, Convert.ToString(row["DisplayDayName"])),
+                            checkedIds.Contains(dayId));
+                    }
+                }
+            }
+        }
+
+        private void TranslateDoctorControls(Control parent)
+        {
+            // Reuse the project's existing translator; do not duplicate dictionaries.
+            TranslationHelper.TranslateControls(parent, TranslationClass.IsArabic);
+            if (parent == this)
+            {
+                lblTitle.Text = TranslationClass.Translate(
+                    _Mode == enMode.AddNew ? "Add New Doctor" : "Update Doctor Info",
+                    TranslationClass.IsArabic);
+                this.Text = lblTitle.Text;
+                ApplyWeeklyScheduleTranslation();
+            }
         }
 
         private void _LoadWeeklyScheduleRows()
@@ -794,6 +847,7 @@ namespace Clinic.Doctor
 
                 lblTitle.Text = "Update Doctor Info";
                 this.Text = lblTitle.Text;
+                TranslateDoctorControls(this);
                 DataBack?.Invoke(this, _Doctor.DoctorID);
                 MessageBox.Show("Doctor information saved successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
 

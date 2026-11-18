@@ -580,6 +580,56 @@ namespace Clinic
 { "Show Columns", "إظهار الأعمدة" },
 { "As of", "اعتبارًا من" },
 { "Print ▼", "طباعة ▼" },
+           {"Add New Doctor", "إضافة طبيب جديد"  },
+           {"Personal Info", "معلومات شخصية"  },
+           {"Doctor Info", "معلومات الطبيب"  },
+           {"Working Schedule", "جدول العمل"  },
+           {"Find By ID / Name:", "البحث عن طريق المعرف / الاسم:" },
+           {"Doctor ID:", "معرف الطبيب:" },
+           {"License No:", "رقم الترخيص:" },
+           {"Consultation Fees:", "رسوم الاستشارة:" },
+           {"Specialization:", "التخصصات:" },
+           { "Is Active", "نشط" },
+        
+            {"Update Doctor", "تحديث بيانات الطبيب" },
+            // Doctor Working Schedule
+{ "Day", "اليوم" },
+{ "From", "من" },
+{ "To", "إلى" },
+{ "Active", "نشط" },
+
+// Days of the week
+{ "Saturday", "السبت" },
+{ "Sunday", "الأحد" },
+{ "Monday", "الاثنين" },
+{ "Tuesday", "الثلاثاء" },
+{ "Wednesday", "الأربعاء" },
+{ "Thursday", "الخميس" },
+{ "Friday", "الجمعة" },
+
+// Copy Working Hours
+{ "Copy Working Hours", "نسخ ساعات العمل" },
+{ "Copy from Day", "نسخ من يوم" },
+{ "Copy to Days", "نسخ إلى الأيام" },
+{ "Copy to Selected Days", "نسخ إلى الأيام المحددة" },
+
+// Working schedule instructions
+{ "Select one working time range for each active day.",
+  "حدد فترة عمل واحدة لكل يوم نشط." },
+
+//// Form buttons
+//{ "Save", "حفظ" },
+//{ "Close", "إغلاق" },
+
+            {"Doctor Details", "تفاصيل الطبيب" },
+            {"Doctor Information", "معلومات الطبيب" },
+            {"Doctor Info", "معلومات الطبيب" },
+            {"Doctor Name:", "اسم الطبيب:" },
+            {"License Number:", "رقم الترخيص:" },
+            {"Consultation Fees:", "رسوم الاستشارة:" },
+            {"Specializations:", "التخصصات:" },
+            {"Working Days:", "أيام العمل:" },
+            {"Country:", "الدولة:" },
 // Cost Center Summary Report
 { "Cost Center Summary", "ملخص مراكز التكلفة" },
 { "All Transaction", "جميع المعاملات" },
