@@ -700,6 +700,46 @@ namespace Clinic_DataAccess
 
                                 ) ENGINE=InnoDB;"
                         },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261118_ATT_001",
+                            Description = "Create attendance settings table",
+                            Sql = @"
+                                CREATE TABLE IF NOT EXISTS tbl_setting_attendance
+                                (
+                                    id INT NOT NULL AUTO_INCREMENT,
+                                    date DATE NULL DEFAULT NULL,
+                                    day VARCHAR(150) COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
+                                    timein TIME NULL DEFAULT NULL,
+                                    timeout TIME NULL DEFAULT NULL,
+                                    state INT NULL DEFAULT NULL,
+
+                                    PRIMARY KEY (id)
+
+                                ) ENGINE=InnoDB
+                                  DEFAULT CHARSET=utf8mb4
+                                  COLLATE=utf8mb4_general_ci;"
+                        },
+
+                        new DatabaseMigration
+                        {
+                            Version = "20261118_ATT_002",
+                            Description = "Create attendance deduction configuration table",
+                            Sql = @"
+                                CREATE TABLE IF NOT EXISTS tbl_setting_deduction_config
+                                (
+                                    id INT NOT NULL AUTO_INCREMENT,
+                                    latearrivaldeduction DECIMAL(20,2) NULL DEFAULT NULL,
+                                    delaytime TIME NULL DEFAULT NULL,
+
+                                    PRIMARY KEY (id)
+
+                                ) ENGINE=InnoDB
+                                  DEFAULT CHARSET=utf8mb4
+                                  COLLATE=utf8mb4_general_ci;"
+                        },
+
                         new DatabaseMigration
                         {
                             Version = "20261015_SEED_001",

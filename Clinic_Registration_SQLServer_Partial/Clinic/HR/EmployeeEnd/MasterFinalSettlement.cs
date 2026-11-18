@@ -18,13 +18,15 @@ namespace YamyProject
 {
     public partial class MasterFinalSettlement : Form
     {
+        private EventHandler invoiceUpdatedHandler;
         private bool _headerTopLayoutApplied = false;
 
 
         public MasterFinalSettlement()
         {
             InitializeComponent();
-
+            invoiceUpdatedHandler = (sender, args) => BindFinalSet();
+            EventHub.PurchaseInv += invoiceUpdatedHandler;
             // LocalizationManager.LocalizeForm(this);
 
             // Show the shared header so this page has the same title bar
@@ -34,7 +36,7 @@ namespace YamyProject
             headerUC1.BringToFront();
             ApplyLanguageLayout();
         }
-
+      
 
         private void btnNew_Click(object sender, EventArgs e)
         {
@@ -923,6 +925,12 @@ namespace YamyProject
             if (dgvCustomer.Rows.Count == 0)
                 return;
             frmMain.openChildForm(new frmFinalSettlement(int.Parse(dgvCustomer.SelectedRows[0].Cells["id"].Value.ToString())));
+        }
+
+        private void MasterFinalSettlement_FormClosing(object sender, FormClosingEventArgs e)
+        {
+           
+            EventHub.PurchaseInv -= invoiceUpdatedHandler;
         }
 
         //private void btnOther_Click(object sender, EventArgs e)

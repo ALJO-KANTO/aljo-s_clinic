@@ -277,7 +277,7 @@ namespace YamyProject
                         "EOS Remaining Amount");
                 }
 
-                headerUC1.BringToFront();
+                //headerUC1.BringToFront();
             }
             finally
             {

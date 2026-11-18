@@ -492,11 +492,20 @@ namespace YamyProject
             if (id == 0)
             {
                 if (insertEmployeeFinallSet())
+                {
+                    EventHub.RefreshPurchase();
                     this.Close();
+                }
+
             }
             else
-               if (bindFinalsettle())
-                this.Close();
+                if (bindFinalsettle())
+                {
+                    EventHub.RefreshPurchase();
+                    this.Close();
+                }
+
+          
         }
 
         bool bindFinalsettle()
@@ -533,44 +542,162 @@ namespace YamyProject
                 }
             return true;
         }
+
         private bool insertEmployeeFinallSet()
         {
-            string code = "FS-0001";
-            if (cmbEmployeeName.Text.Trim() == "")
+            if (cmbEmployeeName.SelectedValue == null ||
+                cmbEmployeeName.Text.Trim() == "")
             {
-                MessageBox.Show(IsFinalSettlementArabic() ? "يرجى اختيار الموظف أولاً." : "Please Chose Employee First.");
+                MessageBox.Show(IsFinalSettlementArabic()
+                    ? "يرجى اختيار الموظف أولاً."
+                    : "Please Choose Employee First.");
                 return false;
             }
-            using (MySqlDataReader reader = ClinicDatabase.ExecuteReader(@"SELECT code FROM tbl_final_settlement 
-                                                           ORDER BY CAST(SUBSTRING_INDEX(code, '-', -1) AS UNSIGNED) DESC LIMIT 1;"))
-                if (reader.Read() && reader["code"].ToString() != "")
-                    code = "FS-000" + (int.Parse(reader["code"].ToString().Replace("FS-", "")) + 1);
 
-            int refId = ClinicDatabase.ExecuteNonQuery(@"INSERT INTO `tbl_final_settlement`(`code`, `Date`, `emp_id`, `DateCommencement`, `DateLastWork`,
-                                `TotalSalary`, `TotalAdditions`, `TotalDeductions`, `NetAccruals`) 
-                                VALUES(@code, @Date,@emp_id, @DateCommencement, @DateLastWork, @TotalSalary, @TotalAdditions, @TotalDeductions,
-                                    @NetAccruals);",
-                    ClinicDatabase.CreateParameterNew("code", code),
-                    ClinicDatabase.CreateParameterNew("Date", dtpDate.Value.Date),
-                    ClinicDatabase.CreateParameterNew("emp_id", cmbEmployeeName.SelectedValue),
-                    ClinicDatabase.CreateParameterNew("DateCommencement", dtpCommencement.Value.Date),
-                    ClinicDatabase.CreateParameterNew("DateLastWork", dtpLastWorkDay.Value.Date),
-                    ClinicDatabase.CreateParameterNew("TotalSalary", txtTotalSalary.Text),
-                    ClinicDatabase.CreateParameterNew("TotalAdditions", txtTotalAdditions.Text),
-                    ClinicDatabase.CreateParameterNew("TotalDeductions", txtTotalDeductions.Text),
-                    ClinicDatabase.CreateParameterNew("NetAccruals", txtNetAccruals.Text));
-            if (refId != 0)
+            // Convert formatted textbox values to decimal.
+            // Example: "2,137.41" becomes 2137.41
+            decimal ParseAmount(string text)
             {
-                ////Utilities.LogAudit(-1, "Insert Final Settlement", "Final Settlement", refId, "Inserted Final Settlement for Employee: " + cmbEmployeeName.Text + " with Code: " + code);
-                return true;
+                string value = (text ?? "").Trim()
+                    .Replace(",", "")
+                    .Replace(" ", "");
+
+                if (string.IsNullOrWhiteSpace(value))
+                    return 0m;
+
+                if (decimal.TryParse(
+                    value,
+                    System.Globalization.NumberStyles.Number,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    out decimal result))
+                {
+                    return result;
+                }
+
+                throw new FormatException(
+                    "Invalid decimal amount: " + text);
             }
-            else
+
+            try
             {
+                decimal totalSalary =
+                    ParseAmount(txtTotalSalary.Text);
+
+                decimal totalAdditions =
+                    ParseAmount(txtTotalAdditions.Text);
+
+                decimal totalDeductions =
+                    ParseAmount(txtTotalDeductions.Text);
+
+                decimal netAccruals =
+                    ParseAmount(txtNetAccruals.Text);
+
+                string code = "FS-0001";
+
+                using (MySqlDataReader reader =
+                    ClinicDatabase.ExecuteReader(@"
+                SELECT code
+                FROM tbl_final_settlement
+                ORDER BY
+                    CAST(
+                        SUBSTRING_INDEX(code, '-', -1)
+                        AS UNSIGNED
+                    ) DESC
+                LIMIT 1;"))
+                {
+                    if (reader.Read() &&
+                        reader["code"] != DBNull.Value)
+                    {
+                        string lastCode = reader["code"].ToString();
+
+                        if (int.TryParse(
+                            lastCode.Replace("FS-", ""),
+                            out int lastNumber))
+                        {
+                            code = "FS-" + (lastNumber + 1).ToString("D4");
+                        }
+                    }
+                }
+
+                int refId = ClinicDatabase.ExecuteNonQuery(@"
+            INSERT INTO tbl_final_settlement
+            (
+                code,
+                Date,
+                emp_id,
+                DateCommencement,
+                DateLastWork,
+                TotalSalary,
+                TotalAdditions,
+                TotalDeductions,
+                NetAccruals
+            )
+            VALUES
+            (
+                @code,
+                @Date,
+                @emp_id,
+                @DateCommencement,
+                @DateLastWork,
+                @TotalSalary,
+                @TotalAdditions,
+                @TotalDeductions,
+                @NetAccruals
+            );",
+
+                    ClinicDatabase.CreateParameterNew(
+                        "code", code),
+
+                    ClinicDatabase.CreateParameterNew(
+                        "Date", dtpDate.Value.Date),
+
+                    ClinicDatabase.CreateParameterNew(
+                        "emp_id", cmbEmployeeName.SelectedValue),
+
+                    ClinicDatabase.CreateParameterNew(
+                        "DateCommencement", dtpCommencement.Value.Date),
+
+                    ClinicDatabase.CreateParameterNew(
+                        "DateLastWork", dtpLastWorkDay.Value.Date),
+
+                    ClinicDatabase.CreateParameterNew(
+                        "TotalSalary", totalSalary),
+
+                    ClinicDatabase.CreateParameterNew(
+                        "TotalAdditions", totalAdditions),
+
+                    ClinicDatabase.CreateParameterNew(
+                        "TotalDeductions", totalDeductions),
+
+                    ClinicDatabase.CreateParameterNew(
+                        "NetAccruals", netAccruals)
+                );
+
+                if (refId > 0)
+                {
+                    return true;
+                }
+
                 string message = Utilities.LastLogError();
-                MessageBox.Show(IsFinalSettlementArabic() ? "خطأ، يرجى التحقق من البيانات: " + message : "Error Check your data" + message);
+
+                MessageBox.Show(IsFinalSettlementArabic()
+                    ? "خطأ، يرجى التحقق من البيانات: " + message
+                    : "Error checking your data: " + message);
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    ex.Message,
+                    "Final Settlement Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+
                 return false;
             }
         }
+
 
         private void txtOtherAdditions_TextChanged(object sender, EventArgs e)
         {
