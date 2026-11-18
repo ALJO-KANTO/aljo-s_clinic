@@ -41,7 +41,7 @@ namespace Clinic_Business
                 var rowHeader = ds.Tables[1].Rows[0];
                 invoice.InvoiceNumber = rowHeader["InvoiceNumber"].ToString();
                 invoice.InvoiceDate = (DateTime)rowHeader["InvoiceDate"];
-                invoice.PatientName = rowHeader["PatienName"].ToString();
+                invoice.PatientName = rowHeader["PatientName"].ToString();
                 invoice.PatientID = Convert.ToInt32(rowHeader["PatientID"]);
             }
 
