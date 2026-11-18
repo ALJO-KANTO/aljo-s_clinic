@@ -351,7 +351,7 @@ namespace YamyProject
                         "L.S Remaining Amount");
                 }
 
-                headerUC1.BringToFront();
+                //headerUC1.BringToFront();
             }
             finally
             {
