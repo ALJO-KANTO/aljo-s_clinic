@@ -32,7 +32,7 @@ namespace YamyProject
         private Form _pageLoadingForm;
         private Thread _pageLoadingThread;
         private volatile bool _pageLoaderReady;
-       
+
         private bool _pageFinishedLoading;
 
         // NEW
@@ -66,6 +66,11 @@ namespace YamyProject
                 ? "Employee - New Employee"
                 : "Employee - Edit Employee";
             ApplyEmployeeLanguageLayout();
+
+            // Some controls are populated or reset after the constructor.
+            // Apply the final translated captions once the form is visible.
+            this.Shown += (sender, args) =>
+                BeginInvoke(new Action(() => ApplyEmployeeLanguageLayout()));
         }
         private void StartPageLoading()
         {
@@ -406,7 +411,7 @@ namespace YamyProject
                 Application.DoEvents();
 
                 await Task.Delay(30);
-               // LocalizationManager.LocalizeForm(this);
+                // LocalizationManager.LocalizeForm(this);
 
                 ApplyEmployeeLanguageLayout();
 
@@ -417,13 +422,16 @@ namespace YamyProject
                 Application.DoEvents();
 
                 _pageFinishedLoading = true;
+
+                // Reapply after pending control layout/data-binding updates.
+                BeginInvoke(new Action(() => ApplyEmployeeLanguageLayout()));
             }
             finally
             {
                 StopPageLoading();
             }
         }
-       
+
         private void BindEmployee()
         {
             using (MySqlDataReader reader = ClinicDatabase.ExecuteReader("SELECT tbl_employee.* , tbl_city.country_id FROM tbl_employee left join tbl_city on tbl_employee.city_id = tbl_city.id  WHERE tbl_employee.id = " + id))
@@ -530,23 +538,23 @@ namespace YamyProject
             }
             else
                 if (updateEmployee())
-            {
-                if (ChkTeacher.Checked)
                 {
-                    SaveTeacher();
+                    if (ChkTeacher.Checked)
+                    {
+                        SaveTeacher();
+                    }
+
+                    //.RefreshEmployee();
+
+                    MessageBox.Show(
+                        "Employee updated successfully.",
+                        "Success",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information
+                    );
+
+                    frmMain.openChildForm(new MasterEmployee());
                 }
-
-                //.RefreshEmployee();
-
-                MessageBox.Show(
-                    "Employee updated successfully.",
-                    "Success",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information
-                );
-
-                frmMain.openChildForm(new MasterEmployee());
-            }
         }
 
         private void SaveTeacher()
@@ -1265,9 +1273,9 @@ namespace YamyProject
                 Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en";
 
             bool isArabic =
-                language.StartsWith(
-                    "ar",
-                    StringComparison.OrdinalIgnoreCase);
+                language.StartsWith("ar", StringComparison.OrdinalIgnoreCase) ||
+                System.Globalization.CultureInfo.CurrentUICulture.Name.StartsWith(
+                    "ar", StringComparison.OrdinalIgnoreCase);
 
             SuspendLayout();
             modernHeader.SuspendLayout();
@@ -1289,6 +1297,8 @@ namespace YamyProject
                 {
                     ApplyEmployeeEnglishLayout();
                 }
+
+                ApplyEmployeeArabicText(isArabic);
             }
             finally
             {
@@ -1301,6 +1311,92 @@ namespace YamyProject
             }
         }
 
+
+        private void ApplyEmployeeArabicText(bool arabic)
+        {
+            // Translate by control name, independent of RESX keys and current text.
+            btnClose.Text = arabic ? "إغلاق" : "Close";
+            btnSave.Text = arabic ? "حفظ" : "Save";
+            TabPage1.Text = arabic ? "معلومات الموظف" : "Employee Information";
+            ChkTeacher.Text = arabic ? "معلم" : "Teacher";
+            label35.Text = arabic ? "رقم التأمين الاجتماعي" : "Social Insurance NO";
+            label34.Text = arabic ? "البريد الإلكتروني" : "Email";
+            label44.Text = arabic ? "رقم الهاتف" : "Phone Number";
+            label32.Text = arabic ? "رقم الهاتف" : "Phone Number";
+            label31.Text = arabic ? "العنوان" : "Address";
+            chkActive.Text = arabic ? "الموظف نشط" : "Employee Active";
+            label1.Text = arabic ? "صلة القرابة" : "Relation";
+            label22.Text = arabic ? "الهوية الإماراتية" : "Emirates ID";
+            label21.Text = arabic ? "تاريخ انتهاء الهوية" : "Emirates ID Expiry Date";
+            label20.Text = arabic ? "تاريخ إصدار الهوية" : "Emirates ID Issue Date";
+            label9.Text = arabic ? "المعلومات البنكية" : "Bank Info";
+            label8.Text = arabic ? "معلومات الراتب" : "Salary Info";
+            label2.Text = arabic ? "المعلومات الأساسية" : "Basic Info";
+            label46.Text = arabic ? "معلومات إضافية" : "Additional Info";
+            Label33.Text = arabic ? "معلومات الطوارئ" : "Emergency Info";
+            Label25.Text = arabic ? "المدينة" : "City";
+            label43.Text = arabic ? "العنوان" : "Address";
+            label42.Text = arabic ? "الاسم" : "Name";
+            label30.Text = arabic ? "اسم الموظف" : "Employee Name";
+            label38.Text = arabic ? "بدل السكن" : "House Allowance";
+            label47.Text = arabic ? "رقم الآيبان" : "IBAN Number";
+            label49.Text = arabic ? "رمز البنك" : "Bank Code";
+            label51.Text = arabic ? "جهة إصدار الهوية" : "Emirates ID Issuing Authority";
+            label50.Text = arabic ? "رقم الهوية الوطنية" : "National ID";
+            label48.Text = arabic ? "رقم الحساب البنكي" : "Bank Account Number";
+            label45.Text = arabic ? "اسم البنك" : "Bank Name";
+            label41.Text = arabic ? "إجمالي الراتب" : "Total Salary";
+            label40.Text = arabic ? "بدلات أخرى" : "Others";
+            label39.Text = arabic ? "بدل المواصلات" : "Transportation Allowance";
+            label37.Text = arabic ? "الراتب الأساسي" : "Basic Salary";
+            label36.Text = arabic ? "رمز الموظف" : "Employee Code";
+            Label24.Text = arabic ? "الدولة" : "Country";
+            Label6.Text = arabic ? "تاريخ الميلاد" : "Date Of Birth";
+            Label7.Text = arabic ? "الحالة الاجتماعية" : "Social Status";
+            linkLabel2.Text = arabic ? "جديد" : "New";
+            TabPage2.Text = arabic ? "المستندات القانونية" : "Legal Document";
+            label66.Text = arabic ? "رمز الحساب" : "AC / Code";
+            label67.Text = arabic ? "العهدة النقدية" : "Petty Cash";
+            label53.Text = arabic ? "رقم عقد العمل" : "Work Contract Number";
+            label65.Text = arabic ? "الأقسام" : "Departments";
+            label55.Text = arabic ? "نوع العقد" : "Contract Type";
+            label54.Text = arabic ? "المنصب الوظيفي" : "Position";
+            label56.Text = arabic ? "أيام العمل" : "Work Days";
+            label57.Text = arabic ? "ساعات العمل" : "Working Hours";
+            label18.Text = arabic ? "تاريخ إصدار العقد" : "Contract Issue Date";
+            label19.Text = arabic ? "تاريخ انتهاء العقد" : "Contract Expiry Date";
+            linkLabel1.Text = arabic ? "جديد" : "New";
+            lnkTax.Text = arabic ? "جديد" : "New";
+            label26.Text = arabic ? "الرواتب المستحقة" : "Accrued Salaries";
+            label59.Text = arabic ? "رمز الحساب" : "AC / Code";
+            label27.Text = arabic ? "ذمم الموظفين المدينة" : "Employee Receivable";
+            label60.Text = arabic ? "رمز الحساب" : "AC / Code";
+            label28.Text = arabic ? "مخصص رواتب الإجازات" : "Accrual Leave Salary";
+            label61.Text = arabic ? "رمز الحساب" : "AC / Code";
+            label29.Text = arabic ? "مكافأة نهاية الخدمة" : "Gratuit";
+            label62.Text = arabic ? "رمز الحساب" : "AC / Code";
+            label63.Text = arabic ? "رقم ملف الإقامة" : "Residency File Number";
+            label64.Text = arabic ? "جهة إصدار الإقامة" : "Residency Issue Authority";
+            label10.Text = arabic ? "تاريخ إصدار الإقامة" : "Residency Issue Date";
+            label12.Text = arabic ? "تاريخ انتهاء الإقامة" : "Residency Expiry Date";
+            label52.Text = arabic ? "رقم جواز السفر" : "Passport Number";
+            label15.Text = arabic ? "بلد الإصدار" : "Country Of Issue";
+            label16.Text = arabic ? "تاريخ إصدار جواز السفر" : "Passport Issue Date";
+            label17.Text = arabic ? "تاريخ انتهاء جواز السفر" : "Passport End Date";
+            label58.Text = arabic ? "رمز الحساب" : "AC / Code";
+            label3.Text = arabic ? "اسم الحساب" : "Account Name";
+            label23.Text = arabic ? "حساب المصروفات (دليل الحسابات)" : "Expense Account (Chart - Account Name)";
+            label13.Text = arabic ? "الإقامة" : "Residency";
+            label11.Text = arabic ? "عقد العمل" : "Work Contract";
+            label14.Text = arabic ? "جواز السفر" : "Passport";
+            TabPage1.Text = arabic ? "معلومات الموظف" : "Employee Information";
+            TabPage2.Text = arabic ? "المستندات القانونية" : "Legal Document";
+            if (cmbEmployeeType != null)
+            {
+                // Do not replace the combo items here: their values may be database-bound.
+                cmbEmployeeType.RightToLeft = arabic ? RightToLeft.Yes : RightToLeft.No;
+            }
+        }
 
         private void ApplyEmployeeArabicLayout()
         {
