@@ -46,6 +46,11 @@ namespace Clinic_DataAccess
                     methodName = "Cash";
                     break;
 
+                case "bank":
+                    journalType = "By Bank";
+                    methodName = "Bank";
+                    break;
+
                 case "credit card":
                     journalType = "By Credit Card";
                     methodName = "Credit Card";
@@ -165,6 +170,7 @@ namespace Clinic_DataAccess
                         PaymentAmount,
                         PaymentDate,
                         PaymentMethod,
+                        DebitAccountID,
                         CreatedByUserID
                     )
                     VALUES
@@ -173,6 +179,7 @@ namespace Clinic_DataAccess
                         @PaymentAmount,
                         NOW(),
                         @PaymentMethod,
+                        @DebitAccountID,
                         @UserID
                     );";
 
@@ -187,6 +194,8 @@ namespace Clinic_DataAccess
 
                             cmd.Parameters.AddWithValue(
                                 "@PaymentMethod", methodName);
+
+                            cmd.Parameters.AddWithValue("@DebitAccountID", debitAccountId);
 
                             cmd.Parameters.AddWithValue(
                                 "@UserID", userID);

@@ -206,12 +206,9 @@
             "Loan Request",
             "Vendor Advance Payment",
             "Customer Advance Payment",
-            "Bank",
-            "RMS Bill",
-            "Manufacturing",
-            "Project",
-            "Project Invoice",
-            "Project Receipt",
+            "By Bank",
+            "By Insurance",
+            "By Credit Card",
             "Project Payment"});
             this.cmbSelectionMethod.Location = new System.Drawing.Point(1039, 3);
             this.cmbSelectionMethod.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);

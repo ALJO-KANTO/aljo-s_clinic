@@ -25,8 +25,9 @@ namespace YamyProject
         public frmSalarySheet(int id = 0)
         {
             InitializeComponent();
+            InitializePayrollDisplayControls();
 
-           // LocalizationManager.LocalizeForm(this);
+            // LocalizationManager.LocalizeForm(this);
 
             string language =
                 Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en";
@@ -82,6 +83,8 @@ namespace YamyProject
                     guna2HtmlLabel4.Text = "ملخص الراتب";
 
                     btnSave.Text = "حفظ";
+                    if (btnGeneratePayroll != null) btnGeneratePayroll.Text = "عرض الرواتب";
+                    if (btnCreatePayroll != null) btnCreatePayroll.Text = "إنشاء الرواتب";
 
 
                     // =====================================================
@@ -262,6 +265,8 @@ namespace YamyProject
                     guna2HtmlLabel4.Text = "Salary Summary";
 
                     btnSave.Text = "Save";
+                    if (btnGeneratePayroll != null) btnGeneratePayroll.Text = "Display Payroll";
+                    if (btnCreatePayroll != null) btnCreatePayroll.Text = "Generate Payroll";
 
 
                     // ORIGINAL HERO
@@ -396,14 +401,218 @@ namespace YamyProject
                 Invalidate(true);
             }
         }
+        // Added payroll preview controls. Existing Designer controls are unchanged.
+        private Guna.UI2.WinForms.Guna2Button btnGeneratePayroll;
+        private Guna.UI2.WinForms.Guna2Button btnCreatePayroll;
+
+        private void InitializePayrollDisplayControls()
+        {
+            btnGeneratePayroll = new Guna.UI2.WinForms.Guna2Button
+            {
+                Name = "btnGeneratePayroll",
+                Text = "Display Payroll",
+                Size = new Size(165, 44),
+                BorderRadius = 8,
+                FillColor = Color.FromArgb(30, 110, 155),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right
+            };
+            pnlFilterCard.Controls.Add(btnGeneratePayroll);
+            btnGeneratePayroll.Size = new Size(165, 36);
+            btnGeneratePayroll.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            btnCreatePayroll = new Guna.UI2.WinForms.Guna2Button
+            {
+                Name = "btnCreatePayroll",
+                Text = "Generate Payroll",
+                Size = new Size(170, 36),
+                BorderRadius = 8,
+                FillColor = Color.FromArgb(28, 135, 100),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                Anchor = AnchorStyles.Top | AnchorStyles.Left
+            };
+            pnlFilterCard.Controls.Add(btnCreatePayroll);
+            btnCreatePayroll.Click += btnCreatePayroll_Click;
+            btnGeneratePayroll.Click += btnGeneratePayroll_Click;
+            pnlFilterCard.Resize += (sender, args) => PositionPayrollDisplayButton();
+            PositionPayrollDisplayButton();
+            txtSearchVisual.TextChanged += (sender, args) => FilterPayrollEmployees();
+            dgvSalarySheet.RowsAdded += (sender, args) => RefreshPayrollSummary();
+            dgvSalarySheet.RowsRemoved += (sender, args) => RefreshPayrollSummary();
+            dgvSalarySheet.CellValueChanged += (sender, args) => RefreshPayrollSummary();
+        }
+
+        private void PositionPayrollDisplayButton()
+        {
+            if (btnGeneratePayroll == null) return;
+            btnGeneratePayroll.Location = new Point(cmbYear.Right + 18, 14);
+            btnCreatePayroll.Location = new Point(btnGeneratePayroll.Right + 10, 14);
+            btnGeneratePayroll.BringToFront();
+            btnCreatePayroll.BringToFront();
+        }
+
+        private void btnGeneratePayroll_Click(object sender, EventArgs e)
+        {
+            if (cmbMonth.SelectedItem == null || cmbYear.SelectedItem == null)
+            {
+                MessageBox.Show("Please select both Month and Year.");
+                return;
+            }
+
+            try
+            {
+                BindGridView();
+                FilterPayrollEmployees();
+                RefreshPayrollSummary();
+                if (dgvSalarySheet.Rows.Count == 0)
+                    MessageBox.Show("No saved attendance/payroll records found for the selected month and year.",
+                        "Payroll", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Unable to display payroll: " + ex.Message,
+                    "Payroll", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // Generate only missing monthly salary headers from EXISTING attendance rows.
+        // Attendance is never invented; existing salary records are never overwritten.
+        private void btnCreatePayroll_Click(object sender, EventArgs e)
+        {
+            if (cmbMonth.SelectedItem == null || cmbYear.SelectedItem == null)
+            {
+                MessageBox.Show("Select a month and year first.");
+                return;
+            }
+
+            int month = int.Parse(cmbMonth.SelectedItem.ToString());
+            int year = int.Parse(cmbYear.SelectedItem.ToString());
+            DateTime periodStart = new DateTime(year, month, 1);
+            DateTime periodEnd = periodStart.AddMonths(1);
+
+            // A future month cannot have finalized attendance. The current month
+            // may be processed when the operator has entered the required records.
+            if (periodStart > DateTime.Today)
+            {
+                MessageBox.Show("Cannot generate payroll for a future month.",
+                    "Generate Payroll", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            try
+            {
+                object missing = ClinicDatabase.ExecuteScalar(@"
+                    SELECT COUNT(*) FROM (
+                        SELECT DISTINCT a.code FROM tbl_attendancesheet a
+                        JOIN tbl_employee e ON CONVERT(e.code USING utf8mb4) COLLATE utf8mb4_unicode_ci = CONVERT(a.code USING utf8mb4) COLLATE utf8mb4_unicode_ci AND e.state = 0
+                        WHERE a.WorkDate >= @start AND a.WorkDate < @end
+                        AND NOT EXISTS (
+                            SELECT 1 FROM tbl_attendance_salary s
+                            WHERE CONVERT(s.emp_code USING utf8mb4) COLLATE utf8mb4_unicode_ci = CONVERT(a.code USING utf8mb4) COLLATE utf8mb4_unicode_ci
+                            AND s.date >= @start AND s.date < @end)
+                    ) pending",
+                    ClinicDatabase.CreateParameterNew("@start", periodStart),
+                    ClinicDatabase.CreateParameterNew("@end", periodEnd));
+
+                int pendingCount = Convert.ToInt32(missing);
+                if (pendingCount == 0)
+                {
+                    BindGridView();
+                    FilterPayrollEmployees();
+                    RefreshPayrollSummary();
+
+                    if (dgvSalarySheet.Rows.Cast<DataGridViewRow>()
+                        .Any(row => !row.IsNewRow))
+                    {
+                        MessageBox.Show(
+                            "Payroll has already been generated for the selected month and year.",
+                            "Generate Payroll",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show(
+                            "No saved attendance was found for this month. " +
+                            "Please save employee attendance before generating payroll.",
+                            "Generate Payroll",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Information);
+                    }
+
+                    return;
+                }
+                DialogResult answer = MessageBox.Show(
+                    pendingCount + " employee(s) have attendance without a monthly payroll header.\n\n" +
+                    "Open Employee Attendance to verify the selected month and save payroll?\n" +
+                    "This screen will not insert or overwrite financial records automatically.",
+                    "Generate Payroll", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (answer != DialogResult.Yes) return;
+
+                // MasterAttendanceSheet owns payroll calculations and transactional saving.
+                // Its Save Attendance action is required to generate the actual records.
+                using (var attendance = new MasterAttendanceSheet())
+                {
+                    attendance.ShowDialog(this);
+                }
+                BindGridView();
+                FilterPayrollEmployees();
+                RefreshPayrollSummary();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Unable to prepare payroll: " + ex.Message,
+                    "Generate Payroll", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void FilterPayrollEmployees()
+        {
+            if (dgvSalarySheet == null) return;
+            string term = (txtSearchVisual.Text ?? "").Trim();
+            foreach (DataGridViewRow row in dgvSalarySheet.Rows)
+            {
+                if (row.IsNewRow) continue;
+                string code = Convert.ToString(row.Cells["EmployeeID"].Value) ?? "";
+                string name = Convert.ToString(row.Cells["EmployeeName"].Value) ?? "";
+                bool visible = term.Length == 0 ||
+                    code.IndexOf(term, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    name.IndexOf(term, StringComparison.OrdinalIgnoreCase) >= 0;
+                if (!visible && row == dgvSalarySheet.CurrentRow)
+                    dgvSalarySheet.CurrentCell = null;
+                row.Visible = visible;
+            }
+            RefreshPayrollSummary();
+        }
+
+        private void RefreshPayrollSummary()
+        {
+            if (dgvSalarySheet == null || lblEmployeesValue == null) return;
+            int count = 0;
+            decimal basic = 0m, deductions = 0m, net = 0m;
+            foreach (DataGridViewRow row in dgvSalarySheet.Rows)
+            {
+                if (row.IsNewRow || !row.Visible) continue;
+                count++;
+                basic += ParseDecimal(row.Cells["BasicSalary"].Value);
+                deductions += ParseDecimal(row.Cells["TotalDeductions"].Value);
+                net += ParseDecimal(row.Cells["NetSalary"].Value);
+            }
+            lblEmployeesValue.Text = count.ToString();
+            lblBasicValue.Text = basic.ToString("N2");
+            lblDeductionValue.Text = deductions.ToString("N2");
+            lblNetValue.Text = net.ToString("N2");
+        }
+
         private void frmSalarySheet_Load(object sender, EventArgs e)
         {
-          
+
             Years();
             BindMonths();
             cmbMonth.SelectedItem = DateTime.Now.Month.ToString("D2");
             cmbYear.SelectedItem = DateTime.Now.Year.ToString();
-            BindGridView();
+            ClearPayrollDisplay();
             string language =
     Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en";
 
@@ -421,18 +630,31 @@ namespace YamyProject
         }
         private void Years()
         {
-            for(int year = 2000; year <= 2050; year++)
+            for (int year = 2000; year <= 2050; year++)
             {
                 cmbYear.Items.Add(year.ToString());
             }
         }
+        // A period change clears the previous period's data.
+        // Display Payroll is the only button that loads saved payroll records.
+        private void ClearPayrollDisplay()
+        {
+            if (dgvSalarySheet == null) return;
+            dgvSalarySheet.Rows.Clear();
+            lblREF.Text = "";
+            lblSSNo.Text = "";
+            lblDate.Text = "";
+            RefreshPayrollSummary();
+        }
+
         private void BindGridView()
         {
 
             dgvSalarySheet.Rows.Clear();
-            if(cmbMonth.SelectedItem == null || cmbYear.SelectedItem == null)
+            if (cmbMonth.SelectedItem == null || cmbYear.SelectedItem == null)
             {
                 MessageBox.Show("Please select both Month and Year.");
+                return;
             }
             string selectedMonthName = cmbMonth.SelectedItem.ToString();
             int selectedYear = int.Parse(cmbYear.SelectedItem.ToString());
@@ -462,9 +684,24 @@ namespace YamyProject
              p.name AS PositionName
             FROM tbl_employee e
             LEFT JOIN tbl_position p ON e.Position_id = p.id
-            WHERE e.state = 0";
-            
-            using (MySqlDataReader reader = ClinicDatabase.ExecuteReader(employeeQuery))
+           WHERE EXISTS (
+    SELECT 1
+    FROM tbl_attendance_salary s
+   WHERE CONVERT(s.emp_code USING utf8mb4) COLLATE utf8mb4_unicode_ci
+    = CONVERT(e.code USING utf8mb4) COLLATE utf8mb4_unicode_ci
+      AND s.date >= @startDate
+      AND s.date < @endDate
+)";
+
+
+            DateTime startDate = new DateTime(selectedYear, selectedMonth, 1);
+            DateTime endDate = startDate.AddMonths(1);
+
+            using (MySqlDataReader reader = ClinicDatabase.ExecuteReader(
+                employeeQuery,
+                ClinicDatabase.CreateParameterNew("@startDate", startDate),
+                ClinicDatabase.CreateParameterNew("@endDate", endDate)))
+
             {
                 while (reader.Read())
                 {
@@ -524,16 +761,18 @@ namespace YamyProject
             ClinicDatabase.CreateParameterNew("@year", selectedYear),
             ClinicDatabase.CreateParameterNew("@month", selectedMonth));
             string dated = (refResult != null && refResult != DBNull.Value) ? refResult.ToString() : "";
-            if (dated!="")
+            if (dated != "")
             {
                 DateTime workDate = Convert.ToDateTime(dated);
                 dated = workDate.ToString("dd-MM-yyyy");
             }
             lblDate.Text = dated;
+            FilterPayrollEmployees();
+            RefreshPayrollSummary();
         }
         private int GetAbsenceDays(string empCode, int year, int month)
         {
-            string query = @"SELECT COUNT(attendance_salary_id) AS count FROM tbl_attendancesheet WHERE YEAR(WorkDate) = @year AND MONTH(WorkDate) = @month AND attendance_salary_id = @code AND status = 'A'";
+            string query = @"SELECT COUNT(attendance_salary_id) AS count FROM tbl_attendancesheet WHERE YEAR(WorkDate) = @year AND MONTH(WorkDate) = @month AND code = @code AND status = 'A'";
             using (MySqlDataReader reader = ClinicDatabase.ExecuteReader(query,
                 ClinicDatabase.CreateParameterNew("year", year),
                 ClinicDatabase.CreateParameterNew("month", month),
@@ -632,8 +871,7 @@ namespace YamyProject
 
         private void cmbYear_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (cmbMonth.SelectedItem != null && cmbYear.SelectedItem != null)
-                BindGridView();
+            ClearPayrollDisplay();
         }
         string refCode = "0";
         private void dgvSalarySheet_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
@@ -647,7 +885,7 @@ namespace YamyProject
                 string empName = row.Cells["EmployeeName"].Value.ToString();
                 string empCode = row.Cells["EmployeeID"].Value.ToString();
 
-                using (frmAmountAdjustments form = new frmAmountAdjustments(empName, empCode, column,refCode))
+                using (frmAmountAdjustments form = new frmAmountAdjustments(empName, empCode, column, refCode))
                 {
                     if (form.ShowDialog() == DialogResult.OK)
                     {
@@ -705,8 +943,7 @@ namespace YamyProject
 
         private void cmbMonth_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (cmbMonth.SelectedItem != null && cmbYear.SelectedItem != null)
-                BindGridView();
+            ClearPayrollDisplay();
         }
 
         private void btnSave_Click(object sender, EventArgs e)

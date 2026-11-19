@@ -221,6 +221,7 @@ namespace Clinic
                     "Accountant|Balance Sheet|frmBalanceSheetReport",
                     "Accountant|Cost Center Summary|frmCostCenterSummary",
                     "Accountant|Trial Balance|MasterTrialBalance",
+                    "Accountant|Transactions|MasterTransactionJournal",
                     "Accountant|Profit and Loss Detail|ProfitandLossDetailReport",
                     "Accountant|Profit and Loss|ProfitandLossReport",
                     "Employee|Employee Balance Details|frmEmployeeBalanceDetails",
@@ -652,7 +653,7 @@ namespace Clinic
 
             menu.Controls.Add(group);
         }
-        
+
         private void BuildDashboardRows()
         {
             Panel welcome = Rounded(Color.FromArgb(214, 237, 251));

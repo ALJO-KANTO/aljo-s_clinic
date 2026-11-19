@@ -1188,6 +1188,26 @@ namespace Clinic
             { "Prescription ID", "رقم الوصفة الطبية" },
             { "Doctor", "الطبيب" },
             { "Current User:", "المستخدم الحالي:" },
+            
+ // Add / Update Service Form
+{ "Add New Service", "إضافة خدمة جديدة" },
+{ "Update Service", "تعديل الخدمة" },
+{ "Service Name:", "اسم الخدمة:" },
+{ "Service Price:", "سعر الخدمة:" },
+{ "Service Description:", "وصف الخدمة:" },
+{ "ID:", "الرقم:" },
+{ "Service saved successfully.", "تم حفظ الخدمة بنجاح." },
+{ "Service not found.", "لم يتم العثور على الخدمة." },
+{ "Enter a service name.", "يرجى إدخال اسم الخدمة." },
+{ "Enter a valid service price.", "يرجى إدخال سعر خدمة صحيح." },
+{ "Service price must be zero or greater.",
+  "يجب أن يكون سعر الخدمة صفراً أو أكثر." },
+{ "Service name is required.", "اسم الخدمة مطلوب." },
+{ "Enter a valid price.", "يرجى إدخال سعر صحيح." },
+{ "Validation", "التحقق من البيانات" },
+{ "Service loading failed", "فشل تحميل الخدمة" },
+{ "Service save failed", "فشل حفظ الخدمة" },
+{ "Service was not saved", "لم يتم حفظ الخدمة" },
 
             // Direct pharmacy sales localization
             { "Direct Medicine Dispensing", "صرف الأدوية مباشرة" },

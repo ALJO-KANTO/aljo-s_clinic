@@ -162,7 +162,7 @@ namespace YamyProject
                                        ac.code AS `Account Code`,
                                        CASE 
                                            WHEN t.type IN ('Customer Receipt', 'Sales Invoice', 'Sales Invoice Cash', 'Customer Opening Balance', 'Check Cancel (Customer)', 'Customer%', 'Sales%') 
-                                                THEN IFNULL((SELECT CONCAT(CODE, ' - ', NAME) FROM tbl_customer WHERE id = hum_id), '')
+                                                THEN IFNULL((SELECT CONCAT(CODE, ' - ', NAME) FROM persons WHERE PersonID = hum_id), '')
                                            WHEN t.type IN ('Vendor Payment', 'Purchase Invoice', 'Purchase Invoice Cash', 'Vendor Opening Balance', 'Check Cancel (Vendor)', 'Vendor%', 'Purchase%') 
                                                 THEN IFNULL((SELECT CONCAT(CODE, ' - ', NAME) FROM tbl_vendor WHERE id = hum_id), '')
                                            WHEN t.type IN ('Employee Salary', 'Employee Payment') 
@@ -181,7 +181,7 @@ namespace YamyProject
                                        ac.code AS `Account Code`,
                                        CASE 
                                            WHEN t.type IN ('Customer Receipt', 'Sales Invoice', 'Sales Invoice Cash', 'Customer Opening Balance', 'Check Cancel (Customer)', 'Customer%', 'Sales%') 
-                                                THEN IFNULL((SELECT CONCAT(CODE, ' - ', NAME) FROM tbl_customer WHERE id = hum_id), '')
+                                                THEN IFNULL((SELECT CONCAT(CODE, ' - ', NAME) FROM persons WHERE PersonID = hum_id), '')
                                            WHEN t.type IN ('Vendor Payment', 'Purchase Invoice', 'Purchase Invoice Cash', 'Vendor Opening Balance', 'Check Cancel (Vendor)', 'Vendor%', 'Purchase%') 
                                                 THEN IFNULL((SELECT CONCAT(CODE, ' - ', NAME) FROM tbl_vendor WHERE id = hum_id), '')
                                            WHEN t.type IN ('Employee Salary', 'Employee Payment') 
@@ -200,7 +200,7 @@ namespace YamyProject
                                        ac.code AS `Account Code`,
                                        CASE 
                                            WHEN t.type IN ('Customer Receipt', 'Sales Invoice', 'Sales Invoice Cash', 'Customer Opening Balance', 'Check Cancel (Customer)', 'Customer%', 'Sales%') 
-                                                THEN IFNULL((SELECT CONCAT(CODE, ' - ', NAME) FROM tbl_customer WHERE id = hum_id), '')
+                                                THEN IFNULL((SELECT CONCAT(CODE, ' - ', NAME) FROM persons WHERE PersonID = hum_id), '')
                                            WHEN t.type IN ('Vendor Payment', 'Purchase Invoice', 'Purchase Invoice Cash', 'Vendor Opening Balance', 'Check Cancel (Vendor)', 'Vendor%', 'Purchase%') 
                                                 THEN IFNULL((SELECT CONCAT(CODE, ' - ', NAME) FROM tbl_vendor WHERE id = hum_id), '')
                                            WHEN t.type IN ('Employee Salary', 'Employee Payment') 

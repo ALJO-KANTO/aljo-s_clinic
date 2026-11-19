@@ -25,6 +25,8 @@ namespace YamyProject
         TimeSpan defaultTimeIn = TimeSpan.Zero;
         bool isManuaEntry = false;
 
+        private Guna.UI2.WinForms.Guna2Button btnCompleteAttendance;
+
         private Dictionary<string, DataTable> loadedExcelTables = new Dictionary<string, DataTable>();
 
         // REQUIRED for Activator.CreateInstance
@@ -34,6 +36,7 @@ namespace YamyProject
         public MasterAttendanceSheet(int id = 0)
         {
             InitializeComponent();
+            InitializeAttendanceCompleteButton();
             this.Resize += MasterAttendanceSheet_Resize;
             // Reassert the custom title bar after all controls have been laid out.
             this.Shown += MasterAttendanceSheet_Shown;
@@ -51,6 +54,90 @@ namespace YamyProject
 
             ApplyLanguageLayout(isArabic);
             ConfigureAttendanceClosingHeader(isArabic);
+        }
+
+        private void InitializeAttendanceCompleteButton()
+        {
+            btnCompleteAttendance = new Guna.UI2.WinForms.Guna2Button
+            {
+                Name = "btnCompleteAttendance",
+                Text = "Close Attendance",
+                Size = new Size(145, 38),
+                BorderRadius = 8,
+                FillColor = Color.FromArgb(72, 83, 105),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI Semibold", 9F, FontStyle.Bold),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right
+            };
+            panel1.Controls.Add(btnCompleteAttendance);
+            btnCompleteAttendance.Click += (sender, args) => CompleteAttendance();
+            panel1.Resize += (sender, args) => PositionCompleteAttendanceButton();
+            PositionCompleteAttendanceButton();
+        }
+
+        private void PositionCompleteAttendanceButton()
+        {
+            if (btnCompleteAttendance == null || btnSave == null) return;
+            btnCompleteAttendance.Location = new Point(
+                Math.Max(panel1.Padding.Left, btnSave.Left - btnCompleteAttendance.Width - 12),
+                btnSave.Top + Math.Max(0, (btnSave.Height - btnCompleteAttendance.Height) / 2));
+            btnCompleteAttendance.BringToFront();
+        }
+
+        private void CompleteAttendance()
+        {
+            // This is an exit action, not a payroll finalization/posting operation.
+            if (dgvAttendance.IsCurrentCellInEditMode)
+                dgvAttendance.EndEdit();
+            var answer = MessageBox.Show(
+                L("Close the attendance screen? Unsaved changes will be lost.",
+                  "هل تريد إغلاق شاشة الحضور؟ ستفقد التغييرات غير المحفوظة."),
+                L("Close Attendance", "إغلاق الحضور"),
+                MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (answer == DialogResult.Yes) Close();
+        }
+
+        // Optional attendance configuration: if no row exists, manual entry
+        // can still be prepared using the defaults below.
+        private void GetAttendanceTimes(DateTime selectedDate,
+            out string timeIn, out string timeOut)
+        {
+            timeIn = "08:00";
+            timeOut = "18:00";
+            const string sql = @"SELECT timein, timeout
+                FROM tbl_setting_attendance
+                WHERE state = 1 AND `date` <= @selectedDate
+                ORDER BY `date` DESC, id DESC LIMIT 1";
+            try
+            {
+                using (var reader = ClinicDatabase.ExecuteReader(sql,
+                    ClinicDatabase.CreateParameterNew("@selectedDate", selectedDate.Date)))
+                {
+                    if (reader != null && reader.Read())
+                    {
+                        string configuredIn = Convert.ToString(reader["timein"]);
+                        string configuredOut = Convert.ToString(reader["timeout"]);
+                        TimeSpan parsed;
+                        if (TimeSpan.TryParse(configuredIn, out parsed))
+                            timeIn = parsed.ToString(@"hh\:mm");
+                        if (TimeSpan.TryParse(configuredOut, out parsed))
+                            timeOut = parsed.ToString(@"hh\:mm");
+                    }
+                }
+            }
+            catch (MySqlException ex) when (ex.Number == 1146)
+            {
+                // Optional settings table has not been created yet.
+                // Continue with default times without blocking manual entry.
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show(
+                    L("Attendance settings could not be read. Default times (08:00–18:00) will be used. Details: ",
+                      "تعذر قراءة إعدادات الحضور. سيتم استخدام الأوقات الافتراضية. التفاصيل: ") + ex.Message,
+                    L("Attendance settings", "إعدادات الحضور"),
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
 
         // Keep the existing HeaderUC as the dark-blue title bar for this page.
@@ -234,6 +321,8 @@ namespace YamyProject
             btnAddManualAttendance.Text = isArabic ? "إضافة حضور يدوي" : "Add Manual Attendance";
             DownloadExcelSheet.Text = isArabic ? "تنزيل نموذج ملف Excel" : "Download Sample Excel Sheet";
             btnSave.Text = isArabic ? "حفظ الحضور" : "Save Attendance";
+            if (btnCompleteAttendance != null)
+                btnCompleteAttendance.Text = isArabic ? "إغلاق الحضور" : "Close Attendance";
 
             ConfigureAttendanceClosingHeader(isArabic);
             ApplyModernHeaderLanguage(isArabic);
@@ -602,8 +691,24 @@ namespace YamyProject
 
                 if (status == "P")
                 {
+
                     TimeSpan defaultIn = TimeSpan.Parse("08:00:00");
-                    TimeSpan actualIn = TimeSpan.Parse(row.Cells["Time In"].Value.ToString() + ":00");
+
+                    string timeText = Convert.ToString(
+                        row.Cells["Time In"].Value);
+
+                    if (!TimeSpan.TryParse(timeText, out TimeSpan actualIn))
+                    {
+                        throw new InvalidOperationException(
+                            "Invalid Time In value: " + timeText);
+                    }
+
+                    if (actualIn > defaultIn)
+                    {
+                        lateMinutes +=
+                            (int)(actualIn - defaultIn).TotalMinutes;
+                    }
+
 
                     if (actualIn > defaultIn)
                         lateMinutes += (int)(actualIn - defaultIn).TotalMinutes;
@@ -788,8 +893,19 @@ namespace YamyProject
         // ===============================================
         private decimal GetLateRate()
         {
-            object x = ClinicDatabase.ExecuteScalar("SELECT latearrivaldeduction FROM tbl_setting_deduction_config LIMIT 1");
-            return x == null ? 0 : Convert.ToDecimal(x);
+            try
+            {
+                object x = ClinicDatabase.ExecuteScalar(
+                    "SELECT latearrivaldeduction FROM tbl_setting_deduction_config ORDER BY id DESC LIMIT 1");
+                if (x == null || x == DBNull.Value) return 0m;
+                decimal rate;
+                return decimal.TryParse(Convert.ToString(x), out rate) ? rate : 0m;
+            }
+            catch (MySqlException ex) when (ex.Number == 1146)
+            {
+                // Missing optional deduction-settings table: no late deduction.
+                return 0m;
+            }
         }
 
         // ===============================================
@@ -878,12 +994,11 @@ namespace YamyProject
                 ref_no = max + 1;
             }
 
-            using (MySqlDataReader Creader = ClinicDatabase.ExecuteReader("select delaytime,latearrivaldeduction from tbl_setting_deduction_config LIMIT 1"))
-                if (Creader.Read())
-                {
-                    defaultTimeIn = TimeSpan.Parse(Creader["delaytime"].ToString());
-                    deductionRate = Convert.ToDecimal(Creader["latearrivaldeduction"]);
-                }
+            // Attendance settings are optional; preserve the original calculation below.
+            string configuredStart, configuredEnd;
+            GetAttendanceTimes(workDate, out configuredStart, out configuredEnd);
+            defaultTimeIn = TimeSpan.Parse(configuredStart);
+            deductionRate = GetLateRate();
 
             decimal totalSalary = 0;
             using (MySqlDataReader reader = ClinicDatabase.ExecuteReader(@"SELECT BasicSalary, HousingAllowance, TransportationAllowance, Other, WorkDays,contractIssueDate FROM tbl_employee WHERE code = @code",
@@ -918,10 +1033,8 @@ namespace YamyProject
                     // check with settings
 
                     string timeIn = TimeSpan.Parse(row.Cells["Time In"].Value.ToString() + ":00").ToString();
-                    string query = @"SELECT (SELECT latearrivaldeduction FROM tbl_setting_deduction_config ) deduction
-                                        FROM tbl_setting_attendance 
-                                        WHERE DATE >= @date AND DATE <= @date AND state=1;";
-                    using (MySqlDataReader settingsReader = ClinicDatabase.ExecuteReader(query, ClinicDatabase.CreateParameterNew("date", workDate)))
+                    string query = @"SELECT @deduction AS deduction;";
+                    using (MySqlDataReader settingsReader = ClinicDatabase.ExecuteReader(query, ClinicDatabase.CreateParameterNew("@deduction", deductionRate)))
                         if (settingsReader.Read())
                         {
                             var deductionSet = settingsReader["deduction"];
@@ -1171,15 +1284,11 @@ namespace YamyProject
 
             DateTime startDate = new DateTime(year, monthNumber, 1);
             int daysInMonth = DateTime.DaysInMonth(year, monthNumber);
-            string query = @"SELECT id,date,day,timein,timeout FROM tbl_setting_attendance 
-                                        WHERE DATE >= @date AND DATE <= @date AND state=1 order by id DESC limit 1;";
-            string actualTimeIn = "08:00", actualTimeOut = "18:00";
-            using (MySqlDataReader settingsReader = ClinicDatabase.ExecuteReader(query, ClinicDatabase.CreateParameterNew("date", startDate)))
-                if (settingsReader.Read())
-                {
-                    actualTimeIn = settingsReader["timein"].ToString() + ":00";
-                    actualTimeOut = settingsReader["timeout"].ToString() + ":00";
-                }
+            string actualTimeIn, actualTimeOut;
+            GetAttendanceTimes(startDate, out actualTimeIn, out actualTimeOut);
+            // Match the original attendance-grid time format.
+            actualTimeIn = TimeSpan.Parse(actualTimeIn).ToString(@"hh\:mm\:ss");
+            actualTimeOut = TimeSpan.Parse(actualTimeOut).ToString(@"hh\:mm\:ss");
 
             for (int day = 1; day <= daysInMonth; day++)
             {
@@ -1219,44 +1328,57 @@ namespace YamyProject
 
         public void GetData()
         {
-            string qry = @"SELECT WorkDate,TimeIn,TimeOut,DayOfWeek,Status FROM tbl_attendancesheet WHERE  MONTHNAME(WorkDate)  = '" + cmbmonth.Text + "' and YEAR(WorkDate) = '" + guna2NumericUpDown1.Value.ToString() + "' and code = " + code + "  ";
-
-            ListBox lb = new ListBox();
-            lb.Items.Add(dgvdate);
-            lb.Items.Add(dgvtimeIn);
-            lb.Items.Add(dgvTimeOut);
-            lb.Items.Add(dgvday);
-            lb.Items.Add(dgvStatus);
-
-            DataTable dt = ClinicDatabase.ExecuteDataTable(qry);
-            if (dt != null)
-                LoadDataGridView(dt, dgvAttendance, lb);
-
-        }
-        public static void LoadDataGridView(
-        DataTable dt,
-        DataGridView gv,
-        ListBox lb)
-        {
-            if (dt == null)
+            // The Saved Before tab owns guna2DataGridView1, not dgvAttendance.
+            guna2DataGridView1.DataSource = null;
+            if (code <= 0 || string.IsNullOrWhiteSpace(cmbmonth.Text))
+            {
+                MessageBox.Show(L("Select an employee and month first.", "يرجى اختيار الموظف والشهر أولاً."));
                 return;
+            }
 
+            int selectedMonth;
+            if (!DateTime.TryParseExact(cmbmonth.Text.Trim(), "MMMM",
+                new CultureInfo("en-US"), DateTimeStyles.None, out DateTime monthDate))
+            {
+                MessageBox.Show(L("Select a valid month.", "يرجى اختيار شهر صحيح."));
+                return;
+            }
+            selectedMonth = monthDate.Month;
+            int selectedYear = Convert.ToInt32(guna2NumericUpDown1.Value);
+
+            const string qry = @"SELECT WorkDate, TimeIn, TimeOut, DayOfWeek, Status
+                                 FROM tbl_attendancesheet
+                                 WHERE MONTH(WorkDate) = @month
+                                   AND YEAR(WorkDate) = @year
+                                   AND code = @code
+                                 ORDER BY WorkDate";
+
+            DataTable dt = ClinicDatabase.ExecuteDataTable(qry,
+                ClinicDatabase.CreateParameterNew("@month", selectedMonth),
+                ClinicDatabase.CreateParameterNew("@year", selectedYear),
+                ClinicDatabase.CreateParameterNew("@code", code));
+
+            // Bind the existing Designer columns, without adding or changing columns.
+            guna2DataGridView1.AutoGenerateColumns = false;
+            dgvdate.DataPropertyName = "WorkDate";
+            dgvtimeIn.DataPropertyName = "TimeIn";
+            dgvTimeOut.DataPropertyName = "TimeOut";
+            dgvday.DataPropertyName = "DayOfWeek";
+            dgvStatus.DataPropertyName = "Status";
+            guna2DataGridView1.DataSource = dt;
+        }
+
+        public static void LoadDataGridView(
+            DataTable dt, DataGridView gv, ListBox lb)
+        {
+            if (dt == null) return;
             gv.AutoGenerateColumns = false;
-
             for (int i = 0; i < lb.Items.Count && i < dt.Columns.Count; i++)
             {
                 DataGridViewColumn column = lb.Items[i] as DataGridViewColumn;
-
-                if (column == null)
-                    continue;
-
-                if (gv.Columns.Contains(column.Name))
-                {
-                    gv.Columns[column.Name].DataPropertyName =
-                        dt.Columns[i].ColumnName;
-                }
+                if (column != null && gv.Columns.Contains(column.Name))
+                    gv.Columns[column.Name].DataPropertyName = dt.Columns[i].ColumnName;
             }
-
             gv.DataSource = dt;
         }
         private void SaveLSOld()

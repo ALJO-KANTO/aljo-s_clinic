@@ -4,6 +4,9 @@ using Clinic_Common;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Data;
+using MySql.Data.MySqlClient;
+using Clinic_DataAccess;
 using System.Windows.Forms;
 
 namespace Clinic.Medical_Services.Casher
@@ -12,12 +15,13 @@ namespace Clinic.Medical_Services.Casher
     {
         private int _BillID;
 
-      
+
 
         public frmProcessPayments(int BillID)
         {
             InitializeComponent();
 
+            InitializeAccountPaymentOptions();
             ApplyPaymentTranslations();
 
             lbCurrentUser.Text = clsGlobal.PersonName;
@@ -31,11 +35,111 @@ namespace Clinic.Medical_Services.Casher
         {
             InitializeComponent();
 
+            InitializeAccountPaymentOptions();
             ApplyPaymentTranslations();
 
             lbCurrentUser.Text = clsGlobal.PersonName;
         }
 
+
+        // Account selector is added in code so the existing Designer remains intact.
+        private ComboBox cmbPaymentAccount;
+        private Label lblPaymentAccount;
+        private DataTable _paymentAccounts;
+
+        private void InitializeAccountPaymentOptions()
+        {
+            // All radio buttons MUST share one parent to be mutually exclusive.
+            pnlPaymentMethods.Location = new Point(109, 317);
+            pnlPaymentMethods.Size = new Size(812, 49);
+            pnlPaymentMethods.BackColor = Color.Transparent;
+
+            pnlPaymentMethods.Controls.Add(rdbCash);
+            pnlPaymentMethods.Controls.Add(rdbCreditCard);
+            pnlPaymentMethods.Controls.Add(radioButton1);
+            pnlPaymentMethods.Controls.Add(rdbBank);
+            rdbCash.Location = new Point(16, 7);
+            rdbCreditCard.Location = new Point(168, 7);
+            radioButton1.Location = new Point(360, 7);
+            rdbBank.Location = new Point(620, 7);
+            radioButton1.Paint += radioButton_Paint;
+            radioButton1.CheckedChanged += RadioB_CheckedChanged;
+            pictureBox1.Visible = false; // remove old Payment App image
+            rdbBank.Text = "Bank";
+            rdbBank.CheckedChanged += PaymentAccountMethodChanged;
+            rdbCash.CheckedChanged += PaymentAccountMethodChanged;
+            rdbCreditCard.CheckedChanged += PaymentAccountMethodChanged;
+            radioButton1.CheckedChanged += PaymentAccountMethodChanged;
+
+            lblPaymentAccount = new Label
+            {
+                Name = "lblPaymentAccount",
+                Text = "Account Name",
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 11F, FontStyle.Bold),
+                AutoSize = true,
+                Location = new Point(125, 375)
+            };
+            cmbPaymentAccount = new ComboBox
+            {
+                Name = "cmbPaymentAccount",
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Font = new Font("Segoe UI", 11F),
+                Location = new Point(310, 373),
+                Size = new Size(340, 34),
+                BackColor = Color.FromArgb(67, 72, 75),
+                ForeColor = Color.White
+            };
+            Controls.Add(lblPaymentAccount);
+            Controls.Add(cmbPaymentAccount);
+            lblPaymentAccount.BringToFront();
+            cmbPaymentAccount.BringToFront();
+            LoadAllPaymentAccounts();
+            PaymentAccountMethodChanged(this, EventArgs.Empty);
+        }
+
+        private void LoadAllPaymentAccounts()
+        {
+            _paymentAccounts = new DataTable();
+            using (var connection = new MySqlConnection(clsDataAccessSettings.ConnectionString))
+            using (var command = new MySqlCommand(
+                "SELECT id, name FROM tbl_coa_level_4 ORDER BY name, id", connection))
+            using (var adapter = new MySqlDataAdapter(command))
+            {
+                adapter.Fill(_paymentAccounts);
+            }
+            cmbPaymentAccount.DisplayMember = "name";
+            cmbPaymentAccount.ValueMember = "id";
+            cmbPaymentAccount.DataSource = _paymentAccounts;
+            cmbPaymentAccount.SelectedIndex = -1;
+        }
+
+        private void PaymentAccountMethodChanged(object sender, EventArgs e)
+        {
+            if (cmbPaymentAccount == null || _paymentAccounts == null) return;
+            // The full COA stays visible, regardless of payment method.
+            string accountName = rdbCash.Checked ? "Cash On Hand"
+                : (rdbBank.Checked || rdbCreditCard.Checked) ? "Bank Account"
+                : radioButton1.Checked ? "Accounts Receivable" : null;
+
+            // Insurance receivables should use a configured insurance account,
+            // not an invented ledger ID. If absent, require manual selection.
+            int selectedId = 0;
+            if (!string.IsNullOrEmpty(accountName))
+            {
+                foreach (DataRow row in _paymentAccounts.Rows)
+                {
+                    if (string.Equals(Convert.ToString(row["name"]), accountName,
+                        StringComparison.OrdinalIgnoreCase))
+                    {
+                        selectedId = Convert.ToInt32(row["id"]);
+                        break;
+                    }
+                }
+            }
+            cmbPaymentAccount.SelectedValue = selectedId > 0 ? (object)selectedId : -1;
+            txtAmountReceived_TextChanged(null, null);
+        }
 
         private readonly Dictionary<Control, string> _originalTexts =
             new Dictionary<Control, string>();
@@ -348,6 +452,12 @@ namespace Clinic.Medical_Services.Casher
 
             decimal minimumRequired = amountToPay * 0.70m;
 
+            if ((rdbBank.Checked || rdbCreditCard.Checked || radioButton1.Checked) && amountReceived > amountToPay)
+            {
+                ShowTranslatedMessage("Non-cash payment cannot exceed the amount due.", "Input Error", MessageBoxIcon.Warning);
+                return;
+            }
+
             if (amountReceived < minimumRequired)
             {
                 string message =
@@ -380,22 +490,18 @@ namespace Clinic.Medical_Services.Casher
                 return;
             }
 
-            string paymentMethod;
+            string paymentMethod = rdbCash.Checked ? "Cash"
+                : rdbBank.Checked ? "Bank"
+                : rdbCreditCard.Checked ? "Credit Card"
+                : "Insurance";
 
-            if (rdbCreditCard.Checked)
-                paymentMethod = "Credit Card";
-            else if (rdbCash.Checked)
-                paymentMethod = "Cash";
-            else
-                paymentMethod = "InSurance";
-
-            int debitAccountId =
-                BindCombos.SelectDefaultLevelAccount(
-                    paymentMethod == "Cash"
-                        ? "Default Account For Cash"
-                       : paymentMethod ==  "Insurance"
-                       ? "Insurance"
-                        : "Default Account For Bank");
+            if (cmbPaymentAccount.SelectedValue == null ||
+                !int.TryParse(Convert.ToString(cmbPaymentAccount.SelectedValue), out int debitAccountId)
+                || debitAccountId <= 0)
+            {
+                ShowTranslatedMessage("Select a valid account name.", "Accounting Configuration", MessageBoxIcon.Warning);
+                return;
+            }
 
             int creditAccountId =
                 BindCombos.SelectDefaultLevelAccount(
@@ -418,13 +524,6 @@ namespace Clinic.Medical_Services.Casher
             Payment.PaymentMethod = paymentMethod;
             Payment.DebitAccountID = debitAccountId;
             Payment.CreditAccountID = creditAccountId;
-
-            if (rdbCreditCard.Checked)
-                Payment.PaymentMethod = "Credit Card";
-            else if (rdbCash.Checked)
-                Payment.PaymentMethod = "Cash";
-            else
-                Payment.PaymentMethod = "InSurance";
 
             if (amountReceived >= amountToPay)
                 Payment.Status =
@@ -492,7 +591,7 @@ namespace Clinic.Medical_Services.Casher
                     cleanAmountReceived, out decimal amountReceived))
             {
                 if (amountReceived > amountToPay &&
-                    (rdbCreditCard.Checked || rdbInSurance.Checked))
+                    (rdbCreditCard.Checked || rdbBank.Checked || radioButton1.Checked))
                 {
                     lblChangeDue.Text = T(
                         "Amount cannot exceed the required total!");

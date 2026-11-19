@@ -19,14 +19,18 @@ namespace YamyProject
         private EventHandler JournalVoucherUpdatedHandler;
         string transactionId;
         string type;
+        public MasterTransactionJournal() : this("", "")
+        {
+        }
+
         public MasterTransactionJournal(string transactionId, string type)
         {
             InitializeComponent();
-           // LocalizationManager.LocalizeForm(this);
+            // LocalizationManager.LocalizeForm(this);
             JournalVoucherUpdatedHandler = (sender, args) => BindJournal();
             //.Journal += JournalVoucherUpdatedHandler;
-            this.type = type;
-            this.transactionId = transactionId;
+            this.type = type ?? "";
+            this.transactionId = transactionId ?? "";
             headerUC1.FormText = this.Text;
         }
 
@@ -88,7 +92,7 @@ namespace YamyProject
                 decimal totalDebit = dt.AsEnumerable().Sum(row => row.Field<decimal>("debit"));
                 decimal totalCredit = dt.AsEnumerable().Sum(row => row.Field<decimal>("credit"));
 
-                dt.Rows.Add( null, null, null, null, null, null, null, "TOTAL", totalDebit, totalCredit);
+                dt.Rows.Add(null, null, null, null, null, null, null, "TOTAL", totalDebit, totalCredit);
                 dgvJournal.DataSource = dt;
                 dgvJournal.Columns["A/C name"].Width = 230;
                 dgvJournal.Columns["sn"].Width = 50;
@@ -96,9 +100,9 @@ namespace YamyProject
                 dgvJournal.Columns["transaction_id"].Visible = dgvJournal.Columns["Description"].Visible = false;
             }
             else
-            if (cmbSelectionMethod.Text == "Purchase Invoice")
-            {
-                dt = ClinicDatabase.ExecuteDataTable(@"SELECT 
+                if (cmbSelectionMethod.Text == "Purchase Invoice")
+                {
+                    dt = ClinicDatabase.ExecuteDataTable(@"SELECT 
                                  ROW_NUMBER() OVER (ORDER BY tbl_transaction.date) AS `SN`,
                                 LPAD(transaction_id, 4, '0') as `Ref Id`,
                                 tbl_transaction.date AS `Date`, tbl_transaction.transaction_id,
@@ -111,21 +115,21 @@ namespace YamyProject
                             FROM tbl_transaction 
                             INNER JOIN tbl_coa_level_4 
                             ON tbl_transaction.account_id = tbl_coa_level_4.id where (tbl_transaction.type = 'Purchase Invoice Cash' or tbl_transaction.type = 'Purchase Invoice') and tbl_transaction.state = 0",
-                            parameters.ToArray());
-                decimal totalDebit = dt.AsEnumerable().Sum(row => row.Field<decimal>("debit"));
-                decimal totalCredit = dt.AsEnumerable().Sum(row => row.Field<decimal>("credit"));
+                                parameters.ToArray());
+                    decimal totalDebit = dt.AsEnumerable().Sum(row => row.Field<decimal>("debit"));
+                    decimal totalCredit = dt.AsEnumerable().Sum(row => row.Field<decimal>("credit"));
 
-                dt.Rows.Add(null, null, null, null, null, null, null, "TOTAL", totalDebit, totalCredit);
-                dgvJournal.DataSource = dt;
-                dgvJournal.Columns["A/C name"].Width = 230;
-                dgvJournal.Columns["sn"].Width = 50;
-                dgvJournal.Columns["A/C NAME"].AutoSizeMode = dgvJournal.Columns["Type"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                dgvJournal.Columns["transaction_id"].Visible = dgvJournal.Columns["Description"].Visible = false;
-            }
-            else
-            if (type.ToLower() == "sales")
-            {
-                dt = ClinicDatabase.ExecuteDataTable(@"SELECT 
+                    dt.Rows.Add(null, null, null, null, null, null, null, "TOTAL", totalDebit, totalCredit);
+                    dgvJournal.DataSource = dt;
+                    dgvJournal.Columns["A/C name"].Width = 230;
+                    dgvJournal.Columns["sn"].Width = 50;
+                    dgvJournal.Columns["A/C NAME"].AutoSizeMode = dgvJournal.Columns["Type"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    dgvJournal.Columns["transaction_id"].Visible = dgvJournal.Columns["Description"].Visible = false;
+                }
+                else
+                    if (type.ToLower() == "sales")
+                    {
+                        dt = ClinicDatabase.ExecuteDataTable(@"SELECT 
                                 ROW_NUMBER() OVER (ORDER BY tbl_transaction.date) AS `SN`,
                                 LPAD(transaction_id, 4, '0') as `Ref Id`,
                                 tbl_transaction.date, tbl_transaction.transaction_id,tbl_transaction.type `Type`,  tbl_coa_level_4.code AS 'A/C CODE', 
@@ -134,19 +138,19 @@ namespace YamyProject
                                 FROM tbl_transaction  INNER JOIN tbl_coa_level_4 ON tbl_transaction.account_id = tbl_coa_level_4.id 
                                 INNER JOIN tbl_sales ON tbl_transaction.transaction_id = tbl_sales.id INNER JOIN 
                                 tbl_customer ON tbl_sales.customer_id = tbl_customer.id where transaction_id=@id and tbl_transaction.t_type = 'SALES'",
-                                parameters.ToArray());
-                decimal totalDebit = dt.AsEnumerable().Sum(row => row.Field<decimal>("debit"));
-                decimal totalCredit = dt.AsEnumerable().Sum(row => row.Field<decimal>("credit"));
+                                        parameters.ToArray());
+                        decimal totalDebit = dt.AsEnumerable().Sum(row => row.Field<decimal>("debit"));
+                        decimal totalCredit = dt.AsEnumerable().Sum(row => row.Field<decimal>("credit"));
 
-                dt.Rows.Add(null, null, null, null, null, null, null, "TOTAL", totalDebit, totalCredit);
-                dgvJournal.DataSource = dt;
-                dgvJournal.Columns["sn"].Width = 50;
-                dgvJournal.Columns["A/C NAME"].AutoSizeMode = dgvJournal.Columns["Type"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                dgvJournal.Columns["transaction_id"].Visible = dgvJournal.Columns["Description"].Visible = false;
-            }
-            else if (type.ToLower() == "sales return")
-            {
-                dt = ClinicDatabase.ExecuteDataTable(@"SELECT 
+                        dt.Rows.Add(null, null, null, null, null, null, null, "TOTAL", totalDebit, totalCredit);
+                        dgvJournal.DataSource = dt;
+                        dgvJournal.Columns["sn"].Width = 50;
+                        dgvJournal.Columns["A/C NAME"].AutoSizeMode = dgvJournal.Columns["Type"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                        dgvJournal.Columns["transaction_id"].Visible = dgvJournal.Columns["Description"].Visible = false;
+                    }
+                    else if (type.ToLower() == "sales return")
+                    {
+                        dt = ClinicDatabase.ExecuteDataTable(@"SELECT 
                                 ROW_NUMBER() OVER (ORDER BY tbl_transaction.date) AS `SN`,
                                 LPAD(transaction_id, 4, '0') as `Ref Id`,
                                 tbl_transaction.date, tbl_transaction.transaction_id,tbl_transaction.type `Type`,  tbl_coa_level_4.code AS 'A/C CODE', 
@@ -155,19 +159,19 @@ namespace YamyProject
                                 FROM tbl_transaction  INNER JOIN tbl_coa_level_4 ON tbl_transaction.account_id = tbl_coa_level_4.id 
                                 INNER JOIN tbl_sales_return ON tbl_transaction.transaction_id = tbl_sales_return.id INNER JOIN 
                                 tbl_customer ON tbl_sales_return.customer_id = tbl_customer.id where transaction_id=@id and tbl_transaction.t_type = 'SALES RETURN'",
-                                parameters.ToArray());
-                decimal totalDebit = dt.AsEnumerable().Sum(row => row.Field<decimal>("debit"));
-                decimal totalCredit = dt.AsEnumerable().Sum(row => row.Field<decimal>("credit"));
+                                        parameters.ToArray());
+                        decimal totalDebit = dt.AsEnumerable().Sum(row => row.Field<decimal>("debit"));
+                        decimal totalCredit = dt.AsEnumerable().Sum(row => row.Field<decimal>("credit"));
 
-                dt.Rows.Add(null, null, null, null, null, null, null, "TOTAL", totalDebit, totalCredit);
-                dgvJournal.DataSource = dt;
-                dgvJournal.Columns["sn"].Width = 50;
-                dgvJournal.Columns["A/C NAME"].AutoSizeMode = dgvJournal.Columns["Type"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                dgvJournal.Columns["transaction_id"].Visible = dgvJournal.Columns["Description"].Visible = false;
-            }
-            else if (type.ToLower() == "purchase")
-            {
-                dt = ClinicDatabase.ExecuteDataTable(@"SELECT 
+                        dt.Rows.Add(null, null, null, null, null, null, null, "TOTAL", totalDebit, totalCredit);
+                        dgvJournal.DataSource = dt;
+                        dgvJournal.Columns["sn"].Width = 50;
+                        dgvJournal.Columns["A/C NAME"].AutoSizeMode = dgvJournal.Columns["Type"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                        dgvJournal.Columns["transaction_id"].Visible = dgvJournal.Columns["Description"].Visible = false;
+                    }
+                    else if (type.ToLower() == "purchase")
+                    {
+                        dt = ClinicDatabase.ExecuteDataTable(@"SELECT 
                                  ROW_NUMBER() OVER (
                                 ORDER BY tbl_transaction.date) AS `SN`,
                                  LPAD(transaction_id, 4, '0') as `Ref Id`,
@@ -180,19 +184,19 @@ namespace YamyProject
                                 INNER JOIN 
                                  tbl_vendor ON tbl_purchase.vendor_id = tbl_vendor.id
                                 WHERE transaction_id= @id AND t_type = 'PURCHASE'",
-                                parameters.ToArray());
-                decimal totalDebit = dt.AsEnumerable().Sum(row => row.Field<decimal>("debit"));
-                decimal totalCredit = dt.AsEnumerable().Sum(row => row.Field<decimal>("credit"));
+                                        parameters.ToArray());
+                        decimal totalDebit = dt.AsEnumerable().Sum(row => row.Field<decimal>("debit"));
+                        decimal totalCredit = dt.AsEnumerable().Sum(row => row.Field<decimal>("credit"));
 
-                dt.Rows.Add(null, null, null, null, null, null, null, "TOTAL", totalDebit, totalCredit);
-                dgvJournal.DataSource = dt;
-                dgvJournal.Columns["sn"].Width = 50;
-                dgvJournal.Columns["A/C NAME"].AutoSizeMode = dgvJournal.Columns["Type"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                dgvJournal.Columns["transaction_id"].Visible = dgvJournal.Columns["Description"].Visible = false;
-            }
-            else if (type.ToLower() == "purchase return")
-            {
-                dt = ClinicDatabase.ExecuteDataTable(@"SELECT 
+                        dt.Rows.Add(null, null, null, null, null, null, null, "TOTAL", totalDebit, totalCredit);
+                        dgvJournal.DataSource = dt;
+                        dgvJournal.Columns["sn"].Width = 50;
+                        dgvJournal.Columns["A/C NAME"].AutoSizeMode = dgvJournal.Columns["Type"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                        dgvJournal.Columns["transaction_id"].Visible = dgvJournal.Columns["Description"].Visible = false;
+                    }
+                    else if (type.ToLower() == "purchase return")
+                    {
+                        dt = ClinicDatabase.ExecuteDataTable(@"SELECT 
                                  ROW_NUMBER() OVER (
                                 ORDER BY tbl_transaction.date) AS `SN`,
                                  LPAD(transaction_id, 4, '0') as `Ref Id`,
@@ -205,19 +209,19 @@ namespace YamyProject
                                 INNER JOIN 
                                  tbl_vendor ON tbl_purchase_return.vendor_id = tbl_vendor.id
                                 WHERE transaction_id= @id AND t_type = 'PURCHASE RETURN'",
-                                parameters.ToArray());
-                decimal totalDebit = dt.AsEnumerable().Sum(row => row.Field<decimal>("debit"));
-                decimal totalCredit = dt.AsEnumerable().Sum(row => row.Field<decimal>("credit"));
+                                        parameters.ToArray());
+                        decimal totalDebit = dt.AsEnumerable().Sum(row => row.Field<decimal>("debit"));
+                        decimal totalCredit = dt.AsEnumerable().Sum(row => row.Field<decimal>("credit"));
 
-                dt.Rows.Add(null, null, null, null, null, null, null, "TOTAL", totalDebit, totalCredit);
-                dgvJournal.DataSource = dt;
-                dgvJournal.Columns["sn"].Width = 50;
-                dgvJournal.Columns["A/C NAME"].AutoSizeMode = dgvJournal.Columns["Type"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                dgvJournal.Columns["transaction_id"].Visible = dgvJournal.Columns["Description"].Visible = false;
-            }
-            else if (type.ToLower() == "payment")
-            {
-                dt = ClinicDatabase.ExecuteDataTable(@"SELECT 
+                        dt.Rows.Add(null, null, null, null, null, null, null, "TOTAL", totalDebit, totalCredit);
+                        dgvJournal.DataSource = dt;
+                        dgvJournal.Columns["sn"].Width = 50;
+                        dgvJournal.Columns["A/C NAME"].AutoSizeMode = dgvJournal.Columns["Type"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                        dgvJournal.Columns["transaction_id"].Visible = dgvJournal.Columns["Description"].Visible = false;
+                    }
+                    else if (type.ToLower() == "payment")
+                    {
+                        dt = ClinicDatabase.ExecuteDataTable(@"SELECT 
                              ROW_NUMBER() OVER (
                             ORDER BY tbl_transaction.date) AS `SN`,
                                                             LPAD(transaction_id, 4, '0') as `Ref Id`,
@@ -246,19 +250,19 @@ namespace YamyProject
                             INNER JOIN tbl_coa_level_4 ON tbl_transaction.account_id = tbl_coa_level_4.id
                             INNER JOIN tbl_payment_voucher ON tbl_transaction.transaction_id = tbl_payment_voucher.id
                             WHERE transaction_id= @id AND t_type = 'PAYMENT'",
-                                parameters.ToArray());
-                decimal totalDebit = dt.AsEnumerable().Sum(row => row.Field<decimal>("debit"));
-                decimal totalCredit = dt.AsEnumerable().Sum(row => row.Field<decimal>("credit"));
+                                        parameters.ToArray());
+                        decimal totalDebit = dt.AsEnumerable().Sum(row => row.Field<decimal>("debit"));
+                        decimal totalCredit = dt.AsEnumerable().Sum(row => row.Field<decimal>("credit"));
 
-                dt.Rows.Add(null, null, null, null, null, null, null, "TOTAL", totalDebit, totalCredit);
-                dgvJournal.DataSource = dt;
-                dgvJournal.Columns["sn"].Width = 50;
-                dgvJournal.Columns["A/C NAME"].AutoSizeMode = dgvJournal.Columns["Type"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                dgvJournal.Columns["transaction_id"].Visible = dgvJournal.Columns["Description"].Visible = false;
-            }
-            else if (type.ToLower() == "receipt")
-            {
-                dt = ClinicDatabase.ExecuteDataTable(@"SELECT 
+                        dt.Rows.Add(null, null, null, null, null, null, null, "TOTAL", totalDebit, totalCredit);
+                        dgvJournal.DataSource = dt;
+                        dgvJournal.Columns["sn"].Width = 50;
+                        dgvJournal.Columns["A/C NAME"].AutoSizeMode = dgvJournal.Columns["Type"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                        dgvJournal.Columns["transaction_id"].Visible = dgvJournal.Columns["Description"].Visible = false;
+                    }
+                    else if (type.ToLower() == "receipt")
+                    {
+                        dt = ClinicDatabase.ExecuteDataTable(@"SELECT 
                                  ROW_NUMBER() OVER (
                                 ORDER BY tbl_transaction.date) AS `SN`,
                                                                 LPAD(transaction_id, 4, '0') as `Ref Id`,
@@ -281,19 +285,19 @@ namespace YamyProject
                                 INNER JOIN tbl_coa_level_4 ON tbl_transaction.account_id = tbl_coa_level_4.id
                                 INNER JOIN tbl_receipt_voucher ON tbl_transaction.transaction_id = tbl_receipt_voucher.id
                                 WHERE transaction_id= @id AND t_type = 'RECEIPT'",
-                                parameters.ToArray());
-                decimal totalDebit = dt.AsEnumerable().Sum(row => row.Field<decimal>("debit"));
-                decimal totalCredit = dt.AsEnumerable().Sum(row => row.Field<decimal>("credit"));
+                                        parameters.ToArray());
+                        decimal totalDebit = dt.AsEnumerable().Sum(row => row.Field<decimal>("debit"));
+                        decimal totalCredit = dt.AsEnumerable().Sum(row => row.Field<decimal>("credit"));
 
-                dt.Rows.Add(null, null, null, null, null, null, null, "TOTAL", totalDebit, totalCredit);
-                dgvJournal.DataSource = dt;
-                dgvJournal.Columns["sn"].Width = 50;
-                dgvJournal.Columns["A/C NAME"].AutoSizeMode = dgvJournal.Columns["Type"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                dgvJournal.Columns["transaction_id"].Visible = dgvJournal.Columns["Description"].Visible = false;
-            }
-            else if (type.ToLower() == "journal")
-            {
-                dt = ClinicDatabase.ExecuteDataTable(@"SELECT 
+                        dt.Rows.Add(null, null, null, null, null, null, null, "TOTAL", totalDebit, totalCredit);
+                        dgvJournal.DataSource = dt;
+                        dgvJournal.Columns["sn"].Width = 50;
+                        dgvJournal.Columns["A/C NAME"].AutoSizeMode = dgvJournal.Columns["Type"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                        dgvJournal.Columns["transaction_id"].Visible = dgvJournal.Columns["Description"].Visible = false;
+                    }
+                    else if (type.ToLower() == "journal")
+                    {
+                        dt = ClinicDatabase.ExecuteDataTable(@"SELECT 
                                  ROW_NUMBER() OVER (
                                 ORDER BY tbl_transaction.date) AS `SN`,
                                                                 LPAD(transaction_id, 4, '0') as `Ref Id`,
@@ -307,19 +311,19 @@ namespace YamyProject
                                 INNER JOIN tbl_coa_level_4 ON tbl_transaction.account_id = tbl_coa_level_4.id
                                 INNER JOIN tbl_journal_voucher ON tbl_transaction.transaction_id = tbl_journal_voucher.id
                                 WHERE transaction_id= @id AND t_type = 'JOURNAL'",
-                                parameters.ToArray());
-                decimal totalDebit = dt.AsEnumerable().Sum(row => row.Field<decimal>("debit"));
-                decimal totalCredit = dt.AsEnumerable().Sum(row => row.Field<decimal>("credit"));
+                                        parameters.ToArray());
+                        decimal totalDebit = dt.AsEnumerable().Sum(row => row.Field<decimal>("debit"));
+                        decimal totalCredit = dt.AsEnumerable().Sum(row => row.Field<decimal>("credit"));
 
-                dt.Rows.Add(null, null, null, null, null, null, null, "TOTAL", totalDebit, totalCredit, null);
-                dgvJournal.DataSource = dt;
-                dgvJournal.Columns["sn"].Width = 50;
-                dgvJournal.Columns["A/C NAME"].AutoSizeMode = dgvJournal.Columns["Type"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                dgvJournal.Columns["transaction_id"].Visible = dgvJournal.Columns["Description"].Visible = false;
-            }
-            else if (type.ToLower() == "inventory")
-            {
-                dt = ClinicDatabase.ExecuteDataTable(@"SELECT 
+                        dt.Rows.Add(null, null, null, null, null, null, null, "TOTAL", totalDebit, totalCredit, null);
+                        dgvJournal.DataSource = dt;
+                        dgvJournal.Columns["sn"].Width = 50;
+                        dgvJournal.Columns["A/C NAME"].AutoSizeMode = dgvJournal.Columns["Type"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                        dgvJournal.Columns["transaction_id"].Visible = dgvJournal.Columns["Description"].Visible = false;
+                    }
+                    else if (type.ToLower() == "inventory")
+                    {
+                        dt = ClinicDatabase.ExecuteDataTable(@"SELECT 
                                  ROW_NUMBER() OVER (ORDER BY tbl_transaction.date) AS `SN`,
                                 LPAD(transaction_id, 4, '0') as `Ref Id`,
                                 tbl_transaction.date AS `Date`, tbl_transaction.transaction_id,
@@ -333,20 +337,20 @@ namespace YamyProject
                             INNER JOIN tbl_coa_level_4 
                             ON tbl_transaction.account_id = tbl_coa_level_4.id where description 
                                 like '%- Item Code - " + transactionId + "'",
-                             parameters.ToArray());
-                decimal totalDebit = dt.AsEnumerable().Sum(row => row.Field<decimal>("debit"));
-                decimal totalCredit = dt.AsEnumerable().Sum(row => row.Field<decimal>("credit"));
+                                     parameters.ToArray());
+                        decimal totalDebit = dt.AsEnumerable().Sum(row => row.Field<decimal>("debit"));
+                        decimal totalCredit = dt.AsEnumerable().Sum(row => row.Field<decimal>("credit"));
 
-                dt.Rows.Add(null, null, null, null, null, null, null, "TOTAL", totalDebit, totalCredit);
-                dgvJournal.DataSource = dt;
-                dgvJournal.Columns["A/C name"].Width = 230;
-                dgvJournal.Columns["sn"].Width = 50;
-                dgvJournal.Columns["A/C NAME"].AutoSizeMode = dgvJournal.Columns["Type"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                dgvJournal.Columns["transaction_id"].Visible = dgvJournal.Columns["Description"].Visible = false;
-            }
-            else if (type.ToLower() == "vat input" || type.ToLower() == "vat output")
-            {
-                dt = ClinicDatabase.ExecuteDataTable(@"SELECT 
+                        dt.Rows.Add(null, null, null, null, null, null, null, "TOTAL", totalDebit, totalCredit);
+                        dgvJournal.DataSource = dt;
+                        dgvJournal.Columns["A/C name"].Width = 230;
+                        dgvJournal.Columns["sn"].Width = 50;
+                        dgvJournal.Columns["A/C NAME"].AutoSizeMode = dgvJournal.Columns["Type"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                        dgvJournal.Columns["transaction_id"].Visible = dgvJournal.Columns["Description"].Visible = false;
+                    }
+                    else if (type.ToLower() == "vat input" || type.ToLower() == "vat output")
+                    {
+                        dt = ClinicDatabase.ExecuteDataTable(@"SELECT 
                                  ROW_NUMBER() OVER (ORDER BY tbl_transaction.date) AS `SN`,
                                 LPAD(transaction_id, 4, '0') as `Ref Id`,
                                 tbl_transaction.date AS `Date`, tbl_transaction.transaction_id,
@@ -359,27 +363,27 @@ namespace YamyProject
                             FROM tbl_transaction 
                             INNER JOIN tbl_coa_level_4 
                             ON tbl_transaction.account_id = tbl_coa_level_4.id " + condition + @" and tbl_transaction.account_id = (SELECT account_id FROM tbl_coa_config WHERE category = '" + type + "')",
-                            parameters.ToArray());
-                decimal totalDebit = dt.AsEnumerable().Sum(row => row.Field<decimal>("debit"));
-                decimal totalCredit = dt.AsEnumerable().Sum(row => row.Field<decimal>("credit"));
+                                    parameters.ToArray());
+                        decimal totalDebit = dt.AsEnumerable().Sum(row => row.Field<decimal>("debit"));
+                        decimal totalCredit = dt.AsEnumerable().Sum(row => row.Field<decimal>("credit"));
 
-                dt.Rows.Add(null, null, null, null, null, null, null, "TOTAL", totalDebit, totalCredit);
-                dgvJournal.DataSource = dt;
-                dgvJournal.Columns["A/C NAME"].AutoSizeMode = dgvJournal.Columns["Type"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                dgvJournal.Columns["transaction_id"].Visible = dgvJournal.Columns["Description"].Visible = false;
-                try
-                {
-                    dgvJournal.Columns["A/C name"].Width = 230;
-                    dgvJournal.Columns["sn"].Width = 50;
-                }
-                catch (Exception ex)
-                {
-                    ex.ToString();
-                }
-            }
-            else if (new[] { "Sales All", "Purchase All", "Purchase Return All", "Sales Return All", "Debit Note All", "Credit Note All", "Petty Cash All" }.Contains(type, StringComparer.OrdinalIgnoreCase))
-            {
-                dt = ClinicDatabase.ExecuteDataTable(@"SELECT 
+                        dt.Rows.Add(null, null, null, null, null, null, null, "TOTAL", totalDebit, totalCredit);
+                        dgvJournal.DataSource = dt;
+                        dgvJournal.Columns["A/C NAME"].AutoSizeMode = dgvJournal.Columns["Type"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                        dgvJournal.Columns["transaction_id"].Visible = dgvJournal.Columns["Description"].Visible = false;
+                        try
+                        {
+                            dgvJournal.Columns["A/C name"].Width = 230;
+                            dgvJournal.Columns["sn"].Width = 50;
+                        }
+                        catch (Exception ex)
+                        {
+                            ex.ToString();
+                        }
+                    }
+                    else if (new[] { "Sales All", "Purchase All", "Purchase Return All", "Sales Return All", "Debit Note All", "Credit Note All", "Petty Cash All" }.Contains(type, StringComparer.OrdinalIgnoreCase))
+                    {
+                        dt = ClinicDatabase.ExecuteDataTable(@"SELECT 
                                  ROW_NUMBER() OVER (ORDER BY tbl_transaction.date) AS `SN`,
                                 LPAD(transaction_id, 4, '0') as `Ref Id`,
                                 tbl_transaction.date AS `Date`, tbl_transaction.transaction_id,
@@ -392,34 +396,34 @@ namespace YamyProject
                             FROM tbl_transaction 
                             INNER JOIN tbl_coa_level_4 
                             ON tbl_transaction.account_id = tbl_coa_level_4.id " + condition + @" and tbl_transaction.type Like '" + type.Replace(" All", "") + "%'",
-                            parameters.ToArray());
+                                    parameters.ToArray());
 
 
-                if (dt == null)
-                {
-                    dgvJournal.DataSource = null;
-                    return;
-                }
-                decimal totalDebit = dt.AsEnumerable().Sum(row => row.Field<decimal>("debit"));
-                decimal totalCredit = dt.AsEnumerable().Sum(row => row.Field<decimal>("credit"));
+                        if (dt == null)
+                        {
+                            dgvJournal.DataSource = null;
+                            return;
+                        }
+                        decimal totalDebit = dt.AsEnumerable().Sum(row => row.Field<decimal>("debit"));
+                        decimal totalCredit = dt.AsEnumerable().Sum(row => row.Field<decimal>("credit"));
 
-                dt.Rows.Add(null, null, null, null, null, null, null, "TOTAL", totalDebit, totalCredit);
-                dgvJournal.DataSource = dt;
-                dgvJournal.Columns["A/C NAME"].AutoSizeMode = dgvJournal.Columns["Type"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                dgvJournal.Columns["transaction_id"].Visible = dgvJournal.Columns["Description"].Visible = false;
-                try
-                {
-                    dgvJournal.Columns["A/C name"].Width = 230;
-                    dgvJournal.Columns["sn"].Width = 50;
-                }
-                catch (Exception ex)
-                {
-                    ex.ToString();
-                }
-            }
-            else
-            {
-                dt = ClinicDatabase.ExecuteDataTable(@"SELECT 
+                        dt.Rows.Add(null, null, null, null, null, null, null, "TOTAL", totalDebit, totalCredit);
+                        dgvJournal.DataSource = dt;
+                        dgvJournal.Columns["A/C NAME"].AutoSizeMode = dgvJournal.Columns["Type"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                        dgvJournal.Columns["transaction_id"].Visible = dgvJournal.Columns["Description"].Visible = false;
+                        try
+                        {
+                            dgvJournal.Columns["A/C name"].Width = 230;
+                            dgvJournal.Columns["sn"].Width = 50;
+                        }
+                        catch (Exception ex)
+                        {
+                            ex.ToString();
+                        }
+                    }
+                    else
+                    {
+                        dt = ClinicDatabase.ExecuteDataTable(@"SELECT 
                                  ROW_NUMBER() OVER (ORDER BY tbl_transaction.date) AS `SN`,
                                 LPAD(transaction_id, 4, '0') as `Ref Id`,
                                 tbl_transaction.date AS `Date`, tbl_transaction.transaction_id,
@@ -432,33 +436,33 @@ namespace YamyProject
                             FROM tbl_transaction 
                             INNER JOIN tbl_coa_level_4 
                             ON tbl_transaction.account_id = tbl_coa_level_4.id " + condition,
-                            parameters.ToArray());
-                if (dt == null)
-                {
-                    dgvJournal.DataSource = null;
-                    return;
-                }
-                decimal totalDebit = dt.AsEnumerable().Sum(row => row.Field<decimal>("debit"));
-                decimal totalCredit = dt.AsEnumerable().Sum(row => row.Field<decimal>("credit"));
+                                    parameters.ToArray());
+                        if (dt == null)
+                        {
+                            dgvJournal.DataSource = null;
+                            return;
+                        }
+                        decimal totalDebit = dt.AsEnumerable().Sum(row => row.Field<decimal>("debit"));
+                        decimal totalCredit = dt.AsEnumerable().Sum(row => row.Field<decimal>("credit"));
 
-                dt.Rows.Add(null, null, null, null, null, null, null, "TOTAL", totalDebit, totalCredit);
-                dgvJournal.DataSource = dt;
-                dgvJournal.Columns["A/C NAME"].AutoSizeMode = dgvJournal.Columns["Type"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                dgvJournal.Columns["transaction_id"].Visible = dgvJournal.Columns["Description"].Visible = false;
-                try
-                {
-                    dgvJournal.Columns["A/C name"].Width = 230;
-                    dgvJournal.Columns["sn"].Width = 50;
-                }
-                catch (Exception ex)
-                {
-                    ex.ToString();
-                }
-            }
+                        dt.Rows.Add(null, null, null, null, null, null, null, "TOTAL", totalDebit, totalCredit);
+                        dgvJournal.DataSource = dt;
+                        dgvJournal.Columns["A/C NAME"].AutoSizeMode = dgvJournal.Columns["Type"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                        dgvJournal.Columns["transaction_id"].Visible = dgvJournal.Columns["Description"].Visible = false;
+                        try
+                        {
+                            dgvJournal.Columns["A/C name"].Width = 230;
+                            dgvJournal.Columns["sn"].Width = 50;
+                        }
+                        catch (Exception ex)
+                        {
+                            ex.ToString();
+                        }
+                    }
 
             dgvJournal.CellPainting += new DataGridViewCellPaintingEventHandler(dgvJournal_CellPainting);
 
-           // LocalizationManager.LocalizeDataGridViewHeaders(dgvJournal);
+            // LocalizationManager.LocalizeDataGridViewHeaders(dgvJournal);
         }
 
         private void dgvJournal_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
@@ -467,10 +471,26 @@ namespace YamyProject
         }
         private void dgvJournal_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (dgvJournal.Rows.Count == 0)
+            if (e.RowIndex < 0 || e.RowIndex >= dgvJournal.Rows.Count)
                 return;
 
-            frmMain.openChildForm(new frmTransactionJournal(int.Parse(dgvJournal.SelectedRows[0].Cells["transaction_id"].Value.ToString()), dgvJournal.SelectedRows[0].Cells["type"].Value.ToString(), dgvJournal.SelectedRows[0].Cells["Ref Id"].Value.ToString(), dgvJournal.SelectedRows[0].Cells["Date"].Value.ToString()));
+            DataGridViewRow row = dgvJournal.Rows[e.RowIndex];
+            if (row.IsNewRow || !dgvJournal.Columns.Contains("transaction_id") ||
+                !dgvJournal.Columns.Contains("Type") ||
+                !dgvJournal.Columns.Contains("Ref Id") ||
+                !dgvJournal.Columns.Contains("Date"))
+                return;
+
+            object idValue = row.Cells["transaction_id"].Value;
+            if (idValue == null || idValue == DBNull.Value ||
+                !int.TryParse(idValue.ToString(), out int selectedTransactionId))
+                return; // Ignore the TOTAL row and incomplete rows.
+
+            frmMain.openChildForm(new frmTransactionJournal(
+                selectedTransactionId,
+                Convert.ToString(row.Cells["Type"].Value) ?? "",
+                Convert.ToString(row.Cells["Ref Id"].Value) ?? "",
+                Convert.ToString(row.Cells["Date"].Value) ?? ""));
         }
 
         private void cmbSelectionMethod_SelectedIndexChanged(object sender, EventArgs e)

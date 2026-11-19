@@ -17,7 +17,7 @@ namespace YamyProject
         {
             InitializeComponent();
 
-           // LocalizationManager.LocalizeForm(this);
+            // LocalizationManager.LocalizeForm(this);
 
             ApplyLanguageLayout();
         }
@@ -362,8 +362,8 @@ namespace YamyProject
                 PerformLayout();
             }
         }
-      
-      
+
+
         private void SetColumnHeader(
             DataGridView dgv,
             string columnName,
@@ -374,18 +374,20 @@ namespace YamyProject
         }
         private void bindLeaveSalary()
         {
-          
-                DataTable dt = ClinicDatabase.ExecuteDataTable(@"SELECT 
-                                    CODE AS 'Employee Code',
-                                    NAME AS 'Employee Name',
-                                    SUM(leave_days) AS 'Leave Salary Days',
-                                    SUM(credit) AS 'Leave Salary Amount',
-                                    SUM(debit) / (SUM(credit) / SUM(leave_days)) AS 'L.S Used Days',
-                                    SUM(leave_days) - (SUM(debit) / (SUM(credit) / SUM(leave_days))) AS 'L.S Remaining Days',
-                                    SUM(debit) AS 'L.S Received Amount',
-                                    SUM(credit) - SUM(debit) AS 'L.S Remaining Amount'
-                                FROM tbl_leave_salary
-                                GROUP BY CODE,name;
+
+            DataTable dt = ClinicDatabase.ExecuteDataTable(@"SELECT
+                ls.code AS 'Employee Code',
+                COALESCE(NULLIF(MAX(emp.name),''), NULLIF(MAX(ls.name),''), '') AS 'Employee Name',
+                ROUND(COALESCE(SUM(ls.leave_days),0),2) AS 'Leave Salary Days',
+                ROUND(COALESCE(SUM(ls.credit),0),2) AS 'Leave Salary Amount',
+                ROUND(COALESCE(SUM(ls.debit) / NULLIF(SUM(ls.credit) / NULLIF(SUM(ls.leave_days),0),0),0),2) AS 'L.S Used Days',
+                ROUND(COALESCE(SUM(ls.leave_days),0) - COALESCE(SUM(ls.debit) / NULLIF(SUM(ls.credit) / NULLIF(SUM(ls.leave_days),0),0),0),2) AS 'L.S Remaining Days',
+                (SELECT ROUND(COALESCE(SUM(r.DurationDays),0),2) FROM tbl_employee_leave_requests r JOIN tbl_employee er ON er.id=r.EmployeeID WHERE er.code=ls.code AND r.Status='Approved' AND r.LeaveType='Annual') AS 'Approved Annual Leave Days',
+                ROUND(COALESCE(SUM(ls.debit),0),2) AS 'L.S Received Amount',
+                ROUND(COALESCE(SUM(ls.credit),0)-COALESCE(SUM(ls.debit),0),2) AS 'L.S Remaining Amount'
+                FROM tbl_leave_salary ls
+                LEFT JOIN (SELECT code, MAX(NULLIF(name,'')) AS name FROM tbl_employee GROUP BY code) emp ON emp.code=ls.code
+                GROUP BY ls.code;
                                 ");
             dgvLeaveSalary.DataSource = dt;
 
@@ -396,14 +398,15 @@ namespace YamyProject
             dgvLeaveSalary.Columns["Leave Salary Amount"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             dgvLeaveSalary.Columns["Leave Salary Amount"].DefaultCellStyle.Format = "N2";
             dgvLeaveSalary.Columns["L.S Used Days"].Width = 100;
-            dgvLeaveSalary.Columns["L.S Used Days"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            dgvLeaveSalary.Columns["L.S REMAINING DAYS"].Width = 100;
-            dgvLeaveSalary.Columns["L.S REMAINING DAYS"].DefaultCellStyle.Format = "N2";
-            dgvLeaveSalary.Columns["L.S RECEIVED AMOUNT"].Width = 150;
-            dgvLeaveSalary.Columns["L.S RECEIVED AMOUNT"].DefaultCellStyle.Format = "N2";
-            dgvLeaveSalary.Columns["L.S REMAINING AMOUNT"].Width = 160;
-            dgvLeaveSalary.Columns["L.S REMAINING AMOUNT"].DefaultCellStyle.Format = "N2";
-           // LocalizationManager.LocalizeDataGridViewHeaders(dgvLeaveSalary);
+            dgvLeaveSalary.Columns["L.S Used Days"].DefaultCellStyle.Format = "N2";
+            dgvLeaveSalary.Columns["Approved Annual Leave Days"].DefaultCellStyle.Format = "N2";
+            dgvLeaveSalary.Columns["L.S Remaining Days"].Width = 100;
+            dgvLeaveSalary.Columns["L.S Remaining Days"].DefaultCellStyle.Format = "N2";
+            dgvLeaveSalary.Columns["L.S Received Amount"].Width = 150;
+            dgvLeaveSalary.Columns["L.S Received Amount"].DefaultCellStyle.Format = "N2";
+            dgvLeaveSalary.Columns["L.S Remaining Amount"].Width = 160;
+            dgvLeaveSalary.Columns["L.S Remaining Amount"].DefaultCellStyle.Format = "N2";
+            // LocalizationManager.LocalizeDataGridViewHeaders(dgvLeaveSalary);
         }
 
         private void EmpLeaveSalary()
@@ -504,12 +507,12 @@ namespace YamyProject
             dgvLeaveSalary.Columns["Leave Salary Amount"].Width = 160;
             dgvLeaveSalary.Columns["Leave Salary Amount"].DefaultCellStyle.Format = "N2";
             dgvLeaveSalary.Columns["L.S USED DAYS"].Width = 140;
-            dgvLeaveSalary.Columns["L.S REMAINING DAYS"].Width = 140;
-            dgvLeaveSalary.Columns["L.S REMAINING DAYS"].DefaultCellStyle.Format = "N2";
-            dgvLeaveSalary.Columns["L.S RECEIVED AMOUNT"].Width = 140;
-            dgvLeaveSalary.Columns["L.S RECEIVED AMOUNT"].DefaultCellStyle.Format = "N2";
-            dgvLeaveSalary.Columns["L.S REMAINING AMOUNT"].Width = 160;
-            dgvLeaveSalary.Columns["L.S REMAINING AMOUNT"].DefaultCellStyle.Format = "N2";
+            dgvLeaveSalary.Columns["L.S Remaining Days"].Width = 140;
+            dgvLeaveSalary.Columns["L.S Remaining Days"].DefaultCellStyle.Format = "N2";
+            dgvLeaveSalary.Columns["L.S Received Amount"].Width = 140;
+            dgvLeaveSalary.Columns["L.S Received Amount"].DefaultCellStyle.Format = "N2";
+            dgvLeaveSalary.Columns["L.S Remaining Amount"].Width = 160;
+            dgvLeaveSalary.Columns["L.S Remaining Amount"].DefaultCellStyle.Format = "N2";
             dgvLeaveSalary.Columns["vacation_count"].Visible = false;
             dgvLeaveSalary.Columns["total_vacation_days"].Visible = false;
 
@@ -520,12 +523,12 @@ namespace YamyProject
             dgvLeaveSalary.ColumnHeadersDefaultCellStyle.ForeColor = Color.White; // Header text color
             dgvLeaveSalary.EnableHeadersVisualStyles = false;
 
-           // LocalizationManager.LocalizeDataGridViewHeaders(dgvLeaveSalary);
+            // LocalizationManager.LocalizeDataGridViewHeaders(dgvLeaveSalary);
         }
 
         private void dgvLeaveSalary_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (dgvLeaveSalary.Rows.Count != 0)
+            if (e.RowIndex >= 0 && dgvLeaveSalary.Rows.Count != 0)
             {
                 frmMain.openChildForm(new frmLeaveSalaryStatement(int.Parse(dgvLeaveSalary.CurrentRow.Cells["Employee Code"].Value.ToString())));
             }

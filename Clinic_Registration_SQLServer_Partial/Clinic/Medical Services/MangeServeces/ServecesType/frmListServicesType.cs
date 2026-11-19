@@ -20,6 +20,11 @@ namespace Clinic.Serveces.ServecesType
             new Dictionary<Control, string>();
 
         private bool _layoutCaptured = false;
+        private Panel _serviceActions;
+        private TextBox _serviceSearch;
+        private Label _serviceHelp;
+        private bool _actionsInstalled;
+
 
         public frmListServicesType()
         {
@@ -29,9 +34,165 @@ namespace Clinic.Serveces.ServecesType
             CaptureOriginalLayout(this);
 
             _layoutCaptured = true;
+            InstallServiceActions();
 
             // Apply current application language.
             ApplyLanguage();
+            Resize += (s, e) => FixServicesGridLayout();
+        }
+
+        // Visible controls are created at runtime; the existing Designer is unchanged.
+        private void InstallServiceActions()
+        {
+            if (_actionsInstalled || dgvServicesType.Parent == null) return;
+            _actionsInstalled = true;
+
+            Control host = dgvServicesType.Parent;
+            _serviceActions = new Panel
+            {
+                Name = "pnlServiceActionsRuntime",
+                BackColor = Color.FromArgb(245, 248, 252),
+                Height = 84,
+                Left = dgvServicesType.Left,
+                Top = dgvServicesType.Top,
+                Width = dgvServicesType.Width,
+                Anchor = dgvServicesType.Anchor
+            };
+
+            var buttons = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Top,
+                Height = 43,
+                Padding = new Padding(5, 5, 0, 0),
+                WrapContents = false,
+                AutoScroll = true
+            };
+            Button add = ActionButton("+ Add Service", (s, e) => OpenAddService());
+            Button edit = ActionButton("Edit", (s, e) => OpenEditService());
+            Button delete = ActionButton("Delete", (s, e) => DeleteSelectedService());
+            Button refresh = ActionButton("Refresh", (s, e) => _RefreshData());
+            buttons.Controls.Add(add);
+            buttons.Controls.Add(edit);
+            buttons.Controls.Add(delete);
+            buttons.Controls.Add(refresh);
+            _serviceSearch = new TextBox { Width = 205, Margin = new Padding(12, 3, 3, 3) };
+            _serviceSearch.TextChanged += (s, e) => FilterServices();
+            buttons.Controls.Add(_serviceSearch);
+
+            _serviceHelp = new Label
+            {
+                Dock = DockStyle.Bottom,
+                Height = 37,
+                AutoEllipsis = true,
+                Padding = new Padding(10, 5, 8, 0),
+                ForeColor = Color.FromArgb(62, 80, 101),
+                Font = new Font("Segoe UI", 9F)
+            };
+            _serviceActions.Controls.Add(buttons);
+            _serviceActions.Controls.Add(_serviceHelp);
+            host.Controls.Add(_serviceActions);
+            _serviceActions.BringToFront();
+
+            // Reserve space for the new toolbar while preserving the grid's bottom edge.
+            FixServicesGridLayout();
+            dgvServicesType.CellDoubleClick += (s, e) =>
+            {
+                if (e.RowIndex >= 0) OpenEditService();
+            };
+            UpdateServiceActionsLanguage();
+        }
+
+        private static Button ActionButton(string caption, EventHandler action)
+        {
+            var button = new Button
+            {
+                Text = caption,
+                AutoSize = false,
+                Width = caption.Contains("Service") ? 125 : 85,
+                Height = 29,
+                Margin = new Padding(3, 2, 3, 2),
+                BackColor = Color.FromArgb(22, 91, 112),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Cursor = Cursors.Hand
+            };
+            button.FlatAppearance.BorderSize = 0;
+            button.Click += action;
+            return button;
+        }
+
+        private void UpdateServiceActionsLanguage()
+        {
+            if (_serviceActions == null) return;
+            bool ar = IsArabic();
+            var buttons = (FlowLayoutPanel)_serviceActions.Controls[0];
+            buttons.Controls[0].Text = ar ? "+ إضافة خدمة" : "+ Add Service";
+            buttons.Controls[1].Text = ar ? "تعديل" : "Edit";
+            buttons.Controls[2].Text = ar ? "حذف" : "Delete";
+            buttons.Controls[3].Text = ar ? "تحديث" : "Refresh";
+            _serviceHelp.Text = ar
+                ? "أضف أو عدّل الخدمات ورسومها هنا. لإضافتها إلى فاتورة، اختر الخدمة في زيارة المريض أو شاشة الفوترة."
+                : "Manage service names and fees here. To bill a service, select it during a patient visit or in billing.";
+            if (_serviceSearch != null && !_serviceSearch.Focused)
+                _serviceSearch.AccessibleName = ar ? "بحث عن خدمة" : "Search services";
+        }
+
+        private void FilterServices()
+        {
+            if (_dtListServices == null || _serviceSearch == null) return;
+            string query = _serviceSearch.Text.Trim();
+            var view = new DataView(_dtListServices);
+            if (query.Length > 0)
+            {
+                string escaped = query.Replace("'", "''").Replace("[", "[[]")
+                    .Replace("%", "[%]").Replace("*", "[*]");
+                var filters = new List<string>();
+                foreach (DataColumn column in _dtListServices.Columns)
+                {
+                    if (column.ColumnName.Equals("ServiceName", StringComparison.OrdinalIgnoreCase) ||
+                        column.ColumnName.Equals("Description", StringComparison.OrdinalIgnoreCase))
+                        filters.Add("CONVERT([" + column.ColumnName + "], 'System.String') LIKE '%" + escaped + "%'");
+                }
+                if (filters.Count > 0) view.RowFilter = string.Join(" OR ", filters);
+            }
+            dgvServicesType.DataSource = view;
+            lblRecordsCount.Text = view.Count.ToString();
+            ApplyGridLanguage(IsArabic());
+        }
+
+        private void OpenAddService()
+        {
+            using (var frm = new frmAddUpdateServices()) frm.ShowDialog(this);
+            _RefreshData();
+        }
+
+        private void OpenEditService()
+        {
+            if (!TryGetSelectedServiceID(out int id)) return;
+            using (var frm = new frmAddUpdateServices(id)) frm.ShowDialog(this);
+            _RefreshData();
+        }
+
+        private void DeleteSelectedService()
+        {
+            if (!TryGetSelectedServiceID(out int id)) return;
+            var confirm = MessageBox.Show(
+                IsArabic() ? "حذف هذه الخدمة؟ لا تحذف الخدمات المستخدمة في الفواتير."
+                           : "Delete this service? Services referenced by existing bills should not be deleted.",
+                IsArabic() ? "تأكيد الحذف" : "Confirm deletion",
+                MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            if (confirm != DialogResult.Yes) return;
+            try
+            {
+                if (!clsServicesType.Delete(id))
+                    MessageBox.Show(IsArabic() ? "تعذر حذف الخدمة. قد تكون قيد الاستخدام."
+                                               : "Unable to delete this service. It may be in use.");
+                _RefreshData();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, IsArabic() ? "خطأ في الحذف" : "Delete failed");
+            }
         }
 
         // ============================================
@@ -94,9 +255,11 @@ namespace Clinic.Serveces.ServecesType
 
                 TranslateControls(this, arabic);
                 ApplyControlLayout(this, arabic);
+                FixServicesGridLayout();
                 ApplyGridLanguage(arabic);
                 TranslateContextMenu(arabic);
                 FixServicesHeader(this, arabic);
+                UpdateServiceActionsLanguage();
             }
             finally
             {
@@ -208,6 +371,11 @@ namespace Clinic.Serveces.ServecesType
                 if (!_originalBounds.TryGetValue(
                     control, out Rectangle original))
                     continue;
+
+                // The service grid has a runtime toolbar above it.
+                // Restoring its Designer Top would hide the headers and first row.
+                if (control == dgvServicesType)
+                    continue;
                 if (_originalTexts.TryGetValue(control, out string originalText) &&
     (originalText.Trim() == "Mange Services Type" ||
      originalText.Trim() == "Manage Services Type" ||
@@ -238,6 +406,32 @@ namespace Clinic.Serveces.ServecesType
                 if (control.HasChildren)
                     ApplyControlLayout(control, arabic);
             }
+        }
+
+        // Keep the toolbar above the grid, without covering its headers or rows.
+        // Uses the original Designer rectangle as the available grid area.
+        private void FixServicesGridLayout()
+        {
+            if (_serviceActions == null ||
+                !_originalBounds.TryGetValue(dgvServicesType, out Rectangle original))
+                return;
+
+            int left = IsArabic()
+                ? Math.Max(0, dgvServicesType.Parent.ClientSize.Width - original.Right)
+                : original.Left;
+
+            _serviceActions.SetBounds(left, original.Top, original.Width, _serviceActions.Height);
+            dgvServicesType.SetBounds(
+                left,
+                original.Top + _serviceActions.Height + 4,
+                original.Width,
+                Math.Max(100, original.Height - _serviceActions.Height - 4));
+
+            dgvServicesType.ColumnHeadersVisible = true;
+            dgvServicesType.ColumnHeadersHeight = 40;
+            dgvServicesType.ScrollBars = ScrollBars.Both;
+            dgvServicesType.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgvServicesType.BringToFront();
         }
 
         // ============================================
@@ -343,6 +537,7 @@ namespace Clinic.Serveces.ServecesType
 
             lblRecordsCount.Text =
                 _dtListServices.Rows.Count.ToString();
+            FilterServices();
 
             ApplyGridLanguage(IsArabic());
         }
