@@ -24,7 +24,7 @@ namespace YamyProject
         {
             InitializeComponent();
 
-           // LocalizationManager.LocalizeForm(this);
+            // LocalizationManager.LocalizeForm(this);
 
             ApplyLanguageLayout();
         }
@@ -298,16 +298,17 @@ namespace YamyProject
         }
         private void bindEndOfService()
         {
-            DataTable dt = ClinicDatabase.ExecuteDataTable(@"SELECT 
-                    CODE AS 'Employee Code',
-                    NAME AS 'Employee Name',
-                    SUM(leave_days) AS 'End Of Service Days',
-                    SUM(credit) AS 'End Of Service Amount',
-                    SUM(leave_days) - (SUM(debit) / (SUM(credit) / SUM(leave_days))) AS 'EOS Remaining Days',
-                    SUM(debit) AS 'EOS Received Amount',
-                    SUM(credit) - SUM(debit) AS 'EOS Remaining Amount'
-                FROM tbl_end_of_service
-                GROUP BY CODE,name;
+            DataTable dt = ClinicDatabase.ExecuteDataTable(@"SELECT
+                s.code AS 'Employee Code',
+                COALESCE(NULLIF(MAX(emp.name),''), NULLIF(MAX(s.name),''), '') AS 'Employee Name',
+                ROUND(COALESCE(SUM(s.leave_days),0),2) AS 'End Of Service Days',
+                ROUND(COALESCE(SUM(s.credit),0),2) AS 'End Of Service Amount',
+                ROUND(COALESCE(SUM(s.leave_days),0) - COALESCE(SUM(s.debit) / NULLIF(SUM(s.credit) / NULLIF(SUM(s.leave_days),0),0),0),2) AS 'EOS Remaining Days',
+                ROUND(COALESCE(SUM(s.debit),0),2) AS 'EOS Received Amount',
+                ROUND(COALESCE(SUM(s.credit),0)-COALESCE(SUM(s.debit),0),2) AS 'EOS Remaining Amount'
+                FROM tbl_end_of_service s
+                LEFT JOIN (SELECT code, MAX(NULLIF(name,'')) AS name FROM tbl_employee GROUP BY code) emp ON emp.code=s.code
+                GROUP BY s.code;
                 ");
             dgvLeaveSalary.DataSource = dt;
 
@@ -318,20 +319,20 @@ namespace YamyProject
             dgvLeaveSalary.Columns["End Of Service Amount"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             dgvLeaveSalary.Columns["End Of Service Amount"].DefaultCellStyle.Format = "N2";
             dgvLeaveSalary.Columns["EOS Remaining Days"].Width = 100;
-            dgvLeaveSalary.Columns["EOS Remaining Days"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            dgvLeaveSalary.Columns["EOS Remaining Days"].DefaultCellStyle.Format = "N2";
             dgvLeaveSalary.Columns["EOS Received Amount"].Width = 150;
             dgvLeaveSalary.Columns["EOS Received Amount"].DefaultCellStyle.Format = "N2";
             dgvLeaveSalary.Columns["EOS Remaining Amount"].Width = 160;
             dgvLeaveSalary.Columns["EOS Remaining Amount"].DefaultCellStyle.Format = "N2";
-           // LocalizationManager.LocalizeDataGridViewHeaders(dgvLeaveSalary);
+            // LocalizationManager.LocalizeDataGridViewHeaders(dgvLeaveSalary);
         }
 
 
         private void dgvLeaveSalary_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (dgvLeaveSalary.Rows.Count != 0)
+            if (e.RowIndex >= 0 && dgvLeaveSalary.Rows.Count != 0)
             {
-              frmMain.openChildForm(new frmEndOfServiceStatement(int.Parse(dgvLeaveSalary.CurrentRow.Cells["Employee Code"].Value.ToString())));
+                frmMain.openChildForm(new frmEndOfServiceStatement(int.Parse(dgvLeaveSalary.CurrentRow.Cells["Employee Code"].Value.ToString())));
             }
         }
     }

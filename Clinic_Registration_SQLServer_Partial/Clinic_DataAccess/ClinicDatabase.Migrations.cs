@@ -6294,6 +6294,26 @@ new DatabaseMigration
         );"
 },
 
+                        new DatabaseMigration
+                        {
+                            Version = "20261119_HR_001",
+                            Description = "Register employee leave requests independently of payroll",
+                            Sql = @"CREATE TABLE IF NOT EXISTS `tbl_employee_leave_requests` (
+                                `LeaveID` INT NOT NULL AUTO_INCREMENT,
+                                `EmployeeID` INT NOT NULL,
+                                `LeaveType` VARCHAR(50) NOT NULL,
+                                `StartDate` DATE NOT NULL,
+                                `EndDate` DATE NOT NULL,
+                                `DurationDays` DECIMAL(10,2) NOT NULL,
+                                `Status` VARCHAR(20) NOT NULL DEFAULT 'Pending',
+                                `Notes` VARCHAR(500) NULL,
+                                `CreatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                PRIMARY KEY (`LeaveID`),
+                                KEY `IX_EmployeeLeave_EmployeeDates` (`EmployeeID`, `StartDate`, `EndDate`),
+                                CONSTRAINT `FK_EmployeeLeave_Employee` FOREIGN KEY (`EmployeeID`)
+                                    REFERENCES `tbl_employee` (`id`)
+                            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;"
+                        },
                   };
 
                 // STEP 4: Apply pending migrations

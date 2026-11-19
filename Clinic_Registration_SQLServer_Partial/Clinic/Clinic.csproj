@@ -526,6 +526,9 @@
     <Compile Include="HR\Employee\MasterEmployee.designer.cs">
       <DependentUpon>MasterEmployee.cs</DependentUpon>
     </Compile>
+    <Compile Include="HR\frmEmployeeLeaveRegistration.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="HR\Loan\frmViewLoan.cs">
       <SubType>Form</SubType>
     </Compile>

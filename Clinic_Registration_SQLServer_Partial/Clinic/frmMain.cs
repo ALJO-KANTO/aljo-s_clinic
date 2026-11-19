@@ -742,7 +742,7 @@ namespace Clinic
             if (lblActiveVisits != null)
                 lblActiveVisits.Text = dashboardStats.ActiveVisits.ToString("N0");
         }
-        
+
         private void TranslateSidebar()
         {
             if (modernSidebar == null)
@@ -1534,6 +1534,17 @@ namespace Clinic
 
                     Type formType = matches[0];
 
+                    // Transactions: the journal supports a parameterless Reports entry point.
+                    if (formType.Name == "MasterTransactionJournal")
+                    {
+                        using (Form report = new YamyProject.MasterTransactionJournal())
+                        {
+                            report.StartPosition = FormStartPosition.CenterParent;
+                            report.ShowDialog(this);
+                        }
+                        return;
+                    }
+
                     // Profit and Loss Detail requires report type and date parameters.
                     if (formType.Name == "ProfitandLossDetailReport")
                     {
@@ -1553,6 +1564,21 @@ namespace Clinic
                     {
                         using (Form report = (Form)Activator.CreateInstance(
                             formType, new object[] { "standard" }))
+                        {
+                            report.StartPosition = FormStartPosition.CenterParent;
+                            report.ShowDialog(this);
+                        }
+
+                        return;
+                    }
+
+                    // Transactions report requires transaction ID and type.
+                    // Empty values represent navigation without a selected transaction;
+                    // verify that the target form supports this mode.
+                    if (formType.Name == "MasterTransactionJournal")
+                    {
+                        using (Form report = (Form)Activator.CreateInstance(
+                            formType, new object[] { "", "" }))
                         {
                             report.StartPosition = FormStartPosition.CenterParent;
                             report.ShowDialog(this);

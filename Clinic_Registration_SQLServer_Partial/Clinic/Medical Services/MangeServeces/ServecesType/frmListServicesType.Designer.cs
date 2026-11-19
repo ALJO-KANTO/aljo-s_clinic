@@ -157,7 +157,7 @@
             this.dgvServicesType.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
             this.dgvServicesType.EnableHeadersVisualStyles = false;
             this.dgvServicesType.GridColor = System.Drawing.Color.FromArgb(((int)(((byte)(229)))), ((int)(((byte)(231)))), ((int)(((byte)(235)))));
-            this.dgvServicesType.Location = new System.Drawing.Point(29, 207);
+            this.dgvServicesType.Location = new System.Drawing.Point(29, 226);
             this.dgvServicesType.Margin = new System.Windows.Forms.Padding(2, 4, 2, 4);
             this.dgvServicesType.MultiSelect = false;
             this.dgvServicesType.Name = "dgvServicesType";
@@ -166,7 +166,7 @@
             this.dgvServicesType.RowHeadersWidth = 51;
             this.dgvServicesType.RowTemplate.Height = 35;
             this.dgvServicesType.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvServicesType.Size = new System.Drawing.Size(766, 370);
+            this.dgvServicesType.Size = new System.Drawing.Size(766, 351);
             this.dgvServicesType.TabIndex = 124;
             this.dgvServicesType.TabStop = false;
             // 
@@ -251,9 +251,9 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(816, 663);
+            this.Controls.Add(this.dgvServicesType);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.btnClose);
-            this.Controls.Add(this.dgvServicesType);
             this.Controls.Add(this.lblRecordsCount);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.pbApplicationTypesmage);
