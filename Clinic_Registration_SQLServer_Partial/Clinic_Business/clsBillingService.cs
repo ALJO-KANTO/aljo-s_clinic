@@ -142,5 +142,18 @@ namespace Clinic_Business
         {
             return clsBillingServiceData.CancelBillAndRestoreStock(billID,userID);
         }
+        public static DataTable GetLabOrderForEditing(int billID)
+        {
+            return clsBillingServiceData.GetLabOrderForEditing(billID);
+        }
+
+        public static bool UpdateUnpaidLabOrder(
+            int billID,
+            IEnumerable<int> selectedTestIDs)
+        {
+            return clsBillingServiceData.UpdateUnpaidLabOrder(
+                billID,
+                selectedTestIDs);
+        }
     }
 }

@@ -7,7 +7,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-
+using Clinic.Medical_Services.Laboratory;
 
 namespace Clinic.Medical_Services.Casher
 {
@@ -686,12 +686,47 @@ namespace Clinic.Medical_Services.Casher
             {
                 if (status == "Pending")
                 {
-                    bool canEdit = hasItemDetails &&
+                    // Existing prescription and pharmacy edit conditions.
+                    bool canEditExistingItems = hasItemDetails &&
                         (prescriptionCount > 0 || pharmacySaleCount > 0);
-                    e.Value = canEdit ? "Edit" : "N/A";
+
+                    // Check whether this invoice belongs to a laboratory order.
+                    bool isLabInvoice = Regex.IsMatch(
+      itemsTotal ?? "",
+      @"\d+\s+Lab Tests?",
+      RegexOptions.IgnoreCase);
+
+                 
+
+                    // Laboratory invoices can only be edited when nothing is paid.
+                    decimal paidAmount = -1;
+
+                    if (dgMasterBillList.Columns.Contains("PaidAmount") &&
+                        row.Cells["PaidAmount"].Value != null &&
+                        row.Cells["PaidAmount"].Value != DBNull.Value)
+                    {
+                        decimal.TryParse(
+                            Convert.ToString(row.Cells["PaidAmount"].Value),
+                            out paidAmount);
+                    }
+
+
+                    bool canEditLabOrder =
+                        isLabInvoice &&
+                        paidAmount == 0;
+
+                    bool canEdit =
+                        canEditExistingItems || canEditLabOrder;
+
+                    e.Value = canEdit ? "Edit Invoice" : "Unavailable";
+
                     e.CellStyle.BackColor = canEdit
-                        ? Color.FromArgb(0, 80, 90) : Color.FromArgb(20, 43, 50);
-                    e.CellStyle.ForeColor = canEdit ? Color.White : Color.DarkGray;
+                        ? Color.FromArgb(0, 80, 90)
+                        : Color.FromArgb(20, 43, 50);
+
+                    e.CellStyle.ForeColor = canEdit
+                        ? Color.White
+                        : Color.DarkGray;
                 }
                 else if (status == "Paid" || status == "Partial")
                 {
@@ -701,7 +736,7 @@ namespace Clinic.Medical_Services.Casher
                 }
                 else
                 {
-                    e.Value = "N/A";
+                    e.Value = "Unavailable";
                     e.CellStyle.BackColor = Color.FromArgb(30, 30, 30);
                     e.CellStyle.ForeColor = Color.DarkGray;
                 }
@@ -799,28 +834,39 @@ namespace Clinic.Medical_Services.Casher
                 {
                     if (!hasItemDetails)
                     {
-                        MessageBox.Show("Bill item details are not available. Editing is disabled.",
-                            "Action Unavailable", MessageBoxButtons.OK,
-                            MessageBoxIcon.Warning);
+                        MessageBox.Show("Bill item details are not available.");
                         return;
                     }
 
-                    if (prescriptionCount == 0)
-                    {
-                        MessageBox.Show(
-                            "No prescription items available to edit.",
-                            "Action Unavailable",
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Warning);
+                    bool isLabInvoice = Regex.IsMatch(
+                        itemsTotal ?? "",
+                        @"\d+\s+Lab Tests?",
+                        RegexOptions.IgnoreCase);
 
+                    if (isLabInvoice)
+                    {
+                        // Open the existing lab order using its BillID.
+                        using (frmLabRequest frm = new frmLabRequest(billID))
+                        {
+                            if (frm.ShowDialog(this) == DialogResult.OK)
+                            {
+                                _RefreshBillsList();
+                            }
+                        }
+
+                        return;
+                    }
+                    // Existing prescription/pharmacy editing remains unchanged.
+                    if (prescriptionCount == 0 && pharmacySaleCount == 0)
+                    {
+                        MessageBox.Show("No prescription items available to edit.");
                         return;
                     }
 
                     using (frmEditPendingPrescription frm =
-         new frmEditPendingPrescription(billID))
+                        new frmEditPendingPrescription(billID))
                     {
-                        if (frm.IsPrescriptionLoaded)
-                            frm.ShowDialog(this);
+                        frm.ShowDialog(this);
                     }
 
                     _RefreshBillsList();

@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
+using System.Collections.Generic;
+using System.Linq;
 using Clinic_Common;
 
 namespace Clinic_DataAccess
@@ -432,7 +434,7 @@ namespace Clinic_DataAccess
                 {
                     string queryUpdateBillNumber = @"UPDATE Bills SET PaymentStatus=@PaymentStatus 
                                                  WHERE BillID = @BillID";
-                    using (MySqlCommand cmdUpdate = new MySqlCommand(queryUpdateBillNumber, connection ))
+                    using (MySqlCommand cmdUpdate = new MySqlCommand(queryUpdateBillNumber, connection))
                     {
                         cmdUpdate.Parameters.AddWithValue("@BillID", BillID);
                         cmdUpdate.Parameters.AddWithValue("@PaymentStatus", PaymentStatus);
@@ -864,7 +866,252 @@ namespace Clinic_DataAccess
             }
         }
 
+        public static DataTable GetLabOrderForEditing(int billID)
+        {
+            const string query = @"
+        SELECT
+            B.BillID,
+            B.BillNumber,
+            B.LabOrderID,
+            O.PatientID,
+            O.VisitID,
+            O.DoctorID,
+            O.RequestSource,
+            R.TestID,
+            COALESCE(PAY.PaidAmount, 0) AS PaidAmount
+        FROM bills B
+        INNER JOIN laborders O
+            ON O.LabOrderID = B.LabOrderID
+        LEFT JOIN labrequests R
+            ON R.LabOrderID = O.LabOrderID
+           AND R.BillID = B.BillID
+           AND R.Status <> 'Cancelled'
+        LEFT JOIN
+        (
+            SELECT BillID, SUM(PaymentAmount) AS PaidAmount
+            FROM payments
+            GROUP BY BillID
+        ) PAY ON PAY.BillID = B.BillID
+        WHERE B.BillID = @BillID
+        ORDER BY R.TestID;";
 
+            using (var connection = new MySqlConnection(
+                clsDataAccessSettings.ConnectionString))
+            using (var command = new MySqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@BillID", billID);
+
+                var dt = new DataTable();
+                using (var adapter = new MySqlDataAdapter(command))
+                {
+                    adapter.Fill(dt);
+                }
+
+                return dt;
+            }
+        }
+
+        public static bool UpdateUnpaidLabOrder(
+            int billID,
+            IEnumerable<int> selectedTestIDs)
+        {
+            if (billID <= 0)
+                throw new ArgumentException("Invalid Bill ID.");
+
+            if (selectedTestIDs == null)
+                throw new ArgumentNullException(nameof(selectedTestIDs));
+
+            int[] tests = selectedTestIDs.Distinct().ToArray();
+
+            if (tests.Length == 0 || tests.Any(x => x <= 0))
+                throw new ArgumentException("Select at least one valid lab test.");
+
+            using (var connection = new MySqlConnection(
+                clsDataAccessSettings.ConnectionString))
+            {
+                connection.Open();
+
+                using (var transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        int labOrderID;
+                        int patientID;
+                        int? visitID;
+
+                        // Lock the existing unpaid invoice and get its linked lab order.
+                        using (var cmd = new MySqlCommand(@"
+                            SELECT LabOrderID, PatientID, VisitID
+                            FROM bills
+                            WHERE BillID = @BillID
+                              AND PaymentStatus IN ('0', 'Pending', 'Unpaid')
+                            FOR UPDATE;",
+                            connection, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@BillID", billID);
+
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                if (!reader.Read())
+                                    throw new InvalidOperationException(
+                                        "Invoice not found or is not pending.");
+
+                                if (reader["LabOrderID"] == DBNull.Value)
+                                    throw new InvalidOperationException(
+                                        "Invoice is not linked to a lab order.");
+
+                                labOrderID = Convert.ToInt32(reader["LabOrderID"]);
+                                patientID = Convert.ToInt32(reader["PatientID"]);
+
+                                visitID = reader["VisitID"] == DBNull.Value
+                                    ? (int?)null
+                                    : Convert.ToInt32(reader["VisitID"]);
+                            }
+                        }
+
+                        // Editing is allowed only if no payment has been received.
+                        using (var cmd = new MySqlCommand(@"
+                            SELECT COALESCE(SUM(PaymentAmount), 0)
+                            FROM payments
+                            WHERE BillID = @BillID;",
+                            connection, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@BillID", billID);
+
+                            decimal paidAmount = Convert.ToDecimal(cmd.ExecuteScalar());
+
+                            if (paidAmount > 0)
+                                throw new InvalidOperationException(
+                                    "Editing is not allowed because payment has been received.");
+                        }
+
+                        string testParameters = string.Join(",",
+                            tests.Select((x, i) => "@T" + i));
+
+                        // Confirm that all selected tests are active.
+                        using (var cmd = new MySqlCommand(@"
+                            SELECT COUNT(*)
+                            FROM laboratorytests
+                            WHERE IsActive = 1
+                              AND TestID IN (" + testParameters + ");",
+                            connection, transaction))
+                        {
+                            for (int i = 0; i < tests.Length; i++)
+                                cmd.Parameters.AddWithValue("@T" + i, tests[i]);
+
+                            if (Convert.ToInt32(cmd.ExecuteScalar()) != tests.Length)
+                                throw new InvalidOperationException(
+                                    "One or more selected tests are inactive or unavailable.");
+                        }
+
+                        // Detach and cancel tests that the user unchecked.
+                        using (var cmd = new MySqlCommand(@"
+                            UPDATE labrequests
+                            SET Status = 'Cancelled',
+                                BillID = NULL
+                            WHERE LabOrderID = @OrderID
+                              AND BillID = @BillID
+                              AND Status <> 'Cancelled'
+                              AND TestID NOT IN (" + testParameters + ");",
+                            connection, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@OrderID", labOrderID);
+                            cmd.Parameters.AddWithValue("@BillID", billID);
+
+                            for (int i = 0; i < tests.Length; i++)
+                                cmd.Parameters.AddWithValue("@T" + i, tests[i]);
+
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        // Add newly selected tests to the same lab order and invoice.
+                        foreach (int testID in tests)
+                        {
+                            using (var cmd = new MySqlCommand(@"
+                                INSERT INTO labrequests
+                                (
+                                    LabOrderID,
+                                    PatientID,
+                                    VisitID,
+                                    TestID,
+                                    BillID,
+                                    Status,
+                                    SavedTestPrice
+                                )
+                                SELECT
+                                    @OrderID,
+                                    @PatientID,
+                                    @VisitID,
+                                    T.TestID,
+                                    @BillID,
+                                    'Ordered',
+                                    T.TestPrice
+                                FROM laboratorytests T
+                                WHERE T.TestID = @TestID
+                                  AND T.IsActive = 1
+                                  AND NOT EXISTS
+                                  (
+                                      SELECT 1
+                                      FROM labrequests R
+                                      WHERE R.LabOrderID = @OrderID
+                                        AND R.TestID = @TestID
+                                        AND R.BillID = @BillID
+                                        AND R.Status <> 'Cancelled'
+                                  );",
+                                connection, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@OrderID", labOrderID);
+                                cmd.Parameters.AddWithValue("@PatientID", patientID);
+                                cmd.Parameters.AddWithValue(
+                                    "@VisitID", (object)visitID ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@BillID", billID);
+                                cmd.Parameters.AddWithValue("@TestID", testID);
+
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+
+                        // Recalculate the invoice amount from its current bill items.
+                        decimal newTotal;
+
+                        using (var cmd = new MySqlCommand(@"
+                            SELECT COALESCE(SUM(Total), 0)
+                            FROM view_billitems
+                            WHERE BillID = @BillID;",
+                            connection, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@BillID", billID);
+                            newTotal = Convert.ToDecimal(cmd.ExecuteScalar());
+                        }
+
+                        // Update only the existing bill; BillID and BillNumber remain unchanged.
+                        using (var cmd = new MySqlCommand(@"
+                            UPDATE bills
+                            SET TotalAmount = @Total
+                            WHERE BillID = @BillID
+                              AND LabOrderID = @OrderID;",
+                            connection, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@Total", newTotal);
+                            cmd.Parameters.AddWithValue("@BillID", billID);
+                            cmd.Parameters.AddWithValue("@OrderID", labOrderID);
+
+                            if (cmd.ExecuteNonQuery() != 1)
+                                throw new InvalidOperationException(
+                                    "Unable to update the existing invoice.");
+                        }
+
+                        transaction.Commit();
+                        return true;
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
+                }
+            }
+        }
 
         #region EDitPending Prescription ITems
 
@@ -945,7 +1192,7 @@ namespace Clinic_DataAccess
             return dtDetails;
         }
 
-        public static bool UpdateAfterEditPendingPrescription(DataTable dtDetails,int BillID,int CreatedByUserID)
+        public static bool UpdateAfterEditPendingPrescription(DataTable dtDetails, int BillID, int CreatedByUserID)
         {
             using (MySqlConnection conn = new MySqlConnection(clsDataAccessSettings.ConnectionString))
             {
@@ -974,8 +1221,8 @@ namespace Clinic_DataAccess
                                    INNER JOIN #TempDispensed T ON PD.PrescriptionDetailID = T.DetailsID";
                     conn.ExecuteNonQuery(updateQuery, transaction);
 
-                  
-                    
+
+
 
                     string updateStockQuery = @"
                                 UPDATE M

@@ -640,7 +640,7 @@ namespace Clinic.Medical_Services.Laboratory
                         T("Payment Required"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
-                using (var form = new frmLabResult(id))
+                using (var form = new frmLabRequest.frmLabResult(id))
                     if (form.ShowDialog(this) == DialogResult.OK) ReloadData();
             }
             catch (Exception ex) { MessageBox.Show(ex.Message, T("Laboratory")); }

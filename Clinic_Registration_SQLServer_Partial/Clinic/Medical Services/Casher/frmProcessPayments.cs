@@ -439,6 +439,7 @@ namespace Clinic.Medical_Services.Casher
 
             try
             {
+
                 if (Payment.Save())
                 {
                     ShowTranslatedMessage(
@@ -446,9 +447,14 @@ namespace Clinic.Medical_Services.Casher
                         "Success",
                         MessageBoxIcon.Information);
 
-                    btnConfirmPayment.Enabled = false;
+                    // Clear the previous payment amount.
+                    txtAmountReceived.Text = "";
 
+                    // Refresh the invoice and outstanding balance.
                     LoadPaymentScreenDetails(_BillID);
+
+                    // Do not allow another submission until a new amount is entered.
+                    btnConfirmPayment.Enabled = true;
                 }
                 else
                 {
@@ -457,6 +463,7 @@ namespace Clinic.Medical_Services.Casher
                         "Payment Error",
                         MessageBoxIcon.Error);
                 }
+
             }
             catch (Exception ex)
             {

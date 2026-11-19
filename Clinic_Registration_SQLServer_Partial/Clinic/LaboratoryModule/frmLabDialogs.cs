@@ -4,6 +4,7 @@ using Clinic_Business;
 using Clinic_DataAccess;
 using MySql.Data.MySqlClient;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
 using System.Windows.Forms;
@@ -503,7 +504,18 @@ namespace Clinic.Medical_Services.Laboratory
         private readonly System.Collections.Generic.HashSet<int> selectedTestIDs =
             new System.Collections.Generic.HashSet<int>();
         private bool loadingTests;
+        private int? _editBillID;
+        public frmLabRequest(int billID)
+    : this(LabRequestMode.Direct)
+        {
+            if (billID <= 0)
+                throw new ArgumentException("Invalid Bill ID.");
 
+            _editBillID = billID;
+
+            Text = LabUi.T("Edit Lab Request");
+            btnSave.Text = LabUi.T("Save Changes");
+        }
         public frmLabRequest() : this(LabRequestMode.Direct) { }
 
         public frmLabRequest(
@@ -604,20 +616,54 @@ namespace Clinic.Medical_Services.Laboratory
             }
         }
 
+
         private void frmLabRequest_Load(object sender, EventArgs e)
         {
             try
             {
                 DataTable patients = ClinicDatabase.GetLabPatients();
+
                 cmbPatient.DisplayMember = "PatientName";
                 cmbPatient.ValueMember = "PatientID";
                 cmbPatient.DataSource = patients;
-                if (_patientID.HasValue)
+
+                if (_editBillID.HasValue)
+                {
+                    DataTable orderData =
+                        clsBillingService.GetLabOrderForEditing(
+                            _editBillID.Value);
+
+                    if (orderData.Rows.Count == 0)
+                        throw new InvalidOperationException(
+                            "Existing laboratory order was not found.");
+
+                    DataRow firstRow = orderData.Rows[0];
+
+                    decimal paidAmount =
+                        Convert.ToDecimal(firstRow["PaidAmount"]);
+
+                    if (paidAmount > 0)
+                        throw new InvalidOperationException(
+                            "This invoice cannot be edited because payment has been received.");
+
+                    int patientID =
+                        Convert.ToInt32(firstRow["PatientID"]);
+
+                    cmbPatient.SelectedValue = patientID;
+                    cmbPatient.Enabled = false;
+
+                    foreach (DataRow row in orderData.Rows)
+                    {
+                        if (row["TestID"] != DBNull.Value)
+                        {
+                            selectedTestIDs.Add(
+                                Convert.ToInt32(row["TestID"]));
+                        }
+                    }
+                }
+                else if (_patientID.HasValue)
                 {
                     cmbPatient.SelectedValue = _patientID.Value;
-                    if (!(cmbPatient.SelectedValue is int) ||
-                        (int)cmbPatient.SelectedValue != _patientID.Value)
-                        throw new InvalidOperationException("Selected patient not found.");
                     cmbPatient.Enabled = false;
                 }
 
@@ -629,6 +675,7 @@ namespace Clinic.Medical_Services.Laboratory
                 LabUi.ShowError(ex, "Load Lab Request");
             }
         }
+
 
         private void RefreshTestList()
         {
@@ -714,6 +761,7 @@ namespace Clinic.Medical_Services.Laboratory
         }
 
 
+
         private void btnSave_Click(object sender, EventArgs e)
         {
             if (cmbPatient.SelectedValue == null ||
@@ -730,28 +778,52 @@ namespace Clinic.Medical_Services.Laboratory
                 return;
             }
 
-            int patientID = Convert.ToInt32(cmbPatient.SelectedValue);
-
-            int? visitID = null;
-            int? doctorID = null;
-
-            if (_mode == LabRequestMode.DoctorVisit)
-            {
-                visitID = _visitID;
-                doctorID = _doctorID;
-
-                if (!visitID.HasValue || visitID.Value <= 0)
-                {
-                    MessageBox.Show(
-                        LabUi.T("Please select a valid patient visit."));
-                    return;
-                }
-            }
-
             btnSave.Enabled = false;
 
             try
             {
+                // EDIT EXISTING LAB ORDER
+                if (_editBillID.HasValue)
+                {
+                    bool updated = clsBillingService.UpdateUnpaidLabOrder(
+                        _editBillID.Value,
+                        selectedTestIDs);
+
+                    if (!updated)
+                        throw new InvalidOperationException(
+                            "Unable to update the existing laboratory order.");
+
+                    MessageBox.Show(
+                        "Laboratory order updated successfully.",
+                        "Success",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+
+                    DialogResult = DialogResult.OK;
+                    Close();
+                    return;
+                }
+
+                // EXISTING NEW REQUEST WORKFLOW - UNCHANGED
+                int patientID =
+                    Convert.ToInt32(cmbPatient.SelectedValue);
+
+                int? visitID = null;
+                int? doctorID = null;
+
+                if (_mode == LabRequestMode.DoctorVisit)
+                {
+                    visitID = _visitID;
+                    doctorID = _doctorID;
+
+                    if (!visitID.HasValue || visitID.Value <= 0)
+                    {
+                        MessageBox.Show(
+                            LabUi.T("Please select a valid patient visit."));
+                        return;
+                    }
+                }
+
                 int orderID = ClinicDatabase.CreateLabOrder(
                     patientID: patientID,
                     visitID: visitID,
@@ -760,7 +832,7 @@ namespace Clinic.Medical_Services.Laboratory
                         _mode == LabRequestMode.Direct
                             ? "WalkIn"
                             : "Doctor",
-                    testIDs: new System.Collections.Generic.List<int>(selectedTestIDs)
+                    testIDs: new List<int>(selectedTestIDs)
                 );
 
                 MessageBox.Show(
@@ -775,265 +847,264 @@ namespace Clinic.Medical_Services.Laboratory
             }
             catch (Exception ex)
             {
-                LabUi.ShowError(ex, "Cannot Create Lab Request");
+                LabUi.ShowError(ex, "Save Lab Request");
             }
             finally
             {
                 btnSave.Enabled = true;
             }
         }
-    }
 
-    // ---------------------------------------------------------
-    // ENTER LAB RESULT
-    // ---------------------------------------------------------
-
+        // ---------------------------------------------------------
+        // ENTER LAB RESULT
+        // ---------------------------------------------------------
 
 
-    public class frmLabResult : Form
-    {
-        private readonly int _requestID;
 
-        private readonly DataGridView grid = new DataGridView();
-        private readonly Label info = new Label();
-        private readonly Label summary = new Label();
-        private readonly Button save =
-            LabUi.Button("Validate Test Result");
-
-        private DataTable parameters;
-        private int testID;
-        private string patientGender = "";
-        private string testName = "";
-        private bool loading;
-
-        public frmLabResult(int requestID)
+        public class frmLabResult : Form
         {
-            _requestID = requestID;
+            private readonly int _requestID;
 
-            bool arabic = TranslationClass.IsArabic;
+            private readonly DataGridView grid = new DataGridView();
+            private readonly Label info = new Label();
+            private readonly Label summary = new Label();
+            private readonly Button save =
+                LabUi.Button("Validate Test Result");
 
-            Text = LabUi.T("Enter Lab Result") + " #" + requestID;
-            StartPosition = FormStartPosition.CenterParent;
-            Size = new Size(1180, 720);
-            MinimumSize = new Size(850, 480);
-            Font = new Font("Segoe UI", 10);
-            RightToLeft = arabic
-                ? RightToLeft.Yes
-                : RightToLeft.No;
-            RightToLeftLayout = arabic;
-            BackColor = Color.White;
+            private DataTable parameters;
+            private int testID;
+            private string patientGender = "";
+            private string testName = "";
+            private bool loading;
 
-            // ================= HEADER =================
-
-            var header = new Panel
+            public frmLabResult(int requestID)
             {
-                Dock = DockStyle.Top,
-                Height = 112,
-                Padding = new Padding(18, 12, 18, 6),
-                BackColor = Color.FromArgb(245, 249, 250)
-            };
+                _requestID = requestID;
 
-            info.Dock = DockStyle.Top;
-            info.Height = 48;
-            info.Font = new Font(
-                "Segoe UI", 12, FontStyle.Bold);
-            info.ForeColor = Color.FromArgb(0, 110, 105);
+                bool arabic = TranslationClass.IsArabic;
 
-            summary.Dock = DockStyle.Top;
-            summary.Height = 32;
-            summary.ForeColor = Color.DimGray;
+                Text = LabUi.T("Enter Lab Result") + " #" + requestID;
+                StartPosition = FormStartPosition.CenterParent;
+                Size = new Size(1180, 720);
+                MinimumSize = new Size(850, 480);
+                Font = new Font("Segoe UI", 10);
+                RightToLeft = arabic
+                    ? RightToLeft.Yes
+                    : RightToLeft.No;
+                RightToLeftLayout = arabic;
+                BackColor = Color.White;
 
-            header.Controls.Add(summary);
-            header.Controls.Add(info);
+                // ================= HEADER =================
 
-            // ================= GRID =================
-
-            grid.Dock = DockStyle.Fill;
-            grid.BackgroundColor = Color.White;
-            grid.BorderStyle = BorderStyle.None;
-            grid.AllowUserToAddRows = false;
-            grid.AllowUserToDeleteRows = false;
-            grid.AutoGenerateColumns = false;
-            grid.RowHeadersVisible = false;
-            grid.RowTemplate.Height = 38;
-            grid.ColumnHeadersHeight = 44;
-            grid.EnableHeadersVisualStyles = false;
-
-            grid.ColumnHeadersDefaultCellStyle.BackColor =
-                Color.FromArgb(0, 121, 107);
-
-            grid.ColumnHeadersDefaultCellStyle.ForeColor =
-                Color.White;
-
-            grid.ColumnHeadersDefaultCellStyle.Font =
-                new Font("Segoe UI", 10, FontStyle.Bold);
-
-            grid.AlternatingRowsDefaultCellStyle.BackColor =
-                Color.FromArgb(240, 248, 247);
-
-            grid.SelectionMode =
-                DataGridViewSelectionMode.CellSelect;
-
-            grid.MultiSelect = false;
-
-            grid.EditMode =
-                DataGridViewEditMode.EditOnEnter;
-
-            grid.RightToLeft = arabic
-                ? RightToLeft.Yes
-                : RightToLeft.No;
-
-            AddTextColumn(
-                "ParameterName", "Parameter", 220, true);
-
-            AddTextColumn(
-                "ObservedValue", "Result", 120, false);
-
-            AddTextColumn(
-                "Unit", "Unit", 80, true);
-
-            AddTextColumn(
-                "SelectedReferenceRange",
-                "Reference Range", 240, true);
-
-            var flag = new DataGridViewComboBoxColumn
-            {
-                Name = "ResultFlag",
-                HeaderText = LabUi.T("Flag"),
-                DataPropertyName = "ResultFlag",
-                Width = 110,
-                FlatStyle = FlatStyle.Flat
-            };
-
-            flag.Items.AddRange(
-                "", "Low", "Normal", "High",
-                "Abnormal", "Critical");
-
-            grid.Columns.Add(flag);
-
-            AddTextColumn(
-                "ResultNotes", "Remarks", 190, false);
-
-            grid.Columns["ParameterName"]
-                .DefaultCellStyle.WrapMode =
-                    DataGridViewTriState.True;
-
-            grid.AutoSizeRowsMode =
-                DataGridViewAutoSizeRowsMode.AllCells;
-
-            // ================= FOOTER =================
-
-            var footer = new FlowLayoutPanel
-            {
-                Dock = DockStyle.Bottom,
-                Height = 74,
-                Padding = new Padding(15),
-                FlowDirection = arabic
-                    ? FlowDirection.LeftToRight
-                    : FlowDirection.RightToLeft,
-                BackColor = Color.FromArgb(245, 249, 250)
-            };
-
-            var cancel = LabUi.Button("Cancel");
-            cancel.BackColor = Color.DimGray;
-            cancel.Click += (s, e) => Close();
-
-            save.Width = 205;
-            save.Click += (s, e) => SaveAll();
-
-            footer.Controls.Add(cancel);
-            footer.Controls.Add(save);
-
-            Controls.Add(grid);
-            Controls.Add(footer);
-            Controls.Add(header);
-
-            // ================= EVENTS =================
-
-            grid.CellEndEdit += (s, e) =>
-            {
-                if (!loading && e.RowIndex >= 0)
+                var header = new Panel
                 {
-                    Recalculate(e.RowIndex);
-                    UpdateSummary();
-                }
-            };
+                    Dock = DockStyle.Top,
+                    Height = 112,
+                    Padding = new Padding(18, 12, 18, 6),
+                    BackColor = Color.FromArgb(245, 249, 250)
+                };
 
-            grid.CurrentCellDirtyStateChanged += (s, e) =>
-            {
-                if (grid.IsCurrentCellDirty)
-                    grid.CommitEdit(
-                        DataGridViewDataErrorContexts.Commit);
-            };
+                info.Dock = DockStyle.Top;
+                info.Height = 48;
+                info.Font = new Font(
+                    "Segoe UI", 12, FontStyle.Bold);
+                info.ForeColor = Color.FromArgb(0, 110, 105);
 
-            grid.DataError += (s, e) =>
-            {
-                e.ThrowException = false;
-            };
+                summary.Dock = DockStyle.Top;
+                summary.Height = 32;
+                summary.ForeColor = Color.DimGray;
 
-            Load += (s, e) =>
+                header.Controls.Add(summary);
+                header.Controls.Add(info);
+
+                // ================= GRID =================
+
+                grid.Dock = DockStyle.Fill;
+                grid.BackgroundColor = Color.White;
+                grid.BorderStyle = BorderStyle.None;
+                grid.AllowUserToAddRows = false;
+                grid.AllowUserToDeleteRows = false;
+                grid.AutoGenerateColumns = false;
+                grid.RowHeadersVisible = false;
+                grid.RowTemplate.Height = 38;
+                grid.ColumnHeadersHeight = 44;
+                grid.EnableHeadersVisualStyles = false;
+
+                grid.ColumnHeadersDefaultCellStyle.BackColor =
+                    Color.FromArgb(0, 121, 107);
+
+                grid.ColumnHeadersDefaultCellStyle.ForeColor =
+                    Color.White;
+
+                grid.ColumnHeadersDefaultCellStyle.Font =
+                    new Font("Segoe UI", 10, FontStyle.Bold);
+
+                grid.AlternatingRowsDefaultCellStyle.BackColor =
+                    Color.FromArgb(240, 248, 247);
+
+                grid.SelectionMode =
+                    DataGridViewSelectionMode.CellSelect;
+
+                grid.MultiSelect = false;
+
+                grid.EditMode =
+                    DataGridViewEditMode.EditOnEnter;
+
+                grid.RightToLeft = arabic
+                    ? RightToLeft.Yes
+                    : RightToLeft.No;
+
+                AddTextColumn(
+                    "ParameterName", "Parameter", 220, true);
+
+                AddTextColumn(
+                    "ObservedValue", "Result", 120, false);
+
+                AddTextColumn(
+                    "Unit", "Unit", 80, true);
+
+                AddTextColumn(
+                    "SelectedReferenceRange",
+                    "Reference Range", 240, true);
+
+                var flag = new DataGridViewComboBoxColumn
+                {
+                    Name = "ResultFlag",
+                    HeaderText = LabUi.T("Flag"),
+                    DataPropertyName = "ResultFlag",
+                    Width = 110,
+                    FlatStyle = FlatStyle.Flat
+                };
+
+                flag.Items.AddRange(
+                    "", "Low", "Normal", "High",
+                    "Abnormal", "Critical");
+
+                grid.Columns.Add(flag);
+
+                AddTextColumn(
+                    "ResultNotes", "Remarks", 190, false);
+
+                grid.Columns["ParameterName"]
+                    .DefaultCellStyle.WrapMode =
+                        DataGridViewTriState.True;
+
+                grid.AutoSizeRowsMode =
+                    DataGridViewAutoSizeRowsMode.AllCells;
+
+                // ================= FOOTER =================
+
+                var footer = new FlowLayoutPanel
+                {
+                    Dock = DockStyle.Bottom,
+                    Height = 74,
+                    Padding = new Padding(15),
+                    FlowDirection = arabic
+                        ? FlowDirection.LeftToRight
+                        : FlowDirection.RightToLeft,
+                    BackColor = Color.FromArgb(245, 249, 250)
+                };
+
+                var cancel = LabUi.Button("Cancel");
+                cancel.BackColor = Color.DimGray;
+                cancel.Click += (s, e) => Close();
+
+                save.Width = 205;
+                save.Click += (s, e) => SaveAll();
+
+                footer.Controls.Add(cancel);
+                footer.Controls.Add(save);
+
+                Controls.Add(grid);
+                Controls.Add(footer);
+                Controls.Add(header);
+
+                // ================= EVENTS =================
+
+                grid.CellEndEdit += (s, e) =>
+                {
+                    if (!loading && e.RowIndex >= 0)
+                    {
+                        Recalculate(e.RowIndex);
+                        UpdateSummary();
+                    }
+                };
+
+                grid.CurrentCellDirtyStateChanged += (s, e) =>
+                {
+                    if (grid.IsCurrentCellDirty)
+                        grid.CommitEdit(
+                            DataGridViewDataErrorContexts.Commit);
+                };
+
+                grid.DataError += (s, e) =>
+                {
+                    e.ThrowException = false;
+                };
+
+                Load += (s, e) =>
+                {
+                    try
+                    {
+                        LoadResults();
+                    }
+                    catch (Exception ex)
+                    {
+                        LabUi.ShowError(ex, "Load Lab Result");
+                        save.Enabled = false;
+                    }
+                };
+            }
+
+            // =====================================================
+            // ADD GRID COLUMN
+            // =====================================================
+
+            private void AddTextColumn(
+                string name,
+                string title,
+                int width,
+                bool readOnly)
             {
+                grid.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    Name = name,
+                    DataPropertyName = name,
+                    HeaderText = LabUi.T(title),
+                    Width = width,
+                    MinimumWidth = 70,
+                    ReadOnly = readOnly,
+                    SortMode =
+                        DataGridViewColumnSortMode.NotSortable
+                });
+            }
+
+            private static string S(object value)
+            {
+                return value == null || value == DBNull.Value
+                    ? ""
+                    : Convert.ToString(value);
+            }
+
+            // =====================================================
+            // LOAD REQUEST AND CONFIGURED PARAMETERS
+            // =====================================================
+
+            private void LoadResults()
+            {
+                loading = true;
+
                 try
                 {
-                    LoadResults();
-                }
-                catch (Exception ex)
-                {
-                    LabUi.ShowError(ex, "Load Lab Result");
-                    save.Enabled = false;
-                }
-            };
-        }
+                    using (var con = new MySqlConnection(
+                        clsDataAccessSettings.ConnectionString))
+                    {
+                        con.Open();
 
-        // =====================================================
-        // ADD GRID COLUMN
-        // =====================================================
-
-        private void AddTextColumn(
-            string name,
-            string title,
-            int width,
-            bool readOnly)
-        {
-            grid.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                Name = name,
-                DataPropertyName = name,
-                HeaderText = LabUi.T(title),
-                Width = width,
-                MinimumWidth = 70,
-                ReadOnly = readOnly,
-                SortMode =
-                    DataGridViewColumnSortMode.NotSortable
-            });
-        }
-
-        private static string S(object value)
-        {
-            return value == null || value == DBNull.Value
-                ? ""
-                : Convert.ToString(value);
-        }
-
-        // =====================================================
-        // LOAD REQUEST AND CONFIGURED PARAMETERS
-        // =====================================================
-
-        private void LoadResults()
-        {
-            loading = true;
-
-            try
-            {
-                using (var con = new MySqlConnection(
-                    clsDataAccessSettings.ConnectionString))
-                {
-                    con.Open();
-
-                    // Get selected test and patient gender.
+                        // Get selected test and patient gender.
 
 
-                    using (var cmd = new MySqlCommand(@"
+                        using (var cmd = new MySqlCommand(@"
     SELECT
         lr.TestID,
         lt.TestName,
@@ -1057,66 +1128,66 @@ namespace Clinic.Medical_Services.Laboratory
 
     WHERE lr.LabRequestID = @id
     LIMIT 1;", con))
-                    {
-                        cmd.Parameters.AddWithValue("@id", _requestID);
-
-                        using (var r = cmd.ExecuteReader())
                         {
-                            if (!r.Read())
+                            cmd.Parameters.AddWithValue("@id", _requestID);
+
+                            using (var r = cmd.ExecuteReader())
                             {
-                                throw new Exception(
-                                    "Laboratory request not found.");
+                                if (!r.Read())
+                                {
+                                    throw new Exception(
+                                        "Laboratory request not found.");
+                                }
+
+                                testID = Convert.ToInt32(r["TestID"]);
+                                testName = S(r["TestName"]);
+                                patientGender = S(r["Gender"]);
                             }
-
-                            testID = Convert.ToInt32(r["TestID"]);
-                            testName = S(r["TestName"]);
-                            patientGender = S(r["Gender"]);
                         }
-                    }
 
 
-                    //using (var cmd = new MySqlCommand(@"
-                    //SELECT
-                    //    lr.TestID,
-                    //    lt.TestName,
-                    //    p.Gender
-                    //FROM labrequests lr
-                    //JOIN laboratorytests lt
-                    //    ON lt.TestID = lr.TestID
-                    //JOIN visits v
-                    //    ON v.VisitID = lr.VisitID
-                    //JOIN patients pa
-                    //    ON pa.PatientID = v.PatientID
-                    //JOIN persons p
-                    //    ON p.PersonID = pa.PersonID
-                    //WHERE lr.LabRequestID = @id
-                    //LIMIT 1;", con))
-                    //{
-                    //    cmd.Parameters.AddWithValue(
-                    //        "@id", _requestID);
+                        //using (var cmd = new MySqlCommand(@"
+                        //SELECT
+                        //    lr.TestID,
+                        //    lt.TestName,
+                        //    p.Gender
+                        //FROM labrequests lr
+                        //JOIN laboratorytests lt
+                        //    ON lt.TestID = lr.TestID
+                        //JOIN visits v
+                        //    ON v.VisitID = lr.VisitID
+                        //JOIN patients pa
+                        //    ON pa.PatientID = v.PatientID
+                        //JOIN persons p
+                        //    ON p.PersonID = pa.PersonID
+                        //WHERE lr.LabRequestID = @id
+                        //LIMIT 1;", con))
+                        //{
+                        //    cmd.Parameters.AddWithValue(
+                        //        "@id", _requestID);
 
-                    //    using (var r = cmd.ExecuteReader())
-                    //    {
-                    //        if (!r.Read())
-                    //            throw new Exception(
-                    //                "Laboratory request not found.");
+                        //    using (var r = cmd.ExecuteReader())
+                        //    {
+                        //        if (!r.Read())
+                        //            throw new Exception(
+                        //                "Laboratory request not found.");
 
-                    //        testID = Convert.ToInt32(r["TestID"]);
-                    //        testName = S(r["TestName"]);
-                    //        patientGender = S(r["Gender"]);
-                    //    }
-                    //}
+                        //        testID = Convert.ToInt32(r["TestID"]);
+                        //        testName = S(r["TestName"]);
+                        //        patientGender = S(r["Gender"]);
+                        //    }
+                        //}
 
-                    info.Text =
-                        LabUi.T("Lab Request") + " #" +
-                        _requestID + "     " +
-                        LabUi.T("Laboratory Test") +
-                        ": " + testName;
+                        info.Text =
+                            LabUi.T("Lab Request") + " #" +
+                            _requestID + "     " +
+                            LabUi.T("Laboratory Test") +
+                            ": " + testName;
 
-                    // Load configured parameters and saved results.
-                    // Gender: 1 = Male, 2 = Female.
+                        // Load configured parameters and saved results.
+                        // Gender: 1 = Male, 2 = Female.
 
-                    using (var adapter = new MySqlDataAdapter(@"
+                        using (var adapter = new MySqlDataAdapter(@"
                     SELECT
                         p.ParameterID,
                         p.ParameterName,
@@ -1172,300 +1243,300 @@ namespace Clinic.Medical_Services.Laboratory
                     ORDER BY
                         p.DisplayOrder,
                         p.ParameterID;", con))
-                    {
-                        adapter.SelectCommand.Parameters
-                            .AddWithValue(
-                                "@gender", patientGender);
+                        {
+                            adapter.SelectCommand.Parameters
+                                .AddWithValue(
+                                    "@gender", patientGender);
 
-                        adapter.SelectCommand.Parameters
-                            .AddWithValue(
-                                "@requestID", _requestID);
+                            adapter.SelectCommand.Parameters
+                                .AddWithValue(
+                                    "@requestID", _requestID);
 
-                        adapter.SelectCommand.Parameters
-                            .AddWithValue(
-                                "@testID", testID);
+                            adapter.SelectCommand.Parameters
+                                .AddWithValue(
+                                    "@testID", testID);
 
-                        parameters = new DataTable();
-                        adapter.Fill(parameters);
+                            parameters = new DataTable();
+                            adapter.Fill(parameters);
+                        }
                     }
-                }
 
-                if (parameters.Rows.Count == 0)
+                    if (parameters.Rows.Count == 0)
+                    {
+                        throw new Exception(
+                            "No active parameters configured for this test. " +
+                            "Configure parameters first.");
+                    }
+
+                    grid.DataSource = parameters;
+
+                    for (int i = 0; i < parameters.Rows.Count; i++)
+                    {
+                        Recalculate(i, false);
+                    }
+
+                    UpdateSummary();
+                }
+                finally
                 {
-                    throw new Exception(
-                        "No active parameters configured for this test. " +
-                        "Configure parameters first.");
+                    loading = false;
                 }
-
-                grid.DataSource = parameters;
-
-                for (int i = 0; i < parameters.Rows.Count; i++)
-                {
-                    Recalculate(i, false);
-                }
-
-                UpdateSummary();
             }
-            finally
+
+            // =====================================================
+            // CHECK NUMERIC RESULT TYPE
+            // =====================================================
+
+            private static bool IsNumeric(string type)
             {
-                loading = false;
+                type = (type ?? "").Trim().ToLowerInvariant();
+
+                return type == "numeric"
+                    || type == "quantitative"
+                    || type == "number";
             }
-        }
 
-        // =====================================================
-        // CHECK NUMERIC RESULT TYPE
-        // =====================================================
+            // =====================================================
+            // PARSE REFERENCE RANGE (EXAMPLE: 25-110)
+            // =====================================================
 
-        private static bool IsNumeric(string type)
-        {
-            type = (type ?? "").Trim().ToLowerInvariant();
+            private static bool TryInterval(
+                string range,
+                out decimal low,
+                out decimal high)
+            {
+                low = high = 0;
 
-            return type == "numeric"
-                || type == "quantitative"
-                || type == "number";
-        }
+                if (string.IsNullOrWhiteSpace(range))
+                    return false;
 
-        // =====================================================
-        // PARSE REFERENCE RANGE (EXAMPLE: 25-110)
-        // =====================================================
+                var match =
+                    System.Text.RegularExpressions.Regex.Match(
+                        range.Trim(),
+                        @"^\s*(-?\d+(?:[.,]\d+)?)\s*[-–]\s*(-?\d+(?:[.,]\d+)?)\s*$");
 
-        private static bool TryInterval(
-            string range,
-            out decimal low,
-            out decimal high)
-        {
-            low = high = 0;
+                if (!match.Success)
+                    return false;
 
-            if (string.IsNullOrWhiteSpace(range))
-                return false;
+                return decimal.TryParse(
+                        match.Groups[1].Value.Replace(',', '.'),
+                        System.Globalization.NumberStyles.Number,
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        out low)
 
-            var match =
-                System.Text.RegularExpressions.Regex.Match(
-                    range.Trim(),
-                    @"^\s*(-?\d+(?:[.,]\d+)?)\s*[-–]\s*(-?\d+(?:[.,]\d+)?)\s*$");
+                    && decimal.TryParse(
+                        match.Groups[2].Value.Replace(',', '.'),
+                        System.Globalization.NumberStyles.Number,
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        out high)
 
-            if (!match.Success)
-                return false;
+                    && low <= high;
+            }
 
-            return decimal.TryParse(
-                    match.Groups[1].Value.Replace(',', '.'),
+            // =====================================================
+            // AUTOMATIC LOW / NORMAL / HIGH CLASSIFICATION
+            // =====================================================
+
+            private void Recalculate(
+                int index,
+                bool overwrite = true)
+            {
+                DataRow row = parameters.Rows[index];
+
+                string value =
+                    S(row["ObservedValue"]).Trim();
+
+                if (value.Length == 0)
+                {
+                    row["ResultFlag"] = "";
+                    return;
+                }
+
+                if (!IsNumeric(S(row["ResultType"])))
+                    return;
+
+                decimal number;
+
+                if (!decimal.TryParse(
+                    value.Replace(',', '.'),
                     System.Globalization.NumberStyles.Number,
                     System.Globalization.CultureInfo.InvariantCulture,
-                    out low)
-
-                && decimal.TryParse(
-                    match.Groups[2].Value.Replace(',', '.'),
-                    System.Globalization.NumberStyles.Number,
-                    System.Globalization.CultureInfo.InvariantCulture,
-                    out high)
-
-                && low <= high;
-        }
-
-        // =====================================================
-        // AUTOMATIC LOW / NORMAL / HIGH CLASSIFICATION
-        // =====================================================
-
-        private void Recalculate(
-            int index,
-            bool overwrite = true)
-        {
-            DataRow row = parameters.Rows[index];
-
-            string value =
-                S(row["ObservedValue"]).Trim();
-
-            if (value.Length == 0)
-            {
-                row["ResultFlag"] = "";
-                return;
-            }
-
-            if (!IsNumeric(S(row["ResultType"])))
-                return;
-
-            decimal number;
-
-            if (!decimal.TryParse(
-                value.Replace(',', '.'),
-                System.Globalization.NumberStyles.Number,
-                System.Globalization.CultureInfo.InvariantCulture,
-                out number))
-            {
-                return;
-            }
-
-            decimal low;
-            decimal high;
-
-            if (!TryInterval(
-                S(row["SelectedReferenceRange"]),
-                out low,
-                out high))
-            {
-                // Use configured numeric limits only when
-                // the selected reference range is empty.
-
-                if (!string.IsNullOrWhiteSpace(
-                    S(row["SelectedReferenceRange"])))
+                    out number))
                 {
                     return;
                 }
 
-                if (row["LowLimit"] == DBNull.Value ||
-                    row["HighLimit"] == DBNull.Value)
+                decimal low;
+                decimal high;
+
+                if (!TryInterval(
+                    S(row["SelectedReferenceRange"]),
+                    out low,
+                    out high))
                 {
-                    return;
+                    // Use configured numeric limits only when
+                    // the selected reference range is empty.
+
+                    if (!string.IsNullOrWhiteSpace(
+                        S(row["SelectedReferenceRange"])))
+                    {
+                        return;
+                    }
+
+                    if (row["LowLimit"] == DBNull.Value ||
+                        row["HighLimit"] == DBNull.Value)
+                    {
+                        return;
+                    }
+
+                    low = Convert.ToDecimal(row["LowLimit"]);
+                    high = Convert.ToDecimal(row["HighLimit"]);
+
+                    if (low > high)
+                        return;
                 }
 
-                low = Convert.ToDecimal(row["LowLimit"]);
-                high = Convert.ToDecimal(row["HighLimit"]);
-
-                if (low > high)
-                    return;
-            }
-
-            if (overwrite ||
-                string.IsNullOrWhiteSpace(
-                    S(row["ResultFlag"])))
-            {
-                row["ResultFlag"] =
-                    number < low ? "Low" :
-                    number > high ? "High" :
-                    "Normal";
-            }
-        }
-
-        // =====================================================
-        // UPDATE ENTERED RESULT COUNT
-        // =====================================================
-
-        private void UpdateSummary()
-        {
-            if (parameters == null)
-                return;
-
-            int entered = 0;
-
-            foreach (DataRow row in parameters.Rows)
-            {
-                if (!string.IsNullOrWhiteSpace(
-                    S(row["ObservedValue"])))
+                if (overwrite ||
+                    string.IsNullOrWhiteSpace(
+                        S(row["ResultFlag"])))
                 {
-                    entered++;
+                    row["ResultFlag"] =
+                        number < low ? "Low" :
+                        number > high ? "High" :
+                        "Normal";
                 }
             }
 
-            summary.Text =
-                LabUi.T("Results entered") +
-                ": " + entered +
-                " / " + parameters.Rows.Count;
-        }
+            // =====================================================
+            // UPDATE ENTERED RESULT COUNT
+            // =====================================================
 
-        // =====================================================
-        // SAVE ALL PARAMETER RESULTS
-        // =====================================================
-
-        private void SaveAll()
-        {
-            try
+            private void UpdateSummary()
             {
-                grid.EndEdit();
-
-                if (parameters == null ||
-                    parameters.Rows.Count == 0)
-                {
+                if (parameters == null)
                     return;
-                }
 
-                // Validate every parameter result.
+                int entered = 0;
 
                 foreach (DataRow row in parameters.Rows)
                 {
-                    string value =
-                        S(row["ObservedValue"]).Trim();
-
-                    if (value.Length == 0)
+                    if (!string.IsNullOrWhiteSpace(
+                        S(row["ObservedValue"])))
                     {
-                        MessageBox.Show(
-                            LabUi.T("Enter a result for") +
-                            " " + S(row["ParameterName"]));
-
-                        return;
-                    }
-
-                    decimal numeric;
-
-                    if (IsNumeric(S(row["ResultType"])) &&
-                        !decimal.TryParse(
-                            value.Replace(',', '.'),
-                            System.Globalization.NumberStyles.Number,
-                            System.Globalization.CultureInfo.InvariantCulture,
-                            out numeric))
-                    {
-                        MessageBox.Show(
-                            LabUi.T("Invalid numeric result for") +
-                            " " + S(row["ParameterName"]));
-
-                        return;
+                        entered++;
                     }
                 }
 
-                save.Enabled = false;
+                summary.Text =
+                    LabUi.T("Results entered") +
+                    ": " + entered +
+                    " / " + parameters.Rows.Count;
+            }
 
-                using (var con = new MySqlConnection(
-                    clsDataAccessSettings.ConnectionString))
+            // =====================================================
+            // SAVE ALL PARAMETER RESULTS
+            // =====================================================
+
+            private void SaveAll()
+            {
+                try
                 {
-                    con.Open();
+                    grid.EndEdit();
 
-                    using (var tx = con.BeginTransaction())
+                    if (parameters == null ||
+                        parameters.Rows.Count == 0)
                     {
-                        try
-                        {
-                            // Lock and verify the request.
+                        return;
+                    }
 
-                            using (var check = new MySqlCommand(
-                                @"SELECT Status
+                    // Validate every parameter result.
+
+                    foreach (DataRow row in parameters.Rows)
+                    {
+                        string value =
+                            S(row["ObservedValue"]).Trim();
+
+                        if (value.Length == 0)
+                        {
+                            MessageBox.Show(
+                                LabUi.T("Enter a result for") +
+                                " " + S(row["ParameterName"]));
+
+                            return;
+                        }
+
+                        decimal numeric;
+
+                        if (IsNumeric(S(row["ResultType"])) &&
+                            !decimal.TryParse(
+                                value.Replace(',', '.'),
+                                System.Globalization.NumberStyles.Number,
+                                System.Globalization.CultureInfo.InvariantCulture,
+                                out numeric))
+                        {
+                            MessageBox.Show(
+                                LabUi.T("Invalid numeric result for") +
+                                " " + S(row["ParameterName"]));
+
+                            return;
+                        }
+                    }
+
+                    save.Enabled = false;
+
+                    using (var con = new MySqlConnection(
+                        clsDataAccessSettings.ConnectionString))
+                    {
+                        con.Open();
+
+                        using (var tx = con.BeginTransaction())
+                        {
+                            try
+                            {
+                                // Lock and verify the request.
+
+                                using (var check = new MySqlCommand(
+                                    @"SELECT Status
                               FROM labrequests
                               WHERE LabRequestID = @id
                               FOR UPDATE;",
-                                con, tx))
-                            {
-                                check.Parameters.AddWithValue(
-                                    "@id", _requestID);
-
-                                string status =
-                                    Convert.ToString(
-                                        check.ExecuteScalar());
-
-                                if (string.IsNullOrEmpty(status) ||
-                                    status.Equals(
-                                        "Cancelled",
-                                        StringComparison.OrdinalIgnoreCase))
+                                    con, tx))
                                 {
-                                    throw new Exception(
-                                        "Request was not found or has been cancelled.");
+                                    check.Parameters.AddWithValue(
+                                        "@id", _requestID);
+
+                                    string status =
+                                        Convert.ToString(
+                                            check.ExecuteScalar());
+
+                                    if (string.IsNullOrEmpty(status) ||
+                                        status.Equals(
+                                            "Cancelled",
+                                            StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        throw new Exception(
+                                            "Request was not found or has been cancelled.");
+                                    }
                                 }
-                            }
 
-                            // Save each parameter result.
+                                // Save each parameter result.
 
-                            foreach (DataRow row in parameters.Rows)
-                            {
-                                string value =
-                                    S(row["ObservedValue"]).Trim();
+                                foreach (DataRow row in parameters.Rows)
+                                {
+                                    string value =
+                                        S(row["ObservedValue"]).Trim();
 
-                                decimal numeric = 0m;
+                                    decimal numeric = 0m;
 
-                                bool numericOk =
-                                    IsNumeric(S(row["ResultType"])) &&
-                                    decimal.TryParse(
-                                        value.Replace(',', '.'),
-                                        System.Globalization.NumberStyles.Number,
-                                        System.Globalization.CultureInfo.InvariantCulture,
-                                        out numeric);
+                                    bool numericOk =
+                                        IsNumeric(S(row["ResultType"])) &&
+                                        decimal.TryParse(
+                                            value.Replace(',', '.'),
+                                            System.Globalization.NumberStyles.Number,
+                                            System.Globalization.CultureInfo.InvariantCulture,
+                                            out numeric);
 
-                                using (var cmd = new MySqlCommand(@"
+                                    using (var cmd = new MySqlCommand(@"
                                 INSERT INTO labparameterresultentries
                                 (
                                     LabRequestID,
@@ -1507,50 +1578,50 @@ namespace Clinic.Medical_Services.Laboratory
                                         VALUES(ResultNotes),
                                     EnteredAt =
                                         CURRENT_TIMESTAMP;",
-                                    con, tx))
-                                {
-                                    cmd.Parameters.AddWithValue(
-                                        "@rid", _requestID);
+                                        con, tx))
+                                    {
+                                        cmd.Parameters.AddWithValue(
+                                            "@rid", _requestID);
 
-                                    cmd.Parameters.AddWithValue(
-                                        "@pid", row["ParameterID"]);
+                                        cmd.Parameters.AddWithValue(
+                                            "@pid", row["ParameterID"]);
 
-                                    cmd.Parameters.AddWithValue(
-                                        "@value", value);
+                                        cmd.Parameters.AddWithValue(
+                                            "@value", value);
 
-                                    cmd.Parameters.AddWithValue(
-                                        "@num",
-                                        numericOk
-                                            ? (object)numeric
-                                            : DBNull.Value);
+                                        cmd.Parameters.AddWithValue(
+                                            "@num",
+                                            numericOk
+                                                ? (object)numeric
+                                                : DBNull.Value);
 
-                                    cmd.Parameters.AddWithValue(
-                                        "@name",
-                                        row["ParameterName"]);
+                                        cmd.Parameters.AddWithValue(
+                                            "@name",
+                                            row["ParameterName"]);
 
-                                    cmd.Parameters.AddWithValue(
-                                        "@unit",
-                                        S(row["Unit"]));
+                                        cmd.Parameters.AddWithValue(
+                                            "@unit",
+                                            S(row["Unit"]));
 
-                                    cmd.Parameters.AddWithValue(
-                                        "@range",
-                                        S(row["SelectedReferenceRange"]));
+                                        cmd.Parameters.AddWithValue(
+                                            "@range",
+                                            S(row["SelectedReferenceRange"]));
 
-                                    cmd.Parameters.AddWithValue(
-                                        "@flag",
-                                        S(row["ResultFlag"]));
+                                        cmd.Parameters.AddWithValue(
+                                            "@flag",
+                                            S(row["ResultFlag"]));
 
-                                    cmd.Parameters.AddWithValue(
-                                        "@notes",
-                                        S(row["ResultNotes"]));
+                                        cmd.Parameters.AddWithValue(
+                                            "@notes",
+                                            S(row["ResultNotes"]));
 
-                                    cmd.ExecuteNonQuery();
+                                        cmd.ExecuteNonQuery();
+                                    }
                                 }
-                            }
 
-                            // Update overall request status.
+                                // Update overall request status.
 
-                            using (var cmd = new MySqlCommand(@"
+                                using (var cmd = new MySqlCommand(@"
                             UPDATE labrequests
                             SET
                                 Status = 'Completed',
@@ -1559,49 +1630,50 @@ namespace Clinic.Medical_Services.Laboratory
                                 ResultNotes = @notes
                             WHERE LabRequestID = @id
                               AND Status <> 'Cancelled';",
-                                con, tx))
-                            {
-                                cmd.Parameters.AddWithValue(
-                                    "@id", _requestID);
-
-                                cmd.Parameters.AddWithValue(
-                                    "@summary",
-                                    "Parameter results: " +
-                                    parameters.Rows.Count);
-
-                                cmd.Parameters.AddWithValue(
-                                    "@notes",
-                                    "Validated parameter-wise results");
-
-                                if (cmd.ExecuteNonQuery() != 1)
+                                    con, tx))
                                 {
-                                    throw new Exception(
-                                        "Unable to complete lab request.");
-                                }
-                            }
+                                    cmd.Parameters.AddWithValue(
+                                        "@id", _requestID);
 
-                            tx.Commit();
-                        }
-                        catch
-                        {
-                            tx.Rollback();
-                            throw;
+                                    cmd.Parameters.AddWithValue(
+                                        "@summary",
+                                        "Parameter results: " +
+                                        parameters.Rows.Count);
+
+                                    cmd.Parameters.AddWithValue(
+                                        "@notes",
+                                        "Validated parameter-wise results");
+
+                                    if (cmd.ExecuteNonQuery() != 1)
+                                    {
+                                        throw new Exception(
+                                            "Unable to complete lab request.");
+                                    }
+                                }
+
+                                tx.Commit();
+                            }
+                            catch
+                            {
+                                tx.Rollback();
+                                throw;
+                            }
                         }
                     }
-                }
 
-                DialogResult = DialogResult.OK;
-                Close();
-            }
-            catch (Exception ex)
-            {
-                LabUi.ShowError(ex, "Save Lab Results");
-            }
-            finally
-            {
-                save.Enabled = true;
+                    DialogResult = DialogResult.OK;
+                    Close();
+                }
+                catch (Exception ex)
+                {
+                    LabUi.ShowError(ex, "Save Lab Results");
+                }
+                finally
+                {
+                    save.Enabled = true;
+                }
             }
         }
-    }
 
+    }
 }
