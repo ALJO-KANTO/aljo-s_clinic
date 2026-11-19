@@ -1085,25 +1085,46 @@
             this.Controls.Clear();
             this.Padding = new System.Windows.Forms.Padding(12);
             this.BackColor = pale;
-            this.AutoScroll = false;
+            this.AutoScroll = true;
             this.MinimumSize = new System.Drawing.Size(900, 620);
+
 
             var root = new System.Windows.Forms.TableLayoutPanel
             {
-                Dock = System.Windows.Forms.DockStyle.Fill,
+                Dock = System.Windows.Forms.DockStyle.None,
+                AutoSize = true,
+                AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink,
                 ColumnCount = 1,
                 RowCount = 4,
                 BackColor = pale,
                 Margin = new System.Windows.Forms.Padding(0),
-                Padding = new System.Windows.Forms.Padding(0)
+                Padding = new System.Windows.Forms.Padding(0),
+                Location = new System.Drawing.Point(0, 0),
+                Anchor = System.Windows.Forms.AnchorStyles.Top |
+                         System.Windows.Forms.AnchorStyles.Left |
+                         System.Windows.Forms.AnchorStyles.Right
             };
             root.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100));
             root.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 112));
             root.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 84));
-            root.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100));
-            root.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 67));
-            this.Controls.Add(root);
+            root.RowStyles.Add(new System.Windows.Forms.RowStyle(
+                System.Windows.Forms.SizeType.Absolute, 435));
+            root.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 100));
+            var scrollPanel = new System.Windows.Forms.Panel
+            {
+                Dock = System.Windows.Forms.DockStyle.Fill,
+                AutoScroll = true,
+                BackColor = pale,
+                Padding = new System.Windows.Forms.Padding(0)
+            };
 
+            this.Controls.Add(scrollPanel);
+
+            root.Dock = System.Windows.Forms.DockStyle.Top;
+            root.Height = 731;
+            root.Width = scrollPanel.ClientSize.Width;
+
+            scrollPanel.Controls.Add(root);
             var header = new System.Windows.Forms.TableLayoutPanel
             {
                 Dock = System.Windows.Forms.DockStyle.Fill,
@@ -1246,8 +1267,13 @@
                 Margin = new System.Windows.Forms.Padding(0)
             };
             workArea.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100));
-            workArea.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 48));
-            workArea.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 52));
+            workArea.RowStyles.Add(
+    new System.Windows.Forms.RowStyle(
+        System.Windows.Forms.SizeType.Absolute, 245));
+
+            workArea.RowStyles.Add(
+                new System.Windows.Forms.RowStyle(
+                    System.Windows.Forms.SizeType.Absolute, 190));
             root.Controls.Add(workArea, 0, 2);
 
             var prescriptionBox = new System.Windows.Forms.TableLayoutPanel
