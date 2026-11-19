@@ -448,6 +448,7 @@ namespace Clinic_DataAccess
             return dt;
         }
 
+
         public static DataTable GetAllPrescriptionDetails()
         {
             DataTable dt = new DataTable();
@@ -464,9 +465,7 @@ namespace Clinic_DataAccess
                     PD.PrescriptionDetailID,
                     PD.SavedMedicineName AS MedicineName,
                     PD.Dosage,
-
-                   0 AS TaxRate,
-
+                    0 AS TaxRate,
                     PD.SavedMedicinePrice,
                     PD.Frequency,
                     PD.Quantity AS RequiredQuantity,
@@ -475,32 +474,16 @@ namespace Clinic_DataAccess
 
                     COALESCE(M.on_hand, 0) AS AvailableStock,
 
-                    CASE
-                       WHEN TRIM(P.PrescriptionStatus) IN ('1', 'Pending') THEN
-                            CASE
-                                WHEN COALESCE(M.on_hand, 0) <= 0
-                                    THEN 0
+                    -- Keep the actual saved dispensing quantity.
+                    COALESCE(PD.DispensedQuantity, 0) AS DispensedQuantity,
 
-                                WHEN M.on_hand >= PD.Quantity
-                                    THEN PD.Quantity
-
-                                ELSE M.on_hand
-                            END
-                        ELSE COALESCE(PD.DispensedQuantity, 0)
-                    END AS DispensedQuantity,
+                    -- Do not automatically select the Dispensed checkbox.
+                    COALESCE(PD.IsDispensed, 0) AS IsDispensed,
 
                     CASE
-                     WHEN TRIM(P.PrescriptionStatus) IN ('1', 'Pending') THEN
-                            CASE
-                                WHEN COALESCE(M.on_hand, 0) <= 0
-                                    THEN 0
-                                ELSE 1
-                            END
-                        ELSE COALESCE(PD.IsDispensed, 0)
-                    END AS IsDispensed,
-
-                    CASE
-                      WHEN TRIM(P.PrescriptionStatus) IN ('1', 'Pending') THEN
+                        WHEN TRIM(P.PrescriptionStatus) IN
+                            ('1', 'Pending', '3', 'Ready For Dispensing')
+                        THEN
                             CASE
                                 WHEN M.id IS NULL
                                     THEN 'Out of Stock'
@@ -517,6 +500,7 @@ namespace Clinic_DataAccess
                                     ')'
                                 )
                             END
+
                         ELSE 'Finalized'
                     END AS AvailableStatus
 
@@ -553,6 +537,7 @@ namespace Clinic_DataAccess
 
             return dt;
         }
+
         public static DataTable GetAllPrescriptionRecords()
         {
             DataTable dt = new DataTable();

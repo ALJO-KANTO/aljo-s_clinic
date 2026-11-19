@@ -26,6 +26,8 @@ namespace Clinic.Medical_Services.Pharmaciy
         public frmPrescriptionDispnsing()
         {
             InitializeComponent();
+            dgPrescriptionDetails.CurrentCellDirtyStateChanged +=
+    dgPrescriptionDetails_CurrentCellDirtyStateChanged;
 
             // Wire up event handlers
             dgPrescriptionDetails.DataError += dgPrescriptionDetails_DataError;
@@ -44,7 +46,16 @@ namespace Clinic.Medical_Services.Pharmaciy
             dgPrescriptionDetails.Scroll += (s, ev) => { _qtyNumericUpDown.Visible = false; };
         }
 
-
+        private void dgPrescriptionDetails_CurrentCellDirtyStateChanged(
+    object sender, EventArgs e)
+        {
+            if (dgPrescriptionDetails.IsCurrentCellDirty &&
+                dgPrescriptionDetails.CurrentCell is DataGridViewCheckBoxCell)
+            {
+                dgPrescriptionDetails.CommitEdit(
+                    DataGridViewDataErrorContexts.Commit);
+            }
+        }
         // UI localization only: business status values and bound data stay in English.
         private string PharmacyT(string value)
         {
@@ -302,6 +313,7 @@ namespace Clinic.Medical_Services.Pharmaciy
                 lbContainer.BackColor = Color.Brown;
                 panbtnSendToAccounting.Enabled = false;
             }
+
             else if (Status == "Ready For Dispensing")
             {
                 lbStatus.ForeColor = Color.Green;
@@ -310,8 +322,14 @@ namespace Clinic.Medical_Services.Pharmaciy
                 lbContainer.BackColor = Color.Green;
                 lbNotReady.Text = PharmacyT("(Ready for Dispensing)");
                 lbX.Text = "✓";
+
+                dgPrescriptionDetails.ReadOnly = false;
+                dgPrescriptionDetails.EditMode =
+                    DataGridViewEditMode.EditOnEnter;
+
                 panbtnDispense.Enabled = true;
             }
+
             else if (Status == "Partially Dispensed" ||
            Status == "PartiallyDispensed")
             {
@@ -371,14 +389,23 @@ namespace Clinic.Medical_Services.Pharmaciy
             dgPrescriptionDetails.Columns.Add(colQty);
 
             // Add editable checkbox column
+
             DataGridViewCheckBoxColumn chk = new DataGridViewCheckBoxColumn
             {
                 Name = "IsDispensed",
                 HeaderText = "Dispensed",
                 DataPropertyName = "IsDispensed",
                 ReadOnly = false,
-                FillWeight = 10
+                FillWeight = 10,
+
+                ValueType = typeof(int),
+                TrueValue = 1,
+                FalseValue = 0,
+                IndeterminateValue = 0,
+                ThreeState = false
             };
+
+
             dgPrescriptionDetails.Columns.Add(chk);
 
             _AddColumn("Instr.", "Instructions", false, 15);
@@ -648,24 +675,36 @@ namespace Clinic.Medical_Services.Pharmaciy
                 string status = row.Cells["AvailableStatus"].Value?.ToString() ?? "";
                 int maxAvailable = _GetMaxAvailable(row);
 
+
+
                 if (colName == "IsDispensed")
                 {
-                    object val = row.Cells["IsDispensed"].Value;
-                    bool isChecked = (val != null && val != DBNull.Value) && Convert.ToBoolean(val);
+                    int checkboxValue = Convert.ToInt32(
+                        row.Cells["IsDispensed"].Value ?? 0);
 
-                    if (isChecked && status == "Out of Stock")
+                    bool isChecked = checkboxValue == 1;
+
+                    if (isChecked)
                     {
-                        rowView["IsDispensed"] = false;
-                    }
-                    else if (isChecked)
-                    {
-                        rowView["DispensedQuantity"] = maxAvailable;
+                        if (maxAvailable <= 0)
+                        {
+                            rowView["IsDispensed"] = 0;
+                            rowView["DispensedQuantity"] = 0;
+                        }
+                        else
+                        {
+                            rowView["IsDispensed"] = 1;
+                            rowView["DispensedQuantity"] = maxAvailable;
+                        }
                     }
                     else
                     {
+                        rowView["IsDispensed"] = 0;
                         rowView["DispensedQuantity"] = 0;
                     }
                 }
+
+
                 else if (colName == "DispensedQuantity")
                 {
                     int newQty = Convert.ToInt32(row.Cells["DispensedQuantity"].Value ?? 0);
