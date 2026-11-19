@@ -68,11 +68,18 @@ namespace Clinic.Serveces.ServecesType
             }
         }
 
-        private void frmAddUpdateServices_Load(object sender, EventArgs e)
+
+        private void frmAddUpdateServices_Load(
+            object sender, EventArgs e)
         {
             _RefreshData();
-            if (_Mode == enMode.Update) _LoadData();
+
+            if (_Mode == enMode.Update)
+                _LoadData();
+
+            _ApplyServiceLanguage();
         }
+
 
         private void TextValiditn(object sender, CancelEventArgs e)
         {
@@ -128,12 +135,17 @@ namespace Clinic.Serveces.ServecesType
 
                 if (_ServicesType.Save())
                 {
-                    MessageBox.Show("Service saved successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show(
+     _T("Service saved successfully."),
+     _T("Success"),
+     MessageBoxButtons.OK,
+     MessageBoxIcon.Information);
                     _Mode = enMode.Update;
                     _ServiceID = _ServicesType.ServiceID;
                     lblApplicationTypeID.Text = _ServiceID.ToString();
                     lblTitle.Text = "Update Service";
                     Text = lblTitle.Text;
+                    _ApplyServiceLanguage();
                     DialogResult = DialogResult.OK;
                     Close();
                 }
@@ -146,6 +158,95 @@ namespace Clinic.Serveces.ServecesType
             catch (Exception ex)
             {
                 MessageBox.Show(ex.ToString(), "Service save failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private bool _IsArabic()
+        {
+            string language =
+                Properties.Settings.Default.ApplicationLanguage ?? "en";
+
+            return language.Equals(
+                "ar",
+                StringComparison.OrdinalIgnoreCase);
+        }
+
+        private string _T(string english)
+        {
+            if (!_IsArabic())
+                return english;
+
+            string arabic;
+
+            if (TranslationClass.sidebarTranslations.TryGetValue(
+                english, out arabic))
+            {
+                return arabic;
+            }
+
+            return english;
+        }
+
+        private void _ApplyServiceLanguage()
+        {
+            bool arabic = _IsArabic();
+
+            // Keep the existing form layout.
+            // Translate labels and align their text.
+            foreach (Control control in GetAllServiceControls(this))
+            {
+                if (control is Label label)
+                {
+                    string english = label.Text.Trim();
+
+                    label.Text = _T(english);
+
+                    if (arabic)
+                        label.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+                }
+                else if (control is Button button)
+                {
+                    button.Text = _T(button.Text.Trim());
+                }
+                else if (control is TextBox textBox)
+                {
+                    // Keep prices and numbers left-to-right.
+                    if (textBox == txtServicePrice)
+                    {
+                        textBox.RightToLeft = RightToLeft.No;
+                        textBox.TextAlign = HorizontalAlignment.Left;
+                    }
+                    else
+                    {
+                        textBox.RightToLeft =
+                            arabic ? RightToLeft.Yes : RightToLeft.No;
+                    }
+                }
+            }
+
+            // Explicitly translate dynamic controls.
+            lblTitle.Text = _T(
+                _Mode == enMode.AddNew
+                    ? "Add New Service"
+                    : "Update Service");
+
+            Text = lblTitle.Text;
+
+            // Do not mirror the entire form.
+            // This avoids disturbing Designer positions.
+            RightToLeft = RightToLeft.No;
+            RightToLeftLayout = false;
+        }
+
+        private System.Collections.Generic.IEnumerable<Control>
+            GetAllServiceControls(Control parent)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                yield return control;
+
+                foreach (Control child in GetAllServiceControls(control))
+                    yield return child;
             }
         }
 
