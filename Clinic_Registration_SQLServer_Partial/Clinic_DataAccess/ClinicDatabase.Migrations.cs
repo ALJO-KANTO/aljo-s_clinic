@@ -458,6 +458,28 @@ namespace Clinic_DataAccess
                               CONSTRAINT `fk_payments_creator` FOREIGN KEY (`CreatedByUserID`) REFERENCES `users` (`UserID`)
                             ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
                         },
+                                                new DatabaseMigration
+                        {
+                            Version = "20261119_PAYMENT_001",
+                            Description = "Add DebitAccountID to payments for selected COA account",
+                            Sql = @"
+                                ALTER TABLE `payments`
+                                ADD COLUMN `DebitAccountID` INT NULL;
+                            "
+                        },
+                                                                        new DatabaseMigration
+                        {
+                            Version = "20261119_PAYMENT_002",
+                            Description = "Backfill missing Cash payment account IDs",
+                            Sql = @"
+                                UPDATE `payments` p
+                                INNER JOIN `tbl_coa_level_4` coa
+                                    ON coa.`name` = 'Cash On Hand'
+                                SET p.`DebitAccountID` = coa.`id`
+                                WHERE p.`PaymentMethod` = 'Cash'
+                                  AND p.`DebitAccountID` IS NULL;
+                            "
+                        },
                         new DatabaseMigration
                         {
                             Version = "20261015_BASE_025",
@@ -738,6 +760,31 @@ namespace Clinic_DataAccess
                                 ) ENGINE=InnoDB
                                   DEFAULT CHARSET=utf8mb4
                                   COLLATE=utf8mb4_general_ci;"
+                        },
+
+                        // Attendance defaults for installations without configured settings.
+                        // Do not overwrite an administrator's existing active configuration.
+                        new DatabaseMigration
+                        {
+                            Version = "20261118_ATT_003",
+                            Description = "Seed default attendance schedule when no active schedule exists",
+                            Sql = @"
+                                INSERT INTO tbl_setting_attendance
+                                    (`date`, `day`, `timein`, `timeout`, `state`)
+                                SELECT '2000-01-01', 'All', '08:00:00', '18:00:00', 1
+                                WHERE NOT EXISTS
+                                (SELECT 1 FROM tbl_setting_attendance WHERE `state` = 1);"
+                        },
+                        new DatabaseMigration
+                        {
+                            Version = "20261118_ATT_004",
+                            Description = "Seed zero late-arrival deduction if configuration is missing",
+                            Sql = @"
+                                INSERT INTO tbl_setting_deduction_config
+                                    (`latearrivaldeduction`, `delaytime`)
+                                SELECT 0.00, '08:00:00'
+                                WHERE NOT EXISTS
+                                (SELECT 1 FROM tbl_setting_deduction_config);"
                         },
 
                         new DatabaseMigration

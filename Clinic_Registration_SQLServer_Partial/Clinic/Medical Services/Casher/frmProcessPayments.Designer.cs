@@ -49,9 +49,8 @@
             this.label1 = new System.Windows.Forms.Label();
             this.rdbCash = new System.Windows.Forms.RadioButton();
             this.rdbCreditCard = new System.Windows.Forms.RadioButton();
-            this.rdbInSurance = new System.Windows.Forms.RadioButton();
+            this.rdbBank = new System.Windows.Forms.RadioButton();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.label3 = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
             this.label6 = new System.Windows.Forms.Label();
             this.txtAmountReceived = new System.Windows.Forms.TextBox();
@@ -87,6 +86,7 @@
             this.lblPayment = new System.Windows.Forms.Label();
             this.lblChangeDue = new System.Windows.Forms.Label();
             this.pnlPaymentMethods = new System.Windows.Forms.Panel();
+            this.radioButton1 = new System.Windows.Forms.RadioButton();
             this.panTitle.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
             this.panel1.SuspendLayout();
@@ -94,6 +94,7 @@
             this.panel4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
+            this.pnlPaymentMethods.SuspendLayout();
             this.SuspendLayout();
             // 
             // panTitle
@@ -233,7 +234,7 @@
             this.lbTotalBillAmount.ForeColor = System.Drawing.Color.White;
             this.lbTotalBillAmount.Location = new System.Drawing.Point(1289, 109);
             this.lbTotalBillAmount.Name = "lbTotalBillAmount";
-            this.lbTotalBillAmount.Size = new System.Drawing.Size(46, 31);
+            this.lbTotalBillAmount.Size = new System.Drawing.Size(33, 31);
             this.lbTotalBillAmount.TabIndex = 268;
             this.lbTotalBillAmount.Text = " 0";
             // 
@@ -365,19 +366,19 @@
             this.rdbCreditCard.CheckedChanged += new System.EventHandler(this.RadioB_CheckedChanged);
             this.rdbCreditCard.Paint += new System.Windows.Forms.PaintEventHandler(this.radioButton_Paint);
             // 
-            // rdbInSurance
+            // rdbBank
             // 
-            this.rdbInSurance.AutoSize = true;
-            this.rdbInSurance.Font = new System.Drawing.Font("Segoe UI Semibold", 13.8F, System.Drawing.FontStyle.Bold);
-            this.rdbInSurance.ForeColor = System.Drawing.Color.White;
-            this.rdbInSurance.Location = new System.Drawing.Point(504, 328);
-            this.rdbInSurance.Name = "rdbInSurance";
-            this.rdbInSurance.Size = new System.Drawing.Size(138, 35);
-            this.rdbInSurance.TabIndex = 273;
-            this.rdbInSurance.Text = "InSurance";
-            this.rdbInSurance.UseVisualStyleBackColor = true;
-            this.rdbInSurance.CheckedChanged += new System.EventHandler(this.RadioB_CheckedChanged);
-            this.rdbInSurance.Paint += new System.Windows.Forms.PaintEventHandler(this.radioButton_Paint);
+            this.rdbBank.AutoSize = true;
+            this.rdbBank.Font = new System.Drawing.Font("Segoe UI Semibold", 13.8F, System.Drawing.FontStyle.Bold);
+            this.rdbBank.ForeColor = System.Drawing.Color.White;
+            this.rdbBank.Location = new System.Drawing.Point(646, 11);
+            this.rdbBank.Name = "rdbBank";
+            this.rdbBank.Size = new System.Drawing.Size(86, 35);
+            this.rdbBank.TabIndex = 273;
+            this.rdbBank.Text = "Bank";
+            this.rdbBank.UseVisualStyleBackColor = true;
+            this.rdbBank.CheckedChanged += new System.EventHandler(this.RadioB_CheckedChanged);
+            this.rdbBank.Paint += new System.Windows.Forms.PaintEventHandler(this.radioButton_Paint);
             // 
             // pictureBox1
             // 
@@ -389,17 +390,6 @@
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox1.TabIndex = 256;
             this.pictureBox1.TabStop = false;
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Font = new System.Drawing.Font("Segoe UI Semibold", 13.8F, System.Drawing.FontStyle.Bold);
-            this.label3.ForeColor = System.Drawing.Color.White;
-            this.label3.Location = new System.Drawing.Point(755, 332);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(152, 31);
-            this.label3.TabIndex = 274;
-            this.label3.Text = "Payment App";
             // 
             // panel2
             // 
@@ -417,7 +407,7 @@
             this.label6.ForeColor = System.Drawing.Color.White;
             this.label6.Location = new System.Drawing.Point(635, 420);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(203, 31);
+            this.label6.Size = new System.Drawing.Size(195, 31);
             this.label6.TabIndex = 277;
             this.label6.Text = "Amount Received";
             // 
@@ -508,7 +498,7 @@
             this.lblSubtotal.ForeColor = System.Drawing.Color.White;
             this.lblSubtotal.Location = new System.Drawing.Point(1343, 328);
             this.lblSubtotal.Name = "lblSubtotal";
-            this.lblSubtotal.Size = new System.Drawing.Size(46, 31);
+            this.lblSubtotal.Size = new System.Drawing.Size(33, 31);
             this.lblSubtotal.TabIndex = 283;
             this.lblSubtotal.Text = " 0";
             // 
@@ -519,7 +509,7 @@
             this.lblDiscount.ForeColor = System.Drawing.Color.White;
             this.lblDiscount.Location = new System.Drawing.Point(1343, 394);
             this.lblDiscount.Name = "lblDiscount";
-            this.lblDiscount.Size = new System.Drawing.Size(46, 31);
+            this.lblDiscount.Size = new System.Drawing.Size(33, 31);
             this.lblDiscount.TabIndex = 287;
             this.lblDiscount.Text = " 0";
             // 
@@ -530,7 +520,7 @@
             this.label13.ForeColor = System.Drawing.Color.White;
             this.label13.Location = new System.Drawing.Point(956, 394);
             this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(120, 31);
+            this.label13.Size = new System.Drawing.Size(87, 31);
             this.label13.TabIndex = 286;
             this.label13.Text = "Discou";
             // 
@@ -550,7 +540,7 @@
             this.lblFinalPaymentDue.ForeColor = System.Drawing.Color.White;
             this.lblFinalPaymentDue.Location = new System.Drawing.Point(1343, 628);
             this.lblFinalPaymentDue.Name = "lblFinalPaymentDue";
-            this.lblFinalPaymentDue.Size = new System.Drawing.Size(46, 31);
+            this.lblFinalPaymentDue.Size = new System.Drawing.Size(33, 31);
             this.lblFinalPaymentDue.TabIndex = 289;
             this.lblFinalPaymentDue.Text = " 0";
             // 
@@ -583,7 +573,7 @@
             this.lbAmmountToPay.ForeColor = System.Drawing.Color.White;
             this.lbAmmountToPay.Location = new System.Drawing.Point(79, 523);
             this.lbAmmountToPay.Name = "lbAmmountToPay";
-            this.lbAmmountToPay.Size = new System.Drawing.Size(46, 31);
+            this.lbAmmountToPay.Size = new System.Drawing.Size(33, 31);
             this.lbAmmountToPay.TabIndex = 291;
             this.lbAmmountToPay.Text = " 0";
             // 
@@ -660,7 +650,7 @@
             this.lblTax.ForeColor = System.Drawing.Color.White;
             this.lblTax.Location = new System.Drawing.Point(1343, 363);
             this.lblTax.Name = "lblTax";
-            this.lblTax.Size = new System.Drawing.Size(46, 31);
+            this.lblTax.Size = new System.Drawing.Size(33, 31);
             this.lblTax.TabIndex = 297;
             this.lblTax.Text = " 0";
             // 
@@ -671,7 +661,7 @@
             this.lblMedicines.ForeColor = System.Drawing.Color.White;
             this.lblMedicines.Location = new System.Drawing.Point(1343, 442);
             this.lblMedicines.Name = "lblMedicines";
-            this.lblMedicines.Size = new System.Drawing.Size(46, 31);
+            this.lblMedicines.Size = new System.Drawing.Size(33, 31);
             this.lblMedicines.TabIndex = 300;
             this.lblMedicines.Text = " 0";
             // 
@@ -682,7 +672,7 @@
             this.lblAppoinmentFees.ForeColor = System.Drawing.Color.White;
             this.lblAppoinmentFees.Location = new System.Drawing.Point(1343, 504);
             this.lblAppoinmentFees.Name = "lblAppoinmentFees";
-            this.lblAppoinmentFees.Size = new System.Drawing.Size(46, 31);
+            this.lblAppoinmentFees.Size = new System.Drawing.Size(33, 31);
             this.lblAppoinmentFees.TabIndex = 301;
             this.lblAppoinmentFees.Text = " 0";
             // 
@@ -693,7 +683,7 @@
             this.lblServices.ForeColor = System.Drawing.Color.White;
             this.lblServices.Location = new System.Drawing.Point(1343, 473);
             this.lblServices.Name = "lblServices";
-            this.lblServices.Size = new System.Drawing.Size(46, 31);
+            this.lblServices.Size = new System.Drawing.Size(33, 31);
             this.lblServices.TabIndex = 302;
             this.lblServices.Text = " 0";
             // 
@@ -722,7 +712,7 @@
             this.lblFinalTotal.ForeColor = System.Drawing.Color.White;
             this.lblFinalTotal.Location = new System.Drawing.Point(1343, 548);
             this.lblFinalTotal.Name = "lblFinalTotal";
-            this.lblFinalTotal.Size = new System.Drawing.Size(46, 31);
+            this.lblFinalTotal.Size = new System.Drawing.Size(33, 31);
             this.lblFinalTotal.TabIndex = 304;
             this.lblFinalTotal.Text = " 0";
             // 
@@ -744,7 +734,7 @@
             this.lblPaymentAmmount.ForeColor = System.Drawing.Color.White;
             this.lblPaymentAmmount.Location = new System.Drawing.Point(1343, 579);
             this.lblPaymentAmmount.Name = "lblPaymentAmmount";
-            this.lblPaymentAmmount.Size = new System.Drawing.Size(46, 31);
+            this.lblPaymentAmmount.Size = new System.Drawing.Size(33, 31);
             this.lblPaymentAmmount.TabIndex = 306;
             this.lblPaymentAmmount.Text = " 0";
             // 
@@ -772,10 +762,24 @@
             // 
             // pnlPaymentMethods
             // 
+            this.pnlPaymentMethods.Controls.Add(this.radioButton1);
+            this.pnlPaymentMethods.Controls.Add(this.rdbBank);
             this.pnlPaymentMethods.Location = new System.Drawing.Point(109, 317);
             this.pnlPaymentMethods.Name = "pnlPaymentMethods";
             this.pnlPaymentMethods.Size = new System.Drawing.Size(812, 49);
             this.pnlPaymentMethods.TabIndex = 308;
+            // 
+            // radioButton1
+            // 
+            this.radioButton1.AutoSize = true;
+            this.radioButton1.Font = new System.Drawing.Font("Segoe UI Semibold", 13.8F, System.Drawing.FontStyle.Bold);
+            this.radioButton1.ForeColor = System.Drawing.Color.White;
+            this.radioButton1.Location = new System.Drawing.Point(337, 7);
+            this.radioButton1.Name = "radioButton1";
+            this.radioButton1.Size = new System.Drawing.Size(138, 35);
+            this.radioButton1.TabIndex = 274;
+            this.radioButton1.Text = "InSurance";
+            this.radioButton1.UseVisualStyleBackColor = true;
             // 
             // frmProcessPayments
             // 
@@ -817,9 +821,7 @@
             this.Controls.Add(this.label6);
             this.Controls.Add(this.txtAmountReceived);
             this.Controls.Add(this.panel2);
-            this.Controls.Add(this.label3);
             this.Controls.Add(this.pictureBox1);
-            this.Controls.Add(this.rdbInSurance);
             this.Controls.Add(this.rdbCreditCard);
             this.Controls.Add(this.rdbCash);
             this.Controls.Add(this.label1);
@@ -848,6 +850,8 @@
             this.panel4.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
+            this.pnlPaymentMethods.ResumeLayout(false);
+            this.pnlPaymentMethods.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -870,9 +874,8 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.RadioButton rdbCash;
         private System.Windows.Forms.RadioButton rdbCreditCard;
-        private System.Windows.Forms.RadioButton rdbInSurance;
+        private System.Windows.Forms.RadioButton rdbBank;
         private System.Windows.Forms.PictureBox pictureBox1;
-        private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.TextBox txtAmountReceived;
@@ -912,5 +915,6 @@
         private System.Windows.Forms.DataGridView dgvBillDetails;
         private System.Windows.Forms.Label lblChangeDue;
         private System.Windows.Forms.Panel pnlPaymentMethods;
+        private System.Windows.Forms.RadioButton radioButton1;
     }
 }
