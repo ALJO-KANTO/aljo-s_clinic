@@ -22,6 +22,9 @@ namespace Clinic.Patient
             InitializeComponent();
             ClinicLanguageManager.ApplyToForm(this);
             ApplyPatientLanguage();
+
+            // CHANGED: Restore grid column headers.
+            FixPatientGridHeaders();
         }
 
         private void btnClose_Click(object sender, EventArgs e)
@@ -79,18 +82,65 @@ namespace Clinic.Patient
             SetColumn("EmergencyContact", "Emergency Contact", 150);
             ApplyPatientLanguage();
         }
+        private void FixPatientGridHeaders()
+        {
+            bool isArabic = TranslationClass.IsArabic;
 
+            dgvPatient.ColumnHeadersVisible = true;
+            dgvPatient.EnableHeadersVisualStyles = false;
+
+            dgvPatient.ColumnHeadersHeightSizeMode =
+                DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+
+            dgvPatient.ColumnHeadersHeight = 48;
+
+            dgvPatient.ColumnHeadersDefaultCellStyle.BackColor =
+                Color.FromArgb(8, 95, 161);
+
+            dgvPatient.ColumnHeadersDefaultCellStyle.ForeColor =
+                Color.White;
+
+            dgvPatient.ColumnHeadersDefaultCellStyle.SelectionBackColor =
+                Color.FromArgb(8, 95, 161);
+
+            dgvPatient.ColumnHeadersDefaultCellStyle.SelectionForeColor =
+                Color.White;
+
+            dgvPatient.ColumnHeadersDefaultCellStyle.Font =
+                new Font("Segoe UI", 10F, FontStyle.Bold);
+
+            dgvPatient.ColumnHeadersDefaultCellStyle.Alignment =
+                DataGridViewContentAlignment.MiddleCenter;
+
+            dgvPatient.ColumnHeadersDefaultCellStyle.WrapMode =
+                DataGridViewTriState.True;
+
+            dgvPatient.RightToLeft = isArabic
+                ? RightToLeft.Yes
+                : RightToLeft.No;
+
+            dgvPatient.ScrollBars = ScrollBars.Both;
+
+            dgvPatient.Parent?.PerformLayout();
+            dgvPatient.Invalidate();
+        }
         private void SetColumn(string columnName, string header, int width)
         {
-            if (dgvPatient.Columns.Contains(columnName))
-            {
-                dgvPatient.Columns[columnName].HeaderText =
-                    TranslationClass.Translate(
-                        header,
-                        TranslationClass.IsArabic);
+            if (!dgvPatient.Columns.Contains(columnName))
+                return;
 
-                dgvPatient.Columns[columnName].Width = width;
-            }
+            DataGridViewColumn column = dgvPatient.Columns[columnName];
+
+            column.HeaderText = TranslationClass.Translate(
+                header,
+                TranslationClass.IsArabic);
+
+            // CHANGED: Ensure header text is not empty.
+            if (string.IsNullOrWhiteSpace(column.HeaderText))
+                column.HeaderText = header;
+
+            column.Width = width;
+            column.MinimumWidth = 65;
         }
         private void cbFilterBy_SelectedIndexChanged(object sender, EventArgs e)
         {
