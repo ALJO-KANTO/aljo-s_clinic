@@ -801,6 +801,8 @@ namespace YamyProject
         }
         private string TranslateAccountName(string value)
         {
+            return value;
+
             string language =
                 Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en";
 
