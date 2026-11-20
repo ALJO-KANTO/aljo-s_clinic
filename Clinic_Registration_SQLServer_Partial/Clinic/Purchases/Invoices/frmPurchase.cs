@@ -50,7 +50,38 @@ namespace YamyProject
 
             LocalizePurchaseComboBoxes();
 
-            // Continue your existing constructor code...
+            dgvItems.EnableHeadersVisualStyles = false;
+
+            vendorUpdatedHandler = (sender, args) => BindCombos.PopulateVendors(cmbVendor);
+            warehouseUpdatedHandler = (sender, args) => BindCombos.PopulateWarehouse(cmbWarehouse);
+            EventHub.Item += itemUpdatedHandler;
+            EventHub.wareHouse += warehouseUpdatedHandler;
+            EventHub.Vendor += vendorUpdatedHandler;
+            this.PO = _PO;
+            if (PO == "PO")
+            {
+                txtPONO.Text = _id.ToString();
+            }
+            else if (PO == "POF")
+            {
+                txtPONO.Text = _id.ToString();
+            }
+            else if (PO == "MR")
+            {
+                txtPONO.Text = _id.ToString();
+            }
+            else
+            {
+                this.id = _id;
+                txtPONO.Text = "";
+            }
+            this.defaultVendorId = _vendorId;
+            headerUC1.FormText = this.Text;
+            if (_isSubcontractor)
+            {
+                CbSubcontractors.Checked = true;
+                typed = "Subcontractor";
+            }
         }
         private void LocalizePurchaseComboBoxes()
         {
