@@ -29,10 +29,10 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle12 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
             this.panel1 = new System.Windows.Forms.Panel();
             this.guna2Button3 = new Guna.UI2.WinForms.Guna2Button();
             this.txtCreditAmount = new Guna.UI2.WinForms.Guna2TextBox();
@@ -67,43 +67,34 @@
             this.guna2ControlBox1 = new Guna.UI2.WinForms.Guna2ControlBox();
             this.LbHeader = new System.Windows.Forms.Label();
             this.panel9 = new System.Windows.Forms.Panel();
-            this.tabControl2 = new System.Windows.Forms.TabControl();
-            this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.txtJvId = new System.Windows.Forms.TextBox();
-            this.btnNext = new Guna.UI2.WinForms.Guna2Button();
-            this.btnPrevious = new Guna.UI2.WinForms.Guna2Button();
-            this.guna2VSeparator12 = new Guna.UI2.WinForms.Guna2VSeparator();
-            this.guna2TileButton23 = new Guna.UI2.WinForms.Guna2TileButton();
-            this.guna2TileButton22 = new Guna.UI2.WinForms.Guna2TileButton();
-            this.guna2TileButton21 = new Guna.UI2.WinForms.Guna2TileButton();
-            this.guna2TileButton20 = new Guna.UI2.WinForms.Guna2TileButton();
-            this.checkBox3 = new System.Windows.Forms.CheckBox();
-            this.guna2VSeparator11 = new Guna.UI2.WinForms.Guna2VSeparator();
-            this.checkBox4 = new System.Windows.Forms.CheckBox();
-            this.guna2TileButton18 = new Guna.UI2.WinForms.Guna2TileButton();
-            this.guna2TileButton17 = new Guna.UI2.WinForms.Guna2TileButton();
-            this.tabPage4 = new System.Windows.Forms.TabPage();
-            this.guna2TileButton27 = new Guna.UI2.WinForms.Guna2TileButton();
-            this.guna2TileButton28 = new Guna.UI2.WinForms.Guna2TileButton();
-            this.guna2TileButton29 = new Guna.UI2.WinForms.Guna2TileButton();
-            this.guna2VSeparator13 = new Guna.UI2.WinForms.Guna2VSeparator();
-            this.guna2TileButton26 = new Guna.UI2.WinForms.Guna2TileButton();
-            this.guna2TileButton25 = new Guna.UI2.WinForms.Guna2TileButton();
-            this.guna2TileButton24 = new Guna.UI2.WinForms.Guna2TileButton();
             this.dataGridViewImageColumn1 = new System.Windows.Forms.DataGridViewImageColumn();
             this.guna2DragControl1 = new Guna.UI2.WinForms.Guna2DragControl(this.components);
-            this.guna2VSeparator9 = new Guna.UI2.WinForms.Guna2VSeparator();
-            this.BtnAttach = new Guna.UI2.WinForms.Guna2TileButton();
-            this.guna2VSeparator10 = new Guna.UI2.WinForms.Guna2VSeparator();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.guna2TileButton17 = new Guna.UI2.WinForms.Guna2TileButton();
+            this.guna2TileButton18 = new Guna.UI2.WinForms.Guna2TileButton();
+            this.checkBox4 = new System.Windows.Forms.CheckBox();
+            this.guna2VSeparator11 = new Guna.UI2.WinForms.Guna2VSeparator();
+            this.checkBox3 = new System.Windows.Forms.CheckBox();
+            this.guna2TileButton20 = new Guna.UI2.WinForms.Guna2TileButton();
+            this.guna2TileButton21 = new Guna.UI2.WinForms.Guna2TileButton();
+            this.guna2TileButton22 = new Guna.UI2.WinForms.Guna2TileButton();
+            this.guna2TileButton23 = new Guna.UI2.WinForms.Guna2TileButton();
+            this.guna2VSeparator12 = new Guna.UI2.WinForms.Guna2VSeparator();
+            this.btnPrevious = new Guna.UI2.WinForms.Guna2Button();
+            this.btnNext = new Guna.UI2.WinForms.Guna2Button();
+            this.txtJvId = new System.Windows.Forms.TextBox();
+            this.guna2VSeparator10 = new Guna.UI2.WinForms.Guna2VSeparator();
+            this.BtnAttach = new Guna.UI2.WinForms.Guna2TileButton();
+            this.guna2VSeparator9 = new Guna.UI2.WinForms.Guna2VSeparator();
+            this.tabControl2 = new System.Windows.Forms.TabControl();
             this.panel1.SuspendLayout();
             this.guna2GroupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvJV)).BeginInit();
             this.panel2.SuspendLayout();
             this.panel9.SuspendLayout();
-            this.tabControl2.SuspendLayout();
             this.tabPage3.SuspendLayout();
-            this.tabPage4.SuspendLayout();
+            this.tabControl2.SuspendLayout();
             this.SuspendLayout();
             // 
             // panel1
@@ -115,7 +106,7 @@
             this.panel1.Controls.Add(this.btnClose);
             this.panel1.Controls.Add(this.btnSave);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel1.Location = new System.Drawing.Point(3, 705);
+            this.panel1.Location = new System.Drawing.Point(3, 703);
             this.panel1.Margin = new System.Windows.Forms.Padding(4, 2, 4, 2);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(1208, 44);
@@ -248,7 +239,7 @@
             this.guna2GroupBox1.Location = new System.Drawing.Point(3, 192);
             this.guna2GroupBox1.Margin = new System.Windows.Forms.Padding(4, 2, 4, 2);
             this.guna2GroupBox1.Name = "guna2GroupBox1";
-            this.guna2GroupBox1.Size = new System.Drawing.Size(1208, 513);
+            this.guna2GroupBox1.Size = new System.Drawing.Size(1208, 511);
             this.guna2GroupBox1.TabIndex = 3;
             this.guna2GroupBox1.TextOffset = new System.Drawing.Point(0, -5);
             // 
@@ -286,19 +277,19 @@
             this.dgvJV.AllowUserToDeleteRows = false;
             this.dgvJV.AllowUserToResizeColumns = false;
             this.dgvJV.AllowUserToResizeRows = false;
-            dataGridViewCellStyle9.BackColor = System.Drawing.Color.White;
-            this.dgvJV.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle9;
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.White;
+            this.dgvJV.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
             this.dgvJV.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.None;
             this.dgvJV.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.Single;
             this.dgvJV.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
-            dataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle10.BackColor = System.Drawing.Color.Silver;
-            dataGridViewCellStyle10.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
-            dataGridViewCellStyle10.ForeColor = System.Drawing.Color.Black;
-            dataGridViewCellStyle10.SelectionBackColor = System.Drawing.Color.Silver;
-            dataGridViewCellStyle10.SelectionForeColor = System.Drawing.Color.Black;
-            dataGridViewCellStyle10.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgvJV.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle10;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.BackColor = System.Drawing.Color.Silver;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
+            dataGridViewCellStyle2.ForeColor = System.Drawing.Color.Black;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.Silver;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.Color.Black;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvJV.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
             this.dgvJV.ColumnHeadersHeight = 20;
             this.dgvJV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.EnableResizing;
             this.dgvJV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
@@ -311,14 +302,14 @@
             this.description,
             this.partner_name,
             this.delete});
-            dataGridViewCellStyle11.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle11.BackColor = System.Drawing.Color.White;
-            dataGridViewCellStyle11.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
-            dataGridViewCellStyle11.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            dataGridViewCellStyle11.SelectionBackColor = System.Drawing.Color.White;
-            dataGridViewCellStyle11.SelectionForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(71)))), ((int)(((byte)(69)))), ((int)(((byte)(94)))));
-            dataGridViewCellStyle11.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgvJV.DefaultCellStyle = dataGridViewCellStyle11;
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = System.Drawing.Color.White;
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
+            dataGridViewCellStyle3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.Color.White;
+            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(71)))), ((int)(((byte)(69)))), ((int)(((byte)(94)))));
+            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvJV.DefaultCellStyle = dataGridViewCellStyle3;
             this.dgvJV.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgvJV.EditMode = System.Windows.Forms.DataGridViewEditMode.EditOnEnter;
             this.dgvJV.GridColor = System.Drawing.Color.FromArgb(((int)(((byte)(231)))), ((int)(((byte)(229)))), ((int)(((byte)(255)))));
@@ -329,13 +320,13 @@
             this.dgvJV.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
             this.dgvJV.RowHeadersVisible = false;
             this.dgvJV.RowHeadersWidth = 51;
-            dataGridViewCellStyle12.Font = new System.Drawing.Font("Segoe UI", 7.8F);
-            this.dgvJV.RowsDefaultCellStyle = dataGridViewCellStyle12;
+            dataGridViewCellStyle4.Font = new System.Drawing.Font("Segoe UI", 7.8F);
+            this.dgvJV.RowsDefaultCellStyle = dataGridViewCellStyle4;
             this.dgvJV.RowTemplate.DefaultCellStyle.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.dgvJV.RowTemplate.Height = 25;
             this.dgvJV.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.True;
             this.dgvJV.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
-            this.dgvJV.Size = new System.Drawing.Size(1208, 483);
+            this.dgvJV.Size = new System.Drawing.Size(1208, 481);
             this.dgvJV.TabIndex = 8;
             this.dgvJV.ThemeStyle.AlternatingRowsStyle.BackColor = System.Drawing.Color.White;
             this.dgvJV.ThemeStyle.AlternatingRowsStyle.Font = new System.Drawing.Font("Segoe UI", 7.8F);
@@ -437,7 +428,7 @@
             // 
             this.panel5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(23)))), ((int)(((byte)(42)))), ((int)(((byte)(83)))));
             this.panel5.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel5.Location = new System.Drawing.Point(3, 749);
+            this.panel5.Location = new System.Drawing.Point(3, 747);
             this.panel5.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.panel5.Name = "panel5";
             this.panel5.Size = new System.Drawing.Size(1208, 2);
@@ -450,7 +441,7 @@
             this.panel4.Location = new System.Drawing.Point(1211, 0);
             this.panel4.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.panel4.Name = "panel4";
-            this.panel4.Size = new System.Drawing.Size(3, 751);
+            this.panel4.Size = new System.Drawing.Size(3, 749);
             this.panel4.TabIndex = 13;
             // 
             // panel3
@@ -460,7 +451,7 @@
             this.panel3.Location = new System.Drawing.Point(0, 0);
             this.panel3.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(3, 751);
+            this.panel3.Size = new System.Drawing.Size(3, 749);
             this.panel3.TabIndex = 12;
             // 
             // panel2
@@ -562,10 +553,11 @@
             // 
             // headerUC1
             // 
+            this.headerUC1.ArabicLayout = false;
             this.headerUC1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(23)))), ((int)(((byte)(41)))), ((int)(((byte)(83)))));
             this.headerUC1.Dock = System.Windows.Forms.DockStyle.Top;
-            this.headerUC1.FormText = "";
-            this.headerUC1.HeaderText = "";
+            this.headerUC1.FormText = "Title";
+            this.headerUC1.HeaderText = "Title";
             this.headerUC1.Location = new System.Drawing.Point(3, 0);
             this.headerUC1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.headerUC1.Name = "headerUC1";
@@ -630,7 +622,6 @@
             // 
             // LbHeader
             // 
-            this.LbHeader.AutoSize = false;
             this.LbHeader.BackColor = System.Drawing.Color.Transparent;
             this.LbHeader.Dock = System.Windows.Forms.DockStyle.Fill;
             this.LbHeader.Font = new System.Drawing.Font("Segoe UI Semibold", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -654,20 +645,26 @@
             this.panel9.Size = new System.Drawing.Size(1208, 109);
             this.panel9.TabIndex = 39;
             // 
-            // tabControl2
+            // dataGridViewImageColumn1
             // 
-            this.tabControl2.Controls.Add(this.tabPage3);
-            this.tabControl2.Controls.Add(this.tabPage4);
-            this.tabControl2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tabControl2.HotTrack = true;
-            this.tabControl2.ImeMode = System.Windows.Forms.ImeMode.Katakana;
-            this.tabControl2.Location = new System.Drawing.Point(0, 0);
-            this.tabControl2.Margin = new System.Windows.Forms.Padding(4);
-            this.tabControl2.Name = "tabControl2";
-            this.tabControl2.Padding = new System.Drawing.Point(20, 3);
-            this.tabControl2.SelectedIndex = 0;
-            this.tabControl2.Size = new System.Drawing.Size(1208, 109);
-            this.tabControl2.TabIndex = 39;
+            this.dataGridViewImageColumn1.HeaderText = "Delete";
+            this.dataGridViewImageColumn1.Image = global::Clinic.Properties.Resources.Trash;
+            this.dataGridViewImageColumn1.ImageLayout = System.Windows.Forms.DataGridViewImageCellLayout.Zoom;
+            this.dataGridViewImageColumn1.MinimumWidth = 6;
+            this.dataGridViewImageColumn1.Name = "dataGridViewImageColumn1";
+            this.dataGridViewImageColumn1.Width = 125;
+            // 
+            // guna2DragControl1
+            // 
+            this.guna2DragControl1.DockForm = true;
+            this.guna2DragControl1.DockIndicatorTransparencyValue = 0.1D;
+            this.guna2DragControl1.DragEndTransparencyValue = 0.1D;
+            this.guna2DragControl1.TargetControl = this.LbHeader;
+            this.guna2DragControl1.TransparentWhileDrag = false;
+            // 
+            // openFileDialog1
+            // 
+            this.openFileDialog1.FileName = "openFileDialog1";
             // 
             // tabPage3
             // 
@@ -696,130 +693,88 @@
             this.tabPage3.TabIndex = 0;
             this.tabPage3.Text = "Main";
             // 
-            // txtJvId
+            // guna2TileButton17
             // 
-            this.txtJvId.BackColor = System.Drawing.SystemColors.ActiveBorder;
-            this.txtJvId.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.txtJvId.Enabled = false;
-            this.txtJvId.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.txtJvId.Location = new System.Drawing.Point(38, 27);
-            this.txtJvId.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.txtJvId.Multiline = true;
-            this.txtJvId.Name = "txtJvId";
-            this.txtJvId.Size = new System.Drawing.Size(77, 24);
-            this.txtJvId.TabIndex = 16;
-            this.txtJvId.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.guna2TileButton17.BackColor = System.Drawing.Color.Transparent;
+            this.guna2TileButton17.BorderColor = System.Drawing.Color.Transparent;
+            this.guna2TileButton17.BorderRadius = 10;
+            this.guna2TileButton17.BorderThickness = 2;
+            this.guna2TileButton17.CheckedState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(55)))), ((int)(((byte)(89)))));
+            this.guna2TileButton17.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
+            this.guna2TileButton17.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
+            this.guna2TileButton17.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
+            this.guna2TileButton17.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
+            this.guna2TileButton17.FillColor = System.Drawing.Color.Transparent;
+            this.guna2TileButton17.Font = new System.Drawing.Font("Segoe UI Semibold", 6.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.guna2TileButton17.ForeColor = System.Drawing.Color.Black;
+            this.guna2TileButton17.HoverState.BorderColor = System.Drawing.Color.Silver;
+            this.guna2TileButton17.HoverState.FillColor = System.Drawing.Color.Silver;
+            this.guna2TileButton17.Image = global::Clinic.Properties.Resources.emailN;
+            this.guna2TileButton17.ImageSize = new System.Drawing.Size(35, 30);
+            this.guna2TileButton17.Location = new System.Drawing.Point(540, 11);
+            this.guna2TileButton17.Margin = new System.Windows.Forms.Padding(4);
+            this.guna2TileButton17.Name = "guna2TileButton17";
+            this.guna2TileButton17.Size = new System.Drawing.Size(54, 47);
+            this.guna2TileButton17.TabIndex = 26;
+            this.guna2TileButton17.Text = "Email";
             // 
-            // btnNext
+            // guna2TileButton18
             // 
-            this.btnNext.BackColor = System.Drawing.Color.Transparent;
-            this.btnNext.FillColor = System.Drawing.Color.Transparent;
-            this.btnNext.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.btnNext.ForeColor = System.Drawing.Color.White;
-            this.btnNext.Image = global::Clinic.Properties.Resources.Arrow22;
-            this.btnNext.ImageSize = new System.Drawing.Size(25, 25);
-            this.btnNext.Location = new System.Drawing.Point(116, 19);
-            this.btnNext.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.btnNext.Name = "btnNext";
-            this.btnNext.Size = new System.Drawing.Size(38, 38);
-            this.btnNext.TabIndex = 2;
-            this.btnNext.Click += new System.EventHandler(this.btnNext_Click);
+            this.guna2TileButton18.BackColor = System.Drawing.Color.Transparent;
+            this.guna2TileButton18.BorderColor = System.Drawing.Color.Transparent;
+            this.guna2TileButton18.BorderRadius = 10;
+            this.guna2TileButton18.BorderThickness = 2;
+            this.guna2TileButton18.CheckedState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(55)))), ((int)(((byte)(89)))));
+            this.guna2TileButton18.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
+            this.guna2TileButton18.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
+            this.guna2TileButton18.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
+            this.guna2TileButton18.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
+            this.guna2TileButton18.FillColor = System.Drawing.Color.Transparent;
+            this.guna2TileButton18.Font = new System.Drawing.Font("Segoe UI Semibold", 6.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.guna2TileButton18.ForeColor = System.Drawing.Color.Black;
+            this.guna2TileButton18.HoverState.BorderColor = System.Drawing.Color.Silver;
+            this.guna2TileButton18.HoverState.FillColor = System.Drawing.Color.Silver;
+            this.guna2TileButton18.Image = global::Clinic.Properties.Resources.printN;
+            this.guna2TileButton18.ImageSize = new System.Drawing.Size(30, 25);
+            this.guna2TileButton18.Location = new System.Drawing.Point(477, 11);
+            this.guna2TileButton18.Margin = new System.Windows.Forms.Padding(4);
+            this.guna2TileButton18.Name = "guna2TileButton18";
+            this.guna2TileButton18.Size = new System.Drawing.Size(54, 47);
+            this.guna2TileButton18.TabIndex = 25;
+            this.guna2TileButton18.Text = "Print";
+            this.guna2TileButton18.Click += new System.EventHandler(this.guna2TileButton18_Click);
             // 
-            // btnPrevious
+            // checkBox4
             // 
-            this.btnPrevious.FillColor = System.Drawing.Color.Transparent;
-            this.btnPrevious.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.btnPrevious.ForeColor = System.Drawing.Color.White;
-            this.btnPrevious.Image = global::Clinic.Properties.Resources.Arrow_Pointing_Left;
-            this.btnPrevious.Location = new System.Drawing.Point(4, 21);
-            this.btnPrevious.Margin = new System.Windows.Forms.Padding(4);
-            this.btnPrevious.Name = "btnPrevious";
-            this.btnPrevious.Size = new System.Drawing.Size(35, 36);
-            this.btnPrevious.TabIndex = 3;
-            this.btnPrevious.Click += new System.EventHandler(this.btnPrevious_Click);
+            this.checkBox4.AutoSize = true;
+            this.checkBox4.Font = new System.Drawing.Font("Segoe UI Semibold", 6.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.checkBox4.Location = new System.Drawing.Point(603, 18);
+            this.checkBox4.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.checkBox4.Name = "checkBox4";
+            this.checkBox4.Size = new System.Drawing.Size(64, 16);
+            this.checkBox4.TabIndex = 27;
+            this.checkBox4.Text = "Print Later";
+            this.checkBox4.UseVisualStyleBackColor = true;
             // 
-            // guna2VSeparator12
+            // guna2VSeparator11
             // 
-            this.guna2VSeparator12.Location = new System.Drawing.Point(153, 7);
-            this.guna2VSeparator12.Margin = new System.Windows.Forms.Padding(4);
-            this.guna2VSeparator12.Name = "guna2VSeparator12";
-            this.guna2VSeparator12.Size = new System.Drawing.Size(10, 61);
-            this.guna2VSeparator12.TabIndex = 17;
+            this.guna2VSeparator11.Location = new System.Drawing.Point(468, 7);
+            this.guna2VSeparator11.Margin = new System.Windows.Forms.Padding(4);
+            this.guna2VSeparator11.Name = "guna2VSeparator11";
+            this.guna2VSeparator11.Size = new System.Drawing.Size(10, 61);
+            this.guna2VSeparator11.TabIndex = 24;
             // 
-            // guna2TileButton23
+            // checkBox3
             // 
-            this.guna2TileButton23.BackColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton23.BorderColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton23.BorderRadius = 10;
-            this.guna2TileButton23.BorderThickness = 2;
-            this.guna2TileButton23.CheckedState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(55)))), ((int)(((byte)(89)))));
-            this.guna2TileButton23.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
-            this.guna2TileButton23.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
-            this.guna2TileButton23.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
-            this.guna2TileButton23.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
-            this.guna2TileButton23.FillColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton23.Font = new System.Drawing.Font("Segoe UI Semibold", 6.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.guna2TileButton23.ForeColor = System.Drawing.Color.Black;
-            this.guna2TileButton23.HoverState.BorderColor = System.Drawing.Color.Silver;
-            this.guna2TileButton23.HoverState.FillColor = System.Drawing.Color.Silver;
-            this.guna2TileButton23.Image = global::Clinic.Properties.Resources.add_fileN;
-            this.guna2TileButton23.Location = new System.Drawing.Point(162, 11);
-            this.guna2TileButton23.Margin = new System.Windows.Forms.Padding(4);
-            this.guna2TileButton23.Name = "guna2TileButton23";
-            this.guna2TileButton23.Size = new System.Drawing.Size(63, 62);
-            this.guna2TileButton23.TabIndex = 19;
-            this.guna2TileButton23.Text = "New";
-            this.guna2TileButton23.Click += new System.EventHandler(this.guna2TileButton23_Click);
-            // 
-            // guna2TileButton22
-            // 
-            this.guna2TileButton22.BackColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton22.BorderColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton22.BorderRadius = 10;
-            this.guna2TileButton22.BorderThickness = 2;
-            this.guna2TileButton22.CheckedState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(55)))), ((int)(((byte)(89)))));
-            this.guna2TileButton22.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
-            this.guna2TileButton22.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
-            this.guna2TileButton22.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
-            this.guna2TileButton22.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
-            this.guna2TileButton22.FillColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton22.Font = new System.Drawing.Font("Segoe UI Semibold", 6.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.guna2TileButton22.ForeColor = System.Drawing.Color.Black;
-            this.guna2TileButton22.HoverState.BorderColor = System.Drawing.Color.Silver;
-            this.guna2TileButton22.HoverState.FillColor = System.Drawing.Color.Silver;
-            this.guna2TileButton22.Image = global::Clinic.Properties.Resources.Save_32;
-            this.guna2TileButton22.Location = new System.Drawing.Point(225, 11);
-            this.guna2TileButton22.Margin = new System.Windows.Forms.Padding(4);
-            this.guna2TileButton22.Name = "guna2TileButton22";
-            this.guna2TileButton22.Size = new System.Drawing.Size(63, 62);
-            this.guna2TileButton22.TabIndex = 20;
-            this.guna2TileButton22.Text = "Save";
-            this.guna2TileButton22.Click += new System.EventHandler(this.btnSave_Click);
-            // 
-            // guna2TileButton21
-            // 
-            this.guna2TileButton21.BackColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton21.BorderColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton21.BorderRadius = 10;
-            this.guna2TileButton21.BorderThickness = 2;
-            this.guna2TileButton21.CheckedState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(55)))), ((int)(((byte)(89)))));
-            this.guna2TileButton21.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
-            this.guna2TileButton21.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
-            this.guna2TileButton21.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
-            this.guna2TileButton21.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
-            this.guna2TileButton21.FillColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton21.Font = new System.Drawing.Font("Segoe UI Semibold", 6.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.guna2TileButton21.ForeColor = System.Drawing.Color.Black;
-            this.guna2TileButton21.HoverState.BorderColor = System.Drawing.Color.Silver;
-            this.guna2TileButton21.HoverState.FillColor = System.Drawing.Color.Silver;
-            this.guna2TileButton21.Image = global::Clinic.Properties.Resources.Delete;
-            this.guna2TileButton21.Location = new System.Drawing.Point(288, 11);
-            this.guna2TileButton21.Margin = new System.Windows.Forms.Padding(4);
-            this.guna2TileButton21.Name = "guna2TileButton21";
-            this.guna2TileButton21.Size = new System.Drawing.Size(63, 62);
-            this.guna2TileButton21.TabIndex = 21;
-            this.guna2TileButton21.Text = "Delete";
-            this.guna2TileButton21.Click += new System.EventHandler(this.guna2TileButton21_Click);
+            this.checkBox3.AutoSize = true;
+            this.checkBox3.Font = new System.Drawing.Font("Segoe UI Semibold", 6.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.checkBox3.Location = new System.Drawing.Point(602, 46);
+            this.checkBox3.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.checkBox3.Name = "checkBox3";
+            this.checkBox3.Size = new System.Drawing.Size(68, 16);
+            this.checkBox3.TabIndex = 28;
+            this.checkBox3.Text = "Email Later";
+            this.checkBox3.UseVisualStyleBackColor = true;
             // 
             // guna2TileButton20
             // 
@@ -850,282 +805,137 @@
             this.guna2TileButton20.TextOffset = new System.Drawing.Point(10, -12);
             this.guna2TileButton20.Click += new System.EventHandler(this.guna2TileButton20_Click);
             // 
-            // checkBox3
+            // guna2TileButton21
             // 
-            this.checkBox3.AutoSize = true;
-            this.checkBox3.Font = new System.Drawing.Font("Segoe UI Semibold", 6.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox3.Location = new System.Drawing.Point(602, 46);
-            this.checkBox3.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.checkBox3.Name = "checkBox3";
-            this.checkBox3.Size = new System.Drawing.Size(68, 16);
-            this.checkBox3.TabIndex = 28;
-            this.checkBox3.Text = "Email Later";
-            this.checkBox3.UseVisualStyleBackColor = true;
+            this.guna2TileButton21.BackColor = System.Drawing.Color.Transparent;
+            this.guna2TileButton21.BorderColor = System.Drawing.Color.Transparent;
+            this.guna2TileButton21.BorderRadius = 10;
+            this.guna2TileButton21.BorderThickness = 2;
+            this.guna2TileButton21.CheckedState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(55)))), ((int)(((byte)(89)))));
+            this.guna2TileButton21.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
+            this.guna2TileButton21.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
+            this.guna2TileButton21.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
+            this.guna2TileButton21.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
+            this.guna2TileButton21.FillColor = System.Drawing.Color.Transparent;
+            this.guna2TileButton21.Font = new System.Drawing.Font("Segoe UI Semibold", 6.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.guna2TileButton21.ForeColor = System.Drawing.Color.Black;
+            this.guna2TileButton21.HoverState.BorderColor = System.Drawing.Color.Silver;
+            this.guna2TileButton21.HoverState.FillColor = System.Drawing.Color.Silver;
+            this.guna2TileButton21.Image = global::Clinic.Properties.Resources.Delete;
+            this.guna2TileButton21.Location = new System.Drawing.Point(288, 11);
+            this.guna2TileButton21.Margin = new System.Windows.Forms.Padding(4);
+            this.guna2TileButton21.Name = "guna2TileButton21";
+            this.guna2TileButton21.Size = new System.Drawing.Size(63, 62);
+            this.guna2TileButton21.TabIndex = 21;
+            this.guna2TileButton21.Text = "Delete";
+            this.guna2TileButton21.Click += new System.EventHandler(this.guna2TileButton21_Click);
             // 
-            // guna2VSeparator11
+            // guna2TileButton22
             // 
-            this.guna2VSeparator11.Location = new System.Drawing.Point(468, 7);
-            this.guna2VSeparator11.Margin = new System.Windows.Forms.Padding(4);
-            this.guna2VSeparator11.Name = "guna2VSeparator11";
-            this.guna2VSeparator11.Size = new System.Drawing.Size(10, 61);
-            this.guna2VSeparator11.TabIndex = 24;
+            this.guna2TileButton22.BackColor = System.Drawing.Color.Transparent;
+            this.guna2TileButton22.BorderColor = System.Drawing.Color.Transparent;
+            this.guna2TileButton22.BorderRadius = 10;
+            this.guna2TileButton22.BorderThickness = 2;
+            this.guna2TileButton22.CheckedState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(55)))), ((int)(((byte)(89)))));
+            this.guna2TileButton22.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
+            this.guna2TileButton22.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
+            this.guna2TileButton22.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
+            this.guna2TileButton22.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
+            this.guna2TileButton22.FillColor = System.Drawing.Color.Transparent;
+            this.guna2TileButton22.Font = new System.Drawing.Font("Segoe UI Semibold", 6.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.guna2TileButton22.ForeColor = System.Drawing.Color.Black;
+            this.guna2TileButton22.HoverState.BorderColor = System.Drawing.Color.Silver;
+            this.guna2TileButton22.HoverState.FillColor = System.Drawing.Color.Silver;
+            this.guna2TileButton22.Image = global::Clinic.Properties.Resources.Save_32;
+            this.guna2TileButton22.Location = new System.Drawing.Point(225, 11);
+            this.guna2TileButton22.Margin = new System.Windows.Forms.Padding(4);
+            this.guna2TileButton22.Name = "guna2TileButton22";
+            this.guna2TileButton22.Size = new System.Drawing.Size(63, 62);
+            this.guna2TileButton22.TabIndex = 20;
+            this.guna2TileButton22.Text = "Save";
+            this.guna2TileButton22.Click += new System.EventHandler(this.btnSave_Click);
             // 
-            // checkBox4
+            // guna2TileButton23
             // 
-            this.checkBox4.AutoSize = true;
-            this.checkBox4.Font = new System.Drawing.Font("Segoe UI Semibold", 6.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox4.Location = new System.Drawing.Point(603, 18);
-            this.checkBox4.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.checkBox4.Name = "checkBox4";
-            this.checkBox4.Size = new System.Drawing.Size(64, 16);
-            this.checkBox4.TabIndex = 27;
-            this.checkBox4.Text = "Print Later";
-            this.checkBox4.UseVisualStyleBackColor = true;
+            this.guna2TileButton23.BackColor = System.Drawing.Color.Transparent;
+            this.guna2TileButton23.BorderColor = System.Drawing.Color.Transparent;
+            this.guna2TileButton23.BorderRadius = 10;
+            this.guna2TileButton23.BorderThickness = 2;
+            this.guna2TileButton23.CheckedState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(55)))), ((int)(((byte)(89)))));
+            this.guna2TileButton23.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
+            this.guna2TileButton23.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
+            this.guna2TileButton23.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
+            this.guna2TileButton23.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
+            this.guna2TileButton23.FillColor = System.Drawing.Color.Transparent;
+            this.guna2TileButton23.Font = new System.Drawing.Font("Segoe UI Semibold", 6.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.guna2TileButton23.ForeColor = System.Drawing.Color.Black;
+            this.guna2TileButton23.HoverState.BorderColor = System.Drawing.Color.Silver;
+            this.guna2TileButton23.HoverState.FillColor = System.Drawing.Color.Silver;
+            this.guna2TileButton23.Image = global::Clinic.Properties.Resources.add_fileN;
+            this.guna2TileButton23.Location = new System.Drawing.Point(162, 11);
+            this.guna2TileButton23.Margin = new System.Windows.Forms.Padding(4);
+            this.guna2TileButton23.Name = "guna2TileButton23";
+            this.guna2TileButton23.Size = new System.Drawing.Size(63, 62);
+            this.guna2TileButton23.TabIndex = 19;
+            this.guna2TileButton23.Text = "New";
+            this.guna2TileButton23.Click += new System.EventHandler(this.guna2TileButton23_Click);
             // 
-            // guna2TileButton18
+            // guna2VSeparator12
             // 
-            this.guna2TileButton18.BackColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton18.BorderColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton18.BorderRadius = 10;
-            this.guna2TileButton18.BorderThickness = 2;
-            this.guna2TileButton18.CheckedState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(55)))), ((int)(((byte)(89)))));
-            this.guna2TileButton18.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
-            this.guna2TileButton18.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
-            this.guna2TileButton18.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
-            this.guna2TileButton18.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
-            this.guna2TileButton18.FillColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton18.Font = new System.Drawing.Font("Segoe UI Semibold", 6.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.guna2TileButton18.ForeColor = System.Drawing.Color.Black;
-            this.guna2TileButton18.HoverState.BorderColor = System.Drawing.Color.Silver;
-            this.guna2TileButton18.HoverState.FillColor = System.Drawing.Color.Silver;
-            this.guna2TileButton18.Image = global::Clinic.Properties.Resources.printN;
-            this.guna2TileButton18.ImageSize = new System.Drawing.Size(30, 25);
-            this.guna2TileButton18.Location = new System.Drawing.Point(477, 11);
-            this.guna2TileButton18.Margin = new System.Windows.Forms.Padding(4);
-            this.guna2TileButton18.Name = "guna2TileButton18";
-            this.guna2TileButton18.Size = new System.Drawing.Size(54, 47);
-            this.guna2TileButton18.TabIndex = 25;
-            this.guna2TileButton18.Text = "Print";
-            this.guna2TileButton18.Click += new System.EventHandler(this.guna2TileButton18_Click);
+            this.guna2VSeparator12.Location = new System.Drawing.Point(153, 7);
+            this.guna2VSeparator12.Margin = new System.Windows.Forms.Padding(4);
+            this.guna2VSeparator12.Name = "guna2VSeparator12";
+            this.guna2VSeparator12.Size = new System.Drawing.Size(10, 61);
+            this.guna2VSeparator12.TabIndex = 17;
             // 
-            // guna2TileButton17
+            // btnPrevious
             // 
-            this.guna2TileButton17.BackColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton17.BorderColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton17.BorderRadius = 10;
-            this.guna2TileButton17.BorderThickness = 2;
-            this.guna2TileButton17.CheckedState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(55)))), ((int)(((byte)(89)))));
-            this.guna2TileButton17.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
-            this.guna2TileButton17.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
-            this.guna2TileButton17.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
-            this.guna2TileButton17.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
-            this.guna2TileButton17.FillColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton17.Font = new System.Drawing.Font("Segoe UI Semibold", 6.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.guna2TileButton17.ForeColor = System.Drawing.Color.Black;
-            this.guna2TileButton17.HoverState.BorderColor = System.Drawing.Color.Silver;
-            this.guna2TileButton17.HoverState.FillColor = System.Drawing.Color.Silver;
-            this.guna2TileButton17.Image = global::Clinic.Properties.Resources.emailN;
-            this.guna2TileButton17.ImageSize = new System.Drawing.Size(35, 30);
-            this.guna2TileButton17.Location = new System.Drawing.Point(540, 11);
-            this.guna2TileButton17.Margin = new System.Windows.Forms.Padding(4);
-            this.guna2TileButton17.Name = "guna2TileButton17";
-            this.guna2TileButton17.Size = new System.Drawing.Size(54, 47);
-            this.guna2TileButton17.TabIndex = 26;
-            this.guna2TileButton17.Text = "Email";
+            this.btnPrevious.FillColor = System.Drawing.Color.Transparent;
+            this.btnPrevious.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.btnPrevious.ForeColor = System.Drawing.Color.White;
+            this.btnPrevious.Image = global::Clinic.Properties.Resources.Arrow_Pointing_Left;
+            this.btnPrevious.Location = new System.Drawing.Point(4, 21);
+            this.btnPrevious.Margin = new System.Windows.Forms.Padding(4);
+            this.btnPrevious.Name = "btnPrevious";
+            this.btnPrevious.Size = new System.Drawing.Size(35, 36);
+            this.btnPrevious.TabIndex = 3;
+            this.btnPrevious.Click += new System.EventHandler(this.btnPrevious_Click);
             // 
-            // tabPage4
+            // btnNext
             // 
-            this.tabPage4.BackColor = System.Drawing.Color.Gainsboro;
-            this.tabPage4.Controls.Add(this.guna2TileButton27);
-            this.tabPage4.Controls.Add(this.guna2TileButton28);
-            this.tabPage4.Controls.Add(this.guna2TileButton29);
-            this.tabPage4.Controls.Add(this.guna2VSeparator13);
-            this.tabPage4.Controls.Add(this.guna2TileButton26);
-            this.tabPage4.Controls.Add(this.guna2TileButton25);
-            this.tabPage4.Controls.Add(this.guna2TileButton24);
-            this.tabPage4.Location = new System.Drawing.Point(4, 21);
-            this.tabPage4.Margin = new System.Windows.Forms.Padding(4);
-            this.tabPage4.Name = "tabPage4";
-            this.tabPage4.Padding = new System.Windows.Forms.Padding(4);
-            this.tabPage4.Size = new System.Drawing.Size(1200, 84);
-            this.tabPage4.TabIndex = 1;
-            this.tabPage4.Text = "Reports";
+            this.btnNext.BackColor = System.Drawing.Color.Transparent;
+            this.btnNext.FillColor = System.Drawing.Color.Transparent;
+            this.btnNext.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.btnNext.ForeColor = System.Drawing.Color.White;
+            this.btnNext.Image = global::Clinic.Properties.Resources.Arrow22;
+            this.btnNext.ImageSize = new System.Drawing.Size(25, 25);
+            this.btnNext.Location = new System.Drawing.Point(116, 19);
+            this.btnNext.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.btnNext.Name = "btnNext";
+            this.btnNext.Size = new System.Drawing.Size(38, 38);
+            this.btnNext.TabIndex = 2;
+            this.btnNext.Click += new System.EventHandler(this.btnNext_Click);
             // 
-            // guna2TileButton27
+            // txtJvId
             // 
-            this.guna2TileButton27.BackColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton27.BorderColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton27.BorderRadius = 10;
-            this.guna2TileButton27.BorderThickness = 2;
-            this.guna2TileButton27.CheckedState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(55)))), ((int)(((byte)(89)))));
-            this.guna2TileButton27.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
-            this.guna2TileButton27.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
-            this.guna2TileButton27.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
-            this.guna2TileButton27.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
-            this.guna2TileButton27.FillColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton27.Font = new System.Drawing.Font("Segoe UI Semibold", 6.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.guna2TileButton27.ForeColor = System.Drawing.Color.Black;
-            this.guna2TileButton27.HoverState.BorderColor = System.Drawing.Color.Silver;
-            this.guna2TileButton27.HoverState.FillColor = System.Drawing.Color.Silver;
-            this.guna2TileButton27.Image = global::Clinic.Properties.Resources._6;
-            this.guna2TileButton27.Location = new System.Drawing.Point(449, 10);
-            this.guna2TileButton27.Margin = new System.Windows.Forms.Padding(4);
-            this.guna2TileButton27.Name = "guna2TileButton27";
-            this.guna2TileButton27.Size = new System.Drawing.Size(109, 62);
-            this.guna2TileButton27.TabIndex = 26;
-            this.guna2TileButton27.Text = "Average Days To Pay Summary";
+            this.txtJvId.BackColor = System.Drawing.SystemColors.ActiveBorder;
+            this.txtJvId.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.txtJvId.Enabled = false;
+            this.txtJvId.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.txtJvId.Location = new System.Drawing.Point(38, 27);
+            this.txtJvId.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.txtJvId.Multiline = true;
+            this.txtJvId.Name = "txtJvId";
+            this.txtJvId.Size = new System.Drawing.Size(77, 24);
+            this.txtJvId.TabIndex = 16;
+            this.txtJvId.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
-            // guna2TileButton28
+            // guna2VSeparator10
             // 
-            this.guna2TileButton28.BackColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton28.BorderColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton28.BorderRadius = 10;
-            this.guna2TileButton28.BorderThickness = 2;
-            this.guna2TileButton28.CheckedState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(55)))), ((int)(((byte)(89)))));
-            this.guna2TileButton28.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
-            this.guna2TileButton28.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
-            this.guna2TileButton28.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
-            this.guna2TileButton28.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
-            this.guna2TileButton28.FillColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton28.Font = new System.Drawing.Font("Segoe UI Semibold", 6.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.guna2TileButton28.ForeColor = System.Drawing.Color.Black;
-            this.guna2TileButton28.HoverState.BorderColor = System.Drawing.Color.Silver;
-            this.guna2TileButton28.HoverState.FillColor = System.Drawing.Color.Silver;
-            this.guna2TileButton28.Image = global::Clinic.Properties.Resources._5;
-            this.guna2TileButton28.Location = new System.Drawing.Point(340, 10);
-            this.guna2TileButton28.Margin = new System.Windows.Forms.Padding(4);
-            this.guna2TileButton28.Name = "guna2TileButton28";
-            this.guna2TileButton28.Size = new System.Drawing.Size(108, 62);
-            this.guna2TileButton28.TabIndex = 25;
-            this.guna2TileButton28.Text = "Sales By Customer Details";
-            // 
-            // guna2TileButton29
-            // 
-            this.guna2TileButton29.BackColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton29.BorderColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton29.BorderRadius = 10;
-            this.guna2TileButton29.BorderThickness = 2;
-            this.guna2TileButton29.CheckedState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(55)))), ((int)(((byte)(89)))));
-            this.guna2TileButton29.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
-            this.guna2TileButton29.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
-            this.guna2TileButton29.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
-            this.guna2TileButton29.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
-            this.guna2TileButton29.FillColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton29.Font = new System.Drawing.Font("Segoe UI Semibold", 6.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.guna2TileButton29.ForeColor = System.Drawing.Color.Black;
-            this.guna2TileButton29.HoverState.BorderColor = System.Drawing.Color.Silver;
-            this.guna2TileButton29.HoverState.FillColor = System.Drawing.Color.Silver;
-            this.guna2TileButton29.Image = global::Clinic.Properties.Resources._4;
-            this.guna2TileButton29.Location = new System.Drawing.Point(259, 10);
-            this.guna2TileButton29.Margin = new System.Windows.Forms.Padding(4);
-            this.guna2TileButton29.Name = "guna2TileButton29";
-            this.guna2TileButton29.Size = new System.Drawing.Size(81, 62);
-            this.guna2TileButton29.TabIndex = 24;
-            this.guna2TileButton29.Text = "View Open Invoice";
-            // 
-            // guna2VSeparator13
-            // 
-            this.guna2VSeparator13.Location = new System.Drawing.Point(249, 10);
-            this.guna2VSeparator13.Margin = new System.Windows.Forms.Padding(4);
-            this.guna2VSeparator13.Name = "guna2VSeparator13";
-            this.guna2VSeparator13.Size = new System.Drawing.Size(10, 61);
-            this.guna2VSeparator13.TabIndex = 23;
-            // 
-            // guna2TileButton26
-            // 
-            this.guna2TileButton26.BackColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton26.BorderColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton26.BorderRadius = 10;
-            this.guna2TileButton26.BorderThickness = 2;
-            this.guna2TileButton26.CheckedState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(55)))), ((int)(((byte)(89)))));
-            this.guna2TileButton26.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
-            this.guna2TileButton26.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
-            this.guna2TileButton26.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
-            this.guna2TileButton26.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
-            this.guna2TileButton26.FillColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton26.Font = new System.Drawing.Font("Segoe UI Semibold", 6.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.guna2TileButton26.ForeColor = System.Drawing.Color.Black;
-            this.guna2TileButton26.HoverState.BorderColor = System.Drawing.Color.Silver;
-            this.guna2TileButton26.HoverState.FillColor = System.Drawing.Color.Silver;
-            this.guna2TileButton26.Image = global::Clinic.Properties.Resources._3;
-            this.guna2TileButton26.Location = new System.Drawing.Point(158, 10);
-            this.guna2TileButton26.Margin = new System.Windows.Forms.Padding(4);
-            this.guna2TileButton26.Name = "guna2TileButton26";
-            this.guna2TileButton26.Size = new System.Drawing.Size(92, 62);
-            this.guna2TileButton26.TabIndex = 22;
-            this.guna2TileButton26.Text = "Transaction Journal";
-            // 
-            // guna2TileButton25
-            // 
-            this.guna2TileButton25.BackColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton25.BorderColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton25.BorderRadius = 10;
-            this.guna2TileButton25.BorderThickness = 2;
-            this.guna2TileButton25.CheckedState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(55)))), ((int)(((byte)(89)))));
-            this.guna2TileButton25.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
-            this.guna2TileButton25.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
-            this.guna2TileButton25.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
-            this.guna2TileButton25.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
-            this.guna2TileButton25.FillColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton25.Font = new System.Drawing.Font("Segoe UI Semibold", 6.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.guna2TileButton25.ForeColor = System.Drawing.Color.Black;
-            this.guna2TileButton25.HoverState.BorderColor = System.Drawing.Color.Silver;
-            this.guna2TileButton25.HoverState.FillColor = System.Drawing.Color.Silver;
-            this.guna2TileButton25.Image = global::Clinic.Properties.Resources._2;
-            this.guna2TileButton25.Location = new System.Drawing.Point(74, 10);
-            this.guna2TileButton25.Margin = new System.Windows.Forms.Padding(4);
-            this.guna2TileButton25.Name = "guna2TileButton25";
-            this.guna2TileButton25.Size = new System.Drawing.Size(84, 62);
-            this.guna2TileButton25.TabIndex = 21;
-            this.guna2TileButton25.Text = "Transaction History";
-            // 
-            // guna2TileButton24
-            // 
-            this.guna2TileButton24.BackColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton24.BorderColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton24.BorderRadius = 10;
-            this.guna2TileButton24.BorderThickness = 2;
-            this.guna2TileButton24.CheckedState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(55)))), ((int)(((byte)(89)))));
-            this.guna2TileButton24.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
-            this.guna2TileButton24.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
-            this.guna2TileButton24.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
-            this.guna2TileButton24.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
-            this.guna2TileButton24.FillColor = System.Drawing.Color.Transparent;
-            this.guna2TileButton24.Font = new System.Drawing.Font("Segoe UI Semibold", 6.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.guna2TileButton24.ForeColor = System.Drawing.Color.Black;
-            this.guna2TileButton24.HoverState.BorderColor = System.Drawing.Color.Silver;
-            this.guna2TileButton24.HoverState.FillColor = System.Drawing.Color.Silver;
-            this.guna2TileButton24.Image = global::Clinic.Properties.Resources._1;
-            this.guna2TileButton24.Location = new System.Drawing.Point(4, 4);
-            this.guna2TileButton24.Margin = new System.Windows.Forms.Padding(4);
-            this.guna2TileButton24.Name = "guna2TileButton24";
-            this.guna2TileButton24.Size = new System.Drawing.Size(70, 67);
-            this.guna2TileButton24.TabIndex = 20;
-            this.guna2TileButton24.Text = "Quick Report";
-            // 
-            // dataGridViewImageColumn1
-            // 
-            this.dataGridViewImageColumn1.HeaderText = "Delete";
-            this.dataGridViewImageColumn1.Image = global::Clinic.Properties.Resources.Trash;
-            this.dataGridViewImageColumn1.ImageLayout = System.Windows.Forms.DataGridViewImageCellLayout.Zoom;
-            this.dataGridViewImageColumn1.MinimumWidth = 6;
-            this.dataGridViewImageColumn1.Name = "dataGridViewImageColumn1";
-            this.dataGridViewImageColumn1.Width = 125;
-            // 
-            // guna2DragControl1
-            // 
-            this.guna2DragControl1.DockForm = true;
-            this.guna2DragControl1.DockIndicatorTransparencyValue = 0.1D;
-            this.guna2DragControl1.DragEndTransparencyValue = 0.1D;
-            this.guna2DragControl1.TargetControl = this.LbHeader;
-            this.guna2DragControl1.TransparentWhileDrag = false;
-            // 
-            // guna2VSeparator9
-            // 
-            this.guna2VSeparator9.Location = new System.Drawing.Point(755, 14);
-            this.guna2VSeparator9.Name = "guna2VSeparator9";
-            this.guna2VSeparator9.Size = new System.Drawing.Size(8, 46);
-            this.guna2VSeparator9.TabIndex = 34;
+            this.guna2VSeparator10.Location = new System.Drawing.Point(693, 14);
+            this.guna2VSeparator10.Name = "guna2VSeparator10";
+            this.guna2VSeparator10.Size = new System.Drawing.Size(8, 46);
+            this.guna2VSeparator10.TabIndex = 32;
             // 
             // BtnAttach
             // 
@@ -1151,23 +961,33 @@
             this.BtnAttach.Text = "Attach File";
             this.BtnAttach.Click += new System.EventHandler(this.BtnAttach_Click);
             // 
-            // guna2VSeparator10
+            // guna2VSeparator9
             // 
-            this.guna2VSeparator10.Location = new System.Drawing.Point(693, 14);
-            this.guna2VSeparator10.Name = "guna2VSeparator10";
-            this.guna2VSeparator10.Size = new System.Drawing.Size(8, 46);
-            this.guna2VSeparator10.TabIndex = 32;
+            this.guna2VSeparator9.Location = new System.Drawing.Point(755, 14);
+            this.guna2VSeparator9.Name = "guna2VSeparator9";
+            this.guna2VSeparator9.Size = new System.Drawing.Size(8, 46);
+            this.guna2VSeparator9.TabIndex = 34;
             // 
-            // openFileDialog1
+            // tabControl2
             // 
-            this.openFileDialog1.FileName = "openFileDialog1";
+            this.tabControl2.Controls.Add(this.tabPage3);
+            this.tabControl2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabControl2.HotTrack = true;
+            this.tabControl2.ImeMode = System.Windows.Forms.ImeMode.Katakana;
+            this.tabControl2.Location = new System.Drawing.Point(0, 0);
+            this.tabControl2.Margin = new System.Windows.Forms.Padding(4);
+            this.tabControl2.Name = "tabControl2";
+            this.tabControl2.Padding = new System.Drawing.Point(20, 3);
+            this.tabControl2.SelectedIndex = 0;
+            this.tabControl2.Size = new System.Drawing.Size(1208, 109);
+            this.tabControl2.TabIndex = 39;
             // 
             // frmViewJournalVoucher
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Gainsboro;
-            this.ClientSize = new System.Drawing.Size(1214, 751);
+            this.ClientSize = new System.Drawing.Size(1214, 749);
             this.Controls.Add(this.guna2GroupBox1);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.panel5);
@@ -1189,10 +1009,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.dgvJV)).EndInit();
             this.panel2.ResumeLayout(false);
             this.panel9.ResumeLayout(false);
-            this.tabControl2.ResumeLayout(false);
             this.tabPage3.ResumeLayout(false);
             this.tabPage3.PerformLayout();
-            this.tabPage4.ResumeLayout(false);
+            this.tabControl2.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -1217,30 +1036,7 @@
         private System.Windows.Forms.Label LbHeader;
         private Guna.UI2.WinForms.Guna2ControlBox guna2ControlBox1;
         private System.Windows.Forms.Panel panel9;
-        private System.Windows.Forms.TabControl tabControl2;
-        private System.Windows.Forms.TabPage tabPage3;
-        private System.Windows.Forms.TextBox txtJvId;
-        private Guna.UI2.WinForms.Guna2Button btnNext;
-        private Guna.UI2.WinForms.Guna2Button btnPrevious;
-        private Guna.UI2.WinForms.Guna2VSeparator guna2VSeparator12;
-        private Guna.UI2.WinForms.Guna2TileButton guna2TileButton23;
-        private Guna.UI2.WinForms.Guna2TileButton guna2TileButton22;
-        private Guna.UI2.WinForms.Guna2TileButton guna2TileButton21;
-        private Guna.UI2.WinForms.Guna2TileButton guna2TileButton20;
-        private System.Windows.Forms.CheckBox checkBox3;
-        private Guna.UI2.WinForms.Guna2VSeparator guna2VSeparator11;
-        private System.Windows.Forms.CheckBox checkBox4;
-        private Guna.UI2.WinForms.Guna2TileButton guna2TileButton18;
-        private System.Windows.Forms.TabPage tabPage4;
-        private Guna.UI2.WinForms.Guna2TileButton guna2TileButton27;
-        private Guna.UI2.WinForms.Guna2TileButton guna2TileButton28;
-        private Guna.UI2.WinForms.Guna2TileButton guna2TileButton29;
-        private Guna.UI2.WinForms.Guna2VSeparator guna2VSeparator13;
-        private Guna.UI2.WinForms.Guna2TileButton guna2TileButton26;
-        private Guna.UI2.WinForms.Guna2TileButton guna2TileButton25;
-        private Guna.UI2.WinForms.Guna2TileButton guna2TileButton24;
         private System.Windows.Forms.DataGridViewImageColumn dataGridViewImageColumn1;
-        private Guna.UI2.WinForms.Guna2TileButton guna2TileButton17;
         private Guna.UI2.WinForms.Guna2Button guna2Button2;
         private Guna.UI2.WinForms.Guna2Button guna2Button1;
         private System.Windows.Forms.Label label1;
@@ -1257,9 +1053,24 @@
         private Guna.UI2.WinForms.Guna2Button guna2Button3;
         private Guna.UI2.WinForms.Guna2Button guna2ImageButton1;
         private System.Windows.Forms.ListBox lstAccountSuggestions;
+        private System.Windows.Forms.OpenFileDialog openFileDialog1;
+        private System.Windows.Forms.TabControl tabControl2;
+        private System.Windows.Forms.TabPage tabPage3;
         private Guna.UI2.WinForms.Guna2VSeparator guna2VSeparator9;
         private Guna.UI2.WinForms.Guna2TileButton BtnAttach;
         private Guna.UI2.WinForms.Guna2VSeparator guna2VSeparator10;
-        private System.Windows.Forms.OpenFileDialog openFileDialog1;
+        private System.Windows.Forms.TextBox txtJvId;
+        private Guna.UI2.WinForms.Guna2Button btnNext;
+        private Guna.UI2.WinForms.Guna2Button btnPrevious;
+        private Guna.UI2.WinForms.Guna2VSeparator guna2VSeparator12;
+        private Guna.UI2.WinForms.Guna2TileButton guna2TileButton23;
+        private Guna.UI2.WinForms.Guna2TileButton guna2TileButton22;
+        private Guna.UI2.WinForms.Guna2TileButton guna2TileButton21;
+        private Guna.UI2.WinForms.Guna2TileButton guna2TileButton20;
+        private System.Windows.Forms.CheckBox checkBox3;
+        private Guna.UI2.WinForms.Guna2VSeparator guna2VSeparator11;
+        private System.Windows.Forms.CheckBox checkBox4;
+        private Guna.UI2.WinForms.Guna2TileButton guna2TileButton18;
+        private Guna.UI2.WinForms.Guna2TileButton guna2TileButton17;
     }
 }
