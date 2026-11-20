@@ -16,12 +16,157 @@ namespace YamyProject
     public partial class frmChartOfAccountList : Form
     {
         DataTable datatable;
+
+        // Read the language selected in the application settings first.
+        // This avoids depending only on CurrentCulture, which may remain English.
+        private bool IsArabicLanguage()
+        {
+            string savedLanguage = Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en";
+
+            return savedLanguage.StartsWith("ar", StringComparison.OrdinalIgnoreCase)
+                || CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.Equals("ar", StringComparison.OrdinalIgnoreCase)
+                || CultureInfo.CurrentCulture.TwoLetterISOLanguageName.Equals("ar", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private string UiText(string englishText)
+        {
+            if (!IsArabicLanguage() || string.IsNullOrWhiteSpace(englishText))
+                return englishText;
+
+            var translations = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "Chart Of Account Level", "مستويات دليل الحسابات" },
+                { "Date", "التاريخ" },
+                { "Account", "الحساب" },
+                { "Starting Code", "رمز البداية" },
+                { "Amount", "المبلغ" },
+                { "Customized File", "ملف مخصص" },
+                { "Export", "تصدير" },
+                { "Import", "استيراد" },
+                { "Save", "حفظ" },
+                { "Close", "إغلاق" },
+                { "Successfully saved! ChartOfAccount List", "تم حفظ قائمة دليل الحسابات بنجاح" },
+                { "Success", "نجاح" },
+                { "Error", "خطأ" },
+                { "Please Enter Data First", "يرجى إدخال البيانات أولاً" },
+                { "Please Enter Level4 Name", "يرجى إدخال اسم المستوى الرابع" },
+                { "Please Check Duplicate Code and Name", "يرجى التحقق من تكرار الرموز والأسماء" },
+                { "Please load an Excel file first.", "يرجى تحميل ملف إكسل أولاً" },
+                { "Invalid start or end column.", "عمود البداية أو النهاية غير صالح" },
+                { "Export successful!", "تم التصدير بنجاح" },
+                { "Select Excel File", "اختر ملف إكسل" },
+                { "The selected file does not exist.", "الملف المحدد غير موجود" },
+                { "Excel Import Form", "استيراد ملف إكسل" },
+                { "Load Excel", "تحميل ملف إكسل" },
+                { "Set Data", "تعيين البيانات" },
+                { "Start Cell:", "خلية البداية:" },
+                { "End Cell:", "خلية النهاية:" },
+                { "L1 Code:", "رمز المستوى الأول:" },
+                { "L1 Name:", "اسم المستوى الأول:" },
+                { "L2 Code:", "رمز المستوى الثاني:" },
+                { "L2 Name:", "اسم المستوى الثاني:" },
+                { "L3 Code:", "رمز المستوى الثالث:" },
+                { "L3 Name:", "اسم المستوى الثالث:" },
+                { "L4 Code:", "رمز المستوى الرابع:" },
+                { "L4 Name:", "اسم المستوى الرابع:" },
+                { "Debit:", "مدين:" },
+                { "Credit:", "دائن:" }
+            };
+
+            return translations.TryGetValue(englishText, out string arabicText)
+                ? arabicText : englishText;
+        }
+
+        private void ApplyArabicLocalization()
+        {
+            if (!IsArabicLanguage())
+                return;
+
+            this.Text = UiText("Chart Of Account Level");
+            this.RightToLeft = RightToLeft.Yes;
+            this.RightToLeftLayout = true;
+
+            headerUC1.FormText = this.Text;
+            headerUC1.HeaderText = this.Text;
+
+            label11.Text = UiText("Date");
+            label7.Text = UiText("Account");
+            label2.Text = UiText("Starting Code");
+            label6.Text = UiText("Amount");
+
+            chkCustomizedFile.Text = UiText("Customized File");
+            btnExport.Text = UiText("Export");
+            btnImport.Text = UiText("Import");
+            btnSave.Text = UiText("Save");
+            btnClose.Text = UiText("Close");
+
+            // Keep the database/DataTable column names in English. Only HeaderText changes.
+            ApplyArabicGridHeaders();
+        }
+
+        private void ApplyArabicGridHeaders()
+        {
+            if (!IsArabicLanguage() || dgvCustomer.Columns.Count == 0)
+                return;
+
+            var translations = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "level1code", "رمز المستوى الأول" },
+                { "level1name", "اسم المستوى الأول" },
+                { "level2code", "رمز المستوى الثاني" },
+                { "level2name", "اسم المستوى الثاني" },
+                { "level3code", "رمز المستوى الثالث" },
+                { "level3name", "اسم المستوى الثالث" },
+                { "level4code", "رمز المستوى الرابع" },
+                { "level4name", "اسم المستوى الرابع" },
+                { "level4debit", "مدين المستوى الرابع" },
+                { "level4credit", "دائن المستوى الرابع" },
+                { "sn#", "الرقم التسلسلي" },
+                { "pcdate", "التاريخ" },
+                { "date", "التاريخ" },
+                { "accountname", "اسم الحساب" },
+                { "ac.name", "اسم الحساب" },
+                { "category", "الفئة" },
+                { "costcentername", "اسم مركز التكلفة" },
+                { "c.cname", "اسم مركز التكلفة" },
+                { "amount", "المبلغ" },
+                { "vatcheckbox", "ضريبة القيمة المضافة 5%" },
+                { "vat5%", "ضريبة القيمة المضافة 5%" },
+                { "vat", "ضريبة القيمة المضافة" },
+                { "total", "الإجمالي" },
+                { "note", "ملاحظات" },
+                { "notes", "ملاحظات" }
+            };
+
+            foreach (DataGridViewColumn column in dgvCustomer.Columns)
+            {
+                string[] possibleNames = { column.DataPropertyName, column.Name, column.HeaderText };
+                foreach (string possibleName in possibleNames)
+                {
+                    if (string.IsNullOrWhiteSpace(possibleName))
+                        continue;
+
+                    string key = possibleName.Replace(" ", "")
+                                             .Replace("_", "")
+                                             .Trim();
+
+                    if (translations.TryGetValue(key, out string arabicHeader))
+                    {
+                        column.HeaderText = arabicHeader;
+                        break;
+                    }
+                }
+            }
+
+            dgvCustomer.RightToLeft = RightToLeft.Yes;
+            dgvCustomer.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+        }
+
         public frmChartOfAccountList(string _type)
         {
             InitializeComponent();
             LocalizationManager.LocalizeForm(this);
-            this.Text = "Chart Of Account Level";
-            headerUC1.FormText = this.Text;
+            ApplyArabicLocalization();
         }
         private void btnClose_Click(object sender, EventArgs e)
         {
@@ -31,6 +176,7 @@ namespace YamyProject
         {
             BindData();
             BindCombos.PopulateAllLevel4Account(cmbAccount);
+            ApplyArabicLocalization();
         }
         private void BindData()
         {
@@ -50,6 +196,7 @@ namespace YamyProject
                 dgvCustomer.Columns["Level4 Debit"].DefaultCellStyle.Format = dgvCustomer.Columns["Level4 Credit"].DefaultCellStyle.Format = "N2";
 
                 LocalizationManager.LocalizeDataGridViewHeaders(dgvCustomer);
+                ApplyArabicGridHeaders();
 
                 openingBalanceEquity = BindCombos.SelectDefaultLevelAccount("Opening Balance Equity").ToString();
                 if (int.Parse(openingBalanceEquity) == 0)
@@ -191,13 +338,13 @@ namespace YamyProject
                             object objCode3 = ClinicDatabase.ExecuteScalar("select max(code) as code from tbl_coa_level_4 where code like '" + l3Code + "%'");
                             code = objCode3 != null ? (int.Parse(objCode3.ToString()) + 1).ToString() : string.IsNullOrEmpty(code) ? l3Code + "01" : code;
                         }
-                        if (dgvCustomer.Rows[i].Cells["Level4 Debit"].Value != null && dgvCustomer.Rows[i].Cells["Level4 Debit"].Value.ToString() != "") 
+                        if (dgvCustomer.Rows[i].Cells["Level4 Debit"].Value != null && dgvCustomer.Rows[i].Cells["Level4 Debit"].Value.ToString() != "")
                             debit = Convert.ToDecimal(dgvCustomer.Rows[i].Cells["Level4 Debit"].Value.ToString()).ToString("0.00");
-                        
-                        if(dgvCustomer.Rows[i].Cells["Level4 Credit"].Value != null && dgvCustomer.Rows[i].Cells["Level4 Credit"].Value.ToString() != "")
+
+                        if (dgvCustomer.Rows[i].Cells["Level4 Credit"].Value != null && dgvCustomer.Rows[i].Cells["Level4 Credit"].Value.ToString() != "")
                             credit = Convert.ToDecimal(dgvCustomer.Rows[i].Cells["Level4 Credit"].Value.ToString()).ToString("0.00");
 
-                        using (var reader = ClinicDatabase.ExecuteReader("SELECT id,main_id FROM tbl_coa_level_4 WHERE name = @name or code=@code", 
+                        using (var reader = ClinicDatabase.ExecuteReader("SELECT id,main_id FROM tbl_coa_level_4 WHERE name = @name or code=@code",
                             ClinicDatabase.CreateParameterNew("name", name),
                             ClinicDatabase.CreateParameterNew("code", code)))
                         {
@@ -245,7 +392,7 @@ namespace YamyProject
                     }
                 }
 
-                MessageBox.Show("Successfully saved! ChartOfAccount List", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(UiText("Successfully saved! ChartOfAccount List"), UiText("Success"), MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
@@ -263,19 +410,20 @@ namespace YamyProject
             input.StartsWith("INCOME") ? AccountCategory.INCOME :
             input.StartsWith("COST") ? AccountCategory.COST :
             input.StartsWith("COST") ? AccountCategory.EXPENSE :
-            "UNKNOWN" ;
+            "UNKNOWN";
 
             return categoryCode;
         }
 
         private bool chkRequiredDate()
         {
-            if(dgvCustomer.Rows.Count == 1)
+            if (dgvCustomer.Rows.Count == 1)
             {
-                MessageBox.Show("Please Enter Data First");
+                MessageBox.Show(UiText("Please Enter Data First"));
                 return false;
             }
-            else {
+            else
+            {
                 if (chkCustomizedFile.Created)
                 {
                     for (int i = 0; i < dgvCustomer.Rows.Count; i++)
@@ -284,7 +432,7 @@ namespace YamyProject
 
                         if (dgvCustomer.Rows[i].Cells["Level4 Name"].Value == null || dgvCustomer.Rows[i].Cells["Level4 Name"].Value.ToString() == "")
                         {
-                            MessageBox.Show("Please Enter Level4 Name");
+                            MessageBox.Show(UiText("Please Enter Level4 Name"));
                             return false;
                         }
                     }
@@ -294,7 +442,7 @@ namespace YamyProject
                     bool isValid = CheckForDuplicates(dgvCustomer);
                     if (!isValid)
                     {
-                        MessageBox.Show("Please Check Duplicate Code and Name");
+                        MessageBox.Show(UiText("Please Check Duplicate Code and Name"));
                         return false;
                     }
                 }
@@ -303,6 +451,18 @@ namespace YamyProject
 
             return true;
         }
+        private string ArabicLevelName(string level)
+        {
+            switch (level)
+            {
+                case "Level1": return "المستوى الأول";
+                case "Level2": return "المستوى الثاني";
+                case "Level3": return "المستوى الثالث";
+                case "Level4": return "المستوى الرابع";
+                default: return level;
+            }
+        }
+
         private bool CheckForDuplicates(DataGridView dgvCustomer)
         {
             var levelNames = new[] { "Level1", "Level2", "Level3", "Level4" };
@@ -331,28 +491,28 @@ namespace YamyProject
                     // === Check Empty Name ===
                     if (string.IsNullOrWhiteSpace(name))
                     {
-                        MessageBox.Show($"Empty {level} Name found in the data.", $"{level} Name Missing", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        MessageBox.Show(IsArabicLanguage() ? $"اسم {ArabicLevelName(level)} فارغ في البيانات." : $"Empty {level} Name found in the data.", IsArabicLanguage() ? "اسم المستوى مفقود" : $"{level} Name Missing", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return false;
                     }
 
                     // === Check Empty Code ===
                     if (string.IsNullOrWhiteSpace(code))
                     {
-                        MessageBox.Show($"Empty {level} Code found for Name: {name}", $"{level} Code Missing", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        MessageBox.Show(IsArabicLanguage() ? $"رمز {ArabicLevelName(level)} فارغ للاسم: {name}" : $"Empty {level} Code found for Name: {name}", IsArabicLanguage() ? "رمز المستوى مفقود" : $"{level} Code Missing", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return false;
                     }
 
                     // === Check Duplicate Name ===
                     if (!nameSets[level].Add(name))
                     {
-                        MessageBox.Show($"Duplicate {level} Name found: {name}", $"{level} Name Duplicate", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        MessageBox.Show(IsArabicLanguage() ? $"اسم {ArabicLevelName(level)} مكرر: {name}" : $"Duplicate {level} Name found: {name}", IsArabicLanguage() ? "اسم المستوى مكرر" : $"{level} Name Duplicate", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return false;
                     }
 
                     // === Check Duplicate Code ===
                     if (!codeSets[level].Add(code))
                     {
-                        MessageBox.Show($"Duplicate {level} Code found: {code}", $"{level} Code Duplicate", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        MessageBox.Show(IsArabicLanguage() ? $"رمز {ArabicLevelName(level)} مكرر: {code}" : $"Duplicate {level} Code found: {code}", IsArabicLanguage() ? "رمز المستوى مكرر" : $"{level} Code Duplicate", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return false;
                     }
                 }
@@ -370,7 +530,7 @@ namespace YamyProject
             else
                 return 0;
         }
-        
+
         private void btnExport_Click(object sender, EventArgs e)
         {
             try
@@ -380,14 +540,14 @@ namespace YamyProject
                 {
                     ExcelWorksheet worksheet = package.Workbook.Worksheets.Add("ChartOfAccount");
                     worksheet.Cells["A1"].LoadFromDataTable(datatable, true);
-                    
+
                     SaveFileDialog saveFileDialog = new SaveFileDialog();
                     saveFileDialog.Filter = "Excel Files (*.xlsx)|*.xlsx";
                     if (saveFileDialog.ShowDialog() == DialogResult.OK)
                     {
                         FileInfo fi = new FileInfo(saveFileDialog.FileName);
                         package.SaveAs(fi);
-                        MessageBox.Show("Export successful!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show(UiText("Export successful!"), UiText("Success"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                 }
             }
@@ -407,6 +567,7 @@ namespace YamyProject
                     DataTable importedData = importForm.ImportedData;
                     dgvCustomer.DataSource = importedData;
                     LocalizationManager.LocalizeDataGridViewHeaders(dgvCustomer);
+                    ApplyArabicGridHeaders();
                 }
             }
             else
@@ -414,7 +575,7 @@ namespace YamyProject
                 using (OpenFileDialog openFileDialog = new OpenFileDialog())
                 {
                     openFileDialog.Filter = "Excel Files (*.xlsx)|*.xlsx";
-                    openFileDialog.Title = "Select Excel File";
+                    openFileDialog.Title = UiText("Select Excel File");
 
                     if (openFileDialog.ShowDialog() == DialogResult.OK)
                     {
@@ -428,7 +589,7 @@ namespace YamyProject
         {
             if (!File.Exists(filePath))
             {
-                MessageBox.Show("The selected file does not exist.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(UiText("The selected file does not exist."), UiText("Error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -485,6 +646,7 @@ namespace YamyProject
                         }
 
                         LocalizationManager.LocalizeDataGridViewHeaders(dgvCustomer);
+                        ApplyArabicGridHeaders();
                     }
                 }
             }
@@ -695,13 +857,78 @@ public class frmImportAccountData : Form
         txtL4Name.KeyPress += TxtLettersOnly_KeyPress;
         txtDebit.KeyPress += TxtLettersOnly_KeyPress;
         txtCredit.KeyPress += TxtLettersOnly_KeyPress;
+
+        ApplyArabicLocalization();
+    }
+
+    private bool IsArabicLanguage()
+    {
+        string savedLanguage = Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en";
+        return savedLanguage.StartsWith("ar", StringComparison.OrdinalIgnoreCase)
+            || CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.Equals("ar", StringComparison.OrdinalIgnoreCase)
+            || CultureInfo.CurrentCulture.TwoLetterISOLanguageName.Equals("ar", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private string UiText(string englishText)
+    {
+        if (!IsArabicLanguage()) return englishText;
+
+        switch (englishText)
+        {
+            case "Please load an Excel file first.": return "يرجى تحميل ملف إكسل أولاً";
+            case "Invalid start or end column.": return "عمود البداية أو النهاية غير صالح";
+            default: return englishText;
+        }
+    }
+
+    private void ApplyArabicLocalization()
+    {
+        if (!IsArabicLanguage()) return;
+
+        this.Text = "استيراد ملف إكسل";
+        this.RightToLeft = RightToLeft.Yes;
+        this.RightToLeftLayout = true;
+
+        btnLoadExcel.Text = "تحميل ملف إكسل";
+        btnImport.Text = "تعيين البيانات";
+
+        var translations = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "Start Cell:", "خلية البداية:" },
+            { "End Cell:", "خلية النهاية:" },
+            { "L1 Code:", "رمز المستوى الأول:" },
+            { "L1 Name:", "اسم المستوى الأول:" },
+            { "L2 Code:", "رمز المستوى الثاني:" },
+            { "L2 Name:", "اسم المستوى الثاني:" },
+            { "L3 Code:", "رمز المستوى الثالث:" },
+            { "L3 Name:", "اسم المستوى الثالث:" },
+            { "L4 Code:", "رمز المستوى الرابع:" },
+            { "L4 Name:", "اسم المستوى الرابع:" },
+            { "Debit:", "مدين:" },
+            { "Credit:", "دائن:" }
+        };
+
+        ApplyArabicToControls(this, translations);
+        dataGridView.RightToLeft = RightToLeft.Yes;
+    }
+
+    private void ApplyArabicToControls(Control parent, Dictionary<string, string> translations)
+    {
+        foreach (Control control in parent.Controls)
+        {
+            if (!string.IsNullOrWhiteSpace(control.Text) && translations.TryGetValue(control.Text, out string arabicText))
+                control.Text = arabicText;
+
+            if (control.HasChildren)
+                ApplyArabicToControls(control, translations);
+        }
     }
 
     private void BtnImport_Click(object sender, EventArgs e)
     {
         if (string.IsNullOrEmpty(excelPath))
         {
-            MessageBox.Show("Please load an Excel file first.");
+            MessageBox.Show(UiText("Please load an Excel file first."));
             return;
         }
         else
@@ -716,7 +943,7 @@ public class frmImportAccountData : Form
                 // Check for invalid inputs
                 if (startCol == -1 || endCol == -1 || endCol < startCol)
                 {
-                    MessageBox.Show("Invalid start or end column.");
+                    MessageBox.Show(UiText("Invalid start or end column."));
                     return;
                 }
 
@@ -750,7 +977,7 @@ public class frmImportAccountData : Form
                     for (int row = startCol; row <= endCol; row++)
                     {
                         if (IsRowEmpty(ws, row, endCol)) continue;
-                        
+
                         DataRow dr = dtFiltered.NewRow();
 
                         //dr["Code"] = (colCode != -1) ? ws.Cells[row, colCode].Text : "";
@@ -778,7 +1005,7 @@ public class frmImportAccountData : Form
             }
             else
             {
-                MessageBox.Show("Please load an Excel file first.");
+                MessageBox.Show(UiText("Please load an Excel file first."));
                 return;
             }
         }
@@ -834,7 +1061,7 @@ public class frmImportAccountData : Form
     {
         if (string.IsNullOrEmpty(excelPath))
         {
-            MessageBox.Show("Please load an Excel file first.");
+            MessageBox.Show(UiText("Please load an Excel file first."));
             return;
         }
 
@@ -883,7 +1110,7 @@ public class frmImportAccountData : Form
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Error reading Excel: {ex.Message}");
+            MessageBox.Show(IsArabicLanguage() ? $"خطأ أثناء قراءة ملف إكسل: {ex.Message}" : $"Error reading Excel: {ex.Message}");
         }
     }
     private string GetExcelColumnLetter(int col)
