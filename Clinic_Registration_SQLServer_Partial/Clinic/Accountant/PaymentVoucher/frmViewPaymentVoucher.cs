@@ -144,32 +144,37 @@ namespace YamyProject
         }
         private void frmViewPaymentVoucher_Load(object sender, EventArgs e)
         {
-            dtOpen.Value = dtpTransDate.Value = dt_check_date.Value = DateTime.Now.Date;
-       
-            //dgvInv.Columns.AddRange(new DataGridViewColumn[] { no, humId, invId, invDate, InvNo, Total, chkPay, Pay, Description, voucherType });
+            dtOpen.Value = dtpTransDate.Value =
+                dt_check_date.Value = DateTime.Now.Date;
+
             txtPVCode.Text = GenerateNextPaymentCode();
             txtId.Text = GenerateNextPaymentId();
+
             this.Invoke((Action)(() =>
             {
                 BindCombos.PopulateListEmployeesNew(lstOfEmp, false);
             }));
 
-            //BindCombos.PopulateListEmployees(lstOfEmp, true);
+            // Keep original English ComboBox values
             BindCombos.PopulateCostCenter(cmbDebitCostCenter, true);
             BindCombos.PopulateCostCenter(cmbCreditCostCenter, true);
+
             BindCombos.PopulateAllLevel4Account(cmbDebitAccountName, true);
             BindCombos.PopulateAllLevel4Account(cmbCreditAccountName, true);
+
             BindCombos.PopulateRegisterBanks(cmbBankName, true);
-            // Arabic ComboBox display
-            LocalizePaymentVoucherComboBoxes();
 
             cmbMethod.SelectedIndex =
                 cmbPaymentType.SelectedIndex = 0;
 
             if (id > 0)
             {
-                btnSave.Enabled = BtnSaveNew.Enabled = UserPermissions.canEdit("Vouchers");
-                BtnDelete.Enabled = UserPermissions.canDelete("Vouchers"); //"Advance Payment Voucher";
+                btnSave.Enabled = BtnSaveNew.Enabled =
+                    UserPermissions.canEdit("Vouchers");
+
+                BtnDelete.Enabled =
+                    UserPermissions.canDelete("Vouchers");
+
                 BindVoucher();
             }
             else
@@ -181,9 +186,10 @@ namespace YamyProject
                 }
             }
 
+            // Translate grid headers
             LocalizationManager.LocalizeDataGridViewHeaders(dgvInv);
 
-            // Apply complete Arabic translation
+            // Translate labels, buttons and headings only
             ApplyPaymentVoucherArabic();
         }
         private void BindVoucher()
@@ -2617,27 +2623,27 @@ namespace YamyProject
         }
         static string filePath = "";
 
-        private void LocalizePaymentVoucherComboBoxes()
-        {
-            LocalizeComboBox(cmbPaymentType);
-            LocalizeComboBox(cmbMethod);
+        //private void LocalizePaymentVoucherComboBoxes()
+        //{
+        //    LocalizeComboBox(cmbPaymentType);
+        //    LocalizeComboBox(cmbMethod);
 
-            LocalizeComboBox(cmbDebitAccountName);
-            LocalizeComboBox(cmbCreditAccountName);
+        //    LocalizeComboBox(cmbDebitAccountName);
+        //    LocalizeComboBox(cmbCreditAccountName);
 
-            LocalizeComboBox(cmbDebitCostCenter);
-            LocalizeComboBox(cmbCreditCostCenter);
+        //    LocalizeComboBox(cmbDebitCostCenter);
+        //    LocalizeComboBox(cmbCreditCostCenter);
 
-            LocalizeComboBox(cmbBankAccountName);
-        }
+        //    LocalizeComboBox(cmbBankAccountName);
+        //}
 
-        private void LocalizeComboBox(ComboBox combo)
-        {
-            combo.FormattingEnabled = true;
+        //private void LocalizeComboBox(ComboBox combo)
+        //{
+        //    combo.FormattingEnabled = true;
 
-            combo.Format -= PaymentCombo_Format;
-            combo.Format += PaymentCombo_Format;
-        }
+        //    combo.Format -= PaymentCombo_Format;
+        //    combo.Format += PaymentCombo_Format;
+        //}
 
         private void PaymentCombo_Format(
             object sender, ListControlConvertEventArgs e)
