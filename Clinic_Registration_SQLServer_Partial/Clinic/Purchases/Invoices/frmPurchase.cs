@@ -29,39 +29,137 @@ namespace YamyProject
         bool EnableBarcode = false;
         string typed = "";
 
-        public frmPurchase(int _id = 0, string _PO = "", int _vendorId = 0, bool _isSubcontractor = false)
+        public frmPurchase(
+      int _id = 0,
+      string _PO = "",
+      int _vendorId = 0,
+      bool _isSubcontractor = false)
         {
             InitializeComponent();
-            dgvItems.EnableHeadersVisualStyles = false; // important
-            //AppTheme.DefaultFont(dgvItems);
-            headerUC1.FormText = this.Text;
-            LocalizationManager.LocalizeForm(this);
-            ApplyPurchaseArabicText();
-            vendorUpdatedHandler = (sender, args) => BindCombos.PopulateVendors(cmbVendor);
-            itemUpdatedHandler = (sender, args) => RefreshItems();
-            warehouseUpdatedHandler = (sender, args) => BindCombos.PopulateWarehouse(cmbWarehouse);
-            EventHub.Item += itemUpdatedHandler;
-            EventHub.wareHouse += warehouseUpdatedHandler;
-            EventHub.Vendor += vendorUpdatedHandler;
 
-            this.PO = _PO;
-            if (PO == "PO")
-            {
-                txtPONO.Text = _id.ToString();
-            }
-            else
-            {
-                this.id = _id;
-                txtPONO.Text = "";
-            }
-            this.defaultVendorId = _vendorId;
-            if (_isSubcontractor)
-            {
-                CbSubcontractors.Checked = true;
-                typed = "Subcontractor";
-            }
+            // Remove Reports tab
+            tabControl2.TabPages.Remove(tabPage4);
+
+            dgvItems.EnableHeadersVisualStyles = false;
+
+            headerUC1.FormText = this.Text;
+
+            LocalizationManager.LocalizeForm(this);
+
+            ApplyPurchaseArabicText();
+
+            LocalizePurchaseComboBoxes();
+
+            // Continue your existing constructor code...
+        }
+        private void LocalizePurchaseComboBoxes()
+        {
+            LocalizePurchaseCombo(cmbPurchasetype);
+            LocalizePurchaseCombo(cmbShipVia);
+            LocalizePurchaseCombo(cmbPaymentMethod);
+            LocalizePurchaseCombo(cmbCity);
+            LocalizePurchaseCombo(cmbAccountCashName);
+            LocalizePurchaseCombo(cmbFixedAssetCategory);
+            LocalizePurchaseCombo(cmbWarehouse);
+            LocalizePurchaseCombo(cmbCostCenter);
         }
 
+        private void LocalizePurchaseCombo(ComboBox combo)
+        {
+            combo.FormattingEnabled = true;
+
+            combo.Format -= PurchaseCombo_Format;
+            combo.Format += PurchaseCombo_Format;
+        }
+
+        private void PurchaseCombo_Format(
+            object sender, ListControlConvertEventArgs e)
+        {
+            if (!Clinic.TranslationClass.IsArabic)
+                return;
+
+            string text = Convert.ToString(e.Value)?.Trim() ?? "";
+
+            switch (text)
+            {
+                case "Inventory":
+                    e.Value = "المخزون";
+                    break;
+
+                case "Fixed Assets":
+                    e.Value = "الأصول الثابتة";
+                    break;
+
+                case "Expense":
+                    e.Value = "المصروفات";
+                    break;
+
+                case "DHL":
+                    e.Value = "دي إتش إل";
+                    break;
+
+                case "MAIL":
+                    e.Value = "البريد";
+                    break;
+
+                case "On Site":
+                    e.Value = "في الموقع";
+                    break;
+
+                case "Other":
+                    e.Value = "أخرى";
+                    break;
+
+                case "Cash":
+                    e.Value = "نقدي";
+                    break;
+
+                case "Credit":
+                    e.Value = "آجل";
+                    break;
+
+                case "Abu Dhabi":
+                    e.Value = "أبوظبي";
+                    break;
+
+                case "Dubai":
+                    e.Value = "دبي";
+                    break;
+
+                case "Sharjah":
+                    e.Value = "الشارقة";
+                    break;
+
+                case "Ajman":
+                    e.Value = "عجمان";
+                    break;
+
+                case "Fujairah":
+                    e.Value = "الفجيرة";
+                    break;
+
+                case "Ras Al Khaimah":
+                    e.Value = "رأس الخيمة";
+                    break;
+
+                case "Umm Al Quwain":
+                    e.Value = "أم القيوين";
+                    break;
+
+                case "Cash On Hand":
+                    e.Value = "النقدية بالصندوق";
+                    break;
+
+                default:
+                    e.Value = Clinic.TranslationClass.Translate(
+                        text, true);
+                    break;
+            }
+        }
+        private string GetPurchaseComboValue(ComboBox combo)
+        {
+            return Convert.ToString(combo.SelectedItem)?.Trim() ?? "";
+        }
         private void frmPurchase_FormClosing(object sender, FormClosingEventArgs e)
         {
             EventHub.Vendor -= vendorUpdatedHandler;
@@ -103,12 +201,22 @@ namespace YamyProject
                     cmbVendor.SelectedValue = defaultVendorId;
                 }
             }
-            purchaseOrderId = PO == "" ? purchaseOrderId = 0 : int.Parse(txtPONO.Text.ToString());
-            if (purchaseOrderId != 0)
+            purchaseOrderId = 0;
+
+            if (!string.IsNullOrWhiteSpace(PO))
+            {
+                int.TryParse(PO.Trim(), out purchaseOrderId);
+            }
+
+            if (purchaseOrderId > 0)
             {
                 loadPurchaseOrderData();
             }
+
             var barcodeS = Utilities.GeneralSettingsState("ENABLE BARCODE");
+
+            EnableBarcode = int.TryParse(barcodeS, out int barcodeValue)
+                            && barcodeValue > 0;
             if (!string.IsNullOrEmpty(barcodeS) && int.Parse(barcodeS) > 0)
             {
                 EnableBarcode = true;

@@ -25,6 +25,7 @@ namespace YamyProject
         {
             InitializeComponent();
             ApplyInventoryLocalization();
+            ApplyArabicMenuTranslation();
             headerUC1.FormText = this.Text;
             LocalizationManager.LocalizeForm(this);
             itemUpdatedHandler = (sender, args) => BindItems();
@@ -862,7 +863,20 @@ namespace YamyProject
         {
             //
         }
+        private void ApplyArabicMenuTranslation()
+        {
+            if (!Clinic.TranslationClass.IsArabic)
+                return;
 
+            newCustomerToolStripMenuItem.Text = "عمليات الأصناف";
+            nToolStripMenuItem.Text = "إضافة صنف جديد";
+            editCustomerToolStripMenuItem1.Text = "تعديل الصنف";
+            deleteCustomerToolStripMenuItem.Text = "حذف الصنف";
+            recycleItemToolStripMenuItem.Text = "استعادة الصنف";
+
+            newCustomerToolStripMenuItem.DropDown.RightToLeft =
+                RightToLeft.Yes;
+        }
         private void dgvDetails_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0 && e.RowIndex < dgvDetails.Rows.Count)
