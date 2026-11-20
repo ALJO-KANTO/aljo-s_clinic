@@ -85,14 +85,14 @@ namespace YamyProject
         }
         private void LocalizePurchaseComboBoxes()
         {
-            LocalizePurchaseCombo(cmbPurchasetype);
+            //LocalizePurchaseCombo(cmbPurchasetype);
             LocalizePurchaseCombo(cmbShipVia);
-            LocalizePurchaseCombo(cmbPaymentMethod);
-            LocalizePurchaseCombo(cmbCity);
-            LocalizePurchaseCombo(cmbAccountCashName);
-            LocalizePurchaseCombo(cmbFixedAssetCategory);
-            LocalizePurchaseCombo(cmbWarehouse);
-            LocalizePurchaseCombo(cmbCostCenter);
+            //LocalizePurchaseCombo(cmbPaymentMethod);
+            //LocalizePurchaseCombo(cmbCity);
+            //LocalizePurchaseCombo(cmbAccountCashName);
+            //LocalizePurchaseCombo(cmbFixedAssetCategory);
+            //LocalizePurchaseCombo(cmbWarehouse);
+            //LocalizePurchaseCombo(cmbCostCenter);
         }
 
         private void LocalizePurchaseCombo(ComboBox combo)
