@@ -28,6 +28,7 @@ namespace YamyProject
         public frmViewPaymentVoucher(int id = 0, int _customerId = 0, bool _isSubContractors = false)
         {
             InitializeComponent();
+            tabControl2.TabPages.Remove(tabPage4);
             LocalizationManager.LocalizeForm(this);
             this.id = id;
             headerUC1.FormText = this.Text;
@@ -41,6 +42,105 @@ namespace YamyProject
         private void btnClose_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+        private void ApplyPaymentVoucherArabic()
+        {
+            if (!Clinic.TranslationClass.IsArabic)
+                return;
+
+            // Form header
+            this.Text = "سند صرف";
+            headerUC1.FormText = "سند صرف";
+
+
+            // Toolbar buttons
+            BtnClear.Text = "جديد";
+            BtnSaveNew.Text = "حفظ";
+            BtnDelete.Text = "حذف";
+            BtnCopy.Text = "إنشاء نسخة";
+            BtnPrint.Text = "طباعة";
+            BtnEmail.Text = "بريد إلكتروني";
+            BtnAttach.Text = "إرفاق ملف";
+
+            guna2TileButton19.Text = "حفظ كقالب";
+            guna2TileButton15.Text = "إضافة وقت / تكاليف";
+
+            chkPrint.Text = "الطباعة بعد الحفظ";
+            // Main tab
+            tabPage3.Text = "الرئيسية";
+
+            // Bottom buttons
+            btnSave.Text = "حفظ";
+            btnClose.Text = "إغلاق";
+            guna2Button3.Text = "حفظ وإغلاق";
+
+            // Main information
+            label2.Text = "التاريخ";
+            label1.Text = "نوع الدفع";
+            lblBalance.Text = "طريقة الدفع";
+
+            CbSubcontractors.Text = "مقاولو الباطن";
+            cbpettycash.Text = "العهدة النقدية";
+
+            // Amount placeholders
+            txtAmount.PlaceholderText = "المبلغ";
+            txtAmountInWord.PlaceholderText = "المبلغ كتابةً";
+
+            // Debit section
+            guna2GroupBox2.Text = "الدفع إلى - مدين";
+
+            label9.Text = "رمز الحساب";
+            label4.Text = "اسم الحساب";
+            lblCostcenter.Text = "مركز التكلفة";
+            label3.Text = "ملاحظات";
+
+            // Vendor details
+            lblCode.Text = "رمز المورد";
+            lblCustomer.Text = "اسم المورد";
+            txtVendor.PlaceholderText = "رمز المورد";
+
+            // Credit section
+            guna2GroupBox3.Text = "الدفع من - دائن";
+
+            label10.Text = "رمز الحساب";
+            label6.Text = "اسم الحساب";
+            label7.Text = "مركز التكلفة";
+
+            // Bank information
+            lblBankName.Text = "اسم البنك";
+            lblBankAccountName.Text = "اسم الحساب البنكي";
+            lblBookNo.Text = "رقم دفتر الشيكات";
+
+            label12.Text = "تاريخ الشيك";
+            label5.Text = "اسم المستفيد";
+            label8.Text = "رقم الشيك";
+
+            txtBankCode.PlaceholderText = "رمز البنك";
+            txtCheckName.PlaceholderText = "اسم المستفيد";
+
+            // Transfer information
+            lblTransDate.Text = "تاريخ التحويل";
+            lblTransName.Text = "اسم المحول إليه";
+            lblTransRef.Text = "مرجع التحويل";
+
+            txtTransName.PlaceholderText = "اسم المحول إليه";
+            txtTransRef.PlaceholderText = "مرجع التحويل";
+
+            // Grid header translations
+            no.HeaderText = "الرقم";
+            invDate.HeaderText = "التاريخ";
+            InvNo.HeaderText = "رقم الفاتورة";
+            Total.HeaderText = "المبلغ";
+            chkPay.HeaderText = "دفع";
+            Pay.HeaderText = "المبلغ المدفوع";
+            Description.HeaderText = "البيان";
+            voucherType.HeaderText = "نوع السند";
+
+            // Grid alignment
+            dgvInv.RightToLeft = RightToLeft.Yes;
+
+            dgvInv.ColumnHeadersDefaultCellStyle.Alignment =
+                DataGridViewContentAlignment.MiddleCenter;
         }
         private void frmViewPaymentVoucher_Load(object sender, EventArgs e)
         {
@@ -82,6 +182,9 @@ namespace YamyProject
             }
 
             LocalizationManager.LocalizeDataGridViewHeaders(dgvInv);
+
+            // Apply complete Arabic translation
+            ApplyPaymentVoucherArabic();
         }
         private void BindVoucher()
         {
@@ -1072,7 +1175,7 @@ namespace YamyProject
         }
         private void cmbMethod_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (cmbMethod.Text == "Cash")
+            if (Convert.ToString(cmbMethod.SelectedItem) == "Cash")
             {
                 pnlBank.Visible = pnlTrans.Visible = false;
                 cmbBankName.SelectedValue = cmbBankAccountName.SelectedValue = -1;
