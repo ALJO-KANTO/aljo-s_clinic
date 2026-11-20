@@ -1,4 +1,6 @@
-﻿using Clinic_DataAccess;
+﻿using Clinic.Login;
+using Clinic_DataAccess;
+//using CrystalDecisions.CrystalReports.Engine;
 using Guna.UI2.WinForms;
 using Microsoft.Win32;
 using MySql.Data.MySqlClient;
@@ -7,12 +9,11 @@ using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
 using System.IO;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using YamyProject.DAL;
+using YamyProject.Localization;
 using static BindCombos;
-//using YamyProject.DAL;
-//using YamyProject.Localization;
-
+//using static YamyProject.BindCombos;
 
 namespace YamyProject
 {
@@ -24,1353 +25,63 @@ namespace YamyProject
         bool isSubContractors;
         string VendorType = "Vendor";
 
+        public frmViewPaymentVoucher(int id = 0, int _customerId = 0, bool _isSubContractors = false)
+        {
+            InitializeComponent();
+            LocalizationManager.LocalizeForm(this);
+            this.id = id;
+            headerUC1.FormText = this.Text;
+
+            this.defaultCustomerId = _customerId;
+            this.isSubContractors = _isSubContractors;
+            CbSubcontractors.Checked = _isSubContractors;
+            VendorType = isSubContractors ? "Subcontractor" : "Vendor";
+      
+        }
         private void btnClose_Click(object sender, EventArgs e)
         {
             this.Close();
         }
-        private Guna2Panel pnlBottomActions;
-        private Guna2Panel _loadingPanel;
-        private Guna2ProgressIndicator _loadingSpinner;
-        private Label _loadingTitle;
-        private Label _loadingStatus;
-        private Label _loadingPercent;
-
-        private int _loadingValue = 0;
-        private bool _pageReady = false;
-        public frmViewPaymentVoucher(
-    int id = 0,
-    int _customerId = 0,
-    bool _isSubContractors = false)
+        private void frmViewPaymentVoucher_Load(object sender, EventArgs e)
         {
-            InitializeComponent();
-
-            this.id = id;
-
-            // LocalizationManager.LocalizeForm(this);
-
-            bool arabic = IsArabicLanguage();
-
-            headerUC1.FormText =
-                arabic
-                    ? "سند الدفع"
-                    : "Payment Voucher";
-
-            //headerUC1.ArabicLayout = arabic;
-            this.defaultCustomerId = _customerId;
-            this.isSubContractors = _isSubContractors;
-
-            CbSubcontractors.Checked = _isSubContractors;
-
-            VendorType =
-                isSubContractors
-                    ? "Subcontractor"
-                    : "Vendor";
-
-            //AppTheme.DefaultFont(dgvInv);
-        }
-        private void CreateLoadingOverlay()
-        {
-            if (_loadingPanel != null)
-                return;
-
-            bool arabic = IsArabicLanguage();
-
-            _loadingPanel = new Guna2Panel
+            dtOpen.Value = dtpTransDate.Value = dt_check_date.Value = DateTime.Now.Date;
+       
+            //dgvInv.Columns.AddRange(new DataGridViewColumn[] { no, humId, invId, invDate, InvNo, Total, chkPay, Pay, Description, voucherType });
+            txtPVCode.Text = GenerateNextPaymentCode();
+            txtId.Text = GenerateNextPaymentId();
+            this.Invoke((Action)(() =>
             {
-                Dock = DockStyle.Fill,
-                FillColor = Color.FromArgb(247, 248, 252),
-                BackColor = Color.FromArgb(247, 248, 252),
-                Name = "pnlPaymentLoading"
-            };
+                BindCombos.PopulateListEmployeesNew(lstOfEmp, false);
+            }));
 
-            _loadingSpinner = new Guna2ProgressIndicator
-            {
-                Size = new Size(64, 64),
-                AutoStart = true,
-                CircleSize = 1F
-            };
+            //BindCombos.PopulateListEmployees(lstOfEmp, true);
+            BindCombos.PopulateCostCenter(cmbDebitCostCenter, true);
+            BindCombos.PopulateCostCenter(cmbCreditCostCenter, true);
+            BindCombos.PopulateAllLevel4Account(cmbDebitAccountName, true);
+            BindCombos.PopulateAllLevel4Account(cmbCreditAccountName, true);
+            BindCombos.PopulateRegisterBanks(cmbBankName, true);
+            // Arabic ComboBox display
+            LocalizePaymentVoucherComboBoxes();
 
-            _loadingTitle = new Label
-            {
-                AutoSize = false,
-                Height = 38,
-                Width = 420,
-                Font = new Font(
-                    "Segoe UI Semibold",
-                    15F,
-                    FontStyle.Bold),
-                ForeColor = Color.FromArgb(23, 42, 83),
-                TextAlign = ContentAlignment.MiddleCenter,
-                Text = arabic
-                    ? "جاري تحميل سند الصرف"
-                    : "Loading Payment Voucher"
-            };
-
-            _loadingStatus = new Label
-            {
-                AutoSize = false,
-                Height = 28,
-                Width = 500,
-                Font = new Font("Segoe UI", 9.5F),
-                ForeColor = Color.FromArgb(100, 116, 139),
-                TextAlign = ContentAlignment.MiddleCenter,
-                Text = arabic
-                    ? "يرجى الانتظار..."
-                    : "Please wait..."
-            };
-
-            _loadingPercent = new Label
-            {
-                AutoSize = false,
-                Height = 28,
-                Width = 100,
-                Font = new Font(
-                    "Segoe UI Semibold",
-                    10F,
-                    FontStyle.Bold),
-                ForeColor = Color.FromArgb(91, 55, 225),
-                TextAlign = ContentAlignment.MiddleCenter,
-                Text = "0%"
-            };
-
-            _loadingPanel.Controls.Add(_loadingSpinner);
-            _loadingPanel.Controls.Add(_loadingTitle);
-            _loadingPanel.Controls.Add(_loadingStatus);
-            _loadingPanel.Controls.Add(_loadingPercent);
-
-            Controls.Add(_loadingPanel);
-
-            _loadingPanel.Resize += (s, e) =>
-                PositionLoadingOverlay();
-
-            PositionLoadingOverlay();
-
-            _loadingPanel.BringToFront();
-        }
-
-        private void PositionLoadingOverlay()
-        {
-            if (_loadingPanel == null)
-                return;
-
-            int centerX = _loadingPanel.ClientSize.Width / 2;
-            int centerY = _loadingPanel.ClientSize.Height / 2;
-
-            _loadingSpinner.Location =
-                new Point(
-                    centerX - (_loadingSpinner.Width / 2),
-                    centerY - 100);
-
-            _loadingTitle.Location =
-                new Point(
-                    centerX - (_loadingTitle.Width / 2),
-                    _loadingSpinner.Bottom + 15);
-
-            _loadingStatus.Location =
-                new Point(
-                    centerX - (_loadingStatus.Width / 2),
-                    _loadingTitle.Bottom + 3);
-
-            _loadingPercent.Location =
-                new Point(
-                    centerX - (_loadingPercent.Width / 2),
-                    _loadingStatus.Bottom + 3);
-        }
-        private async Task UpdateLoadingAsync(
-    int value,
-    string englishText,
-    string arabicText)
-        {
-            if (_loadingPanel == null)
-                return;
-
-            bool arabic = IsArabicLanguage();
-
-            value = Math.Max(0, Math.Min(100, value));
-
-            // Smoothly move to requested percentage.
-            while (_loadingValue < value)
-            {
-                _loadingValue++;
-
-                _loadingPercent.Text =
-                    $"{_loadingValue}%";
-
-                if (_loadingValue % 2 == 0)
-                {
-                    await Task.Delay(4);
-                    Application.DoEvents();
-                }
-            }
-
-            _loadingStatus.Text =
-                arabic
-                    ? arabicText
-                    : englishText;
-
-            _loadingPanel.BringToFront();
-
-            await Task.Yield();
-        }
-        private async void frmViewPaymentVoucher_Load(
-object sender,
-EventArgs e)
-        {
-            if (_pageReady)
-                return;
-
-            CreateLoadingOverlay();
-
-            _loadingPanel.BringToFront();
-
-            try
-            {
-                // =====================================================
-                // INITIAL
-                // =====================================================
-
-                await UpdateLoadingAsync(
-                    5,
-                    "Preparing payment voucher...",
-                    "جاري تجهيز سند الصرف...");
-
-                dtOpen.Value =
-                    dtpTransDate.Value =
-                    dt_check_date.Value =
-                    DateTime.Now.Date;
-
-                //AppTheme.DefaultFont(dgvInv);
-
-                txtPVCode.Text =
-                    GenerateNextPaymentCode();
-
-                txtId.Text =
-                    GenerateNextPaymentId();
-
-                // =====================================================
-                // EMPLOYEES
-                // =====================================================
-
-                await UpdateLoadingAsync(
-                    15,
-                    "Loading employees...",
-                    "جاري تحميل الموظفين...");
-
-                BindCombos.PopulateListEmployeesNew(
-                    lstOfEmp,
-                    false);
-
-                await Task.Yield();
-
-                // =====================================================
-                // COST CENTERS
-                // =====================================================
-
-                await UpdateLoadingAsync(
-                    30,
-                    "Loading cost centers...",
-                    "جاري تحميل مراكز التكلفة...");
-
-                BindCombos.PopulateCostCenter(
-                    cmbDebitCostCenter,
-                    true);
-
-                BindCombos.PopulateCostCenter(
-                    cmbCreditCostCenter,
-                    true);
-
-                await Task.Yield();
-
-                // =====================================================
-                // ACCOUNTS
-                // =====================================================
-
-                await UpdateLoadingAsync(
-                    48,
-                    "Loading accounts...",
-                    "جاري تحميل الحسابات...");
-
-                BindCombos.PopulateAllLevel4Account(
-                    cmbDebitAccountName,
-                    true);
-
-                BindCombos.PopulateAllLevel4Account(
-                    cmbCreditAccountName,
-                    true);
-
-                await Task.Yield();
-
-                // =====================================================
-                // BANKS
-                // =====================================================
-
-                await UpdateLoadingAsync(
-                    62,
-                    "Loading bank information...",
-                    "جاري تحميل معلومات البنوك...");
-
-                BindCombos.PopulateRegisterBanks(
-                    cmbBankName,
-                    true);
-
-                // =====================================================
-                // DEFAULT VALUES
-                // =====================================================
-
-                await UpdateLoadingAsync(
-                    70,
-                    "Preparing voucher information...",
-                    "جاري تجهيز بيانات السند...");
-
-                cmbMethod.SelectedIndex = 0;
+            cmbMethod.SelectedIndex =
                 cmbPaymentType.SelectedIndex = 0;
 
-                // =====================================================
-                // EXISTING / NEW VOUCHER
-                // =====================================================
-
-                if (id > 0)
-                {
-                    await UpdateLoadingAsync(
-                        78,
-                        "Loading voucher...",
-                        "جاري تحميل بيانات السند...");
-
-                    btnSave.Enabled =
-                        BtnSaveNew.Enabled =
-                        UserPermissions.canEdit("Vouchers");
-
-                    BtnDelete.Enabled =
-                        UserPermissions.canDelete("Vouchers");
-
-                    BindVoucher();
-                }
-                else
-                {
-                    if (defaultCustomerId > 0)
-                    {
-                        await UpdateLoadingAsync(
-                            78,
-                            "Loading customer information...",
-                            "جاري تحميل بيانات العميل...");
-
-                        cmbVendor.SelectedValue =
-                            defaultCustomerId;
-
-                        LoadData();
-                    }
-                }
-
-                // =====================================================
-                // FINAL DESIGN
-                // =====================================================
-
-                await UpdateLoadingAsync(
-                    88,
-                    "Preparing interface...",
-                    "جاري تجهيز واجهة سند الصرف...");
-
-                SuspendLayout();
-
-                try
-                {
-                    // LocalizationManager
-                    //.LocalizeDataGridViewHeaders(dgvInv);
-
-                    ApplyModernDesign();
-
-                    StyleInvoiceGrid();
-
-                    StylePaymentLayout();
-
-                    // Localization AFTER English base design.
-                    // LocalizationManager.LocalizeForm(this);
-
-                    // LocalizationManager
-                    //.LocalizeDataGridViewHeaders(dgvInv);
-
-                    ApplyLanguageLayout(
-                        IsArabicLanguage());
-                }
-                finally
-                {
-                    ResumeLayout(true);
-                }
-
-                // =====================================================
-                // FINAL RENDER
-                // =====================================================
-
-                await UpdateLoadingAsync(
-                    95,
-                    "Finalizing page...",
-                    "جاري إنهاء تحميل الصفحة...");
-
-                PerformLayout();
-
-                Refresh();
-
-                await Task.Delay(40);
-
-                Application.DoEvents();
-
-                _pageReady = true;
-
-                await UpdateLoadingAsync(
-                    100,
-                    "Ready",
-                    "تم التحميل");
-
-                await Task.Delay(80);
-
-                _loadingPanel.Visible = false;
-
-                // Ensure the real UI gets one clean final paint.
-                Invalidate(true);
-                Update();
-            }
-            catch (Exception ex)
+            if (id > 0)
             {
-                if (_loadingPanel != null)
-                    _loadingPanel.Visible = false;
-
-                MessageBox.Show(
-                    IsArabicLanguage()
-                        ? "حدث خطأ أثناء تحميل سند الصرف:\n" +
-                          ex.Message
-                        : "Error loading Payment Voucher:\n" +
-                          ex.Message,
-                    IsArabicLanguage()
-                        ? "خطأ"
-                        : "Loading Error",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-            }
-        }
-        private bool IsArabicLanguage()
-        {
-            string language =
-                Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en";
-
-            return language.StartsWith(
-                "ar",
-                StringComparison.OrdinalIgnoreCase);
-        }
-
-        public void ApplyLanguageLayout(bool isArabic)
-        {
-            SuspendLayout();
-
-            try
-            {
-                // Keep the form itself LTR. We reposition the controls ourselves.
-                // This avoids WinForms/Guna double-mirroring.
-                RightToLeft = RightToLeft.No;
-                RightToLeftLayout = false;
-
-                headerUC1.FormText =
-                    isArabic ? "سند صرف" : "Payment Voucher";
-
-                Text =
-                    isArabic ? "سند صرف" : "Payment Voucher";
-
-                tabPage3.Text =
-                    isArabic ? "الرئيسية" : "Main";
-
-                tabPage4.Text =
-                    isArabic ? "التقارير" : "Reports";
-
-                // Keep the tab captions on the right in Arabic and on the left in English.
-                // This changes only the presentation; it does not change any business logic.
-                tabControl2.RightToLeft = isArabic ? RightToLeft.Yes : RightToLeft.No;
-                tabControl2.RightToLeftLayout = isArabic;
-                tabControl2.Alignment = TabAlignment.Top;
-
-                txtcostcenter.Text =
-                    isArabic
-                        ? "معلومات سند الصرف"
-                        : "Payment Voucher Information";
-
-                guna2GroupBox2.Text =
-                    isArabic
-                        ? "الدفع إلى - مدين"
-                        : "Pay To - Debit";
-
-                guna2GroupBox3.Text =
-                    isArabic
-                        ? "الدفع من - دائن"
-                        : "Pay From - Credit";
-
-                // Toolbar
-                BtnClear.Text = isArabic ? "جديد" : "New";
-                BtnSaveNew.Text = isArabic ? "حفظ" : "Save";
-                BtnDelete.Text = isArabic ? "حذف" : "Delete";
-                BtnCopy.Text = isArabic ? "نسخ" : "Copy";
-                BtnPrint.Text = isArabic ? "طباعة" : "Print";
-                BtnEmail.Text = isArabic ? "البريد الإلكتروني" : "Email";
-                BtnAttach.Text = isArabic ? "إرفاق" : "Attach";
-
-                // Bottom action buttons
-                guna2Button3.Text =
-                    isArabic ? "💾  حفظ وإغلاق" : "💾  Save & Close";
-
-                btnSave.Text =
-                    isArabic ? "💾  حفظ" : "💾  Save";
-
-                btnClose.Text =
-                    isArabic ? "✕  إغلاق" : "✕  Close";
-
-                // Known captions that are visible on this screen.
-                label2.Text = isArabic ? "التاريخ" : "Date";
-                label1.Text = isArabic ? "نوع الدفع" : "Payment Type";
-                lblBalance.Text = isArabic ? "طريقة الدفع" : "Payment Method";
-
-                label3.Text = isArabic ? "كود الحساب" : "Account Code";
-                label9.Text = isArabic ? "اسم الحساب" : "Account Name";
-                lblCostcenter.Text = isArabic ? "مركز التكلفة" : "Cost Center";
-                label4.Text = isArabic ? "ملاحظة" : "Description";
-
-                label7.Text = isArabic ? "كود الحساب" : "Account Code";
-                label6.Text = isArabic ? "اسم الحساب" : "Account Name";
-                label10.Text = isArabic ? "مركز التكلفة" : "Cost Center";
-
-                CbSubcontractors.Text =
-                    isArabic ? "المقاولون من الباطن" : "Subcontractors";
-
-                // Direction of inputs and grid.
-                SetPaymentInputDirection(this, isArabic);
-
-                dgvInv.RightToLeft =
-                    isArabic ? RightToLeft.Yes : RightToLeft.No;
-
-                dgvInv.ColumnHeadersDefaultCellStyle.Alignment =
-                    isArabic
-                        ? DataGridViewContentAlignment.MiddleRight
-                        : DataGridViewContentAlignment.MiddleLeft;
-
-                dgvInv.DefaultCellStyle.Alignment =
-                    isArabic
-                        ? DataGridViewContentAlignment.MiddleRight
-                        : DataGridViewContentAlignment.MiddleLeft;
-
-                // Reposition the major fields to the opposite side.
-                PositionPaymentLanguageControls(isArabic);
-
-                // Footer is intentionally on LEFT for Arabic.
-                PositionBottomButtons();
-            }
-            finally
-            {
-                ResumeLayout(true);
-                Invalidate(true);
-            }
-        }
-
-        private void SetPaymentInputDirection(
-            Control parent,
-            bool isArabic)
-        {
-            if (parent == null)
-                return;
-
-            foreach (Control control in parent.Controls)
-            {
-                if (control is Guna2TextBox ||
-                    control is TextBox ||
-                    control is Guna2ComboBox ||
-                    control is ComboBox ||
-                    control is Label ||
-                    control is CheckBox)
-                {
-                    control.RightToLeft =
-                        isArabic
-                            ? RightToLeft.Yes
-                            : RightToLeft.No;
-                }
-
-                SetPaymentInputDirection(
-                    control,
-                    isArabic);
-            }
-        }
-
-        private void PositionPaymentLanguageControls(bool isArabic)
-        {
-            // Always restore the known English layout first.
-            // This prevents controls from being mirrored again when localization is reapplied.
-            ApplyModernLayout();
-
-            if (!isArabic)
-                return;
-
-            int infoWidth = txtcostcenter.ClientSize.Width;
-
-            if (isArabic)
-            {
-                // Payment information card.
-                int oldDateX = 18;
-                int dateWidth = 190;
-
-                label2.Left =
-                    infoWidth - oldDateX - label2.Width;
-                dtOpen.Left =
-                    infoWidth - oldDateX - dateWidth;
-
-                txtAmount.Left =
-                    infoWidth - 18 - txtAmount.Width;
-
-                txtAmountInWord.Left =
-                    txtAmount.Left - 12 - txtAmountInWord.Width;
-
-                int paymentTypeX = 18;
-                label1.Left = paymentTypeX;
-                cmbPaymentType.Left = paymentTypeX;
-
-                lblBalance.Left = paymentTypeX;
-                cmbMethod.Left = paymentTypeX;
-
-                CbSubcontractors.Left =
-                    cmbPaymentType.Right + 18;
-
-                // Debit section: mirror the normal left-side account fields.
-                MirrorControlInParent(label3, guna2ShadowPanel1);
-                MirrorControlInParent(txtDebitCode, guna2ShadowPanel1);
-                MirrorControlInParent(label9, guna2ShadowPanel1);
-                MirrorControlInParent(cmbDebitAccountName, guna2ShadowPanel1);
-                MirrorControlInParent(lblCostcenter, guna2ShadowPanel1);
-                MirrorControlInParent(cmbDebitCostCenter, guna2ShadowPanel1);
-                MirrorControlInParent(label4, guna2ShadowPanel1);
-                MirrorControlInParent(txtDescription1, guna2ShadowPanel1);
-
-                // Customer/vendor panel moves to the left.
-                pnlCustomer.Left = 10;
-
-                // Credit section.
-                MirrorControlInParent(label7, guna2ShadowPanel2);
-                MirrorControlInParent(txtCreditAccountCode, guna2ShadowPanel2);
-                MirrorControlInParent(label6, guna2ShadowPanel2);
-                MirrorControlInParent(cmbCreditAccountName, guna2ShadowPanel2);
-                MirrorControlInParent(label10, guna2ShadowPanel2);
-                MirrorControlInParent(cmbCreditCostCenter, guna2ShadowPanel2);
-            }
-
-        }
-
-        private void MirrorControlInParent(
-            Control control,
-            Control parent)
-        {
-            if (control == null || parent == null)
-                return;
-
-            control.Left =
-                parent.ClientSize.Width
-                - control.Left
-                - control.Width;
-        }
-
-        private void ApplyModernDesign()
-        {
-            Color purple = Color.FromArgb(91, 55, 225);
-            Color purpleDark = Color.FromArgb(72, 43, 180);
-            Color pageColor = Color.FromArgb(247, 248, 252);
-            Color borderColor = Color.FromArgb(226, 228, 238);
-            Color titleColor = Color.FromArgb(23, 42, 83);
-            Color sectionColor = Color.FromArgb(246, 243, 255);
-
-            SuspendLayout();
-
-            BackColor = pageColor;
-            Font = new Font("Segoe UI", 9F);
-            MinimumSize = new Size(1100, 720);
-            AutoScroll = true;
-
-            headerUC1.FormText = IsArabicLanguage() ? "سند صرف" : "Payment Voucher";
-            headerUC1.BringToFront();
-
-            // Toolbar
-            panel9.BackColor = Color.White;
-            panel9.Height = 105;
-
-            tabControl2.Font = new Font("Segoe UI Semibold", 9F);
-            tabPage3.BackColor = Color.White;
-            tabPage4.BackColor = Color.White;
-
-            txtPVCode.BackColor = Color.White;
-            txtPVCode.ForeColor = titleColor;
-            txtPVCode.BorderStyle = BorderStyle.None;
-            txtPVCode.Font = new Font("Segoe UI Semibold", 10F, FontStyle.Bold);
-
-            Guna2TileButton[] toolbarButtons =
-            {
-                BtnClear, BtnSaveNew, BtnDelete, BtnCopy,
-                guna2TileButton19, BtnPrint, BtnEmail, BtnAttach,
-                guna2TileButton15
-            };
-
-            foreach (Guna2TileButton button in toolbarButtons)
-            {
-                if (button == null)
-                    continue;
-
-                button.FillColor = Color.White;
-                button.ForeColor = titleColor;
-                button.Font = new Font("Segoe UI Semibold", 8.5F);
-                button.BorderRadius = 7;
-                button.Cursor = Cursors.Hand;
-                button.HoverState.FillColor = sectionColor;
-                button.HoverState.ForeColor = purpleDark;
-            }
-
-            BtnDelete.ForeColor = Color.FromArgb(220, 38, 38);
-
-            btnPrevious.FillColor = Color.White;
-            btnPrevious.ForeColor = titleColor;
-            btnPrevious.BorderRadius = 7;
-            btnPrevious.HoverState.FillColor = sectionColor;
-
-            btnNext.FillColor = Color.White;
-            btnNext.ForeColor = titleColor;
-            btnNext.BorderRadius = 7;
-            btnNext.HoverState.FillColor = sectionColor;
-
-            // Voucher information card
-            txtcostcenter.Dock = DockStyle.None;
-            txtcostcenter.FillColor = Color.White;
-            txtcostcenter.BackColor = pageColor;
-            txtcostcenter.BorderColor = borderColor;
-            txtcostcenter.BorderThickness = 1;
-            txtcostcenter.BorderRadius = 10;
-            txtcostcenter.CustomBorderColor = sectionColor;
-            txtcostcenter.CustomBorderThickness = new Padding(0, 36, 0, 0);
-            txtcostcenter.Text = "Payment Voucher Information";
-            txtcostcenter.ForeColor = titleColor;
-            txtcostcenter.Font = new Font("Segoe UI Semibold", 10F, FontStyle.Bold);
-            txtcostcenter.TextOffset = new Point(10, 0);
-            txtcostcenter.Padding = new Padding(0);
-
-            // Debit card
-            guna2GroupBox2.Dock = DockStyle.None;
-            guna2GroupBox2.FillColor = Color.White;
-            guna2GroupBox2.BackColor = pageColor;
-            guna2GroupBox2.BorderColor = borderColor;
-            guna2GroupBox2.BorderThickness = 1;
-            guna2GroupBox2.BorderRadius = 10;
-            guna2GroupBox2.CustomBorderColor = sectionColor;
-            guna2GroupBox2.CustomBorderThickness = new Padding(0, 36, 0, 0);
-            guna2GroupBox2.Text = "Pay To - Debit";
-            guna2GroupBox2.ForeColor = titleColor;
-            guna2GroupBox2.Font = new Font("Segoe UI Semibold", 10F, FontStyle.Bold);
-            guna2GroupBox2.TextOffset = new Point(10, 0);
-
-            // Credit card
-            guna2GroupBox3.Dock = DockStyle.None;
-            guna2GroupBox3.FillColor = Color.White;
-            guna2GroupBox3.BackColor = pageColor;
-            guna2GroupBox3.BorderColor = borderColor;
-            guna2GroupBox3.BorderThickness = 1;
-            guna2GroupBox3.BorderRadius = 10;
-            guna2GroupBox3.CustomBorderColor = sectionColor;
-            guna2GroupBox3.CustomBorderThickness = new Padding(0, 36, 0, 0);
-            guna2GroupBox3.Text = "Pay From - Credit";
-            guna2GroupBox3.ForeColor = titleColor;
-            guna2GroupBox3.Font = new Font("Segoe UI Semibold", 10F, FontStyle.Bold);
-            guna2GroupBox3.TextOffset = new Point(10, 0);
-
-            guna2ShadowPanel1.FillColor = Color.White;
-            guna2ShadowPanel1.ShadowDepth = 0;
-            guna2ShadowPanel1.ShadowColor = Color.Transparent;
-
-            guna2ShadowPanel2.FillColor = Color.White;
-            guna2ShadowPanel2.ShadowDepth = 0;
-            guna2ShadowPanel2.ShadowColor = Color.Transparent;
-
-            pnlCustomer.BackColor = Color.White;
-            pnlBank.BackColor = Color.White;
-            pnlTrans.BackColor = Color.White;
-
-            foreach (Control control in Controls)
-                StylePaymentControl(control);
-
-            txtAmount.Font = new Font("Segoe UI Semibold", 11F, FontStyle.Bold);
-            txtAmount.ForeColor = purple;
-            txtAmount.FillColor = Color.White;
-            txtAmount.BorderColor = borderColor;
-            txtAmount.BorderRadius = 6;
-            txtAmount.TextAlign = HorizontalAlignment.Right;
-
-            txtAmountInWord.FillColor = Color.FromArgb(248, 249, 252);
-            txtAmountInWord.BorderColor = borderColor;
-            txtAmountInWord.BorderRadius = 6;
-
-            CbSubcontractors.ForeColor = titleColor;
-            CbSubcontractors.Font = new Font("Segoe UI Semibold", 8.5F);
-            CbSubcontractors.CheckedState.FillColor = purple;
-            CbSubcontractors.CheckedState.BorderColor = purple;
-
-            chkPrint.ForeColor = titleColor;
-            chkPrint.Font = new Font("Segoe UI", 8.5F);
-
-            StyleInvoiceGrid();
-            StyleBottomButtons();
-            ApplyModernLayout();
-
-            ResumeLayout(true);
-        }
-
-        private void ApplyModernLayout()
-        {
-            int margin = 18;
-            int gap = 10;
-            int availableWidth = ClientSize.Width - (margin * 2);
-
-            if (availableWidth < 800)
-                availableWidth = 800;
-
-            // Toolbar
-            panel9.Dock = DockStyle.None;
-            panel9.Left = margin;
-            panel9.Top = headerUC1.Bottom + 4;
-            panel9.Width = availableWidth;
-            panel9.Height = 100;
-            panel9.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-
-            // Payment information
-            txtcostcenter.Location = new Point(margin, panel9.Bottom + gap);
-            txtcostcenter.Size = new Size(availableWidth, 145);
-            txtcostcenter.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-
-            label2.Location = new Point(18, 45);
-            label2.AutoSize = true;
-            dtOpen.Location = new Point(18, 67);
-            dtOpen.Size = new Size(190, 28);
-
-            // Keep the amount fields fully visible and avoid overlap on different window sizes.
-            int amountWidth = Math.Min(220, Math.Max(170, (availableWidth - 60) / 4));
-            int amountWordsLeft = 18 + amountWidth + 12;
-            int amountWordsWidth = Math.Min(390, Math.Max(220, availableWidth - amountWordsLeft - 30));
-
-            txtAmount.Location = new Point(18, 105);
-            txtAmount.Size = new Size(amountWidth, 30);
-
-            txtAmountInWord.Location = new Point(amountWordsLeft, 105);
-            txtAmountInWord.Size = new Size(amountWordsWidth, 30);
-            txtAmountInWord.Anchor = AnchorStyles.Top | AnchorStyles.Left;
-
-            int rightColumnX = Math.Max(660, availableWidth - 420);
-
-            label1.Location = new Point(rightColumnX, 45);
-            label1.AutoSize = true;
-            cmbPaymentType.Location = new Point(rightColumnX, 67);
-            cmbPaymentType.Size = new Size(260, 30);
-
-            lblBalance.Location = new Point(rightColumnX, 99);
-            lblBalance.AutoSize = true;
-            cmbMethod.Location = new Point(rightColumnX, 105);
-            cmbMethod.Size = new Size(260, 30);
-
-            CbSubcontractors.Location = new Point(rightColumnX + 275, 72);
-
-            // Debit
-            guna2GroupBox2.Location = new Point(margin, txtcostcenter.Bottom + gap);
-            guna2GroupBox2.Size = new Size(availableWidth, 190);
-            guna2GroupBox2.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-
-            guna2ShadowPanel1.Location = new Point(10, 42);
-            guna2ShadowPanel1.Size = new Size(guna2GroupBox2.ClientSize.Width - 20, 138);
-            guna2ShadowPanel1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-
-            label3.Location = new Point(15, 8);
-            label3.AutoSize = true;
-            txtDebitCode.Location = new Point(15, 31);
-            txtDebitCode.Size = new Size(180, 30);
-
-            label9.Location = new Point(210, 8);
-            label9.AutoSize = true;
-            cmbDebitAccountName.Location = new Point(210, 31);
-            cmbDebitAccountName.Size = new Size(315, 30);
-
-            lblCostcenter.Location = new Point(540, 8);
-            lblCostcenter.AutoSize = true;
-            cmbDebitCostCenter.Location = new Point(540, 31);
-            cmbDebitCostCenter.Size = new Size(200, 30);
-
-            label4.Location = new Point(15, 66);
-            label4.AutoSize = true;
-            txtDescription1.Location = new Point(15, 87);
-            txtDescription1.Size = new Size(725, 42);
-
-            pnlCustomer.Location = new Point(760, 8);
-            pnlCustomer.Size = new Size(
-                Math.Max(250, guna2ShadowPanel1.ClientSize.Width - 775),
-                121);
-            pnlCustomer.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-
-            // Credit
-            guna2GroupBox3.Location = new Point(margin, guna2GroupBox2.Bottom + gap);
-            guna2GroupBox3.Size = new Size(availableWidth, 140);
-            guna2GroupBox3.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-
-            guna2ShadowPanel2.Location = new Point(10, 42);
-            guna2ShadowPanel2.Size = new Size(guna2GroupBox3.ClientSize.Width - 20, 88);
-            guna2ShadowPanel2.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-
-            label7.Location = new Point(15, 8);
-            label7.AutoSize = true;
-            txtCreditAccountCode.Location = new Point(15, 31);
-            txtCreditAccountCode.Size = new Size(180, 30);
-
-            label6.Location = new Point(210, 8);
-            label6.AutoSize = true;
-            cmbCreditAccountName.Location = new Point(210, 31);
-            cmbCreditAccountName.Size = new Size(315, 30);
-
-            label10.Location = new Point(540, 8);
-            label10.AutoSize = true;
-            cmbCreditCostCenter.Location = new Point(540, 31);
-            cmbCreditCostCenter.Size = new Size(200, 30);
-
-            CreateBottomActionBar();
-
-            // Invoice grid
-            dgvInv.Dock = DockStyle.None;
-            dgvInv.Location = new Point(margin, guna2GroupBox3.Bottom + gap);
-            dgvInv.Width = availableWidth;
-
-            int footerTop = pnlBottomActions != null
-                ? pnlBottomActions.Top
-                : ClientSize.Height - 90;
-
-            dgvInv.Height = Math.Max(100, footerTop - dgvInv.Top - 12);
-            dgvInv.Anchor =
-                AnchorStyles.Top |
-                AnchorStyles.Bottom |
-                AnchorStyles.Left |
-                AnchorStyles.Right;
-
-            PositionBottomButtons();
-
-            panel9.BringToFront();
-            txtcostcenter.BringToFront();
-            guna2GroupBox2.BringToFront();
-            guna2GroupBox3.BringToFront();
-            dgvInv.BringToFront();
-
-            if (pnlBottomActions != null)
-                pnlBottomActions.BringToFront();
-        }
-        private void StyleBottomButtons()
-        {
-            Color purple = Color.FromArgb(79, 70, 229);
-            Color purpleHover = Color.FromArgb(67, 56, 202);
-            Color textDark = Color.FromArgb(30, 41, 59);
-            Color border = Color.FromArgb(226, 232, 240);
-
-            // =========================================
-            // SAVE & CLOSE
-            // =========================================
-            guna2Button3.Text = "💾  Save & Close";
-            guna2Button3.Size = new Size(160, 46);
-
-            guna2Button3.FillColor = purple;
-            guna2Button3.ForeColor = Color.White;
-
-            guna2Button3.BorderRadius = 8;
-            guna2Button3.BorderThickness = 0;
-
-            guna2Button3.Font =
-                new Font("Segoe UI Semibold", 10F, FontStyle.Bold);
-
-            guna2Button3.Cursor = Cursors.Hand;
-
-            guna2Button3.ShadowDecoration.Enabled = true;
-            guna2Button3.ShadowDecoration.Depth = 5;
-            guna2Button3.ShadowDecoration.Shadow =
-    new Padding(2, 2, 3, 3);
-
-            guna2Button3.HoverState.FillColor = purpleHover;
-            guna2Button3.HoverState.ForeColor = Color.White;
-
-
-            // =========================================
-            // SAVE
-            // =========================================
-            btnSave.Text = "💾  Save";
-            btnSave.Size = new Size(125, 46);
-
-            btnSave.FillColor = purple;
-            btnSave.ForeColor = Color.White;
-
-            btnSave.BorderRadius = 8;
-            btnSave.BorderThickness = 0;
-
-            btnSave.Font =
-                new Font("Segoe UI Semibold", 10F, FontStyle.Bold);
-
-            btnSave.Cursor = Cursors.Hand;
-
-            btnSave.ShadowDecoration.Enabled = true;
-            btnSave.ShadowDecoration.Depth = 5;
-            btnSave.ShadowDecoration.Shadow =
-    new Padding(2, 2, 3, 3);
-
-            btnSave.HoverState.FillColor = purpleHover;
-            btnSave.HoverState.ForeColor = Color.White;
-
-
-            // =========================================
-            // CLOSE
-            // =========================================
-            btnClose.Text = "✕  Close";
-            btnClose.Size = new Size(125, 46);
-
-            btnClose.FillColor = Color.White;
-            btnClose.ForeColor = textDark;
-
-            btnClose.BorderRadius = 8;
-            btnClose.BorderThickness = 1;
-            btnClose.BorderColor = border;
-
-            btnClose.Font =
-                new Font("Segoe UI Semibold", 10F, FontStyle.Bold);
-
-            btnClose.Cursor = Cursors.Hand;
-
-            btnClose.ShadowDecoration.Enabled = true;
-            btnClose.ShadowDecoration.Depth = 5;
-            btnClose.ShadowDecoration.Shadow =
-    new Padding(2, 2, 3, 3);
-            btnClose.HoverState.FillColor =
-                Color.FromArgb(248, 250, 252);
-
-            btnClose.HoverState.BorderColor =
-                Color.FromArgb(203, 213, 225);
-        }
-        private void StylePaymentControl(Control control)
-        {
-            if (control == null)
-                return;
-
-            // ============================================
-            // TEXTBOX
-            // ============================================
-            if (control is Guna2TextBox textBox)
-            {
-                textBox.BorderRadius = 6;
-
-                textBox.BorderColor =
-                    Color.FromArgb(211, 213, 222);
-
-                textBox.FocusedState.BorderColor =
-                    Color.FromArgb(103, 58, 183);
-
-                textBox.HoverState.BorderColor =
-                    Color.FromArgb(170, 158, 195);
-
-                textBox.FillColor =
-                    textBox.Enabled
-                        ? Color.White
-                        : Color.FromArgb(243, 244, 247);
-
-                textBox.ForeColor =
-                    Color.FromArgb(50, 46, 62);
-
-                textBox.Font =
-                    new Font(
-                        "Segoe UI",
-                        9F);
-            }
-
-
-            // ============================================
-            // COMBOBOX
-            // ============================================
-            else if (control is Guna2ComboBox comboBox)
-            {
-                comboBox.BorderRadius = 6;
-
-                comboBox.BorderColor =
-                    Color.FromArgb(211, 213, 222);
-
-                comboBox.FocusedColor =
-                    Color.FromArgb(103, 58, 183);
-
-                comboBox.FillColor =
-                    Color.White;
-
-                comboBox.ForeColor =
-                    Color.FromArgb(50, 46, 62);
-
-                comboBox.Font =
-                    new Font(
-                        "Segoe UI",
-                        9F);
-            }
-
-
-            // ============================================
-            // DATE PICKER
-            // ============================================
-            else if (
-                control is Guna2DateTimePicker picker)
-            {
-                picker.BorderRadius = 6;
-
-                picker.BorderColor =
-                    Color.FromArgb(211, 213, 222);
-
-                picker.BorderThickness = 1;
-
-                picker.FillColor =
-                    Color.White;
-
-                picker.ForeColor =
-                    Color.FromArgb(50, 46, 62);
-
-                picker.Font =
-                    new Font(
-                        "Segoe UI",
-                        9F);
-            }
-
-
-            // ============================================
-            // LABEL
-            // ============================================
-            else if (control is Label label)
-            {
-                label.ForeColor =
-                    Color.FromArgb(62, 57, 78);
-
-                label.Font =
-                    new Font(
-                        "Segoe UI",
-                        8.5F,
-                        FontStyle.Regular);
-            }
-
-
-            // ============================================
-            // PANEL
-            // ============================================
-            else if (control is Panel panel)
-            {
-                if (panel.BackColor ==
-                    SystemColors.Control)
-                {
-                    panel.BackColor =
-                        Color.FromArgb(248, 249, 252);
-                }
-            }
-
-
-            foreach (Control child in control.Controls)
-            {
-                StylePaymentControl(child);
-            }
-        }
-        private void CreateBottomActionBar()
-        {
-            if (pnlBottomActions != null)
-                return;
-
-            pnlBottomActions = new Guna2Panel
-            {
-                Name = "pnlBottomActions",
-                Dock = DockStyle.Bottom,
-                Height = 82,
-                FillColor = Color.White,
-                BackColor = Color.White,
-                BorderThickness = 0
-            };
-
-            if (guna2Button3.Parent != null)
-                guna2Button3.Parent.Controls.Remove(guna2Button3);
-
-            if (btnSave.Parent != null)
-                btnSave.Parent.Controls.Remove(btnSave);
-
-            if (btnClose.Parent != null)
-                btnClose.Parent.Controls.Remove(btnClose);
-
-            panel1.Visible = false;
-
-            Controls.Add(pnlBottomActions);
-
-            pnlBottomActions.Controls.Add(guna2Button3);
-            pnlBottomActions.Controls.Add(btnSave);
-            pnlBottomActions.Controls.Add(btnClose);
-
-            guna2Button3.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnSave.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-
-            pnlBottomActions.Resize -= pnlBottomActions_Resize;
-            pnlBottomActions.Resize += pnlBottomActions_Resize;
-
-            PositionBottomButtons();
-            pnlBottomActions.BringToFront();
-        }
-
-        private void pnlBottomActions_Resize(object sender, EventArgs e)
-        {
-            PositionBottomButtons();
-        }
-        private void PositionBottomButtons()
-        {
-            if (pnlBottomActions == null)
-                return;
-
-            int margin = 22;
-            int gap = 14;
-            int y = 16;
-
-            guna2Button3.Size = new Size(160, 46);
-            btnSave.Size = new Size(125, 46);
-            btnClose.Size = new Size(125, 46);
-
-            bool isArabic = IsArabicLanguage();
-
-            if (isArabic)
-            {
-                // Arabic: Save & Close, Save and Close are on the LEFT.
-                guna2Button3.Anchor =
-                    AnchorStyles.Top | AnchorStyles.Left;
-                btnSave.Anchor =
-                    AnchorStyles.Top | AnchorStyles.Left;
-                btnClose.Anchor =
-                    AnchorStyles.Top | AnchorStyles.Left;
-
-                guna2Button3.Location =
-                    new Point(margin, y);
-
-                btnSave.Location =
-                    new Point(
-                        guna2Button3.Right + gap,
-                        y);
-
-                btnClose.Location =
-                    new Point(
-                        btnSave.Right + gap,
-                        y);
+                btnSave.Enabled = BtnSaveNew.Enabled = UserPermissions.canEdit("Vouchers");
+                BtnDelete.Enabled = UserPermissions.canDelete("Vouchers"); //"Advance Payment Voucher";
+                BindVoucher();
             }
             else
             {
-                // English: keep the original right-side footer.
-                guna2Button3.Anchor =
-                    AnchorStyles.Top | AnchorStyles.Right;
-                btnSave.Anchor =
-                    AnchorStyles.Top | AnchorStyles.Right;
-                btnClose.Anchor =
-                    AnchorStyles.Top | AnchorStyles.Right;
-
-                btnClose.Location =
-                    new Point(
-                        pnlBottomActions.ClientSize.Width
-                        - margin
-                        - btnClose.Width,
-                        y);
-
-                btnSave.Location =
-                    new Point(
-                        btnClose.Left
-                        - gap
-                        - btnSave.Width,
-                        y);
-
-                guna2Button3.Location =
-                    new Point(
-                        btnSave.Left
-                        - gap
-                        - guna2Button3.Width,
-                        y);
+                if (defaultCustomerId > 0)
+                {
+                    cmbVendor.SelectedValue = defaultCustomerId;
+                    LoadData();
+                }
             }
 
-            guna2Button3.BringToFront();
-            btnSave.BringToFront();
-            btnClose.BringToFront();
-            pnlBottomActions.BringToFront();
-        }
-        private void StylePaymentLayout()
-        {
-            dgvInv.Anchor =
-                AnchorStyles.Top |
-                AnchorStyles.Bottom |
-                AnchorStyles.Left |
-                AnchorStyles.Right;
-
-            // Toolbar button
-            BtnSaveNew.Anchor =
-                AnchorStyles.Top |
-                AnchorStyles.Left;
-
-            CreateBottomActionBar();
-        }
-        private void StyleInvoiceGrid()
-        {
-            dgvInv.BackgroundColor = Color.White;
-            dgvInv.BorderStyle = BorderStyle.None;
-
-            dgvInv.RowHeadersVisible = false;
-            dgvInv.EnableHeadersVisualStyles = false;
-
-            dgvInv.ColumnHeadersHeight = 42;
-
-            dgvInv.ColumnHeadersBorderStyle =
-                DataGridViewHeaderBorderStyle.None;
-
-            dgvInv.ColumnHeadersDefaultCellStyle.BackColor =
-                Color.FromArgb(248, 250, 252);
-
-            dgvInv.ColumnHeadersDefaultCellStyle.ForeColor =
-                Color.FromArgb(30, 41, 59);
-
-            dgvInv.ColumnHeadersDefaultCellStyle.Font =
-                new Font(
-                    "Segoe UI Semibold",
-                    9F,
-                    FontStyle.Bold);
-
-            dgvInv.ColumnHeadersDefaultCellStyle.Alignment =
-                DataGridViewContentAlignment.MiddleLeft;
-
-            dgvInv.ColumnHeadersDefaultCellStyle.Padding =
-                new Padding(8, 0, 0, 0);
-
-            dgvInv.RowTemplate.Height = 40;
-
-            dgvInv.DefaultCellStyle.BackColor =
-                Color.White;
-
-            dgvInv.DefaultCellStyle.ForeColor =
-                Color.FromArgb(51, 65, 85);
-
-            dgvInv.DefaultCellStyle.Font =
-                new Font("Segoe UI", 9F);
-
-            dgvInv.DefaultCellStyle.Padding =
-                new Padding(7, 3, 7, 3);
-
-            dgvInv.DefaultCellStyle.SelectionBackColor =
-                Color.FromArgb(238, 242, 255);
-
-            dgvInv.DefaultCellStyle.SelectionForeColor =
-                Color.FromArgb(67, 56, 202);
-
-            dgvInv.AlternatingRowsDefaultCellStyle.BackColor =
-                Color.FromArgb(250, 251, 253);
-
-            dgvInv.CellBorderStyle =
-                DataGridViewCellBorderStyle.SingleHorizontal;
-
-            dgvInv.GridColor =
-                Color.FromArgb(241, 245, 249);
-
-            dgvInv.SelectionMode =
-                DataGridViewSelectionMode.FullRowSelect;
-
-            dgvInv.AutoSizeColumnsMode =
-                DataGridViewAutoSizeColumnsMode.Fill;
+            LocalizationManager.LocalizeDataGridViewHeaders(dgvInv);
         }
         private void BindVoucher()
         {
@@ -1380,11 +91,11 @@ EventArgs e)
                     txtId.Text = reader["id"].ToString();
                     txtPVCode.Text = reader["code"].ToString();
                     dtOpen.Value = DateTime.Parse(reader["date"].ToString());
-                    code = reader["code"].ToString();
+                    code = reader["code"].ToString(); 
                     string typeValue = reader["type"].ToString();
-                    cmbPaymentType.SelectedIndex = cmbPaymentType.FindStringExact(typeValue);
+                    cmbPaymentType.SelectedItem = typeValue;    
                     string methodValue = reader["method"].ToString();
-                    cmbMethod.SelectedIndex = cmbMethod.FindStringExact(methodValue);
+                    cmbMethod.SelectedItem = methodValue;
                     txtAmount.Text = reader["amount"].ToString();
                     cmbCreditAccountName.SelectedValue = reader["credit_account_id"].ToString();
                     cmbCreditCostCenter.SelectedValue = reader["credit_cost_center_id"].ToString();
@@ -1459,7 +170,7 @@ EventArgs e)
                                 tbl_attendance_salary.net_salary net,tbl_attendance_salary.pay,tbl_attendance_salary.change FROM tbl_attendance_salary 
                                 WHERE emp_code = (SELECT CODE FROM tbl_employee where id=@id ) AND `change` <> 0";
                     }
-                    else if (cmbPaymentType.Text == "Petty Cash")
+                    else if(cmbPaymentType.Text == "Petty Cash")
                     {
                         query = @"SELECT ROW_NUMBER() OVER (ORDER BY tbl_petty_cash_request.request_date) AS SN, 
                                 tbl_petty_cash_request.request_date date,tbl_petty_cash_request.id,tbl_petty_cash_request.request_ref invoice_id,tbl_petty_cash_request.amount net,
@@ -1501,8 +212,13 @@ EventArgs e)
                 }
 
             dgvInv.Columns["humId"].Visible = dgvInv.Columns["invId"].Visible = false;
-            StyleInvoiceGrid();
-            StylePaymentGridColumns();
+            dgvInv.ColumnHeadersDefaultCellStyle.BackColor = Color.White;
+            dgvInv.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 8, FontStyle.Bold);
+            dgvInv.ColumnHeadersDefaultCellStyle.ForeColor = Color.Black;
+            dgvInv.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dgvInv.ColumnHeadersHeight = 18;
+            dgvInv.EnableHeadersVisualStyles = false;
+            dgvInv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             calculateTotal();
 
             if (cmbPaymentType.Text == "Employee")
@@ -1510,7 +226,7 @@ EventArgs e)
                 if (id > 0)
                     TickFillCheckNameEmployee();
             }
-            else if (cmbPaymentType.Text == "Petty Cash")
+            else if(cmbPaymentType.Text == "Petty Cash")
             {
                 if (id > 0)
                     TickFillCheckNameEmployee();
@@ -1552,7 +268,7 @@ EventArgs e)
             {
                 if (insertPV())
                 {
-                    //.RefreshPaymentVoucher();
+                    EventHub.RefreshPaymentVoucher();
                     MessageBox.Show("The Payment Voucher Paid  ");
                     if (chkPrint.Checked == true)
                     {
@@ -1564,7 +280,7 @@ EventArgs e)
             {
                 if (updatePV())
                 {
-                    //.RefreshPaymentVoucher();
+                    EventHub.RefreshPaymentVoucher();
                     MessageBox.Show("The Payment Voucher Updated !  ");
                     if (chkPrint.Checked == true)
                     {
@@ -1573,12 +289,35 @@ EventArgs e)
                 }
             }
         }
-
-        private void loadPrint(string text)
+        private void loadPrint(string mm)
         {
-            throw new NotImplementedException();
-        }
+            //DialogResult result = MessageBox.Show("Do You want To Show This Bill ",
+            //                                   "Confirmation",
+            //                                   MessageBoxButtons.YesNo,
+            //                                   MessageBoxIcon.Question);
+            //// Check if the user clicked Yes or No
+            //if (result == DialogResult.Yes)
+            //{
+                // Code for when the user clicks "Yes"
+                if (mm == "Cash")
+                {
+                    //ShowReport1();
+                }
+                else if (mm == "Cheque")
+                {               
+                    ShowReport2();
 
+                }
+            //else if (mm == "Transfer")
+            //{
+            //    ShowReport3();
+            //}
+
+            //else if (result == DialogResult.No)
+            //{
+            //    this.Close();
+            //}
+        }
         private bool updatePV()
         {
             if (!chkRequireData())
@@ -1677,7 +416,7 @@ EventArgs e)
             CommonInsert.InsertCostCenterTransaction(dtOpen.Value, txtAmount.Text.ToString(), "0", id.ToString(), "Payment", "Payment Debit Entry", cmbDebitCostCenter.SelectedValue.ToString());
             CommonInsert.InsertCostCenterTransaction(dtOpen.Value, "0", txtAmount.Text.ToString(), id.ToString(), "Payment", "Payment Credit Entry", cmbCreditCostCenter.SelectedValue.ToString());
 
-            ////Utilities.LogAudit(-1, "Update Payment Voucher", "Payment Voucher", id, "Updated Payment Voucher: " + code);
+            Utilities.LogAudit(-1, "Update Payment Voucher", "Payment Voucher", id, "Updated Payment Voucher: " + code);
             if (!string.IsNullOrEmpty(filePath))
             {
                 AddFileData(id);
@@ -1743,7 +482,7 @@ EventArgs e)
             }
             //insertJournals();
             insertINV(id, GlobalId);
-            ////Utilities.LogAudit(-1, "Insert Payment Voucher", "Payment Voucher", id, "Inserted Payment Voucher: " + code);
+            Utilities.LogAudit(-1, "Insert Payment Voucher", "Payment Voucher", id, "Inserted Payment Voucher: " + code);
 
             CommonInsert.InsertCostCenterTransaction(dtOpen.Value, txtAmount.Text.ToString(), "0", id.ToString(), "Payment", "Payment Debit Entry", cmbDebitCostCenter.SelectedValue.ToString());
             CommonInsert.InsertCostCenterTransaction(dtOpen.Value, "0", txtAmount.Text.ToString(), id.ToString(), "Payment", "Payment Credit Entry", cmbCreditCostCenter.SelectedValue.ToString());
@@ -1755,58 +494,38 @@ EventArgs e)
 
             return true;
         }
-        // Displays validation alerts in the currently selected language.
-        // This changes only the alert text and direction; it does not change validation or database logic.
-        private void ShowPaymentVoucherAlert(string englishMessage, string arabicMessage)
-        {
-            bool arabic = IsArabicLanguage();
-            string message = arabic ? arabicMessage : englishMessage;
-            string caption = arabic ? "تنبيه" : "Validation";
-
-            MessageBox.Show(
-                this,
-                message,
-                caption,
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Warning,
-                MessageBoxDefaultButton.Button1,
-                arabic ? MessageBoxOptions.RightAlign | MessageBoxOptions.RtlReading : 0);
-        }
-
         private bool chkRequireData()
         {
             if (cmbPaymentType.Text.Trim() == "")
             {
-                ShowPaymentVoucherAlert("Please Choose Payment Type.", "يرجى اختيار نوع الدفع.");
+                MessageBox.Show("Please Choose Payment Type.");
                 return false;
             }
             if (txtAmount.Text.Trim() == "")
             {
-                ShowPaymentVoucherAlert("Please Enter Payment Amount.", "يرجى إدخال مبلغ الدفع.");
-                txtAmount.Focus();
+                MessageBox.Show("Please Enter Payment Amount.");
                 return false;
             }
             if (cmbDebitAccountName.Text.Trim() == "")
             {
-                ShowPaymentVoucherAlert("Please Choose Debit Account Name", "يرجى اختيار اسم الحساب المدين.");
+                MessageBox.Show("Please Choose Debit Account Name");
                 return false;
             }
             if (cmbCreditAccountName.Text.Trim() == "")
             {
-                ShowPaymentVoucherAlert("Please Choose Credit Account Name", "يرجى اختيار اسم الحساب الدائن.");
+                MessageBox.Show("Please Choose Credit Account Name");
                 return false;
             }
             if ((txtAmount.Text == "" || decimal.Parse(txtAmount.Text) == 0) && dgvInv.Rows.Count == 0)
             {
-                ShowPaymentVoucherAlert("Enter Amount", "يرجى إدخال المبلغ.");
-                txtAmount.Focus();
+                MessageBox.Show("Enter Amount");
                 return false;
             }
             if (cmbMethod.Text == "Cheque")
             {
                 if (cmbBankName.SelectedValue == null || cmbBankAccountName.SelectedValue == null || cmbBookNo.SelectedValue == null)
                 {
-                    ShowPaymentVoucherAlert("Please Enter Bank Information First", "يرجى إدخال معلومات البنك أولاً.");
+                    MessageBox.Show("Please Enter Bank Information First");
                     return false;
                 }
             }
@@ -1814,7 +533,7 @@ EventArgs e)
             {
                 if (txtTransName.Text == "" || txtTransRef.Text == "")
                 {
-                    ShowPaymentVoucherAlert("Please Enter Transfer Information First", "يرجى إدخال معلومات التحويل أولاً.");
+                    MessageBox.Show("Please Enter Transfer Information First");
                     return false;
                 }
             }
@@ -1912,7 +631,7 @@ EventArgs e)
                     // Petty Cash Pay
                     //if (dgvInv.Rows[i].Cells["voucherType"].Value != null &&
                     //    dgvInv.Rows[i].Cells["voucherType"].Value.ToString() == "Petty Cash Request")
-                    if (cbpettycash.Checked)
+                    if(cbpettycash.Checked)
                     {
                         int requestId = int.Parse(dgvInv.Rows[i].Cells["invId"].Value.ToString());
                         if (cbpettycash.Checked)
@@ -1952,7 +671,7 @@ EventArgs e)
             {
                 //if (voucherType == "Petty Cash Request")
                 //{
-                tType = "Employee Petty Cash Payment";
+                    tType = "Employee Petty Cash Payment";
                 //}
             }
 
@@ -2062,7 +781,7 @@ EventArgs e)
                     if (customerTotalOB != customerTotalBalance)
                         dgvInv.Rows.Add(++counter, cmbVendor.SelectedValue, "", DateTime.Parse(reader["date"].ToString()).ToShortDateString(), "Vendor Opening Balance", customerTotalOB - customerTotalBalance, 0, 0, "Vendor Opening Balance");
                 }
-
+                
                 using (var reader = ClinicDatabase.ExecuteReader(@"SELECT ROW_NUMBER() OVER (ORDER BY tbl_purchase.date) AS SN, 
                                                                       tbl_purchase.date AS DATE, tbl_purchase.id, tbl_purchase.invoice_id AS 'INV NO', 
                                                                       tbl_purchase.change FROM tbl_purchase INNER JOIN tbl_vendor ON tbl_purchase.vendor_id = tbl_vendor.id
@@ -2079,8 +798,13 @@ EventArgs e)
                     }
                 }
                 dgvInv.Columns["humId"].Visible = dgvInv.Columns["invId"].Visible = false;
-                StyleInvoiceGrid();
-                StylePaymentGridColumns();
+                dgvInv.ColumnHeadersDefaultCellStyle.BackColor = Color.White;
+                dgvInv.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 8, FontStyle.Regular);
+                dgvInv.ColumnHeadersDefaultCellStyle.ForeColor = Color.Black;
+                dgvInv.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                dgvInv.ColumnHeadersHeight = 18;
+                dgvInv.EnableHeadersVisualStyles = false;
+                dgvInv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             }
             else if (cmbPaymentType.Text == "Employee")
             {
@@ -2121,47 +845,6 @@ EventArgs e)
                 }
             }
         }
-        private void StylePaymentGridColumns()
-        {
-            if (dgvInv == null)
-                return;
-
-            if (dgvInv.Columns.Contains("no"))
-                dgvInv.Columns["no"].Width = 55;
-
-            if (dgvInv.Columns.Contains("invDate"))
-                dgvInv.Columns["invDate"].Width = 105;
-
-            if (dgvInv.Columns.Contains("InvNo"))
-                dgvInv.Columns["InvNo"].Width = 130;
-
-            if (dgvInv.Columns.Contains("Total"))
-            {
-                dgvInv.Columns["Total"].Width = 110;
-
-                dgvInv.Columns["Total"]
-                    .DefaultCellStyle.Alignment =
-                    DataGridViewContentAlignment.MiddleRight;
-            }
-
-            if (dgvInv.Columns.Contains("Pay"))
-            {
-                dgvInv.Columns["Pay"].Width = 110;
-
-                dgvInv.Columns["Pay"]
-                    .DefaultCellStyle.Alignment =
-                    DataGridViewContentAlignment.MiddleRight;
-            }
-
-            if (dgvInv.Columns.Contains("Description"))
-            {
-                dgvInv.Columns["Description"]
-                    .AutoSizeMode =
-                    DataGridViewAutoSizeColumnMode.Fill;
-
-                dgvInv.Columns["Description"].MinimumWidth = 250;
-            }
-        }
         private void cmbTypes_SelectedIndexChanged(object sender, EventArgs e)
         {
 
@@ -2198,8 +881,7 @@ EventArgs e)
             }
 
 
-            if (cmbDebitAccountName.Focused)
-            {
+            if (cmbDebitAccountName.Focused) {
                 if (isDebitAccountNameRefreshing) return;
 
                 if (cmbDebitAccountName.SelectedValue != null &&
@@ -2338,7 +1020,7 @@ EventArgs e)
 
                 foreach (DataRow row in dt.Rows)
                 {
-                    lstAccountSuggestions.Items.Add(new ItemSuggestion { Id = Convert.ToInt32(row["id"]), Code = row["code"].ToString(), Name = row["name"].ToString() });
+                    lstAccountSuggestions.Items.Add(new ItemSuggestion { Id = Convert.ToInt32(row["id"]),Code = row["code"].ToString(), Name = row["name"].ToString() });
                 }
                 if (lstAccountSuggestions.Items.Count > 0)
                 {
@@ -2444,7 +1126,7 @@ EventArgs e)
 
         private void dt_check_date_ValueChanged(object sender, EventArgs e)
         {
-            if (dt_check_date.Focused)
+            if(dt_check_date.Focused)
                 CheckDateCheck();
         }
 
@@ -2455,21 +1137,21 @@ EventArgs e)
 
             if (cmbMethod.Text == "Cheque")
             {
-                if (dt_check_date.Value.Date == DateTime.Now.Date)
-                {
-                    using (MySqlDataReader reader = ClinicDatabase.ExecuteReader("SELECT * FROM tbl_coa_level_4 WHERE main_id = (SELECT id FROM tbl_coa_level_3 WHERE NAME = 'Banks') LIMIT 1;"))
-                        if (reader.Read())
-                        {
-                            txtCreditAccountCode.Text = reader["code"].ToString();
-                            string accountId = reader["id"].ToString();
-                            if (!string.IsNullOrEmpty(accountId))
-                            {
-                                cmbCreditAccountName.SelectedValue = int.Parse(accountId);
-                            }
-                        }
-                }
-                else
-                {
+                //if (dt_check_date.Value.Date == DateTime.Now.Date)
+                //{
+                //    using (MySqlDataReader reader = ClinicDatabase.ExecuteReader("SELECT * FROM tbl_coa_level_4 WHERE main_id = (SELECT id FROM tbl_coa_level_3 WHERE NAME = 'Banks') LIMIT 1;"))
+                //        if (reader.Read())
+                //        {
+                //            txtCreditAccountCode.Text = reader["code"].ToString();
+                //            string accountId = reader["id"].ToString();
+                //            if (!string.IsNullOrEmpty(accountId))
+                //            {
+                //                cmbCreditAccountName.SelectedValue = int.Parse(accountId);
+                //            }
+                //        }
+                //}
+                //else
+                //{
                     using (MySqlDataReader reader = ClinicDatabase.ExecuteReader("SELECT id,code FROM tbl_coa_level_4 WHERE id = (select account_id from tbl_coa_config where category=@cat)", ClinicDatabase.CreateParameterNew("@cat", "PDC Payable")))
                         if (reader.Read())
                         {
@@ -2480,7 +1162,7 @@ EventArgs e)
                                 cmbCreditAccountName.SelectedValue = int.Parse(accountId);
                             }
                         }
-                }
+                //}
             }
             else
             {
@@ -2507,12 +1189,12 @@ EventArgs e)
                 if (cmbBankName.SelectedValue != null &&
             (cmbBankName.SelectedValue.ToString() == "0" || cmbBankName.Text == "<< Add >>"))
                 {
-                    //var frm = new frmBankRegister(0);
-                    //frm.ShowDialog();
-                    //isBankNameRefreshing = true;
-                    //BindCombos.PopulateRegisterBanks(cmbBankName, true);
-                    //cmbBankName.SelectedIndex = cmbBankName.Items.Count - 1;
-                    //isBankNameRefreshing = false;
+                                            //var frm = new frmBankRegister(0);
+                                            //frm.ShowDialog();
+                                            isBankNameRefreshing = true;
+                                            BindCombos.PopulateRegisterBanks(cmbBankName, true);
+                                            cmbBankName.SelectedIndex = cmbBankName.Items.Count - 1;
+                    isBankNameRefreshing = false;
                 }
             }
 
@@ -2542,7 +1224,7 @@ EventArgs e)
                     cmbBankName.SelectedValue = int.Parse(reader["id"].ToString());
 
             if (txtBankCode.Focused)
-            {
+           {
                 string input = txtBankCode.Text.Trim();
 
                 if (string.IsNullOrEmpty(input))
@@ -2639,7 +1321,7 @@ EventArgs e)
                     if (pay < total)
                         dgvInv.CurrentRow.Cells["Pay"].Value = dgvInv.CurrentRow.Cells["Total"].Value.ToString();
                 }
-
+                    
             }
             calculateTotal();
         }
@@ -2663,7 +1345,7 @@ EventArgs e)
             }
             txtAmountInWord.Text = AmountToWordsHelper.ConvertToSelectedLanguage(decimal.Parse(txtAmount.Text));
         }
-
+        
 
         private string GenerateNextChequeCode()
         {
@@ -2706,19 +1388,19 @@ EventArgs e)
                         }
 
                         // Get used check numbers and remove them
-                        using (MySqlDataReader usedReader = ClinicDatabase.ExecuteReader(@"
+                        using(MySqlDataReader usedReader = ClinicDatabase.ExecuteReader(@"
                             SELECT CAST(check_no AS UNSIGNED) AS check_no 
                             FROM tbl_check_details 
                             WHERE check_type = 'Payment' AND check_id = @check_id",
                             ClinicDatabase.CreateParameterNew("check_id", cmbBookNo.SelectedValue.ToString())))
-                            while (usedReader.Read())
+                        while (usedReader.Read())
+                        {
+                            if (usedReader["check_no"] != DBNull.Value)
                             {
-                                if (usedReader["check_no"] != DBNull.Value)
-                                {
-                                    int used = Convert.ToInt32(usedReader["check_no"]);
-                                    availableChecks.Remove(used); // Remove if exists
-                                }
+                                int used = Convert.ToInt32(usedReader["check_no"]);
+                                availableChecks.Remove(used); // Remove if exists
                             }
+                        }
 
                         // Add remaining (available) checks to combo box
                         foreach (int checkNo in availableChecks)
@@ -2755,7 +1437,7 @@ EventArgs e)
                     addVendorForm.ShowDialog(); // This will wait until form is closed
 
                     isVendorRefreshing = true;
-                    BindCombos.PopulateVendors(cmbVendor, true, true, VendorType);
+                    BindCombos.PopulateVendors(cmbVendor, true, true,VendorType);
                     cmbVendor.SelectedIndex = cmbVendor.Items.Count - 1;
                     isVendorRefreshing = false;
                 }
@@ -2773,7 +1455,7 @@ EventArgs e)
             {
                 txtVendor.Text = "";
             }
-
+            
             dgvInv.Rows.Clear();
             if (cmbVendor.SelectedValue == null)
                 return;
@@ -2782,14 +1464,14 @@ EventArgs e)
             using (MySqlDataReader obReader = ClinicDatabase.ExecuteReader(@"SELECT balance, date FROM tbl_vendor WHERE id = @id",
                 ClinicDatabase.CreateParameterNew("@id", cmbVendor.SelectedValue)))
 
-                if (obReader.Read())
-                {
-                    if (!string.IsNullOrEmpty(obReader["balance"].ToString()))
-                        vendorTotalOB = decimal.Parse(obReader["balance"].ToString());
+            if (obReader.Read())
+            {
+                if (!string.IsNullOrEmpty(obReader["balance"].ToString()))
+                    vendorTotalOB = decimal.Parse(obReader["balance"].ToString());
 
-                    if (!string.IsNullOrEmpty(obReader["date"].ToString()))
-                        vendorOBDate = DateTime.Parse(obReader["date"].ToString()).ToShortDateString();
-                }
+                if (!string.IsNullOrEmpty(obReader["date"].ToString()))
+                    vendorOBDate = DateTime.Parse(obReader["date"].ToString()).ToShortDateString();
+            }
             // 2️⃣ Get how much has been paid from opening balance
             using (MySqlDataReader paidReader = ClinicDatabase.ExecuteReader(@"SELECT 
                             (SELECT SUM(payment) 
@@ -3038,6 +1720,52 @@ EventArgs e)
                             (SELECT NAME FROM tbl_sub_cost_center WHERE id = (select cost_center_id FROM tbl_payment_voucher_details WHERE payment_id=r.id LIMIT 1)) AS centerName 
                             FROM tbl_transaction tr,tbl_payment_voucher r WHERE tr.transaction_id=r.id and r.id=@paymentId AND tr.TYPE = 'Vendor payment';", ClinicDatabase.CreateParameterNew("@paymentId", a1));
         }
+        //public void ShowReport1()
+        //{
+
+        //    try
+        //    {
+
+        //        // Create the report 
+        //        //CPV_GENERAL cr = new CPV_GENERAL();
+        //        string reportPath = Path.Combine(Application.StartupPath, "CrystalReport", "PaymentVoucherGeneral.rpt");
+
+        //        // Load the report file from disk
+        //        //ReportDocument cr = new ReportDocument();
+        //        //cr.Load(reportPath);
+        //        // Load the main report data
+        //        DataTable companyData = COMPANYINFO("1");  // Assuming you want to pass ID 1
+        //        DataTable PaymentDetails = PaymentDetail(id.ToString());
+        //        DataTable PaymentVoucher = PaymentVoucherData(id.ToString());
+        //        DataTable transaction = VoucherTransaction(id.ToString());
+        //        if (companyData != null)  // Ensure that data was successfully retrieved
+        //        {
+        //            //cr.SetDataSource(companyData);
+        //            cr.Subreports["Company"].SetDataSource(companyData);
+        //            cr.Subreports["PaymentHeader"].SetDataSource(PaymentVoucher);
+        //            cr.Subreports["PaymentDetails"].SetDataSource(PaymentDetails);
+        //            cr.Subreports["TransactionHeader"].SetDataSource(transaction);
+        //            cr.Subreports["PaymentAcHeader"].SetDataSource(PaymentVoucher);
+        //            ((TextObject)cr.ReportDefinition.Sections["Section4"].ReportObjects["Text6"]).Text = txtDescription1.Text;
+        //        }
+        //        else
+        //        {
+        //            MessageBox.Show("No data available for the report.");
+        //            return;  // Exit the method if no data is available
+        //        }
+
+        //        // Assign the main report to the viewer
+        //        string fileName = "PaymentVoucher_" + id + "_" + cmbVendor.Text.Trim();
+        //        MasterReportView reportForm = new MasterReportView(cr, fileName);
+        //        reportForm.crReportViewer.ReportSource = cr;
+        //        reportForm.crReportViewer.RefreshReport();
+        //        reportForm.ShowDialog();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        MessageBox.Show("Error: " + ex.Message);
+        //    }
+        //}
 
         private void guna2TileButton18_Click(object sender, EventArgs e)
         {
@@ -3058,7 +1786,7 @@ EventArgs e)
             {
                 if (insertPV())
                 {
-                    //.RefreshPaymentVoucher();
+                    EventHub.RefreshPaymentVoucher();
                     MessageBox.Show("The Payment Voucher Paid  ");
                     if (chkPrint.Checked == true)
                     {
@@ -3074,7 +1802,7 @@ EventArgs e)
             {
                 if (updatePV())
                 {
-                    //.RefreshPaymentVoucher();
+                    EventHub.RefreshPaymentVoucher();
                     MessageBox.Show("The Payment Voucher Updated !  ");
                     if (chkPrint.Checked == true)
                     {
@@ -3103,6 +1831,51 @@ EventArgs e)
         private void guna2Button2_Click(object sender, EventArgs e)
         {
             this.WindowState = FormWindowState.Minimized;
+        }
+
+        public void ShowReport2()
+        {
+            try
+            {
+                // Create the report 
+                //cpvcheq cr = new cpvcheq();
+                string reportPath = Path.Combine(Application.StartupPath, "CrystalReport", "PaymentVoucherCheque.rpt");
+
+                // Load the report file from disk
+                //ReportDocument cr = new ReportDocument();
+                //cr.Load(reportPath);
+                // Load the main report data
+                DataTable companyData = COMPANYINFO("1");
+                DataTable PaymentVoucher = PaymentVoucherData(id.ToString());
+                DataTable transaction = VoucherTransaction(id.ToString());
+                DataTable PaymentDetails = PaymentDetail(id.ToString());
+                if (companyData != null)
+                {
+                    //cr.Subreports["Company"].SetDataSource(companyData);
+                    //cr.Subreports["PaymentHeader"].SetDataSource(PaymentVoucher);
+                    //cr.Subreports["TransactionHeader"].SetDataSource(transaction);
+                    //cr.Subreports["AccountHeader"].SetDataSource(PaymentVoucher);
+                    ////cr.Subreports["PaymentDetails"].SetDataSource(PaymentDetails);
+                    //cr.Subreports["ChequeDetails"].SetDataSource(PaymentVoucher);
+                    //((TextObject)cr.ReportDefinition.Sections["Section4"].ReportObjects["Text6"]).Text = txtDescription1.Text;
+                }
+                else
+                {
+                    MessageBox.Show("No data available for the report.");
+                    return;  // Exit the method if no data is available
+                }
+
+                // Assign the main report to the viewer
+                string fileName = "PaymentVoucher_" + id + "_" + cmbVendor.Text.Trim();
+                //MasterReportView reportForm = new MasterReportView(cr, fileName);
+                //reportForm.crReportViewer.ReportSource = cr;
+                //reportForm.crReportViewer.RefreshReport();
+                //reportForm.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message);
+            }
         }
 
         private void btnPrevious_Click(object sender, EventArgs e)
@@ -3199,8 +1972,8 @@ EventArgs e)
                 ClinicDatabase.ExecuteNonQuery(
                     "INSERT INTO tbl_deleted_records (table_name, record_data, deleted_by) VALUES (@table, @data, @user)",
                     ClinicDatabase.CreateParameterNew("table", "tbl_payment_voucher"),
-                    ClinicDatabase.CreateParameterNew("data", "Newtonsoft.Json.JsonConvert.SerializeObject(row)"),
-                    ClinicDatabase.CreateParameterNew("user", "-1")
+                    ClinicDatabase.CreateParameterNew("data", Newtonsoft.Json.JsonConvert.SerializeObject(row)),
+                    ClinicDatabase.CreateParameterNew("user", -1)
                 );
             }
 
@@ -3209,8 +1982,8 @@ EventArgs e)
                 ClinicDatabase.ExecuteNonQuery(
                     "INSERT INTO tbl_deleted_records (table_name, record_data, deleted_by) VALUES (@table, @data, @user)",
                     ClinicDatabase.CreateParameterNew("table", "tbl_payment_voucher_details"),
-                    ClinicDatabase.CreateParameterNew("data", "Newtonsoft.Json.JsonConvert.SerializeObject(row)"),
-                    ClinicDatabase.CreateParameterNew("user", "-1")
+                    ClinicDatabase.CreateParameterNew("data", Newtonsoft.Json.JsonConvert.SerializeObject(row)),
+                    ClinicDatabase.CreateParameterNew("user", -1)
                 );
             }
 
@@ -3219,8 +1992,8 @@ EventArgs e)
                 ClinicDatabase.ExecuteNonQuery(
                     "INSERT INTO tbl_deleted_records (table_name, record_data, deleted_by) VALUES (@table, @data, @user)",
                     ClinicDatabase.CreateParameterNew("table", "tbl_transaction"),
-                    ClinicDatabase.CreateParameterNew("data", "Newtonsoft.Json.JsonConvert.SerializeObject(row)"),
-                    ClinicDatabase.CreateParameterNew("user", "-1")
+                    ClinicDatabase.CreateParameterNew("data", Newtonsoft.Json.JsonConvert.SerializeObject(row)),
+                    ClinicDatabase.CreateParameterNew("user", -1)
                 );
             }
 
@@ -3232,7 +2005,7 @@ EventArgs e)
             ClinicDatabase.ExecuteNonQuery("DELETE FROM tbl_payment_voucher WHERE id = @id",
                 ClinicDatabase.CreateParameterNew("id", id.ToString()));
 
-            ////Utilities.LogAudit(-1, "Payment Voucher Permanently Deleted", "Payment Voucher", id, "Deleted Payment Voucher with ID: " + id);
+            Utilities.LogAudit(-1, "Payment Voucher Permanently Deleted", "Payment Voucher", id, "Deleted Payment Voucher with ID: " + id);
             clear();
         }
 
@@ -3317,6 +2090,7 @@ EventArgs e)
         //    {
         //        lstAccountSuggestions.Items.Add(new ItemSuggestion
         //{
+        //    Id = row["id"] != DBNull.Value ? Convert.ToInt32(row["id"]) : 0,
         //    Code = row["code"].ToString(),
         //    Name = row["name"].ToString()
         //});
@@ -3370,6 +2144,7 @@ EventArgs e)
         //    {
         //        lstAccountSuggestions.Items.Add(new ItemSuggestion
         //{
+        //    Id = row["id"] != DBNull.Value ? Convert.ToInt32(row["id"]) : 0,
         //    Code = row["code"].ToString(),
         //    Name = row["name"].ToString()
         //});
@@ -3447,8 +2222,10 @@ EventArgs e)
             {
                 string selected = lstAccountSuggestions.SelectedItem.ToString();
                 string selectedCode = "";// selected.Split('-')[0].Trim();
+                int selectedId = 0;
                 if (lstAccountSuggestions.SelectedItem is ItemSuggestion item)
                 {
+                    selectedId = item.Id;
                     selectedCode = item.Code;
                 }
 
@@ -3494,24 +2271,24 @@ EventArgs e)
 
         private void cbpettycash_CheckedChanged(object sender, EventArgs e)
         {
-            if (cbpettycash.Checked == true)
+            if (cbpettycash.Checked == true )
             {
                 //lspettycashemployee.Visible = true;
                 //lstOfEmp.Visible = true;
                 //else if (cmbMethod.Text == "Petty Cash")
                 //{
-                //pnlBank.Visible = false;
-                //pnlTrans.Visible = true;
-                //using (MySqlDataReader reader = ClinicDatabase.ExecuteReader("SELECT * FROM tbl_coa_level_4 WHERE main_id = (SELECT id FROM tbl_coa_level_3 WHERE NAME = 'Petty') LIMIT 1;"))
-                //    if (reader.Read())
-                //    {
-                //        txtCreditAccountCode.Text = reader["code"].ToString();
-                //        string accountId = reader["id"].ToString();
-                //        if (!string.IsNullOrEmpty(accountId))
-                //        {
-                //            cmbCreditAccountName.SelectedValue = int.Parse(accountId);
-                //        }
-                //    }
+                    //pnlBank.Visible = false;
+                    //pnlTrans.Visible = true;
+                    //using (MySqlDataReader reader = ClinicDatabase.ExecuteReader("SELECT * FROM tbl_coa_level_4 WHERE main_id = (SELECT id FROM tbl_coa_level_3 WHERE NAME = 'Petty') LIMIT 1;"))
+                    //    if (reader.Read())
+                    //    {
+                    //        txtCreditAccountCode.Text = reader["code"].ToString();
+                    //        string accountId = reader["id"].ToString();
+                    //        if (!string.IsNullOrEmpty(accountId))
+                    //        {
+                    //            cmbCreditAccountName.SelectedValue = int.Parse(accountId);
+                    //        }
+                    //    }
                 //}
             }
             else
@@ -3524,7 +2301,7 @@ EventArgs e)
 
         private void CbSubcontractors_CheckedChanged(object sender, EventArgs e)
         {
-            isSubContractors = CbSubcontractors.Checked;
+            isSubContractors= CbSubcontractors.Checked;
             VendorType = isSubContractors ? "Subcontractor" : "Vendor";
             if (cmbPaymentType.Text == "Vendor" && cmbVendor.SelectedValue != null)
             {
@@ -3692,33 +2469,33 @@ EventArgs e)
 
 
                     // Employee Loan
-                    //        MySqlDataReader pReader = ClinicDatabase.ExecuteReader(@"
-                    //SELECT 
-                    //ROW_NUMBER() OVER (ORDER BY loanDate) AS SN, 
-                    //id, LoanDate, RequestAmount AS Amount, `Change` 
-                    //FROM tbl_loan 
-                    //WHERE EmployeeID = @code AND `change` > 0 
-                    //LIMIT 1;",
-                    //        ClinicDatabase.CreateParameterNew("code", empCode));
+            //        MySqlDataReader pReader = ClinicDatabase.ExecuteReader(@"
+            //SELECT 
+            //ROW_NUMBER() OVER (ORDER BY loanDate) AS SN, 
+            //id, LoanDate, RequestAmount AS Amount, `Change` 
+            //FROM tbl_loan 
+            //WHERE EmployeeID = @code AND `change` > 0 
+            //LIMIT 1;",
+            //        ClinicDatabase.CreateParameterNew("code", empCode));
 
-                    //        while (pReader.Read())
-                    //        {
-                    //            dgvInv.Rows.Add(
-                    //                pReader["SN"].ToString(),
-                    //                empId,
-                    //                pReader["id"].ToString(),                       // invId (Loan ID)
-                    //                pReader["LoanDate"].ToString(),                 // invDate
-                    //                fullName,                     // InvNo (e.g. "30001 - John")
-                    //                Utilities.FormatDecimal(pReader["Change"]),     // Total (Amount to pay)
-                    //                false,                                          // humId
-                    //                "",                                             // Pay (you can set = Change if needed)
-                    //                "",
-                    //                "Employee Loan Payment"// Description
-                    //            );
+            //        while (pReader.Read())
+            //        {
+            //            dgvInv.Rows.Add(
+            //                pReader["SN"].ToString(),
+            //                empId,
+            //                pReader["id"].ToString(),                       // invId (Loan ID)
+            //                pReader["LoanDate"].ToString(),                 // invDate
+            //                fullName,                     // InvNo (e.g. "30001 - John")
+            //                Utilities.FormatDecimal(pReader["Change"]),     // Total (Amount to pay)
+            //                false,                                          // humId
+            //                "",                                             // Pay (you can set = Change if needed)
+            //                "",
+            //                "Employee Loan Payment"// Description
+            //            );
 
-                    //            _idd = pReader["SN"].ToString();
-                    //        }
-                    //        pReader.Dispose();
+            //            _idd = pReader["SN"].ToString();
+            //        }
+            //        pReader.Dispose();
                 }
             }
             else if (e.NewValue == CheckState.Unchecked)
@@ -3736,6 +2513,38 @@ EventArgs e)
             });
         }
         static string filePath = "";
+
+        private void LocalizePaymentVoucherComboBoxes()
+        {
+            LocalizeComboBox(cmbPaymentType);
+            LocalizeComboBox(cmbMethod);
+
+            LocalizeComboBox(cmbDebitAccountName);
+            LocalizeComboBox(cmbCreditAccountName);
+
+            LocalizeComboBox(cmbDebitCostCenter);
+            LocalizeComboBox(cmbCreditCostCenter);
+
+            LocalizeComboBox(cmbBankAccountName);
+        }
+
+        private void LocalizeComboBox(ComboBox combo)
+        {
+            combo.FormattingEnabled = true;
+
+            combo.Format -= PaymentCombo_Format;
+            combo.Format += PaymentCombo_Format;
+        }
+
+        private void PaymentCombo_Format(
+            object sender, ListControlConvertEventArgs e)
+        {
+            string text = Convert.ToString(e.Value);
+
+            e.Value = Clinic.TranslationClass.Translate(
+                text,
+                Clinic.TranslationClass.IsArabic);
+        }
         private void BtnAttach_Click(object sender, EventArgs e)
         {
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
@@ -3751,5 +2560,7 @@ EventArgs e)
                     openFileDialog1.FileName
                 );
         }
+
+      
     }
 }

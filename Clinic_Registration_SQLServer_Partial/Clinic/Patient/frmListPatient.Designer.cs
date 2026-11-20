@@ -624,13 +624,31 @@ namespace Clinic.Patient
             dgvPatient.AlternatingRowsDefaultCellStyle.BackColor = System.Drawing.Color.FromArgb(237, 246, 255);
             dgvPatient.GridColor = System.Drawing.Color.FromArgb(229, 239, 251);
             dgvPatient.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            // CHANGED: Correct grid docking order.
             list.Controls.Add(dgvPatient);
-            // Header above grid, record count below grid, no overlap.
-            list.Controls.SetChildIndex(listHeading, 0);
-            list.Controls.SetChildIndex(dgvPatient, 1);
-            list.Controls.SetChildIndex(recordFooter, 2);
-            left.Controls.Add(list, 0, 1);
 
+            listHeading.Dock = System.Windows.Forms.DockStyle.Top;
+            recordFooter.Dock = System.Windows.Forms.DockStyle.Bottom;
+            dgvPatient.Dock = System.Windows.Forms.DockStyle.Fill;
+
+            // Fill control must be at index 0.
+            list.Controls.SetChildIndex(dgvPatient, 0);
+            list.Controls.SetChildIndex(recordFooter, 1);
+            list.Controls.SetChildIndex(listHeading, 2);
+
+            // CHANGED: Ensure column headers are visible.
+            dgvPatient.ColumnHeadersVisible = true;
+            dgvPatient.ColumnHeadersHeight = 48;
+
+            dgvPatient.ColumnHeadersHeightSizeMode =
+                System.Windows.Forms
+                .DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+
+            dgvPatient.ScrollBars =
+                System.Windows.Forms.ScrollBars.Both;
+
+            left.Controls.Add(list, 0, 1);
+            list.PerformLayout();
             var right = new System.Windows.Forms.TableLayoutPanel
             {
                 Dock = System.Windows.Forms.DockStyle.Fill,
