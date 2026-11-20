@@ -1254,6 +1254,9 @@ namespace Clinic
            {"Search Lab Tests", "البحث عن الفحوصات المخبرية" },
            {"Lab Tests", "الفحوصات المخبرية" },
            {"Lab Test Info", "معلومات الفحص المخبري" },
+           {"Edit Lab Request","تعديل طلب المختبر" },
+           {"Save Changes","حفظ التغييرات" },
+           {"Edit Invoice","تعديل الفاتورة" }
         };
         public static bool IsArabic { get; set; } = false;
 

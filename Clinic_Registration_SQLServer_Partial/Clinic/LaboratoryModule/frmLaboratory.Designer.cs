@@ -594,7 +594,7 @@ namespace Clinic.Medical_Services.Laboratory
             {
                 Dock = DockStyle.Fill,
                 Margin = Padding.Empty,
-                Padding = new Padding(13, 15, 13, 14),
+                Padding = new Padding(13, 15, 13, 38),
                 CornerRadius = 17
             };
             dgvRequests = new DataGridView
