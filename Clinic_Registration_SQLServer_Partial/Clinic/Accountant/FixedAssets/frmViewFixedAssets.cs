@@ -10,7 +10,7 @@ using System.Windows.Forms;
 
 namespace YamyProject
 {
-   
+
     public partial class frmViewFixedAssets : Form
     {
         public int manID;
@@ -33,7 +33,7 @@ namespace YamyProject
             ApplyModernDesign();
 
             // Translate visible text.
-           // LocalizationManager.LocalizeForm(this);
+            // LocalizationManager.LocalizeForm(this);
 
             // =====================================================
             // Restore the exact Designer positions.
@@ -68,11 +68,14 @@ namespace YamyProject
                         : "Fixed Asset - Edit");
 
             //.FixedAssetsCategory +=
-                //FixedAssetCategoryUpdatedHandler;
+            //FixedAssetCategoryUpdatedHandler;
         }
         private void ApplyFixedAssetLanguageLayout()
         {
             bool arabic = IsArabicLanguage();
+
+            // Translate all visible captions without changing control positions.
+            ApplyFixedAssetTranslations(arabic);
 
             // =====================================================
             // FORM
@@ -107,6 +110,8 @@ namespace YamyProject
         label19,
         label20,
         label21,
+        label22,
+        label23,
         label24,
         label25
     };
@@ -225,6 +230,48 @@ namespace YamyProject
             cmbExpenceAccount.RightToLeft = RightToLeft.No;
             cmbOpeningBalance.RightToLeft = RightToLeft.No;
         }
+        private void ApplyFixedAssetTranslations(bool arabic)
+        {
+            // English captions are the original Designer captions.
+            // Arabic captions are applied only when Arabic is selected.
+            label1.Text = arabic ? "الحالة" : "Status";
+            label2.Text = arabic ? "الرمز" : "Code";
+            label3.Text = arabic ? "اسم الأصل" : "Asset Name";
+            label4.Text = arabic ? "العمر الافتراضي للإهلاك (بالسنوات)" : "Depreciation Life (Years)";
+            label5.Text = arabic ? "رقم الفاتورة" : "Invoice Number";
+            label6.Text = arabic ? "تاريخ الشراء" : "Purchase Date";
+            label7.Text = arabic ? "الفئة" : "Category";
+            label8.Text = arabic ? "قيمة الإهلاك (٪)" : "Depreciation Value (IN %)";
+            label9.Text = arabic ? "اسم المورد" : "Supplier Name";
+            label10.Text = arabic ? "الطراز / رقم المحرك" : "Model / ENG No";
+            label11.Text = arabic ? "التاريخ" : "Date";
+            label12.Text = arabic ? "مجمع الإهلاك" : "Accumulated Depreciation";
+            label13.Text = arabic ? "ماركة الأصل" : "Asset Brand";
+            label14.Text = arabic ? "إجمالي الفاتورة" : "Total Invoice";
+            label15.Text = arabic ? "رمز الحساب" : "Account Code";
+            label16.Text = arabic ? "إجمالي الأيام" : "Total Days";
+            label17.Text = arabic ? "رمز الحساب" : "Account Code";
+            label18.Text = arabic ? "تاريخ الانتهاء" : "End Date";
+            label19.Text = arabic ? "مصروف الإهلاك" : "Depreciation Expence";
+            label20.Text = arabic ? "حساب الأصول الثابتة" : "Fixed Assets Account";
+            label21.Text = arabic ? "رمز الحساب" : "Account Code";
+            label22.Text = arabic ? "أصول مُصنّعة" : "Manufacture Assets ";
+            label23.Text = arabic ? "أصول غير مُصنّعة" : "Not Manufacture Assets ";
+            label24.Text = arabic ? "حساب الرصيد الافتتاحي" : "Opening Balance Account";
+            label25.Text = arabic ? "رمز الحساب" : "Account Code";
+
+            chkJournal.Text = arabic ? "إنشاء قيد يومية" : "Make Journal";
+            btnDelete.Text = arabic ? "حذف" : "Delete";
+            btnClose.Text = arabic ? "إغلاق" : "Close";
+            btnSave.Text = arabic ? "حفظ" : "Save";
+            lnkCategory.Text = arabic ? "جديد" : "New";
+            guna2GroupBox1.Text = arabic ? "الأصل الثابت" : "Fixed Asset";
+            this.Text = arabic ? "المصروفات" : " Expense";
+
+            // Keep the form itself in its original physical layout.
+            // Only the text direction/alignment is changed for Arabic.
+        }
+
         private bool IsArabicLanguage()
         {
             string language =
@@ -672,7 +719,7 @@ namespace YamyProject
         }
         private void btnSave_Click(object sender, EventArgs e)
         {
-            if (guna2ToggleSwitch1.Checked &&  pnlmanifacuter.Visible == true)
+            if (guna2ToggleSwitch1.Checked && pnlmanifacuter.Visible == true)
             {
                 manID = 1;
             }
@@ -814,7 +861,7 @@ ClinicDatabase.CreateParameterNew(
             ////Utilities.LogAudit(-1, "Insert Fixed Assets", "Fixed Assets", (int)AssetId, "Inserted Fixed Assets: " + txtAssetName.Text);
             return true;
         }
-        public static void UpdateOrAddFixedAssets(int pId,int cId)
+        public static void UpdateOrAddFixedAssets(int pId, int cId)
         {
             //load from purchase 
             using (MySqlDataReader reader1 = ClinicDatabase.ExecuteReader("select total,(tbl_vendor.name) AS 'Name',tbl_purchase.invoice_id as VoucherNo,tbl_purchase.date as Date from tbl_purchase INNER JOIN tbl_vendor ON tbl_purchase.vendor_id = tbl_vendor.id where tbl_purchase.id =@id",
@@ -849,7 +896,7 @@ ClinicDatabase.CreateParameterNew(
 
                             if (reader["expence_account_id"] != DBNull.Value && int.Parse(reader["expence_account_id"].ToString()) > 0)
                                 expense_account_id = int.Parse(reader["expence_account_id"].ToString());
-                            
+
                             string AssetName = reader["category_name"].ToString();
                             object obItem = ClinicDatabase.ExecuteScalar("SELECT i.name FROM tbl_purchase_details pd INNER JOIN tbl_items i ON i.id = pd.item_id WHERE pd.purchase_id = @id", ClinicDatabase.CreateParameterNew("id", pId.ToString()));
 
@@ -950,13 +997,13 @@ ClinicDatabase.CreateParameterNew(
 
             //if (txtSupplierName.Enabled)
             //{
-                CommonInsert.InsertTransactionEntry(dtpAssets.Value,
-                   GetSelectedAccountId(cmbAccountName).ToString(), totalAmount.ToString("F2"), "0", pId.ToString(), "0", "Fixed Assets",
-                    txtAssetName.Text + " - Fixed Assets No. " + pId, -1, DateTime.Now.Date);
+            CommonInsert.InsertTransactionEntry(dtpAssets.Value,
+               GetSelectedAccountId(cmbAccountName).ToString(), totalAmount.ToString("F2"), "0", pId.ToString(), "0", "Fixed Assets",
+                txtAssetName.Text + " - Fixed Assets No. " + pId, -1, DateTime.Now.Date);
 
-                CommonInsert.InsertTransactionEntry(dtpAssets.Value,
-                   GetSelectedAccountId(cmbOpeningBalance).ToString(), "0", totalAmount.ToString("F2"), pId.ToString(), "0", "Fixed Assets",
-                    txtAssetName.Text + " - Fixed Assets No. " + pId, -1, DateTime.Now.Date);
+            CommonInsert.InsertTransactionEntry(dtpAssets.Value,
+               GetSelectedAccountId(cmbOpeningBalance).ToString(), "0", totalAmount.ToString("F2"), pId.ToString(), "0", "Fixed Assets",
+                txtAssetName.Text + " - Fixed Assets No. " + pId, -1, DateTime.Now.Date);
             //}
 
             DateTime currentMonthStart = startDate;
@@ -999,24 +1046,24 @@ ClinicDatabase.CreateParameterNew(
         {
             if (cmbCategory.SelectedValue == null)
             {
-                MessageBox.Show("Select Category First");
+                MessageBox.Show(IsArabicLanguage() ? "يرجى اختيار الفئة أولاً" : "Select Category First");
                 cmbCategory.Focus();
                 return false;
             }
             if (txtPurchasePrice.Text.Trim() == "")
             {
-                MessageBox.Show("Enter Purchase Price First.");
+                MessageBox.Show(IsArabicLanguage() ? "يرجى إدخال سعر الشراء أولاً." : "Enter Purchase Price First.");
                 txtPurchasePrice.Focus();
                 return false;
             }
             if (txtDepreciationValue.Text == "")
             {
-                MessageBox.Show("Enter Depreciation In Life");
+                MessageBox.Show(IsArabicLanguage() ? "يرجى إدخال العمر الافتراضي للإهلاك" : "Enter Depreciation In Life");
                 return false;
             }
             if (txtAssetName.Text == "")
             {
-                MessageBox.Show("Enter Asset Name First");
+                MessageBox.Show(IsArabicLanguage() ? "يرجى إدخال اسم الأصل أولاً" : "Enter Asset Name First");
                 txtAssetName.Focus();
                 return false;
             }
@@ -1060,7 +1107,7 @@ ClinicDatabase.CreateParameterNew(
                 ClinicDatabase.CreateParameterNew("code", txtAccountCode.Text)))
                 if (reader.Read())
                     cmbAccountName.SelectedValue = int.Parse(reader["id"].ToString());
-            
+
         }
 
         private void txtAccountCode_Leave(object sender, EventArgs e)
@@ -1105,7 +1152,7 @@ ClinicDatabase.CreateParameterNew(
               ClinicDatabase.CreateParameterNew("code", txtCreditAccountCode.Text)))
                 if (reader.Read())
                     cmbCreditAccount.SelectedValue = int.Parse(reader["id"].ToString());
-            
+
         }
 
         private void txtCreditAccountCode_Leave(object sender, EventArgs e)
@@ -1114,7 +1161,7 @@ ClinicDatabase.CreateParameterNew(
                 ClinicDatabase.CreateParameterNew("code", txtCreditAccountCode.Text)))
                 if (!reader.Read())
                     cmbCreditAccount.SelectedIndex = -1;
-            
+
         }
 
         private void txtPurchasePrice_KeyPress(object sender, KeyPressEventArgs e)
@@ -1187,7 +1234,7 @@ ClinicDatabase.CreateParameterNew(
 
         private void cmbCategory_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (cmbCategory.SelectedValue!=null && int.Parse(cmbCategory.SelectedValue.ToString()) != 0)
+            if (cmbCategory.SelectedValue != null && int.Parse(cmbCategory.SelectedValue.ToString()) != 0)
             {
                 using (MySqlDataReader reader = ClinicDatabase.ExecuteReader("select * from tbl_fixed_assets_category where id =@id", ClinicDatabase.CreateParameterNew("id", cmbCategory.SelectedValue.ToString())))
                 {
@@ -1321,7 +1368,7 @@ ClinicDatabase.CreateParameterNew(
 
         private void guna2ToggleSwitch1_CheckedChanged(object sender, EventArgs e)
         {
-          
+
         }
 
     }

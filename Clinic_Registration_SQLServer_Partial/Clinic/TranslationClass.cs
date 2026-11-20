@@ -148,6 +148,7 @@ namespace Clinic
 { "Emer. Cont:", "جهة اتصال الطوارئ:" },
 { "Reg. Date:", "تاريخ التسجيل:" },
 { "Created By:", "تم الإنشاء بواسطة:" },
+{ "Patients List", "قائمة المرضى" },
 
 
 // Person information card
@@ -1256,7 +1257,13 @@ namespace Clinic
            {"Lab Test Info", "معلومات الفحص المخبري" },
            {"Edit Lab Request","تعديل طلب المختبر" },
            {"Save Changes","حفظ التغييرات" },
-           {"Edit Invoice","تعديل الفاتورة" }
+           {"Edit Invoice","تعديل الفاتورة" },
+           {"Ordered","تم الطلب" },
+           {"ItemType","نوع العنصر" },
+           {"BillID","رقم الفاتورة" },
+           {"Search Filter","تصفية البحث" },
+           {"Item Active","العنصر نشط" }
+
         };
         public static bool IsArabic { get; set; } = false;
 
