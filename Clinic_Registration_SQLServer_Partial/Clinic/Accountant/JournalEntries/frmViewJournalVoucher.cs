@@ -1,4 +1,5 @@
-﻿using Clinic_DataAccess;
+﻿using Clinic;
+using Clinic_DataAccess;
 using DocumentFormat.OpenXml.Spreadsheet;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.Win32;
@@ -16,6 +17,7 @@ namespace YamyProject
     public partial class frmViewJournalVoucher : Form
     {
         int id;
+        bool isArabic = false;
 
         public frmViewJournalVoucher(int id)
         {
@@ -23,7 +25,12 @@ namespace YamyProject
            // LocalizationManager.LocalizeForm(this);
             //AppTheme.DefaultFont(dgvJV);
             this.id = id;
-            headerUC1.FormText = id == 0 ? "New Journal Voucher" : "Edit Journal Voucher";
+            isArabic = TranslationClass.IsArabic;
+
+            if(isArabic)
+                headerUC1.FormText = id == 0 ? "سند قيد جديد" : "تعديل سند القيد";
+            else
+                headerUC1.FormText = id == 0 ? "New Journal Voucher" : "Edit Journal Voucher";
         }
         private void btnClose_Click(object sender, EventArgs e)
         {
@@ -43,6 +50,67 @@ namespace YamyProject
             if (id != 0)
                 BindJournal();
 
+            //transilate dgvJV columns headers isArabic
+            if (isArabic)
+            {
+                if (dgvJV.Columns == null)
+                    return;
+
+                dgvJV.Columns["account_id"].HeaderText = "الرقم";
+                dgvJV.Columns["account_code"].HeaderText = "رمز الحساب";
+                dgvJV.Columns["account_name"].HeaderText = "اسم الحساب";
+                dgvJV.Columns["Debit"].HeaderText = "مدين";
+                dgvJV.Columns["Credit"].HeaderText = "دائن";
+                dgvJV.Columns["description"].HeaderText = "الوصف";
+                dgvJV.Columns["partner_name"].HeaderText = "الشريك";
+                dgvJV.Columns["delete"].HeaderText = "حذف";
+            }
+            //transilate controler to arabic
+            if (isArabic)
+            {
+                // Save && Close
+                guna2Button1.Text = "حفظ وإغلاق";
+                //txtCreditAmount.PlaceholderText = "Cr Amount"
+                txtCreditAmount.PlaceholderText = "المبلغ الدائن";
+                //txtDebitAmount.PlaceholderText = "Dr Amount"
+                txtDebitAmount.PlaceholderText = "المبلغ المدين";
+                btnClose.Text = "إغلاق";
+                btnSave.Text = "حفظ";
+                //guna2ImageButton1.Text = "Add Account"
+                guna2ImageButton1.Text = "إضافة حساب";
+                //txt_jv_code.PlaceholderText = "J.V No";
+                txt_jv_code.PlaceholderText = "ج.ف رقم";
+                //label11.Text = "Date"
+                label11.Text = "تاريخ";
+                //label1.Text = "JV No"
+                label1.Text = "ج.ف رقم";
+                //LbHeader.Text = "Journal Voucher"
+                LbHeader.Text = "سند قيد";
+                //tabPage3.Text = "Main"
+                tabPage3.Text = "الرئيسية";
+                //guna2TileButton23.Text = "New";
+                guna2TileButton23.Text = "جديد";
+                //guna2TileButton22.Text = "Save";
+                guna2TileButton22.Text = "حفظ";
+                //guna2TileButton21.Text = "Delete";
+                guna2TileButton21.Text = "حذف";
+                //guna2TileButton20.Text = "Create a Copy";
+                guna2TileButton20.Text = "إنشاء نسخة";
+                //checkBox3.Text = "Email Later";
+                checkBox3.Text = "إرسال لاحقًا";
+                //checkBox4.Text = "Print Later";
+                checkBox4.Text = "طباعة لاحقًا";
+                //guna2TileButton18.Text = "Print";
+                guna2TileButton18.Text = "طباعة";
+                //guna2TileButton17.Text = "Email";
+                guna2TileButton17.Text = "إرسال";
+                //BtnAttach.Text = "Attach File";
+                BtnAttach.Text = "إرفاق ملف";
+                //this.Text = "General Journal";
+                this.Text = "سند القيد العام";
+                //guna2Button3.Text = "Save && Close";
+                guna2Button3.Text = "حفظ وإغلاق";
+            }
         }
         private string GenerateNextJournalId()
         {
