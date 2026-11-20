@@ -5878,4 +5878,8 @@
   <data name="New - Advance Payment Voucher" xml:space="preserve">
     <value>New - Advance Payment Voucher</value>
   </data>
+  <data name="Unit of Measure Category" xml:space="preserve">
+    <value>فئة وحدة القياس</value>
+    <comment>فئة وحدة القياس</comment>
+  </data>
 </root>
