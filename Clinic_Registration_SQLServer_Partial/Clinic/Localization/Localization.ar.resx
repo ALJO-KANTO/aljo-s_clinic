@@ -5882,4 +5882,7 @@
   <data name="Unit of Measure Category" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
+  <data name="Fixed Asset Category - New" xml:space="preserve">
+    <value>فئة الأصول الثابتة - إضافة جديدة</value>
+  </data>
 </root>

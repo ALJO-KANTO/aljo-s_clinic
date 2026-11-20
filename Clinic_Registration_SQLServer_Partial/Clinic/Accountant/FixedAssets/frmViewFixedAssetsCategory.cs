@@ -3,7 +3,9 @@ using MySql.Data.MySqlClient;
 using System;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.Windows.Forms;
+using YamyProject.Localization;
 //using YamyProject.Localization;
 
 namespace YamyProject
@@ -15,17 +17,107 @@ namespace YamyProject
         {
             InitializeComponent();
 
-            ApplyModernDesign();
-
-           // LocalizationManager.LocalizeForm(this);
-
             this.id = id;
 
-            headerUC1.FormText =
-                id == 0
-                    ? "Fixed Asset Category - New"
-                    : "Fixed Asset Category - Edit";
+            ApplyModernDesign();
+
+            LocalizationManager.LocalizeForm(this);
+
+            ApplyArabicLocalization();
         }
+        private bool IsArabicLanguage()
+        {
+            // Use the same saved application-language setting as the
+            // application's LocalizationManager. Thread culture alone may
+            // still be English when this form is opened.
+            try
+            {
+                string language = Clinic.Properties.Settings.Default.ApplicationLanguage;
+
+                if (!string.IsNullOrWhiteSpace(language))
+                {
+                    language = language.Trim();
+                    return language.Equals("ar", StringComparison.OrdinalIgnoreCase)
+                        || language.Equals("arabic", StringComparison.OrdinalIgnoreCase)
+                        || language.StartsWith("ar-", StringComparison.OrdinalIgnoreCase);
+                }
+            }
+            catch
+            {
+                // Fall back to the current thread culture if the setting
+                // is not available in this project configuration.
+            }
+
+            return CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ar"
+                || CultureInfo.CurrentCulture.TwoLetterISOLanguageName == "ar";
+        }
+
+        private void ApplyArabicLocalization()
+        {
+            if (!IsArabicLanguage())
+                return;
+
+            this.RightToLeft = RightToLeft.Yes;
+            this.RightToLeftLayout = true;
+
+            headerUC1.FormText = id == 0
+                ? "فئة الأصول الثابتة - جديد"
+                : "فئة الأصول الثابتة - تعديل";
+
+            // Translate visible labels and controls without changing database values.
+            var translations = new System.Collections.Generic.Dictionary<string, string>(
+                StringComparer.OrdinalIgnoreCase)
+            {
+                { "Fixed Assets Account" , "حساب الأصول الثابتة" },
+                { "Accumulated Depreciation", "مجمع الإهلاك" },
+                { "Depreciation Expence", "مصروف الإهلاك" },
+                { "Fixed Asset Category - New", "فئة الأصول الثابتة - جديد" },
+                { "Fixed Asset Category - Edit", "فئة الأصول الثابتة - تعديل" },
+                { "Fixed Asset Category", "فئة الأصول الثابتة" },
+                { "Category Name", "اسم الفئة" },
+                { "Category", "الفئة" },
+                { "Category Code", "رمز الفئة" },
+                { "Asset Account", "حساب الأصول" },
+                { "Assets Account", "حساب الأصول" },
+                { "Depreciation Account", "حساب الإهلاك" },
+                { "Expense Account", "حساب المصروفات" },
+                { "Expence Account", "حساب المصروفات" },
+                { "Account Code", "رمز الحساب" },
+                { "Credit Account Code", "رمز حساب الدائن" },
+                { "Expense Account Code", "رمز حساب المصروفات" },
+                { "Delete", "حذف" },
+                { "Save", "حفظ" },
+                { "Close", "إغلاق" },
+                { "New", "جديد" },
+                { "Edit", "تعديل" }
+            };
+
+            ApplyTranslationsToControls(this, translations);
+
+            // These buttons are styled in ApplyModernDesign, so set their text again.
+            btnDelete.Text = "حذف";
+            btnSave.Text = "حفظ";
+            btnClose.Text = "إغلاق";
+        }
+
+        private void ApplyTranslationsToControls(
+            Control parent,
+            System.Collections.Generic.Dictionary<string, string> translations)
+        {
+            if (parent == null)
+                return;
+
+            string currentText = parent.Text?.Trim();
+            if (!string.IsNullOrEmpty(currentText) &&
+                translations.TryGetValue(currentText, out string arabicText))
+            {
+                parent.Text = arabicText;
+            }
+
+            foreach (Control child in parent.Controls)
+                ApplyTranslationsToControls(child, translations);
+        }
+
         private void ApplyModernDesign()
         {
             // =====================================
@@ -384,17 +476,17 @@ namespace YamyProject
                 MessageBox.Show("Please Enter Category Name First");
                 return;
             }
-            using(MySqlDataReader reader = ClinicDatabase.ExecuteReader("select * from tbl_fixed_assets_category where category_name = @category_name",
+            using (MySqlDataReader reader = ClinicDatabase.ExecuteReader("select * from tbl_fixed_assets_category where category_name = @category_name",
                 ClinicDatabase.CreateParameterNew("category_name", cmbCategoryName.Text)))
-            if (reader.Read())
-            {
-                if (id == 0 || (id != int.Parse(reader["id"].ToString())))
+                if (reader.Read())
                 {
-                    reader.Dispose();
-                    MessageBox.Show("Category Already Exists. Enter Another Name.");
-                    return;
+                    if (id == 0 || (id != int.Parse(reader["id"].ToString())))
+                    {
+                        reader.Dispose();
+                        MessageBox.Show("Category Already Exists. Enter Another Name.");
+                        return;
+                    }
                 }
-            }
             if (id == 0)
                 ClinicDatabase.ExecuteNonQuery(@"
                         INSERT INTO tbl_fixed_assets_category (
