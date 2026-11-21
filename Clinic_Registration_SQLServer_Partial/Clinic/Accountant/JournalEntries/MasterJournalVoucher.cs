@@ -116,27 +116,44 @@ namespace YamyProject
 
         private void TranslateJournalControls(Control parent, bool arabic)
         {
-            if (parent == null) return;
+            if (parent == null)
+                return;
 
-            // Preserve text of controls whose content is not a UI caption.
-            if (!(parent is DataGridView) && !(parent is ComboBox))
+            string controlType = parent.GetType().Name;
+
+            // Translate captions only, not input or data controls.
+            bool isCaptionControl =
+                parent is Label ||
+                parent is ButtonBase ||
+                parent is GroupBox ||
+                parent is TabPage ||
+                parent is Form ||
+                controlType.IndexOf("Label", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                controlType.IndexOf("Button", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                controlType.IndexOf("GroupBox", StringComparison.OrdinalIgnoreCase) >= 0;
+
+            if (isCaptionControl)
             {
-                string translated = TranslateJournalText(parent.Text, arabic);
-                if (!string.IsNullOrEmpty(translated))
+                string translated =
+                    TranslateJournalText(parent.Text, arabic);
+
+                if (!string.IsNullOrWhiteSpace(translated))
                     parent.Text = translated;
+
+                parent.RightToLeft =
+                    arabic ? RightToLeft.Yes : RightToLeft.No;
             }
 
-            if (parent is Label || parent is Button || parent is CheckBox || parent is RadioButton)
-                parent.RightToLeft = arabic ? RightToLeft.Yes : RightToLeft.No;
-
             foreach (Control child in parent.Controls)
+            {
                 TranslateJournalControls(child, arabic);
+            }
         }
 
         public MasterJournalVoucher()
         {
             InitializeComponent();
-           // LocalizationManager.LocalizeForm(this);
+            // LocalizationManager.LocalizeForm(this);
             JournalVoucherUpdatedHandler = (sender, args) => BindVoucherData();
             //.Journal += JournalVoucherUpdatedHandler;
             headerUC1.FormText = this.Text;
@@ -182,6 +199,45 @@ namespace YamyProject
             dgv.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
         }
 
+        // Get the row by the clicked row index first. SelectedRows can be empty
+        // during CellClick, even when the user has clicked a valid cell.
+        private DataGridViewRow GetVoucherRow(int rowIndex = -1)
+        {
+            if (dgvCustomer == null || dgvCustomer.Rows.Count == 0)
+                return null;
+
+            if (rowIndex >= 0 && rowIndex < dgvCustomer.Rows.Count)
+            {
+                DataGridViewRow clickedRow = dgvCustomer.Rows[rowIndex];
+                if (clickedRow != null && !clickedRow.IsNewRow)
+                    return clickedRow;
+            }
+
+            if (dgvCustomer.CurrentRow != null && !dgvCustomer.CurrentRow.IsNewRow)
+                return dgvCustomer.CurrentRow;
+
+            if (dgvCustomer.SelectedRows.Count > 0)
+            {
+                DataGridViewRow selectedRow = dgvCustomer.SelectedRows[0];
+                if (selectedRow != null && !selectedRow.IsNewRow)
+                    return selectedRow;
+            }
+
+            return null;
+        }
+
+        private string GetVoucherId(int rowIndex = -1)
+        {
+            DataGridViewRow row = GetVoucherRow(rowIndex);
+            if (row == null || !dgvCustomer.Columns.Contains("id"))
+                return null;
+
+            object value = row.Cells["id"].Value;
+            return value == null || value == DBNull.Value
+                ? null
+                : Convert.ToString(value);
+        }
+
         public void BindVoucherData()
         {
             DataTable dt;
@@ -217,7 +273,7 @@ namespace YamyProject
             else
                 dgvDetails.DataSource = null;
 
-           // LocalizationManager.LocalizeDataGridViewHeaders(dgvCustomer);
+            // LocalizationManager.LocalizeDataGridViewHeaders(dgvCustomer);
             ApplyJournalLanguage();
             if (dt != null)
             {
@@ -273,18 +329,35 @@ namespace YamyProject
         }
         private void btnEdit_Click(object sender, EventArgs e)
         {
-            if (dgvCustomer.Rows.Count == 0)
+            string voucherId = GetVoucherId();
+            if (string.IsNullOrEmpty(voucherId))
                 return;
-            frmMain.openChildForm(new frmViewJournalVoucher(int.Parse(dgvCustomer.SelectedRows[0].Cells["id"].Value.ToString())));
+
+            frmMain.openChildForm(new frmViewJournalVoucher(Convert.ToInt32(voucherId)));
         }
         private void dgvCustomer_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (dgvCustomer.Rows.Count == 0)
+            if (e.RowIndex < 0 || e.RowIndex >= dgvCustomer.Rows.Count)
                 return;
-            if (dgvCustomer.Columns["JV NO"].Index == e.ColumnIndex)
-                frmMain.openChildForm(new MasterTransactionJournal(dgvCustomer.CurrentRow.Cells["JV NO"].Value.ToString(), "JOURNAL"));
+
+            DataGridViewRow row = GetVoucherRow(e.RowIndex);
+            if (row == null)
+                return;
+
+            if (dgvCustomer.Columns.Contains("JV NO") &&
+                dgvCustomer.Columns["JV NO"].Index == e.ColumnIndex)
+            {
+                object voucherNumber = row.Cells["JV NO"].Value;
+                if (voucherNumber != null && voucherNumber != DBNull.Value)
+                    frmMain.openChildForm(new MasterTransactionJournal(
+                        Convert.ToString(voucherNumber), "JOURNAL"));
+            }
             else
-                frmMain.openChildForm(new frmViewJournalVoucher(int.Parse(dgvCustomer.SelectedRows[0].Cells["id"].Value.ToString())));
+            {
+                string voucherId = GetVoucherId(e.RowIndex);
+                if (!string.IsNullOrEmpty(voucherId))
+                    frmMain.openChildForm(new frmViewJournalVoucher(Convert.ToInt32(voucherId)));
+            }
         }
         private void dgvCustomer_MouseHover(object sender, EventArgs e)
         {
@@ -311,11 +384,23 @@ namespace YamyProject
 
         private void dgvCustomer_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            BindJVDetails();
+            // Ignore header clicks. Use e.RowIndex because SelectedRows may not
+            // yet be populated while the CellClick event is running.
+            if (e.RowIndex < 0)
+                return;
+
+            BindJVDetails(e.RowIndex);
         }
 
-        private void BindJVDetails()
+        private void BindJVDetails(int rowIndex = -1)
         {
+            string voucherId = GetVoucherId(rowIndex);
+            if (string.IsNullOrEmpty(voucherId))
+            {
+                dgvDetails.DataSource = null;
+                return;
+            }
+
             DataTable dt = ClinicDatabase.ExecuteDataTable(@"
                            SELECT 
                            jd.Date,
@@ -327,21 +412,22 @@ namespace YamyProject
                         FROM tbl_journal_voucher_details jd
                         INNER JOIN tbl_coa_level_4 a ON jd.account_id = a.id
                         WHERE jd.inv_id = @id;",
-                      ClinicDatabase.CreateParameterNew("id", dgvCustomer.SelectedRows[0].Cells["id"].Value.ToString()));
+                      ClinicDatabase.CreateParameterNew("id", voucherId));
 
             dgvDetails.DataSource = dt;
 
-           // LocalizationManager.LocalizeDataGridViewHeaders(dgvDetails);
+            // LocalizationManager.LocalizeDataGridViewHeaders(dgvDetails);
             ApplyJournalLanguage();
         }
 
         private void btnDelete_Click(object sender, EventArgs e)
         {
-            if (dgvCustomer.Rows.Count == 0)
+            string voucherId = GetVoucherId();
+            if (string.IsNullOrEmpty(voucherId))
                 return;
+
             ClinicDatabase.ExecuteNonQuery("UPDATE tbl_journal_voucher SET state = -1 WHERE id = @id ",
-                                          ClinicDatabase.CreateParameterNew("id", dgvCustomer.SelectedRows[0].Cells["id"].Value.ToString()));
-            ////Utilities.LogAudit(-1, "Delete Journal Voucher", "Journal Voucher", int.Parse(dgvCustomer.SelectedRows[0].Cells["id"].Value.ToString()), "Deleted Journal Voucher: " + dgvCustomer.SelectedRows[0].Cells["Journal Code"].Value.ToString());
+                ClinicDatabase.CreateParameterNew("id", voucherId));
             BindVoucherData();
         }
 
@@ -363,18 +449,21 @@ namespace YamyProject
 
         private void editCustomerToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            if (dgvCustomer.Rows.Count == 0)
+            string voucherId = GetVoucherId();
+            if (string.IsNullOrEmpty(voucherId))
                 return;
-            frmMain.openChildForm(new frmViewJournalVoucher(int.Parse(dgvCustomer.SelectedRows[0].Cells["id"].Value.ToString())));
+
+            frmMain.openChildForm(new frmViewJournalVoucher(Convert.ToInt32(voucherId)));
         }
 
         private void deleteCustomerToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (dgvCustomer.Rows.Count == 0)
+            string voucherId = GetVoucherId();
+            if (string.IsNullOrEmpty(voucherId))
                 return;
+
             ClinicDatabase.ExecuteNonQuery("UPDATE tbl_journal_voucher SET state = -1 WHERE id = @id ",
-                                          ClinicDatabase.CreateParameterNew("id", dgvCustomer.SelectedRows[0].Cells["id"].Value.ToString()));
-            ////Utilities.LogAudit(-1, "Delete Journal Voucher", "Journal Voucher", int.Parse(dgvCustomer.SelectedRows[0].Cells["id"].Value.ToString()), "Deleted Journal Voucher: " + dgvCustomer.SelectedRows[0].Cells["Journal Code"].Value.ToString());
+                ClinicDatabase.CreateParameterNew("id", voucherId));
             BindVoucherData();
         }
 
@@ -400,6 +489,6 @@ namespace YamyProject
         {
             this.BringToFront();
         }
-       
+
     }
 }

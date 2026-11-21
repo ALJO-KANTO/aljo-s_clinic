@@ -1474,7 +1474,9 @@
       <DependentUpon>LoadingForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Localization\Localization.ar.resx" />
-    <EmbeddedResource Include="Localization\Localization.resx" />
+    <EmbeddedResource Include="Localization\Localization.resx">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Login\frmRegister.resx">
       <DependentUpon>frmRegister.cs</DependentUpon>
     </EmbeddedResource>

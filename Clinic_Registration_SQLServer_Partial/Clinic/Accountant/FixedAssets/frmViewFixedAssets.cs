@@ -823,14 +823,32 @@ ClinicDatabase.CreateParameterNew(
         {
             if (!chkRequireData())
                 return false;
-            AssetId = decimal.Parse(ClinicDatabase.ExecuteScalar(@"INSERT INTO `tbl_fixed_assets`(date,
-                                                            `code`, name, brand, `category_id`, `model`, `supplier`, `status`, 
-                                                            `invoice_number`, `purchase_date`, `end_date`, `depreciation_life`,  
+
+            // Read combo selections safely. SelectedValue can be null when a
+            // category has no linked account or the account list has no selection.
+            object categoryValue = cmbCategory.SelectedValue;
+            if (categoryValue == null || categoryValue == DBNull.Value)
+            {
+                MessageBox.Show(IsArabicLanguage()
+                    ? "يرجى اختيار الفئة أولاً."
+                    : "Select Category First.");
+                cmbCategory.Focus();
+                return false;
+            }
+
+            // Use the same safe account-ID helper as updateAsset() and InsertJournal().
+            int debitAccountId = GetSelectedAccountId(cmbAccountName);
+            int creditAccountId = GetSelectedAccountId(cmbCreditAccount);
+            int expenseAccountId = GetSelectedAccountId(cmbExpenceAccount);
+
+            object insertResult = ClinicDatabase.ExecuteScalar(@"INSERT INTO `tbl_fixed_assets`(date,
+                                                            `code`, name, brand, `category_id`, `model`, `supplier`, `status`,
+                                                            `invoice_number`, `purchase_date`, `end_date`, `depreciation_life`,
                                                             `purchase_price`, debit_account_id,credit_account_id, expence_account_id, `created_by`, `created_date`, `state`,manufacture,
-                                                             manufactureStatus) 
+                                                             manufactureStatus)
                                                         VALUES (@date,
-                                                            @code, @name, @brand, @category_id, @model, @supplier, @status, 
-                                                            @invoice_number, @purchase_date, @end_date, @depreciation_life, 
+                                                            @code, @name, @brand, @category_id, @model, @supplier, @status,
+                                                            @invoice_number, @purchase_date, @end_date, @depreciation_life,
                                                             @purchase_price, @debit_account_id, @credit_account_id, @expence_account_id, @created_by, @created_date, 0,
                                                         @manufacture,'Draft');
                                                         SELECT LAST_INSERT_ID();",
@@ -838,7 +856,7 @@ ClinicDatabase.CreateParameterNew(
                               ClinicDatabase.CreateParameterNew("code", GenerateNextFixedAssetCode()),
                               ClinicDatabase.CreateParameterNew("name", txtAssetName.Text),
                               ClinicDatabase.CreateParameterNew("brand", txtAssetBrand.Text),
-                              ClinicDatabase.CreateParameterNew("category_id", cmbCategory.SelectedValue.ToString()),
+                              ClinicDatabase.CreateParameterNew("category_id", categoryValue),
                               ClinicDatabase.CreateParameterNew("model", txtModel.Text),
                               ClinicDatabase.CreateParameterNew("supplier", txtSupplierName.Text),
                               ClinicDatabase.CreateParameterNew("status", txtStatus.Text),
@@ -847,12 +865,22 @@ ClinicDatabase.CreateParameterNew(
                               ClinicDatabase.CreateParameterNew("end_date", dtpEndDate.Value.Date),
                               ClinicDatabase.CreateParameterNew("depreciation_life", txtDepreciationLife.Text),
                               ClinicDatabase.CreateParameterNew("purchase_price", txtPurchasePrice.Text),
-                              ClinicDatabase.CreateParameterNew("debit_account_id", cmbAccountName.SelectedValue.ToString()),
-                              ClinicDatabase.CreateParameterNew("credit_account_id", cmbCreditAccount.SelectedValue.ToString()),
-                              ClinicDatabase.CreateParameterNew("expence_account_id", cmbExpenceAccount.SelectedValue.ToString()),
+                              ClinicDatabase.CreateParameterNew("debit_account_id", debitAccountId),
+                              ClinicDatabase.CreateParameterNew("credit_account_id", creditAccountId),
+                              ClinicDatabase.CreateParameterNew("expence_account_id", expenseAccountId),
                               ClinicDatabase.CreateParameterNew("created_by", -1),
                               ClinicDatabase.CreateParameterNew("created_date", DateTime.Now.Date),
-                              ClinicDatabase.CreateParameterNew("manufacture", manID)).ToString());
+                              ClinicDatabase.CreateParameterNew("manufacture", manID));
+
+            // Avoid parsing a null scalar result if the INSERT did not return an ID.
+            if (insertResult == null || insertResult == DBNull.Value ||
+                !decimal.TryParse(insertResult.ToString(), out AssetId) || AssetId <= 0)
+            {
+                MessageBox.Show(IsArabicLanguage()
+                    ? "تعذر حفظ الأصل الثابت. لم يتم إرجاع رقم الأصل الجديد من قاعدة البيانات."
+                    : "Unable to save the fixed asset. The database did not return the new asset ID.");
+                return false;
+            }
 
             if (chkJournal.Checked)
             {
