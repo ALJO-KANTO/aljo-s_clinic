@@ -118,7 +118,7 @@ namespace Clinic
                 Name = "modernHeader",
                 Dock = DockStyle.Top,
                 Height = 64,
-                BackColor = Color.White
+                BackColor = Color.LightSteelBlue
             };
 
             modernRoot.Controls.Add(modernHeader);
@@ -660,15 +660,15 @@ namespace Clinic
             welcome.Height = 166;
             welcome.Margin = new Padding(0, 0, 0, 16);
 
-            modernGreeting = TextLabel("", 16F, ink, true);
+            modernGreeting = TextLabel("", 14F, ink, true);
             modernGreeting.AutoSize = false;
             modernGreeting.AutoEllipsis = false;
 
             Place(welcome, modernGreeting, 28, 44, 550, 60);
             Label welcomeDescription = TextLabel(
-     "Here's what's happening in your clinic today.",
-     11,
-     Color.FromArgb(67, 111, 155));
+             "Here's what's happening in your clinic today.",
+             11,
+             Color.FromArgb(67, 111, 155));
 
             Place(welcome, welcomeDescription, 30, 112, 600, 32);
             Label medical = TextLabel("✚  ♡  🩺", 40, Color.FromArgb(18, 145, 192));
