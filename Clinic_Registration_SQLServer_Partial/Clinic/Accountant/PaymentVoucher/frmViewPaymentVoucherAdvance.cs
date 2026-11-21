@@ -24,8 +24,8 @@ namespace YamyProject
             LocalizationManager.LocalizeForm(this);
             this.id = id;
             headerUC1.FormText = id == 0
-     ? LocalizationManager.GetString("New - Advance Payment Voucher")
-     : LocalizationManager.GetString("Edit - Advance Payment Voucher");
+             ? LocalizationManager.GetString("New - Advance Payment Voucher")
+             : LocalizationManager.GetString("Edit - Advance Payment Voucher");
 
             this.defaultCustomerId = _customerId;
             //AppTheme.DefaultFont(dgvPartner);
