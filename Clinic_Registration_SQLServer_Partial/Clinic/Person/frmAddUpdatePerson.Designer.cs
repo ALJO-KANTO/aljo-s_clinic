@@ -272,16 +272,32 @@
             // 
             // dtpDateOfBirth
             // 
-            this.dtpDateOfBirth.CalendarFont = new System.Drawing.Font("Segoe UI", 10F);
-            this.dtpDateOfBirth.CustomFormat = "dd/M/yyyy";
-            this.dtpDateOfBirth.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.dtpDateOfBirth.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
-            this.dtpDateOfBirth.Location = new System.Drawing.Point(709, 53);
-            this.dtpDateOfBirth.MinDate = new System.DateTime(1900, 1, 1, 0, 0, 0, 0);
+            //
+            // dtpDateOfBirth
+            //
+            this.dtpDateOfBirth.CalendarFont =
+                new System.Drawing.Font("Segoe UI", 10F);
+
+            this.dtpDateOfBirth.CustomFormat = "dd/MM/yyyy";
+
+            this.dtpDateOfBirth.Font =
+                new System.Drawing.Font("Segoe UI", 10F);
+
+            this.dtpDateOfBirth.Format =
+                System.Windows.Forms.DateTimePickerFormat.Custom;
+
+            this.dtpDateOfBirth.Location =
+                new System.Drawing.Point(709, 53);
+
             this.dtpDateOfBirth.Name = "dtpDateOfBirth";
-            this.dtpDateOfBirth.Size = new System.Drawing.Size(167, 30);
+
+            this.dtpDateOfBirth.Size =
+                new System.Drawing.Size(167, 30);
+
             this.dtpDateOfBirth.TabIndex = 6;
-            this.dtpDateOfBirth.Value = new System.DateTime(2000, 12, 31, 0, 0, 0, 0);
+
+            this.dtpDateOfBirth.Value =
+                new System.DateTime(2000, 12, 31, 0, 0, 0, 0);
             // 
             // btnClose
             // 

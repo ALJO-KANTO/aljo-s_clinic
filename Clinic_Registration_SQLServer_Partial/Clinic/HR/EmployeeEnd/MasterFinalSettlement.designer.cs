@@ -416,7 +416,7 @@
             this.Controls.Add(this.headerUC1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Margin = new System.Windows.Forms.Padding(4, 2, 4, 2);
-            this.MinimumSize = new System.Drawing.Size(1200, 738);
+            this.MinimumSize = new System.Drawing.Size(0, 0);
             this.Name = "MasterFinalSettlement";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Tag = "main";
