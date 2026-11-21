@@ -550,7 +550,7 @@
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(96, 24);
             this.label11.TabIndex = 19;
-            this.label11.Text = "Emplyee Code";
+            this.label11.Text = "Employee Code";
             this.label11.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // label14

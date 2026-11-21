@@ -788,51 +788,159 @@ namespace YamyProject
             if (pnlAdditionalCard == null)
                 return;
 
-            int margin = 25;
+            pnlAdditionalCard.SuspendLayout();
 
-            PlaceArabicField(
-                pnlAdditionalCard,
-                txtBarcode,
-                "Barcode",
-                "الباركود",
-                margin);
-
-            PlaceArabicField(
-                pnlAdditionalCard,
-                cmbMainUnit,
-                "Main Unit",
-                "الوحدة الرئيسية",
-                margin);
-
-            PlaceArabicField(
-                pnlAdditionalCard,
-                txtMin,
-                "Min. Amount",
-                "الحد الأدنى للكمية",
-                margin);
-
-            PlaceArabicField(
-                pnlAdditionalCard,
-                txtMax,
-                "Max. Amount",
-                "الحد الأقصى للكمية",
-                margin);
-
-            // Arabic placeholder
-            txtBarcode.PlaceholderText = "أدخل الباركود";
-
-            // Translate link
-            Control addUnit =
-                FindControlByText(
-                    pnlAdditionalCard,
-                    "Add Unit +",
-                    "إضافة وحدة +");
-
-            if (addUnit != null)
+            try
             {
-                addUnit.Text = "إضافة وحدة +";
-                addUnit.RightToLeft = RightToLeft.Yes;
+                pnlAdditionalCard.RightToLeft = RightToLeft.No;
+
+                int margin = 20;
+                int labelWidth = 160;
+                int gap = 15;
+                int inputHeight = 36;
+
+                int availableWidth = pnlAdditionalCard.ClientSize.Width;
+
+                int labelX = availableWidth - margin - labelWidth;
+
+                int inputWidth = Math.Min(260, labelX - gap - margin);
+                inputWidth = Math.Max(100, inputWidth);
+
+                int inputX = labelX - gap - inputWidth;
+
+                LayoutAdditionalArabicField(
+                    txtBarcode,
+                    "Barcode",
+                    "الباركود",
+                    inputX, labelX, 65,
+                    inputWidth, labelWidth, inputHeight);
+
+                LayoutAdditionalArabicField(
+                    cmbMainUnit,
+                    "Main Unit",
+                    "الوحدة الرئيسية",
+                    inputX, labelX, 115,
+                    inputWidth, labelWidth, inputHeight);
+
+                LayoutAdditionalArabicField(
+                    txtMin,
+                    "Min. Amount",
+                    "الحد الأدنى للكمية",
+                    inputX, labelX, 185,
+                    inputWidth, labelWidth, inputHeight);
+
+                LayoutAdditionalArabicField(
+                    txtMax,
+                    "Max. Amount",
+                    "الحد الأقصى للكمية",
+                    inputX, labelX, 235,
+                    inputWidth, labelWidth, inputHeight);
+
+                txtBarcode.PlaceholderText = "أدخل الباركود";
+
+                lnkAddItemUnit.Parent = pnlAdditionalCard;
+                lnkAddItemUnit.Text = "إضافة وحدة +";
+                lnkAddItemUnit.AutoSize = true;
+                lnkAddItemUnit.RightToLeft = RightToLeft.Yes;
+
+                lnkAddItemUnit.Anchor =
+                    AnchorStyles.Top | AnchorStyles.Right;
+
+                lnkAddItemUnit.Location = new Point(
+                    inputX + inputWidth - lnkAddItemUnit.Width,
+                    155);
+
+                lnkAddItemUnit.Visible = true;
+                lnkAddItemUnit.BringToFront();
+
+                pnlAdditionalCard.MinimumSize =
+                    new Size(360, 295);
+
+                pnlAdditionalCard.Height =
+                    Math.Max(pnlAdditionalCard.Height, 295);
             }
+            finally
+            {
+                pnlAdditionalCard.ResumeLayout(true);
+            }
+        }
+        private void LayoutAdditionalArabicField(
+    Control input,
+    string english,
+    string arabic,
+    int inputX,
+    int labelX,
+    int top,
+    int inputWidth,
+    int labelWidth,
+    int inputHeight)
+        {
+            if (input == null)
+                return;
+
+            Control label = FindControlByText(
+                pnlAdditionalCard,
+                english,
+                arabic,
+                english + ":",
+                arabic + ":");
+
+            if (label == null)
+            {
+                label = new Label
+                {
+                    Font = input.Font,
+                    ForeColor = Color.FromArgb(71, 85, 105)
+                };
+
+                pnlAdditionalCard.Controls.Add(label);
+            }
+
+            // Label layout
+            label.Parent = pnlAdditionalCard;
+            label.Text = arabic;
+            label.AutoSize = false;
+            label.Dock = DockStyle.None;
+
+            label.Anchor =
+                AnchorStyles.Top | AnchorStyles.Right;
+
+            label.SetBounds(
+                labelX,
+                top,
+                labelWidth,
+                inputHeight);
+
+            label.RightToLeft = RightToLeft.Yes;
+
+            if (label is Label lbl)
+                lbl.TextAlign = ContentAlignment.MiddleRight;
+
+            // Input layout
+            input.Parent = pnlAdditionalCard;
+            input.Dock = DockStyle.None;
+
+            input.Anchor =
+                AnchorStyles.Top | AnchorStyles.Right;
+
+            input.SetBounds(
+                inputX,
+                top,
+                inputWidth,
+                inputHeight);
+
+            input.RightToLeft = RightToLeft.Yes;
+
+            if (input is Guna.UI2.WinForms.Guna2TextBox txt)
+            {
+                txt.TextAlign = HorizontalAlignment.Right;
+            }
+
+            label.Visible = true;
+            input.Visible = true;
+
+            label.BringToFront();
+            input.BringToFront();
         }
         private void PositionArabicField(
     Control input,
@@ -1882,54 +1990,85 @@ namespace YamyProject
             {
                 string unitName = "";
 
+                bool arabicMode = lnkAddItemUnit.RightToLeft ==
+                   RightToLeft.Yes;
+
                 using (Form inputForm = new Form())
                 {
-                    inputForm.Text = "Add Main Unit";
-                    inputForm.Width = 350;
-                    inputForm.Height = 160;
-                    inputForm.StartPosition = FormStartPosition.CenterParent;
-                    inputForm.FormBorderStyle = FormBorderStyle.FixedDialog;
+                    inputForm.Text = arabicMode
+                        ? "إضافة وحدة رئيسية"
+                        : "Add Main Unit";
+
+                    inputForm.ClientSize = new Size(380, 155);
+
+                    inputForm.StartPosition =
+                        FormStartPosition.CenterParent;
+
+                    inputForm.FormBorderStyle =
+                        FormBorderStyle.FixedDialog;
+
                     inputForm.MaximizeBox = false;
                     inputForm.MinimizeBox = false;
+                    inputForm.ShowInTaskbar = false;
 
-                    Label lbl = new Label()
+                    inputForm.RightToLeft = arabicMode
+                        ? RightToLeft.Yes
+                        : RightToLeft.No;
+
+                    inputForm.RightToLeftLayout = arabicMode;
+
+                    Label lbl = new Label
                     {
-                        Text = "Enter Main Unit name:",
-                        Left = 15,
-                        Top = 15,
-                        AutoSize = true
+                        Text = arabicMode
+                            ? "أدخل اسم الوحدة الرئيسية:"
+                            : "Enter Main Unit name:",
+
+                        Location = new Point(20, 15),
+                        Size = new Size(340, 25),
+
+                        TextAlign = arabicMode
+                            ? ContentAlignment.MiddleRight
+                            : ContentAlignment.MiddleLeft
                     };
 
-                    TextBox txt = new TextBox()
+                    TextBox txt = new TextBox
                     {
-                        Left = 15,
-                        Top = 40,
-                        Width = 300
+                        Location = new Point(20, 48),
+                        Width = 340,
+
+                        TextAlign = arabicMode
+                            ? HorizontalAlignment.Right
+                            : HorizontalAlignment.Left
                     };
 
-                    Button btnOK = new Button()
+                    Button btnOK = new Button
                     {
-                        Text = "OK",
-                        Left = 155,
-                        Top = 75,
-                        Width = 75,
+                        Text = arabicMode ? "موافق" : "OK",
+                        Location = new Point(175, 95),
+                        Size = new Size(85, 32),
                         DialogResult = DialogResult.OK
                     };
 
-                    Button btnCancel = new Button()
+                    Button btnCancel = new Button
                     {
-                        Text = "Cancel",
-                        Left = 240,
-                        Top = 75,
-                        Width = 75,
+                        Text = arabicMode ? "إلغاء" : "Cancel",
+                        Location = new Point(275, 95),
+                        Size = new Size(85, 32),
                         DialogResult = DialogResult.Cancel
                     };
 
                     inputForm.Controls.AddRange(
-                        new Control[] { lbl, txt, btnOK, btnCancel });
+                        new Control[]
+                        {
+            lbl,
+            txt,
+            btnOK,
+            btnCancel
+                        });
 
                     inputForm.AcceptButton = btnOK;
                     inputForm.CancelButton = btnCancel;
+                    inputForm.ActiveControl = txt;
 
                     if (inputForm.ShowDialog(this) == DialogResult.OK)
                     {
@@ -1977,12 +2116,18 @@ namespace YamyProject
                     cmbMainUnit.SelectedValue = existingId;
 
                     MessageBox.Show(
-                        "This Main Unit already exists.\n\n" +
-                        "It has been selected in the Main Unit dropdown.",
-                        "Main Unit",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Information);
+     arabicMode
+         ? "الوحدة الرئيسية موجودة بالفعل.\n\n" +
+           "تم تحديدها في القائمة المنسدلة."
+         : "This Main Unit already exists.\n\n" +
+           "It has been selected in the Main Unit dropdown.",
 
+     arabicMode
+         ? "الوحدة الرئيسية"
+         : "Main Unit",
+
+     MessageBoxButtons.OK,
+     MessageBoxIcon.Information);
                     return;
                 }
 
@@ -2110,10 +2255,16 @@ namespace YamyProject
 
 
                 MessageBox.Show(
-                    "Main Unit added successfully.",
-                    "Main Unit",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information);
+        arabicMode
+            ? "تمت إضافة الوحدة الرئيسية بنجاح."
+            : "Main Unit added successfully.",
+
+        arabicMode
+            ? "الوحدة الرئيسية"
+            : "Main Unit",
+
+        MessageBoxButtons.OK,
+        MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {

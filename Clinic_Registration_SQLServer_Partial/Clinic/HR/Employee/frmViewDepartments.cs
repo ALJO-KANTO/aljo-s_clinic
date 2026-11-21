@@ -1,85 +1,204 @@
-﻿using Clinic_DataAccess;
+﻿using Clinic;
+using Clinic_DataAccess;
 using MySql.Data.MySqlClient;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-//using YamyProject.Localization;
 
 namespace YamyProject
 {
     public partial class frmViewDepartments : Form
     {
-
         private int id;
+        private bool isArabic;
+
         public frmViewDepartments(int id = 0)
         {
             InitializeComponent();
-           // LocalizationManager.LocalizeForm(this);
 
             this.id = id;
-                    headerUC1.FormText = id == 0 ? " Employee - New Department" : "Employee - Edit Department";
+            isArabic = TranslationClass.IsArabic;
+
+            ApplyLanguage();
         }
 
-       
-        private void btnClose_Click(object sender, EventArgs e)
+        private string T(string english, string arabic)
+        {
+            return isArabic ? arabic : english;
+        }
+
+        private void ApplyLanguage()
+        {
+            headerUC1.FormText = id == 0
+                ? T("Employee - New Department",
+                    "الموظف - قسم جديد")
+                : T("Employee - Edit Department",
+                    "الموظف - تعديل القسم");
+
+            this.Text = headerUC1.FormText;
+
+            TranslateControls(this);
+
+            txtName.RightToLeft = isArabic
+                ? RightToLeft.Yes
+                : RightToLeft.No;
+        }
+
+        private void TranslateControls(Control parent)
+        {
+            foreach (Control ctrl in parent.Controls)
+            {
+                // Do not translate input or ComboBox values
+                if (ctrl is ComboBox ||
+                    ctrl is TextBoxBase ||
+                    ctrl is Guna.UI2.WinForms.Guna2TextBox)
+                {
+                    continue;
+                }
+
+                if (isArabic)
+                {
+                    switch (ctrl.Text.Trim())
+                    {
+                        case "Department Name":
+                        case "Department Name:":
+                            ctrl.Text = "اسم القسم";
+                            break;
+
+                        case "Save":
+                            ctrl.Text = "حفظ";
+                            break;
+
+                        case "Close":
+                            ctrl.Text = "إغلاق";
+                            break;
+                    }
+                }
+
+                if (ctrl.HasChildren)
+                    TranslateControls(ctrl);
+            }
+        }
+
+        private void ShowLocalizedMessage(
+            string english,
+            string arabic,
+            MessageBoxIcon icon = MessageBoxIcon.Warning)
+        {
+            MessageBox.Show(
+                this,
+                T(english, arabic),
+                T("Departments", "الأقسام"),
+                MessageBoxButtons.OK,
+                icon,
+                MessageBoxDefaultButton.Button1,
+                isArabic
+                    ? MessageBoxOptions.RightAlign |
+                      MessageBoxOptions.RtlReading
+                    : (MessageBoxOptions)0);
+        }
+
+        private void btnClose_Click(
+            object sender, EventArgs e)
         {
             this.Close();
         }
 
-        private void frmViewDepartments_Load(object sender, EventArgs e)
+        private void frmViewDepartments_Load(
+            object sender, EventArgs e)
         {
             if (id != 0)
             {
-                using (MySqlDataReader reader = ClinicDatabase.ExecuteReader("select * from tbl_departments where id = @id", ClinicDatabase.CreateParameterNew("id", id)))
+                using (MySqlDataReader reader =
+                    ClinicDatabase.ExecuteReader(
+                        @"SELECT * FROM tbl_departments
+                          WHERE id = @id",
+                        ClinicDatabase.CreateParameterNew(
+                            "id", id)))
+                {
                     if (reader.Read())
-                        txtName.Text = reader["name"].ToString();
+                    {
+                        txtName.Text =
+                            reader["name"].ToString();
+                    }
+                }
             }
         }
-        private void btnSave_Click(object sender, EventArgs e)
+
+        private void btnSave_Click(
+            object sender, EventArgs e)
         {
-            if (txtName.Text.Trim() == "")
+            string departmentName = txtName.Text.Trim();
+
+            // Validate department name
+            if (string.IsNullOrWhiteSpace(departmentName))
             {
-                MessageBox.Show("Please Enter Department Name First");
+                ShowLocalizedMessage(
+                    "Please enter the department name first.",
+                    "يرجى إدخال اسم القسم أولاً.");
+
+                txtName.Focus();
                 return;
             }
-            using (MySqlDataReader reader = ClinicDatabase.ExecuteReader("select * from tbl_departments where name = @name",
-                ClinicDatabase.CreateParameterNew("name", txtName.Text)))
+
+            // Check duplicate department
+            using (MySqlDataReader reader =
+                ClinicDatabase.ExecuteReader(
+                    @"SELECT * FROM tbl_departments
+                      WHERE name = @name",
+                    ClinicDatabase.CreateParameterNew(
+                        "name", departmentName)))
+            {
                 if (reader.Read())
                 {
-                    if (id == 0 || (id != int.Parse(reader["id"].ToString())))
+                    if (id == 0 ||
+                        id != Convert.ToInt32(reader["id"]))
                     {
-                        MessageBox.Show("Department Already Exists. Enter Another Name.");
+                        ShowLocalizedMessage(
+                            "Department already exists. Enter another name.",
+                            "القسم موجود بالفعل. يرجى إدخال اسم آخر.");
+
+                        txtName.Focus();
                         return;
                     }
                 }
+            }
+
             if (id == 0)
             {
-                int LastInsertId = ClinicDatabase.ExecuteNonQuery("insert into tbl_departments (name) values(@name)",
-                    ClinicDatabase.CreateParameterNew("name", txtName.Text));
-                if (LastInsertId != 0)
-                {
-                    ////Utilities.LogAudit(-1, "Add Department", "Department", LastInsertId, "Added Department: " + txtName.Text);
-                }
-                else
+                // Insert new department
+                int LastInsertId =
+                    ClinicDatabase.ExecuteNonQuery(
+                        @"INSERT INTO tbl_departments (name)
+                          VALUES (@name)",
+                        ClinicDatabase.CreateParameterNew(
+                            "name", departmentName));
+
+                if (LastInsertId == 0)
                 {
                     string message = Utilities.LastLogError();
-                    MessageBox.Show("Error Check your data" + message);
+
+                    ShowLocalizedMessage(
+                        "Error. Please check your data.\n" + message,
+                        "حدث خطأ. يرجى التحقق من البيانات.\n" + message,
+                        MessageBoxIcon.Error);
+
+                    return;
                 }
             }
             else
             {
-                ClinicDatabase.ExecuteNonQuery("update tbl_departments set name=@name where id = @id",
-                    ClinicDatabase.CreateParameterNew("id", id),
-              ClinicDatabase.CreateParameterNew("name", txtName.Text));
-                ////Utilities.LogAudit(-1, "Update Department", "Department", id, "Updated Department: " + txtName.Text);
+                // Update existing department
+                ClinicDatabase.ExecuteNonQuery(
+                    @"UPDATE tbl_departments
+                      SET name = @name
+                      WHERE id = @id",
+                    ClinicDatabase.CreateParameterNew(
+                        "id", id),
+                    ClinicDatabase.CreateParameterNew(
+                        "name", departmentName));
             }
-            //.RefreshEmployeeDept();
+
             this.Close();
         }
     }
