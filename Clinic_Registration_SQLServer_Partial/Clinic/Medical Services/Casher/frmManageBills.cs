@@ -130,17 +130,81 @@ namespace Clinic.Medical_Services.Casher
 
         private void TranslateBillControls(Control parent, bool isArabic)
         {
-            foreach (Control control in parent.Controls)
+            if (parent == null)
+                return;
+
+            // Only caption/display controls are translated. Do not assign Text to
+            // DateTimePicker, NumericUpDown, TextBox, ComboBox, DataGridView, etc.
+            // Those controls may parse Text as a date/number/value and throw
+            // FormatException when an Arabic caption is assigned.
+            if (IsBillCaptionControl(parent))
             {
-                // Translate only strings present in TranslationClass. Data values
-                // such as the current user's name remain unchanged if no key exists.
-                if (!string.IsNullOrWhiteSpace(control.Text))
-                    control.Text = TranslateBillDisplayText(control.Text, isArabic);
+                if (!string.IsNullOrWhiteSpace(parent.Text))
+                {
+                    string translated =
+                        TranslateBillDisplayText(parent.Text, isArabic);
 
-                control.RightToLeft = isArabic ? RightToLeft.Yes : RightToLeft.No;
+                    if (!string.Equals(parent.Text, translated, StringComparison.Ordinal))
+                        parent.Text = translated;
+                }
 
-                if (control.HasChildren)
-                    TranslateBillControls(control, isArabic);
+                parent.RightToLeft = isArabic ? RightToLeft.Yes : RightToLeft.No;
+            }
+
+            // ToolStrip/MenuStrip items are not ordinary child Controls.
+            if (parent is ToolStrip toolStrip)
+                TranslateBillToolStripItems(toolStrip.Items, isArabic);
+
+            if (parent.ContextMenuStrip != null)
+                TranslateBillToolStripItems(parent.ContextMenuStrip.Items, isArabic);
+
+            foreach (Control child in parent.Controls)
+                TranslateBillControls(child, isArabic);
+        }
+
+        private bool IsBillCaptionControl(Control control)
+        {
+            if (control == null)
+                return false;
+
+            // Standard WinForms caption controls.
+            if (control is Form ||
+                control is Label ||
+                control is LinkLabel ||
+                control is ButtonBase ||
+                control is GroupBox ||
+                control is TabPage)
+                return true;
+
+            // Guna/custom caption controls do not always inherit from the
+            // standard WinForms Label/Button classes. Detect their type names
+            // without including text-entry or value controls.
+            string typeName = control.GetType().Name;
+            return typeName.IndexOf("HtmlLabel", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                   typeName.IndexOf("Label", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                   typeName.IndexOf("Button", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                   typeName.IndexOf("GroupBox", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                   typeName.IndexOf("TabPage", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private void TranslateBillToolStripItems(ToolStripItemCollection items, bool isArabic)
+        {
+            if (items == null)
+                return;
+
+            foreach (ToolStripItem item in items)
+            {
+                if (item == null)
+                    continue;
+
+                if (!string.IsNullOrWhiteSpace(item.Text))
+                    item.Text = TranslateBillDisplayText(item.Text, isArabic);
+
+                if (item is ToolStripDropDownItem dropDownItem &&
+                    dropDownItem.DropDownItems.Count > 0)
+                {
+                    TranslateBillToolStripItems(dropDownItem.DropDownItems, isArabic);
+                }
             }
         }
 
@@ -696,7 +760,7 @@ namespace Clinic.Medical_Services.Casher
       @"\d+\s+Lab Tests?",
       RegexOptions.IgnoreCase);
 
-                 
+
 
                     // Laboratory invoices can only be edited when nothing is paid.
                     decimal paidAmount = -1;

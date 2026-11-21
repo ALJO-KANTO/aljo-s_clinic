@@ -24,8 +24,8 @@ namespace YamyProject
             LocalizationManager.LocalizeForm(this);
             this.id = id;
             headerUC1.FormText = id == 0
-     ? LocalizationManager.GetString("New - Advance Payment Voucher")
-     : LocalizationManager.GetString("Edit - Advance Payment Voucher");
+             ? LocalizationManager.GetString("New - Advance Payment Voucher")
+             : LocalizationManager.GetString("Edit - Advance Payment Voucher");
 
             this.defaultCustomerId = _customerId;
             //AppTheme.DefaultFont(dgvPartner);
@@ -92,9 +92,9 @@ namespace YamyProject
                 }
 
             DataTable dtDetails = ClinicDatabase.ExecuteDataTable(@"SELECT *, CASE WHEN a.`type`='Customer' THEN (
-            SELECT CODE
-            FROM tbl_customer
-            WHERE id = d.name) WHEN a.`type`= 'Vendor' THEN(
+            SELECT personid CODE
+            FROM persons
+            WHERE personid = d.name) WHEN a.`type`= 'Vendor' THEN(
             SELECT CODE
             FROM tbl_vendor
             WHERE id = d.name) WHEN a.`type`= 'Employee' THEN(
@@ -510,7 +510,7 @@ namespace YamyProject
         private void LoadCustomer()
         {
             dgvPartner.Rows.Clear();
-            DataTable dt = ClinicDatabase.ExecuteDataTable("select id,code,name from tbl_customer where state = 0");
+            DataTable dt = ClinicDatabase.ExecuteDataTable("select personid as id,personid as code,fullname as name from persons where IsDeleted = 0");
             DataGridViewComboBoxColumn name = (DataGridViewComboBoxColumn)dgvPartner.Columns["name"];
             DataRow newRow = dt.NewRow();
             newRow["code"] = 0;
@@ -811,7 +811,7 @@ namespace YamyProject
                         }
                         else if (cmbPaymentType.Text == "Customer")
                         {
-                            query = "select id,code from tbl_customer where code=@code";
+                            query = "select personid,personid code from persons where personid=@code";
                         }
                         else if (cmbPaymentType.Text == "Employee")
                         {
@@ -1181,7 +1181,7 @@ namespace YamyProject
             }
             else if (cmbPaymentType.Text == "Customer")
             {
-                query = "select code,name from tbl_customer where state = 0 and code LIKE @search OR name LIKE @search LIMIT 20";
+                query = "SELECT personid code,fullname name from persons where isdeleted = 0 and personid LIKE @search OR fullname LIKE @search LIMIT 20";
             }
             else if (cmbPaymentType.Text == "Employee")
             {
