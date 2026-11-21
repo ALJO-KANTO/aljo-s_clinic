@@ -29,13 +29,18 @@ namespace Clinic.Person
         public frmAddUpdatePerson()
         {
             InitializeComponent();
-            _Mode = enMode.AddNew;
 
+            ConfigureDateOfBirth();
+
+            _Mode = enMode.AddNew;
         }
 
         public frmAddUpdatePerson(int PersonID)
         {
             InitializeComponent();
+
+            ConfigureDateOfBirth();
+
             _PersonID = PersonID;
             _Mode = enMode.Update;
         }
@@ -157,7 +162,7 @@ namespace Clinic.Person
             lblPersonID.Text = Tr("N/A");
             txtFullName.Text = string.Empty;
 
-            dtpDateOfBirth.Value = DateTime.Now;
+            dtpDateOfBirth.Value = DateTime.Today;
             txtEmail.Text = string.Empty;
             txtPhone.Text = string.Empty;
             txtAddress.Text = string.Empty;
@@ -492,6 +497,23 @@ namespace Clinic.Person
 
 
         }
+        private void ConfigureDateOfBirth()
+        {
+            DateTime minimumDate = new DateTime(1900, 1, 1);
+
+            DateTime supportedMinimum =
+                DateTimePicker.MinimumDateTime;
+
+            dtpDateOfBirth.MinDate =
+                minimumDate < supportedMinimum
+                    ? supportedMinimum
+                    : minimumDate;
+
+            dtpDateOfBirth.MaxDate = DateTime.Today;
+
+            dtpDateOfBirth.Format = DateTimePickerFormat.Custom;
+            dtpDateOfBirth.CustomFormat = "dd/MM/yyyy";
+        }   
         private void SetDefaultPersonImage()
         {
             pbPersonImage.ImageLocation = null;

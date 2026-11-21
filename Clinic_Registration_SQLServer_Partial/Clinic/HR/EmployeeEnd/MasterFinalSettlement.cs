@@ -25,18 +25,19 @@ namespace YamyProject
         public MasterFinalSettlement()
         {
             InitializeComponent();
-            invoiceUpdatedHandler = (sender, args) => BindFinalSet();
-            EventHub.PurchaseInv += invoiceUpdatedHandler;
-            // LocalizationManager.LocalizeForm(this);
 
-            // Show the shared header so this page has the same title bar
-            // and header controls as the other pages.
+            invoiceUpdatedHandler = (sender, args) => BindFinalSet();
+
+            EventHub.PurchaseInv += invoiceUpdatedHandler;
+
+            MinimumSize = Size.Empty;
+
             headerUC1.Visible = true;
             headerUC1.Enabled = true;
-            headerUC1.BringToFront();
+
             ApplyLanguageLayout();
         }
-      
+
 
         private void btnNew_Click(object sender, EventArgs e)
         {
@@ -719,45 +720,47 @@ namespace YamyProject
 
         private void PositionHeaderAboveModernHeading()
         {
-            if (_headerTopLayoutApplied || headerUC1 == null || IsDisposed)
+            if (headerUC1 == null || IsDisposed)
                 return;
-
-            Label pageTitle = FindLabelByTexts(
-                this,
-                "Final Settlement",
-                "التسوية النهائية");
-
-            if (pageTitle == null)
-                return;
-
-            // Find the direct child of this form that contains the modern page heading.
-            Control contentRoot = pageTitle;
-            while (contentRoot.Parent != null && contentRoot.Parent != this)
-                contentRoot = contentRoot.Parent;
-
-            if (contentRoot == headerUC1)
-                return;
-
-            int headerHeight = Math.Max(headerUC1.Height, 32);
 
             SuspendLayout();
+
             try
             {
-                // Move the shared header to the very top of this child form.
+                // Allow the form to fit inside the parent container
+                MinimumSize = new Size(0, 0);
+
+                // Shared title bar
                 headerUC1.Visible = true;
                 headerUC1.Enabled = true;
-                headerUC1.Left = 0;
-                headerUC1.Top = 0;
-                headerUC1.Width = ClientSize.Width;
-                headerUC1.Height = headerHeight;
-                headerUC1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+                headerUC1.AutoSize = false;
+                headerUC1.MinimumSize = Size.Empty;
+                headerUC1.Dock = DockStyle.Top;
+                headerUC1.Height = 37;
+                headerUC1.Margin = Padding.Empty;
 
-                // Move the modern page content down so the header sits above it
-                // instead of crossing through the middle of the page.
-                contentRoot.Top += headerHeight;
+                // Main page heading
+                pnlPageHeader.Dock = DockStyle.Top;
+                pnlPageHeader.Height = 129;
 
-                headerUC1.BringToFront();
-                _headerTopLayoutApplied = true;
+                // Filter section
+                panel2.Dock = DockStyle.Top;
+
+                // Footer section
+                panel1.Dock = DockStyle.Bottom;
+
+                // Grid section
+                panel3.Dock = DockStyle.Fill;
+
+                // Correct docking order
+                Controls.SetChildIndex(panel3, 0);
+                Controls.SetChildIndex(panel1, 1);
+                Controls.SetChildIndex(panel2, 2);
+                Controls.SetChildIndex(pnlPageHeader, 3);
+                Controls.SetChildIndex(headerUC1, 4);
+
+                // Grid scrolling
+                dgvCustomer.ScrollBars = ScrollBars.Both;
             }
             finally
             {

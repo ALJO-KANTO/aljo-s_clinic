@@ -1,4 +1,5 @@
-﻿using Clinic_DataAccess;
+﻿using Clinic;
+using Clinic_DataAccess;
 using MySql.Data.MySqlClient;
 using OfficeOpenXml;
 using System;
@@ -568,8 +569,22 @@ namespace YamyProject
 
             try
             {
-                SavePayrollMonth();
-                MessageBox.Show(L("Payroll saved successfully.", "تم حفظ مسير الرواتب بنجاح."));
+                if (!SavePayrollMonth())
+                    return;
+                if (!SavePayrollMonth())
+                    return;
+
+                MessageBox.Show(
+                    Clinic.TranslationClass.IsArabic
+                        ? "تم حفظ مسير الرواتب بنجاح."
+                        : "Payroll saved successfully.",
+
+                    Clinic.TranslationClass.IsArabic
+                        ? "نجاح"
+                        : "Success",
+
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
@@ -580,9 +595,10 @@ namespace YamyProject
         // ===============================================
         // MAIN SAVE
         // ===============================================
-        private void SavePayrollMonth()
+        private bool SavePayrollMonth()
         {
-            using (MySqlConnection con = new MySqlConnection(ClinicDatabase.GetConnectionString()))
+            using (MySqlConnection con = new MySqlConnection(
+                ClinicDatabase.GetConnectionString()))
             {
                 con.Open();
 
@@ -590,44 +606,79 @@ namespace YamyProject
                 {
                     try
                     {
-                        string empCode = dgvAttendance.Rows[0].Cells["Emp ID"].Value.ToString();
-                        DateTime firstDate = Convert.ToDateTime(dgvAttendance.Rows[0].Cells["Work Date"].Value);
+                        string empCode = dgvAttendance.Rows[0]
+                            .Cells["Emp ID"].Value.ToString();
+
+                        DateTime firstDate = Convert.ToDateTime(
+                            dgvAttendance.Rows[0]
+                            .Cells["Work Date"].Value);
 
                         int month = firstDate.Month;
                         int year = firstDate.Year;
 
-                        // check duplicate
-                        object exists = ClinicDatabase.ExecuteScalarNew(con, tran,
+                        // Check duplicate attendance
+                        object exists = ClinicDatabase.ExecuteScalarNew(
+                            con, tran,
                             @"SELECT id FROM tbl_attendance_salary
-                              WHERE emp_code=@code
-                              AND YEAR(date)=@year
-                              AND MONTH(date)=@month LIMIT 1",
-                            ClinicDatabase.CreateParameterNew("@code", empCode),
-                            ClinicDatabase.CreateParameterNew("@year", year),
-                            ClinicDatabase.CreateParameterNew("@month", month));
+                      WHERE emp_code = @code
+                      AND YEAR(date) = @year
+                      AND MONTH(date) = @month
+                      LIMIT 1",
 
-                        if (exists != null)
-                            throw new Exception("Employee month already saved.");
+                            ClinicDatabase.CreateParameterNew(
+                                "@code", empCode),
 
-                        // load employee
-                        EmployeePayroll emp = LoadEmployeePayroll(con, tran, empCode);
+                            ClinicDatabase.CreateParameterNew(
+                                "@year", year),
 
-                        // calculate
+                            ClinicDatabase.CreateParameterNew(
+                                "@month", month));
+
+                        if (exists != null && exists != DBNull.Value)
+                        {
+                            tran.Rollback();
+
+                            MessageBox.Show(
+                                Clinic.TranslationClass.IsArabic
+                                    ? "تم حفظ حضور الموظف لهذا الشهر بالفعل."
+                                    : "Employee attendance for this month has already been saved.",
+
+                                Clinic.TranslationClass.IsArabic
+                                    ? "تنبيه"
+                                    : "Warning",
+
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Warning);
+
+                            return false;
+                        }
+
+                        // Load employee
+                        EmployeePayroll emp =
+                            LoadEmployeePayroll(con, tran, empCode);
+
+                        // Calculate payroll
                         PayrollResult result = CalculatePayroll(emp);
 
-                        // save header
-                        int attendanceSalaryId = SavePayrollHeader(con, tran, empCode, firstDate, result);
+                        // Save header
+                        int attendanceSalaryId = SavePayrollHeader(
+                            con, tran, empCode, firstDate, result);
 
-                        // save detail rows
-                        SaveAttendanceRows(con, tran, attendanceSalaryId);
+                        // Save attendance detail rows
+                        SaveAttendanceRows(
+                            con, tran, attendanceSalaryId);
 
-                        // save LS
-                        SaveLeaveSalary(con, tran, emp, result, firstDate);
+                        // Save leave salary
+                        SaveLeaveSalary(
+                            con, tran, emp, result, firstDate);
 
-                        // save EOS
-                        SaveEOS(con, tran, emp, result, firstDate);
+                        // Save end of service
+                        SaveEOS(
+                            con, tran, emp, result, firstDate);
 
                         tran.Commit();
+
+                        return true;
                     }
                     catch
                     {
