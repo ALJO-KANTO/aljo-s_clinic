@@ -6,6 +6,7 @@ using Microsoft.Win32;
 using MySql.Data.MySqlClient;
 using OfficeOpenXml;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
 using System.Globalization;
@@ -13,7 +14,7 @@ using System.IO;
 using System.Windows.Forms;
 
 //using YamyProject.DAL;
-//using YamyProject.Localization;
+using YamyProject.Localization;
 using OpenFileDialog = System.Windows.Forms.OpenFileDialog;
 
 namespace YamyProject
@@ -27,10 +28,34 @@ namespace YamyProject
         public frmViewPettyCashVoucher(int id = 0)
         {
             InitializeComponent();
-           // LocalizationManager.LocalizeForm(this);
             this.id = id;
 
-            headerUC1.FormText = this.Text;
+            ApplyPettyCashVoucherLanguage();
+        }
+
+        private bool IsPettyCashArabicMode()
+        {
+            string language = Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en";
+            return language.Trim().StartsWith("ar", StringComparison.OrdinalIgnoreCase) ||
+                   language.IndexOf("arabic", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private void ApplyPettyCashVoucherLanguage()
+        {
+            bool arabic = IsPettyCashArabicMode();
+
+            PettyCashArabicLocalization.ApplyToForm(this);
+            this.Text = arabic
+                ? "سند العهدة النثرية"
+                : "PettyCash Voucher";
+
+            // This button is the Save & Close action (guna2Button3_Click).
+            // Set it explicitly because its caption is retained by the custom Guna control.
+            if (guna2Button3 != null)
+                guna2Button3.Text = arabic ? "حفظ وإغلاق" : "Save & Close";
+
+            if (headerUC1 != null)
+                headerUC1.FormText = this.Text;
         }
 
         private void btnClose_Click(object sender, EventArgs e)
@@ -185,17 +210,18 @@ namespace YamyProject
             dtOpen.Value = DateTime.Now.Date;
             //AppTheme.DefaultFont(dgvInv);
             DataGridViewCalendarColumn calendarColumn = new DataGridViewCalendarColumn();
-            calendarColumn.HeaderText = "Date";
+            calendarColumn.HeaderText = PettyCashArabicLocalization.Translate("Date");
             calendarColumn.Name = "colDate";
             int colIndex = dgvInv.Columns["colDate"].Index;
             // Remove the old column
             dgvInv.Columns.RemoveAt(colIndex);
             // Insert the calendar column at the same position
             dgvInv.Columns.Insert(colIndex, calendarColumn);
+            PettyCashArabicLocalization.ApplyToGrid(dgvInv);
             string queryC = "select id,name from tbl_petty_cash_category";
             DataTable dtc = ClinicDatabase.ExecuteDataTable(queryC);
             DataGridViewComboBoxColumn cmbCategory = (DataGridViewComboBoxColumn)dgvInv.Columns["category"];
-            if( cmbCategory != null)
+            if (cmbCategory != null)
             {
                 cmbCategory.DataSource = dtc;
                 cmbCategory.DisplayMember = "name";
@@ -223,7 +249,7 @@ namespace YamyProject
             //    cmbLinkType.DisplayMember = "name";
             //    cmbLinkType.ValueMember = "id";
             //}
-            if(id <= 0)
+            if (id <= 0)
                 BindCombos.PopulatePettyCash(cmbPettyCash);
             else
                 BindCombos.PopulateEmployeesToPettyCardAllEmp(cmbPettyCash);
@@ -244,7 +270,7 @@ namespace YamyProject
             //DataGridViewCell buttonColumn = dgvInv.CurrentRow.Cells["humId"];
             //loadNameList(buttonColumn);
             loadVat();
-           // LocalizationManager.LocalizeDataGridViewHeaders(dgvInv);
+            // LocalizationManager.LocalizeDataGridViewHeaders(dgvInv);
 
             var opt = Utilities.GeneralSettingsState("ENABLE PETTYCASH APPROVAL");
             if (!string.IsNullOrEmpty(opt) && int.Parse(opt) > 0)
@@ -262,6 +288,20 @@ namespace YamyProject
             else
             {
                 BtnJournal.Enabled = false;
+            }
+
+            // Reapply after dynamic controls and grid columns are populated.
+            ApplyPettyCashVoucherLanguage();
+
+            // The parent window/custom toolbar can finish assigning captions after Load.
+            // Apply once the form is visible as well, without changing control layout.
+            if (IsHandleCreated)
+            {
+                BeginInvoke((MethodInvoker)(() =>
+                {
+                    if (!IsDisposed)
+                        ApplyPettyCashVoucherLanguage();
+                }));
             }
         }
         bool EnableApproval = false;
@@ -348,7 +388,7 @@ namespace YamyProject
 
                     _humId = _humId == "0" ? null : _humId;
                     // Add row with null placeholder for CostCenter
-                    dgvInv.Rows.Add(serialNumber.ToString(), inv_date, inv_id, null, _humName, _humId, null, description, PettyCashAmount,null, PettyCashVat, PettyCashTotal, colNote);
+                    dgvInv.Rows.Add(serialNumber.ToString(), inv_date, inv_id, null, _humName, _humId, null, description, PettyCashAmount, null, PettyCashVat, PettyCashTotal, colNote);
 
                     DataGridViewComboBoxCell comboCell = dgvInv.Rows[dgvInv.Rows.Count - 2].Cells["vat"] as DataGridViewComboBoxCell;
                     if (comboCell != null && reader["vat"].ToString() != "0")
@@ -413,7 +453,7 @@ namespace YamyProject
                 if (insertPV())
                 {
                     //.RefreshPettyCashVoucher();
-                    MessageBox.Show("The PettyCash Voucher Paid");
+                    MessageBox.Show(PettyCashArabicLocalization.Translate("The PettyCash Voucher Paid"));
                     if (chkPrint.Checked == true)
                     {
                         loadPrint();
@@ -425,7 +465,7 @@ namespace YamyProject
                 if (updatePV())
                 {
                     //.RefreshPettyCashVoucher();
-                    MessageBox.Show("The PettyCash Voucher Updated !");
+                    MessageBox.Show(PettyCashArabicLocalization.Translate("The PettyCash Voucher Updated !"));
                     if (chkPrint.Checked == true)
                     {
                         loadPrint();
@@ -472,7 +512,7 @@ namespace YamyProject
             if (!chkRequireData())
                 return false;
 
-            if(decimal.Parse(txtAmount.Text)== decimal.Parse(txtTotal.Text))
+            if (decimal.Parse(txtAmount.Text) == decimal.Parse(txtTotal.Text))
             {
                 txtVat.Text = "0.00";
             }
@@ -506,7 +546,7 @@ namespace YamyProject
         {
             if (txtTotal.Text.Trim() == "")
             {
-                MessageBox.Show("Please Enter PettyCash Amount.");
+                MessageBox.Show(PettyCashArabicLocalization.Translate("Please Enter PettyCash Amount."));
                 return false;
             }
             //if (cmbAccountName.Text.Trim() == "")
@@ -516,7 +556,7 @@ namespace YamyProject
             //}
             if ((txtTotal.Text == "" || decimal.Parse(txtTotal.Text) == 0) && dgvInv.Rows.Count == 0)
             {
-                MessageBox.Show("Enter Amount");
+                MessageBox.Show(PettyCashArabicLocalization.Translate("Enter Amount"));
                 return false;
             }
 
@@ -533,7 +573,7 @@ namespace YamyProject
                     dgvInv.Rows[i].Cells["total"].Value.ToString() == "" ||
                     decimal.Parse(dgvInv.Rows[i].Cells["total"].Value.ToString()) == 0)
                     continue;
-                
+
                 DateTime date = DateTime.Parse(dgvInv.Rows[i].Cells["colDate"].Value.ToString());
                 var invId = dgvInv.Rows[i].Cells["invId"].Value?.ToString() != "" ? dgvInv.Rows[i].Cells["invId"].Value?.ToString() : "0";
 
@@ -613,13 +653,13 @@ namespace YamyProject
                         continue;
                     totalAmount += decimal.Parse(dgvInv.Rows[i].Cells["Amount"].Value.ToString());
                 }
-                if(dgvInv.Rows[i].Cells["vat"].Value != null)
+                if (dgvInv.Rows[i].Cells["vat"].Value != null)
                 {
                     if (dgvInv.Rows[i].Cells["vat"].Value.ToString() == "")
                         continue;
                     totalVat += decimal.Parse(dgvInv.Rows[i].Cells["vat"].Value.ToString());
                 }
-                if(dgvInv.Rows[i].Cells["total"].Value != null)
+                if (dgvInv.Rows[i].Cells["total"].Value != null)
                 {
                     if (dgvInv.Rows[i].Cells["total"].Value.ToString() == "")
                         continue;
@@ -666,43 +706,43 @@ namespace YamyProject
         public void ShowReport()
         {
 
-        //    try
-        //    {
-        //        // Create the report 
-        //        //CPV_GENERAL cr = new CPV_GENERAL();
-        //        string reportPath = Path.Combine(Application.StartupPath, "CrystalReport", "PettyCashVoucherGeneral.rpt");
+            //    try
+            //    {
+            //        // Create the report 
+            //        //CPV_GENERAL cr = new CPV_GENERAL();
+            //        string reportPath = Path.Combine(Application.StartupPath, "CrystalReport", "PettyCashVoucherGeneral.rpt");
 
-        //        // Load the report file from disk
-        //        ReportDocument cr = new ReportDocument();
-        //        cr.Load(reportPath);
-        //        // Load the main report data
-        //        DataTable companyData = COMPANYINFO("1");  // Assuming you want to pass ID 1
-        //        DataTable PettyCashDetails = PettyCashDetail(id.ToString());
-        //        DataTable PettyCashVoucher = PettyCashVoucherData(id.ToString());
-        //        if (companyData != null)  // Ensure that data was successfully retrieved
-        //        {
-        //            //cr.SetDataSource(companyData);
-        //            cr.Subreports["Company"].SetDataSource(companyData);
-        //            cr.Subreports["PettyCashHeader"].SetDataSource(PettyCashVoucher);
-        //            cr.Subreports["PettyCashDetails"].SetDataSource(PettyCashDetails);
-        //            ((TextObject)cr.ReportDefinition.Sections["Section4"].ReportObjects["Text6"]).Text = frmLogin.userName;
-        //        }
-        //        else
-        //        {
-        //            MessageBox.Show("No data available for the report.");
-        //            return;  // Exit the method if no data is available
-        //        }
+            //        // Load the report file from disk
+            //        ReportDocument cr = new ReportDocument();
+            //        cr.Load(reportPath);
+            //        // Load the main report data
+            //        DataTable companyData = COMPANYINFO("1");  // Assuming you want to pass ID 1
+            //        DataTable PettyCashDetails = PettyCashDetail(id.ToString());
+            //        DataTable PettyCashVoucher = PettyCashVoucherData(id.ToString());
+            //        if (companyData != null)  // Ensure that data was successfully retrieved
+            //        {
+            //            //cr.SetDataSource(companyData);
+            //            cr.Subreports["Company"].SetDataSource(companyData);
+            //            cr.Subreports["PettyCashHeader"].SetDataSource(PettyCashVoucher);
+            //            cr.Subreports["PettyCashDetails"].SetDataSource(PettyCashDetails);
+            //            ((TextObject)cr.ReportDefinition.Sections["Section4"].ReportObjects["Text6"]).Text = frmLogin.userName;
+            //        }
+            //        else
+            //        {
+            //            MessageBox.Show("No data available for the report.");
+            //            return;  // Exit the method if no data is available
+            //        }
 
-        //        // Assign the main report to the viewer
-        //        MasterReportView reportForm = new MasterReportView();
-        //        reportForm.crReportViewer.ReportSource = cr;
-        //        reportForm.crReportViewer.RefreshReport();
-        //        reportForm.ShowDialog();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        MessageBox.Show("Error: " + ex.Message);
-        //    }
+            //        // Assign the main report to the viewer
+            //        MasterReportView reportForm = new MasterReportView();
+            //        reportForm.crReportViewer.ReportSource = cr;
+            //        reportForm.crReportViewer.RefreshReport();
+            //        reportForm.ShowDialog();
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        MessageBox.Show(PettyCashArabicLocalization.Translate("Error:") + " " + ex.Message);
+            //    }
         }
 
         private void guna2TileButton18_Click(object sender, EventArgs e)
@@ -724,7 +764,7 @@ namespace YamyProject
                 if (insertPV())
                 {
                     //.RefreshPettyCashVoucher();
-                    MessageBox.Show("The PettyCash Voucher Paid  ");
+                    MessageBox.Show(PettyCashArabicLocalization.Translate("The PettyCash Voucher Paid"));
                     if (chkPrint.Checked == true)
                     {
                         loadPrint();
@@ -740,7 +780,7 @@ namespace YamyProject
                 if (updatePV())
                 {
                     //.RefreshPettyCashVoucher();
-                    MessageBox.Show("The PettyCash Voucher Updated !  ");
+                    MessageBox.Show(PettyCashArabicLocalization.Translate("The PettyCash Voucher Updated !"));
                     if (chkPrint.Checked == true)
                     {
                         loadPrint();
@@ -781,7 +821,7 @@ namespace YamyProject
             if (currentId <= 0)
             {
                 clear();
-                MessageBox.Show("No previous records.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(PettyCashArabicLocalization.Translate("No previous records."), PettyCashArabicLocalization.Translate("Info"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
             string query = "select id from tbl_petty_cash where id =@id";
@@ -794,13 +834,13 @@ namespace YamyProject
                 else
                 {
                     clear();
-                    MessageBox.Show("No previous record found.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show(PettyCashArabicLocalization.Translate("No previous record found."), PettyCashArabicLocalization.Translate("Info"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
         }
 
         private void btnNext_Click(object sender, EventArgs e)
         {
-            int? currentId = int.Parse(txtId.Text.ToString()??"0");// Utilities.GetVoucherIdFromCode(txtPVCode.Text);
+            int? currentId = int.Parse(txtId.Text.ToString() ?? "0");// Utilities.GetVoucherIdFromCode(txtPVCode.Text);
             if (currentId is null) return;
 
             currentId = currentId + 1;
@@ -816,7 +856,7 @@ namespace YamyProject
                 else
                 {
                     clear();
-                    MessageBox.Show("No next record found.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show(PettyCashArabicLocalization.Translate("No next record found."), PettyCashArabicLocalization.Translate("Info"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
         }
@@ -1314,7 +1354,8 @@ namespace YamyProject
                         }
                     }
                 }
-            } catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
@@ -1444,7 +1485,7 @@ namespace YamyProject
             }
             catch (Exception ex)
             {
-                MessageBox.Show("VAT calc error: " + ex.Message);
+                MessageBox.Show(PettyCashArabicLocalization.Translate("VAT calc error:") + " " + ex.Message);
             }
         }
         private decimal GetDecimalValue(DataGridViewRow row, string columnName)
@@ -1552,7 +1593,7 @@ namespace YamyProject
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error: " + ex.Message);
+                MessageBox.Show(PettyCashArabicLocalization.Translate("Error:") + " " + ex.Message);
             }
         }
 
@@ -1614,7 +1655,7 @@ namespace YamyProject
         {
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
-            this.Text = "Import Petty Cash from Excel";
+            this.Text = PettyCashArabicLocalization.Translate("Import Petty Cash from Excel");
             this.Size = new Size(1400, 800);
             this.StartPosition = FormStartPosition.CenterScreen;
 
@@ -1629,53 +1670,53 @@ namespace YamyProject
             int x = 10, spacing = 8, labelWidth = 90, textboxWidth = 30, controlHeight = 28;
 
             // Buttons
-            btnLoadExcel = new Button() { Text = "Load Excel", Size = new Size(100, controlHeight), Location = new Point(x, 10) };
+            btnLoadExcel = new Button() { Text = PettyCashArabicLocalization.Translate("Load Excel"), Size = new Size(100, controlHeight), Location = new Point(x, 10) };
             x += 100 + spacing;
-            btnImport = new Button() { Text = "Set Data", Size = new Size(100, controlHeight), Location = new Point(x, 10) };
+            btnImport = new Button() { Text = PettyCashArabicLocalization.Translate("Set Data"), Size = new Size(100, controlHeight), Location = new Point(x, 10) };
             x += 100 + spacing;
 
             // Add mapping fields
-            panelTop.Controls.Add(new Label() { Text = "Start Row:", AutoSize = true, Location = new Point(x, 15) });
+            panelTop.Controls.Add(new Label() { Text = PettyCashArabicLocalization.Translate("Start Row:"), AutoSize = true, Location = new Point(x, 15) });
             x += labelWidth;
             txtStartCell = new TextBox() { Width = 50, Location = new Point(x, 12) };
             x += textboxWidth + 50;
 
-            panelTop.Controls.Add(new Label() { Text = "End Row:", AutoSize = true, Location = new Point(x, 15) });
+            panelTop.Controls.Add(new Label() { Text = PettyCashArabicLocalization.Translate("End Row:"), AutoSize = true, Location = new Point(x, 15) });
             x += labelWidth;
             txtEndCell = new TextBox() { Width = 50, Location = new Point(x, 12) };
             x += textboxWidth + 50;
 
-            panelTop.Controls.Add(new Label() { Text = "Date Col:", AutoSize = true, Location = new Point(x, 15) });
+            panelTop.Controls.Add(new Label() { Text = PettyCashArabicLocalization.Translate("Date Col:"), AutoSize = true, Location = new Point(x, 15) });
             x += labelWidth;
             txtDateCell = new TextBox() { Width = 50, Location = new Point(x, 12) };
             x += textboxWidth + 50;
 
-            panelTop.Controls.Add(new Label() { Text = "REF Col:", AutoSize = true, Location = new Point(x, 15) });
+            panelTop.Controls.Add(new Label() { Text = PettyCashArabicLocalization.Translate("REF Col:"), AutoSize = true, Location = new Point(x, 15) });
             x += labelWidth;
             txtAccountCodeCell = new TextBox() { Width = 50, Location = new Point(x, 12) };
             x += textboxWidth + 50;
 
-            panelTop.Controls.Add(new Label() { Text = "Category Col:", AutoSize = true, Location = new Point(x, 15) });
+            panelTop.Controls.Add(new Label() { Text = PettyCashArabicLocalization.Translate("Category Col:"), AutoSize = true, Location = new Point(x, 15) });
             x += labelWidth;
             txtAccountNameCell = new TextBox() { Width = 50, Location = new Point(x, 12) };
             x += textboxWidth + 50;
 
-            panelTop.Controls.Add(new Label() { Text = "CostCenter Col:", AutoSize = true, Location = new Point(x, 15) });
+            panelTop.Controls.Add(new Label() { Text = PettyCashArabicLocalization.Translate("CostCenter Col:"), AutoSize = true, Location = new Point(x, 15) });
             x += labelWidth;
             txtCostCenterCell = new TextBox() { Width = 50, Location = new Point(x, 12) };
             x += textboxWidth + 50;
 
-            panelTop.Controls.Add(new Label() { Text = "Description Col:", AutoSize = true, Location = new Point(x, 15) });
+            panelTop.Controls.Add(new Label() { Text = PettyCashArabicLocalization.Translate("Description Col:"), AutoSize = true, Location = new Point(x, 15) });
             x += labelWidth;
             txtDescriptionCell = new TextBox() { Width = 50, Location = new Point(x, 12) };
             x += textboxWidth + 50;
 
-            panelTop.Controls.Add(new Label() { Text = "Amount Col:", AutoSize = true, Location = new Point(x, 15) });
+            panelTop.Controls.Add(new Label() { Text = PettyCashArabicLocalization.Translate("Amount Col:"), AutoSize = true, Location = new Point(x, 15) });
             x += labelWidth;
             txtAmountCell = new TextBox() { Width = 50, Location = new Point(x, 12) };
             x += textboxWidth + 50;
 
-            panelTop.Controls.Add(new Label() { Text = "Note Col:", AutoSize = true, Location = new Point(x, 15) });
+            panelTop.Controls.Add(new Label() { Text = PettyCashArabicLocalization.Translate("Note Col:"), AutoSize = true, Location = new Point(x, 15) });
             x += labelWidth;
             txtNoteCell = new TextBox() { Width = 50, Location = new Point(x, 12) };
 
@@ -1731,7 +1772,7 @@ namespace YamyProject
         {
             if (string.IsNullOrEmpty(excelPath))
             {
-                MessageBox.Show("Please load an Excel file first.");
+                MessageBox.Show(PettyCashArabicLocalization.Translate("Please load an Excel file first."));
                 return;
             }
 
@@ -1877,6 +1918,320 @@ namespace YamyProject
                     return false;
             }
             return true;
+        }
+    }
+
+
+    internal static class PettyCashArabicLocalization
+    {
+        private static bool IsArabic
+        {
+            get
+            {
+                try
+                {
+                    string language = Clinic.Properties.Settings.Default.ApplicationLanguage ?? "";
+                    return language.Trim().ToLowerInvariant().Contains("ar")
+                        || language.Trim().ToLowerInvariant().Contains("arab");
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+        }
+
+        private static readonly Dictionary<string, string> Arabic = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Petty Cash Voucher"] = "سند العهدة النثرية",
+            ["PettyCash Voucher"] = "سند العهدة النثرية",
+            ["PettyCashCode"] = "رمز العهدة النثرية",
+            ["Petty Cash Code"] = "رمز العهدة النثرية",
+            ["PettyCash Name"] = "اسم العهدة النثرية",
+            ["Petty Cash Name"] = "اسم العهدة النثرية",
+            ["Main"] = "الرئيسية",
+            ["Reports"] = "التقارير",
+            ["Quick Report"] = "تقرير سريع",
+            ["Transaction History"] = "سجل المعاملات",
+            ["Transaction Journal"] = "دفتر المعاملات",
+            ["Quick\r\nReport"] = "تقرير سريع",
+            ["Quick\nReport"] = "تقرير سريع",
+            ["Transaction\r\nHistory"] = "سجل المعاملات",
+            ["Transaction\nHistory"] = "سجل المعاملات",
+            ["Transaction\r\nJournal"] = "دفتر المعاملات",
+            ["Transaction\nJournal"] = "دفتر المعاملات",
+            ["Create a Memo"] = "إنشاء مذكرة",
+            ["Create Memo"] = "إنشاء مذكرة",
+            ["Create a"] = "إنشاء",
+            ["Create a Memo\r\nMemo"] = "إنشاء مذكرة",
+            ["Create a Memo\nMemo"] = "إنشاء مذكرة",
+            ["Create a Memo Memo"] = "إنشاء مذكرة",
+            ["Memo"] = "مذكرة",
+            ["Email"] = "البريد الإلكتروني",
+            ["Print After Save"] = "طباعة بعد الحفظ",
+            ["Print After\r\nSave"] = "طباعة بعد الحفظ",
+            ["Print After\nSave"] = "طباعة بعد الحفظ",
+            ["Import File"] = "استيراد ملف",
+            ["Attach File"] = "إرفاق ملف",
+            ["Submit"] = "إرسال",
+            ["Save & Close"] = "حفظ وإغلاق",
+            ["Save and Close"] = "حفظ وإغلاق",
+            ["Save Close"] = "حفظ وإغلاق",
+            ["Save &\r\nClose"] = "حفظ وإغلاق",
+            ["Save &\nClose"] = "حفظ وإغلاق",
+            ["Amount In Word"] = "المبلغ كتابةً",
+            ["Amount In Words"] = "المبلغ كتابةً",
+            ["Amount In Word:"] = "المبلغ كتابةً:",
+            ["Amount In Word :"] = "المبلغ كتابةً:",
+            ["Amount In\r\nWord"] = "المبلغ كتابةً",
+            ["Amount In\nWord"] = "المبلغ كتابةً",
+            ["Petty Cash Voucher - New"] = "سند عهدة نثرية جديد",
+            ["Petty Cash Voucher - Edit"] = "تعديل سند العهدة النثرية",
+            ["Date"] = "التاريخ",
+            ["No"] = "الرقم",
+            ["S.N"] = "م",
+            ["SN"] = "م",
+            ["Category"] = "الفئة",
+            ["Cost Center"] = "مركز التكلفة",
+            ["CostCenter"] = "مركز التكلفة",
+            ["Description"] = "الوصف",
+            ["Amount"] = "المبلغ",
+            ["VAT"] = "ضريبة القيمة المضافة",
+            ["VAT %"] = "نسبة الضريبة",
+            ["Total"] = "الإجمالي",
+            ["Total:"] = "الإجمالي:",
+            ["Total :"] = "الإجمالي:",
+            ["Note"] = "ملاحظات",
+            ["Notes"] = "ملاحظات",
+            ["Reference"] = "المرجع",
+            ["Ref"] = "المرجع",
+            ["Type"] = "النوع",
+            ["Name"] = "الاسم",
+            ["Petty Cash"] = "العهدة النثرية",
+            ["Voucher No"] = "رقم السند",
+            ["Voucher Date"] = "تاريخ السند",
+            ["Employee"] = "الموظف",
+            ["Employee Name"] = "اسم الموظف",
+            ["Code"] = "الرمز",
+            ["Save"] = "حفظ",
+            ["Close"] = "إغلاق",
+            ["Delete"] = "حذف",
+            ["Clear"] = "مسح",
+            ["New"] = "جديد",
+            ["Copy"] = "نسخ",
+            ["Attach"] = "إرفاق",
+            ["Import"] = "استيراد",
+            ["Print"] = "طباعة",
+            ["Journal"] = "القيد المحاسبي",
+            ["Paid"] = "مدفوع",
+            ["The PettyCash Voucher Paid"] = "تم دفع سند العهدة النثرية",
+            ["The PettyCash Voucher Updated !"] = "تم تحديث سند العهدة النثرية",
+            ["Please Enter PettyCash Amount."] = "يرجى إدخال مبلغ العهدة النثرية.",
+            ["Enter Amount"] = "يرجى إدخال المبلغ.",
+            ["No previous records."] = "لا توجد سجلات سابقة.",
+            ["No previous record found."] = "لم يتم العثور على السجل السابق.",
+            ["No next record found."] = "لم يتم العثور على السجل التالي.",
+            ["Info"] = "معلومات",
+            ["VAT calc error:"] = "خطأ في حساب ضريبة القيمة المضافة:",
+            ["Error:"] = "خطأ:",
+            ["Import Petty Cash from Excel"] = "استيراد العهدة النثرية من Excel",
+            ["Load Excel"] = "تحميل ملف Excel",
+            ["Set Data"] = "تعيين البيانات",
+            ["Start Row:"] = "صف البداية:",
+            ["End Row:"] = "صف النهاية:",
+            ["Date Col:"] = "عمود التاريخ:",
+            ["REF Col:"] = "عمود المرجع:",
+            ["Category Col:"] = "عمود الفئة:",
+            ["CostCenter Col:"] = "عمود مركز التكلفة:",
+            ["Description Col:"] = "عمود الوصف:",
+            ["Amount Col:"] = "عمود المبلغ:",
+            ["Note Col:"] = "عمود الملاحظات:",
+            ["Please load an Excel file first."] = "يرجى تحميل ملف Excel أولاً."
+        };
+
+        public static string Translate(string value)
+        {
+            if (!IsArabic || string.IsNullOrEmpty(value))
+                return value;
+
+            string key = value.Trim();
+            if (Arabic.TryGetValue(key, out string translated))
+                return translated;
+
+            // Some Guna/ToolStrip controls keep visual line breaks in their Text.
+            // Normalize those breaks so the same translation also applies to wrapped labels.
+            string normalized = System.Text.RegularExpressions.Regex.Replace(key, @"\s+", " ");
+            if (Arabic.TryGetValue(normalized, out translated))
+                return translated;
+
+            // Handle controls whose designer text includes an extra caption,
+            // colon, or a line break added by a hosted toolbar component.
+            if (normalized.Equals("Quick Report", StringComparison.OrdinalIgnoreCase))
+                return "تقرير سريع";
+            if (normalized.Equals("Transaction History", StringComparison.OrdinalIgnoreCase))
+                return "سجل المعاملات";
+            if (normalized.Equals("Transaction Journal", StringComparison.OrdinalIgnoreCase))
+                return "دفتر المعاملات";
+            if (normalized.IndexOf("Create a Memo", StringComparison.OrdinalIgnoreCase) >= 0)
+                return "إنشاء مذكرة";
+            if (normalized.Equals("Create a", StringComparison.OrdinalIgnoreCase) ||
+                normalized.Equals("Create", StringComparison.OrdinalIgnoreCase))
+                return "إنشاء";
+            if (normalized.Equals("Memo", StringComparison.OrdinalIgnoreCase))
+                return "مذكرة";
+            if (normalized.IndexOf("Print After Save", StringComparison.OrdinalIgnoreCase) >= 0)
+                return "طباعة بعد الحفظ";
+            if (normalized.IndexOf("Save & Close", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                normalized.IndexOf("Save and Close", StringComparison.OrdinalIgnoreCase) >= 0)
+                return "حفظ وإغلاق";
+            if (normalized.IndexOf("Amount In Word", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                normalized.IndexOf("Amount in Words", StringComparison.OrdinalIgnoreCase) >= 0)
+                return "المبلغ كتابةً";
+            if (normalized.Equals("Total", StringComparison.OrdinalIgnoreCase) ||
+                normalized.StartsWith("Total:", StringComparison.OrdinalIgnoreCase) ||
+                normalized.StartsWith("Total :", StringComparison.OrdinalIgnoreCase))
+                return normalized.EndsWith(":", StringComparison.Ordinal) ? "الإجمالي:" : "الإجمالي";
+
+            return value;
+        }
+
+        public static void ApplyToForm(Form form)
+        {
+            if (!IsArabic || form == null)
+                return;
+
+            // Form.Text is not part of form.Controls, so translate it explicitly.
+            form.Text = Translate(form.Text);
+            ApplyToControls(form.Controls);
+            form.RightToLeft = RightToLeft.Yes;
+
+            // Some ToolStrip/MenuStrip components are owned by the form and
+            // their items are not exposed through the normal Controls collection.
+            ApplyToOwnedToolStrips(form);
+        }
+
+        private static void ApplyToControls(System.Windows.Forms.Control.ControlCollection controls)
+        {
+            foreach (System.Windows.Forms.Control control in controls)
+            {
+                // Leave values displayed by data-bound selectors untouched.
+                if (!(control is ComboBox) &&
+                    !(control is DataGridView) &&
+                    !(control is Guna.UI2.WinForms.Guna2ComboBox) &&
+                    !string.IsNullOrWhiteSpace(control.Text))
+                {
+                    control.Text = Translate(control.Text);
+                }
+
+                // Guna text boxes may display captions through PlaceholderText
+                // rather than the ordinary Text property.
+                if (control is Guna.UI2.WinForms.Guna2TextBox gunaTextBox &&
+                    !string.IsNullOrWhiteSpace(gunaTextBox.PlaceholderText))
+                {
+                    gunaTextBox.PlaceholderText = Translate(gunaTextBox.PlaceholderText);
+                }
+
+                if (control is DataGridView grid)
+                    ApplyToGrid(grid);
+
+                if (control is ToolStrip toolStrip)
+                    ApplyToToolStripItems(toolStrip.Items);
+
+                if (control.ContextMenuStrip != null)
+                    ApplyToToolStripItems(control.ContextMenuStrip.Items);
+
+                ApplyToControls(control.Controls);
+            }
+        }
+
+        private static void ApplyToOwnedToolStrips(Form form)
+        {
+            foreach (System.Reflection.FieldInfo field in form.GetType().GetFields(
+                System.Reflection.BindingFlags.Instance |
+                System.Reflection.BindingFlags.Public |
+                System.Reflection.BindingFlags.NonPublic))
+            {
+                object value = null;
+                try { value = field.GetValue(form); } catch { }
+
+                if (value is ToolStrip toolStrip)
+                    ApplyToToolStripItems(toolStrip.Items);
+                else if (value is ContextMenuStrip contextMenu)
+                    ApplyToToolStripItems(contextMenu.Items);
+                else if (value is ToolStripItem item)
+                    ApplyToToolStripItem(item);
+                else if (value is System.Windows.Forms.Control control)
+                    ApplyToEmbeddedControl(control);
+            }
+        }
+
+        private static void ApplyToToolStripItems(ToolStripItemCollection items)
+        {
+            if (items == null) return;
+            foreach (ToolStripItem item in items)
+                ApplyToToolStripItem(item);
+        }
+
+        private static void ApplyToToolStripItem(ToolStripItem item)
+        {
+            if (item == null) return;
+            if (!string.IsNullOrWhiteSpace(item.Text))
+                item.Text = Translate(item.Text);
+            if (!string.IsNullOrWhiteSpace(item.ToolTipText))
+                item.ToolTipText = Translate(item.ToolTipText);
+
+            // ToolStripControlHost embeds a WinForms control. Its Text/PlaceholderText
+            // is not in the ToolStripItem.Text property, so translate it separately.
+            if (item is ToolStripControlHost host && host.Control != null)
+                ApplyToEmbeddedControl(host.Control);
+
+            if (item is ToolStripDropDownItem dropDown && dropDown.DropDownItems.Count > 0)
+                ApplyToToolStripItems(dropDown.DropDownItems);
+        }
+
+        private static void ApplyToEmbeddedControl(System.Windows.Forms.Control control)
+        {
+            if (control == null) return;
+
+            if (!(control is ComboBox) &&
+                !(control is DataGridView) &&
+                !(control is Guna.UI2.WinForms.Guna2ComboBox) &&
+                !string.IsNullOrWhiteSpace(control.Text))
+            {
+                control.Text = Translate(control.Text);
+            }
+
+            if (control is Guna.UI2.WinForms.Guna2TextBox gunaTextBox &&
+                !string.IsNullOrWhiteSpace(gunaTextBox.PlaceholderText))
+            {
+                gunaTextBox.PlaceholderText = Translate(gunaTextBox.PlaceholderText);
+            }
+
+            if (control is ToolStrip nestedToolStrip)
+                ApplyToToolStripItems(nestedToolStrip.Items);
+
+            if (control.ContextMenuStrip != null)
+                ApplyToToolStripItems(control.ContextMenuStrip.Items);
+
+            ApplyToControls(control.Controls);
+        }
+
+        public static void ApplyToGrid(DataGridView grid)
+        {
+            if (!IsArabic || grid == null)
+                return;
+
+            foreach (DataGridViewColumn column in grid.Columns)
+            {
+                string original = column.HeaderText;
+                if (string.IsNullOrWhiteSpace(original))
+                    original = column.Name;
+
+                string translated = Translate(original);
+                if (translated != original || Arabic.ContainsKey(column.Name))
+                    column.HeaderText = translated != original ? translated : Translate(column.Name);
+            }
+            grid.RightToLeft = RightToLeft.Yes;
         }
     }
 

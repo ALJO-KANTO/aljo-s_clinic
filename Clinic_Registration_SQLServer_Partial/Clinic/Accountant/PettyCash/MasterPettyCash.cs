@@ -80,6 +80,10 @@ namespace YamyProject
                 case "Deletion Error": return arabic ? "خطأ في الحذف" : value;
 
                 case "Configuration": return arabic ? "الإعدادات" : "Configuration";
+                case "P.C A/C": case "P.C A/Cs": return arabic ? "حساب العهدة النثرية" : "P.C A/C";
+                case "P.C Categories": return arabic ? "فئات العهدة النثرية" : "P.C Categories";
+                case "Delete P.C A/C": return arabic ? "حذف حساب العهدة النثرية" : "Delete P.C A/C";
+                case "Edit P.C A/C": return arabic ? "تعديل حساب العهدة النثرية" : "Edit P.C A/C";
                 case "Search By Name, Code": return arabic ? "البحث بالاسم أو الرمز" : "Search By Name, Code";
                 case "Petty Cash Log": return arabic ? "سجل العهدة النثرية" : "Petty Cash Log";
                 case "Petty Cash Voucher": return arabic ? "سند العهدة النثرية" : "Petty Cash Voucher";
@@ -92,7 +96,6 @@ namespace YamyProject
         private void ApplyPettyCashLanguage()
         {
             bool arabic = IsArabicLanguage();
-            TranslatePettyCashControls(this, arabic);
             TranslatePettyCashControls(this, arabic);
             TranslatePettyCashSpecificControls(this, arabic);
             if (headerUC1 != null)
@@ -123,6 +126,11 @@ namespace YamyProject
                 parent.RightToLeft = arabic ? RightToLeft.Yes : RightToLeft.No;
             foreach (Control child in parent.Controls)
                 TranslatePettyCashControls(child, arabic);
+            // MenuStrip and ToolStrip items are not part of Controls, so translate
+            // their items explicitly (including nested dropdown menu items).
+            if (parent is ToolStrip toolStrip)
+                TranslatePettyCashToolStripItems(toolStrip.Items, arabic);
+
             if (parent.ContextMenuStrip != null)
                 TranslatePettyCashToolStripItems(parent.ContextMenuStrip.Items, arabic);
         }

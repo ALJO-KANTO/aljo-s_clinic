@@ -16,10 +16,10 @@ namespace YamyProject
     public partial class frmPettyCashCard : Form
     {
         int id;
-        public frmPettyCashCard(int _id=0)
+        public frmPettyCashCard(int _id = 0)
         {
             InitializeComponent();
-           // LocalizationManager.LocalizeForm(this);
+            // LocalizationManager.LocalizeForm(this);
             BindCombos.PopulateAllLevel4Account(cmbDebitAccountName);
             //_mainForm = mainForm;
             //this._petty = _petty;
@@ -29,7 +29,121 @@ namespace YamyProject
             else
                 this.Text = "Petty Cash Card - New";
             headerUC1.FormText = this.Text;
+
+            // Apply page-specific Arabic text using the application's saved language.
+            ApplyArabicLocalization();
         }
+
+        private bool IsArabicMode()
+        {
+            string language = Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en";
+
+            return language.StartsWith("ar", StringComparison.OrdinalIgnoreCase) ||
+                   language.Equals("arabic", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private void ApplyArabicLocalization()
+        {
+            if (!IsArabicMode())
+                return;
+
+            this.RightToLeft = RightToLeft.Yes;
+            this.RightToLeftLayout = true;
+
+            this.Text = id != 0
+                ? "بطاقة العهدة النثرية - تعديل"
+                : "بطاقة العهدة النثرية - جديد";
+
+            headerUC1.FormText = this.Text;
+
+            // Translate only fixed UI captions. Employee and account names are database values
+            // and are deliberately left unchanged.
+            Dictionary<string, string> arabicText = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "Petty Cash Card - Edit", "بطاقة العهدة النثرية - تعديل" },
+                { "Petty Cash Card - New", "بطاقة العهدة النثرية - جديد" },
+                { "Petty Cash Card", "بطاقة العهدة النثرية" },
+                { "Employee", "الموظف" },
+                { "Employee Name", "اسم الموظف" },
+                { "Select Employee", "اختر الموظف" },
+                { "Code", "الرمز" },
+                { "Petty Cash Code", "رمز العهدة النثرية" },
+                { "Debit Account", "الحساب المدين" },
+                { "Debit Account Name", "اسم الحساب المدين" },
+                { "Account", "الحساب" },
+                { "Account Name", "اسم الحساب" },
+                { "Account Code", "رمز الحساب" },
+                { "Mobile", "رقم الهاتف" },
+                { "Mobile No", "رقم الهاتف" },
+                { "Mobile Number", "رقم الهاتف" },
+                { "WhatsApp", "واتساب" },
+                { "WhatsApp No", "رقم واتساب" },
+                { "Email", "البريد الإلكتروني" },
+                { "Save", "حفظ" },
+                { "Close", "إغلاق" },
+                { "Delete", "حذف" },
+                { "New", "جديد" },
+                { "Edit", "تعديل" },
+                { "Employee:", "الموظف:" },
+                { "Employee :", "الموظف :" },
+                { "Employee Name:", "اسم الموظف:" },
+                { "Debit Account:", "الحساب المدين:" },
+                { "Debit Account Name:", "اسم الحساب المدين:" },
+                { "Account Code:", "رمز الحساب:" },
+                { "Mobile:", "رقم الهاتف:" },
+                { "Mobile No:", "رقم الهاتف:" },
+                { "WhatsApp No:", "رقم واتساب:" },
+                { "Email:", "البريد الإلكتروني:" },
+                { "Code:", "الرمز:" }
+            };
+
+            ApplyArabicTextRecursive(this, arabicText);
+
+            // The header is a user control property, so set it explicitly after recursion.
+            headerUC1.FormText = this.Text;
+        }
+
+        private void ApplyArabicTextRecursive(Control parent, Dictionary<string, string> translations)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                if (!string.IsNullOrWhiteSpace(control.Text) &&
+                    translations.TryGetValue(control.Text.Trim(), out string translatedText))
+                {
+                    control.Text = translatedText;
+                }
+
+                if (control is Label label)
+                {
+                    label.RightToLeft = RightToLeft.Yes;
+                    label.TextAlign = ContentAlignment.MiddleRight;
+                }
+                else if (control is Button button)
+                {
+                    button.RightToLeft = RightToLeft.Yes;
+                }
+                else if (control is CheckBox checkBox)
+                {
+                    checkBox.RightToLeft = RightToLeft.Yes;
+                }
+                else if (control is RadioButton radioButton)
+                {
+                    radioButton.RightToLeft = RightToLeft.Yes;
+                }
+                else if (control is ComboBox comboBox)
+                {
+                    // Keep the account list LTR because it commonly contains codes and
+                    // English account names; employee names can display in Arabic.
+                    comboBox.RightToLeft = comboBox.Name == "cmbDebitAccountName"
+                        ? RightToLeft.No
+                        : RightToLeft.Yes;
+                }
+
+                if (control.HasChildren)
+                    ApplyArabicTextRecursive(control, translations);
+            }
+        }
+
         private void btnClose_Click(object sender, EventArgs e)
         {
             this.Close();
@@ -79,7 +193,7 @@ namespace YamyProject
                     //.RefreshEmployee();
                     this.Close();
                 }
-                   
+
             }
             else
                 if (updateAsset())
@@ -131,7 +245,7 @@ namespace YamyProject
             else
             {
                 string message = Utilities.LastLogError();
-                MessageBox.Show("Error Check your data" + message);
+                MessageBox.Show(IsArabicMode() ? "خطأ، يرجى التحقق من البيانات. " + message : "Error Check your data" + message);
                 return false;
             }
         }
@@ -140,17 +254,17 @@ namespace YamyProject
         {
             if (txtDebitCode.Text.Trim() == "")
             {
-                MessageBox.Show("Enter Account Code First.");
+                MessageBox.Show(IsArabicMode() ? "أدخل رمز الحساب أولاً." : "Enter Account Code First.");
                 return false;
             }
-            if (cmbEmployee.SelectedValue ==null || int.Parse(cmbEmployee.SelectedValue.ToString()) <= 0)
+            if (cmbEmployee.SelectedValue == null || int.Parse(cmbEmployee.SelectedValue.ToString()) <= 0)
             {
-                MessageBox.Show("Select Employee First.");
+                MessageBox.Show(IsArabicMode() ? "يرجى اختيار الموظف أولاً." : "Select Employee First.");
                 return false;
             }
             if (cmbDebitAccountName.SelectedValue == null || int.Parse(cmbDebitAccountName.SelectedValue.ToString()) <= 0)
             {
-                MessageBox.Show("Select Account First.");
+                MessageBox.Show(IsArabicMode() ? "يرجى اختيار الحساب أولاً." : "Select Account First.");
                 return false;
             }
             return true;
@@ -226,7 +340,7 @@ namespace YamyProject
                         {
                             //if (id == 0)
                             //{
-                                id = int.Parse(coaReader["id"].ToString());
+                            id = int.Parse(coaReader["id"].ToString());
                             //}
                             cmbDebitAccountName.SelectedValue = coaReader["account_id"].ToString();
                             txtCode.Text = coaReader["code"].ToString();
@@ -250,13 +364,19 @@ namespace YamyProject
 
         private void BtnDelete_Click(object sender, EventArgs e)
         {
-            var result = MessageBox.Show("Are you sure you want to delete this Petty Cash Card?", "Confirm Deletion", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            var result = MessageBox.Show(
+                IsArabicMode() ? "هل أنت متأكد أنك تريد حذف بطاقة العهدة النثرية؟" : "Are you sure you want to delete this Petty Cash Card?",
+                IsArabicMode() ? "تأكيد الحذف" : "Confirm Deletion",
+                MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
             if (result == DialogResult.Yes)
             {
                 using (MySqlDataReader reader = ClinicDatabase.ExecuteReader("SELECT id FROM tbl_petty_cash WHERE employee_id In (SELECT c.name from tbl_petty_cash_card c WHERE c.id = @id)", ClinicDatabase.CreateParameterNew("id", id)))
                     if (reader.Read())
                     {
-                        MessageBox.Show("Cannot delete this Petty Cash Card because it is referenced in Petty Cash Vouchers.", "Deletion Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show(
+                            IsArabicMode() ? "لا يمكن حذف بطاقة العهدة النثرية لأنها مستخدمة في سندات العهدة النثرية." : "Cannot delete this Petty Cash Card because it is referenced in Petty Cash Vouchers.",
+                            IsArabicMode() ? "تعذر الحذف" : "Deletion Error",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
 
