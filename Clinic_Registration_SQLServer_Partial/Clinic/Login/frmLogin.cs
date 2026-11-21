@@ -12,6 +12,7 @@ using System.IO;
 using System.Reflection;
 using System.Resources;
 using System.Windows.Forms;
+using YamyProject.Localization;
 
 namespace Clinic.Login
 {
@@ -80,9 +81,9 @@ namespace Clinic.Login
         {
             // Translate login form controls
             LoginRegistrationLanguage.Apply(this);
-
+            
             bool arabic = TranslationClass.IsArabic;
-
+            LocalizationManager.SetLanguage(arabic ? "ar" : "en");
             // Language toggle button
             btnTranslateLogin.Text = arabic
                 ? "English"

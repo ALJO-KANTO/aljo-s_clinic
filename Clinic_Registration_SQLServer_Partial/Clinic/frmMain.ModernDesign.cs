@@ -512,9 +512,9 @@ namespace Clinic
             });
 
             AddAdminGroup(menu, "⬡", "Inventory", new string[]
-            {
-                "Inventory Items", "Add New Item", "Item Category", "Item Unit"
-            });
+ {
+    "Inventory Items", "Add New Item", "Item Category"
+ });
 
             AddAdminGroup(menu, "♙", "HR", new string[]
             {
