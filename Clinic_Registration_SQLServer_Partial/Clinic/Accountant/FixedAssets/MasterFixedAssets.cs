@@ -23,7 +23,7 @@ namespace YamyProject
             fixedAsset = (sender, args) => BindFixedAseet();
 
         }
-       
+
         private void MasterFixedAssets_FormClosing(object sender, FormClosingEventArgs e)
         {
             //.FixedAsset -= fixedAsset;
@@ -388,22 +388,75 @@ namespace YamyProject
 
         //    dgvMain.Rows.Add(serialNumber, "", totalDays, "", actualTotal, "");
         //}
-        private void bindFixedAseetData()
+        // Returns the current fixed-asset row even when the grid uses cell selection.
+        // SelectedRows can be empty when SelectionMode is CellSelect.
+        private DataGridViewRow GetCurrentFixedAssetRow()
         {
-            DateTime startDate = DateTime.Parse(dgvCustomer.SelectedRows[0].Cells["from"].Value.ToString());
-            DateTime endDate = DateTime.Parse(dgvCustomer.SelectedRows[0].Cells["to"].Value.ToString());
-            decimal totalAmount = decimal.Parse(dgvCustomer.SelectedRows[0].Cells["total"].Value.ToString());
-            decimal actualTotal = 0;
-            int totalDays = (endDate - startDate).Days + 1;
+            if (dgvCustomer == null || dgvCustomer.Rows.Count == 0)
+                return null;
+
+            if (dgvCustomer.SelectedRows.Count > 0)
+                return dgvCustomer.SelectedRows[0];
+
+            DataGridViewRow currentRow = dgvCustomer.CurrentRow;
+            if (currentRow == null || currentRow.IsNewRow)
+                return null;
+
+            return currentRow;
+        }
+
+        private void OpenFixedAsset(DataGridViewRow assetRow)
+        {
+            if (assetRow == null || assetRow.IsNewRow || assetRow.DataGridView == null ||
+                !assetRow.DataGridView.Columns.Contains("id"))
+                return;
+
+            if (!int.TryParse(Convert.ToString(assetRow.Cells["id"].Value), out int assetId) || assetId <= 0)
+                return;
+
+            frmMain.openChildForm(new frmViewFixedAssets(assetId));
+        }
+
+        private void bindFixedAseetData(DataGridViewRow assetRow = null)
+        {
+            if (assetRow == null)
+                assetRow = GetCurrentFixedAssetRow();
 
             dgvMain.Rows.Clear();
 
+            if (assetRow == null || assetRow.IsNewRow)
+                return;
+
+            object fromValue = assetRow.Cells["from"].Value;
+            object toValue = assetRow.Cells["to"].Value;
+            object totalValue = assetRow.Cells["total"].Value;
+
+            if (fromValue == null || fromValue == DBNull.Value ||
+                toValue == null || toValue == DBNull.Value ||
+                totalValue == null || totalValue == DBNull.Value ||
+                !DateTime.TryParse(Convert.ToString(fromValue), out DateTime startDate) ||
+                !DateTime.TryParse(Convert.ToString(toValue), out DateTime endDate) ||
+                !decimal.TryParse(Convert.ToString(totalValue), out decimal totalAmount) ||
+                endDate < startDate)
+            {
+                return;
+            }
+
+            decimal actualTotal = 0;
+            int totalDays = (endDate - startDate).Days + 1;
+            if (totalDays <= 0)
+                return;
+
+            string assetName = Convert.ToString(assetRow.Cells["name"].Value) ?? string.Empty;
             DateTime currentMonthStart = startDate;
             int serialNumber = 1;
 
             while (currentMonthStart <= endDate)
             {
-                DateTime currentMonthEnd = new DateTime(currentMonthStart.Year, currentMonthStart.Month, DateTime.DaysInMonth(currentMonthStart.Year, currentMonthStart.Month));
+                DateTime currentMonthEnd = new DateTime(
+                    currentMonthStart.Year,
+                    currentMonthStart.Month,
+                    DateTime.DaysInMonth(currentMonthStart.Year, currentMonthStart.Month));
 
                 if (currentMonthEnd > endDate)
                     currentMonthEnd = endDate;
@@ -415,21 +468,20 @@ namespace YamyProject
                 decimal amount = Math.Round((totalAmount / totalDays) * daysInPeriod, 2);
 
                 if (periodEnd == endDate)
-                {
                     amount = totalAmount - actualTotal;
-                }
 
                 actualTotal += amount;
 
-                dgvMain.Rows.Add(serialNumber,
-                                 periodEnd.ToString("MM-dd-yyyy"),
-                                 daysInPeriod,
-                                 dgvCustomer.SelectedRows[0].Cells["name"].Value.ToString(),
-                                 amount.ToString("N2"),
-                                 (Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en")
-                                     .StartsWith("ar", StringComparison.OrdinalIgnoreCase)
-                                     ? "سجل الأصول الثابتة"
-                                     : "Fixed Asset REGISTER");
+                dgvMain.Rows.Add(
+                    serialNumber,
+                    periodEnd.ToString("MM-dd-yyyy"),
+                    daysInPeriod,
+                    assetName,
+                    amount.ToString("N2"),
+                    (Clinic.Properties.Settings.Default.ApplicationLanguage ?? "en")
+                        .StartsWith("ar", StringComparison.OrdinalIgnoreCase)
+                        ? "سجل الأصول الثابتة"
+                        : "Fixed Asset REGISTER");
 
                 serialNumber++;
                 currentMonthStart = currentMonthStart.AddMonths(1);
@@ -446,15 +498,14 @@ namespace YamyProject
         }
         private void btnEdit_Click(object sender, EventArgs e)
         {
-            if (dgvCustomer.Rows.Count == 0)
-                return;
-            frmMain.openChildForm(new frmViewFixedAssets(int.Parse(dgvCustomer.CurrentRow.Cells["id"].Value.ToString())));
+            OpenFixedAsset(GetCurrentFixedAssetRow());
         }
         private void dgvCustomer_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (dgvCustomer.Rows.Count == 0)
+            if (e.RowIndex < 0 || e.RowIndex >= dgvCustomer.Rows.Count)
                 return;
-            frmMain.openChildForm(new frmViewFixedAssets(int.Parse(dgvCustomer.CurrentRow.Cells["id"].Value.ToString())));
+
+            OpenFixedAsset(dgvCustomer.Rows[e.RowIndex]);
         }
         private void dgvCustomer_MouseHover(object sender, EventArgs e)
         {
@@ -467,11 +518,18 @@ namespace YamyProject
         }
         private void btnDelete_Click(object sender, EventArgs e)
         {
-            if (dgvCustomer.Rows.Count == 0)
+            DataGridViewRow assetRow = GetCurrentFixedAssetRow();
+            if (assetRow == null)
                 return;
-            ClinicDatabase.ExecuteNonQuery("UPDATE tbl_fixed_assets SET state = -1 WHERE id = @id ",
-                                          ClinicDatabase.CreateParameterNew("id", dgvCustomer.SelectedRows[0].Cells["id"].Value.ToString()));
-            ////Utilities.LogAudit(-1, "Delete Fixed Asset", "Fixed Asset", int.Parse(dgvCustomer.SelectedRows[0].Cells["id"].Value.ToString()), "Deleted Fixed Asset: " + dgvCustomer.SelectedRows[0].Cells["name"].Value.ToString());
+
+            object idValue = assetRow.Cells["id"].Value;
+            if (idValue == null || idValue == DBNull.Value)
+                return;
+
+            ClinicDatabase.ExecuteNonQuery(
+                "UPDATE tbl_fixed_assets SET state = -1 WHERE id = @id",
+                ClinicDatabase.CreateParameterNew("id", idValue.ToString()));
+
             BindFixedAseet();
         }
         private void btnRestore_Click(object sender, EventArgs e)
@@ -482,8 +540,12 @@ namespace YamyProject
 
         private void dgvCustomer_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            bindFixedAseetData();
+            // Header clicks have RowIndex = -1. Use the actual clicked row rather
+            // than SelectedRows[0], which is empty when the grid selects cells.
+            if (e.RowIndex < 0 || e.RowIndex >= dgvCustomer.Rows.Count)
+                return;
 
+            bindFixedAseetData(dgvCustomer.Rows[e.RowIndex]);
         }
 
         private void lnkCategory_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -498,9 +560,7 @@ namespace YamyProject
 
         private void editCustomerToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            if (dgvCustomer.Rows.Count == 0)
-                return;
-            frmMain.openChildForm(new frmViewFixedAssets(int.Parse(dgvCustomer.CurrentRow.Cells["id"].Value.ToString())));
+            OpenFixedAsset(GetCurrentFixedAssetRow());
         }
 
         private void newCategoryToolStripMenuItem_Click(object sender, EventArgs e)
