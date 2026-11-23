@@ -36,7 +36,6 @@ namespace Clinic.Controls
                     suggestionPopup.Dispose();
             };
         }
-
         public void OnPatientCreated(int patientID, int personID)
         {
             PatientCreated?.Invoke(this, new clsEventArgs(patientID, personID));

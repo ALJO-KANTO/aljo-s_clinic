@@ -1381,7 +1381,29 @@ namespace Clinic
            {"ItemType","نوع العنصر" },
            {"BillID","رقم الفاتورة" },
            {"Search Filter","تصفية البحث" },
-           {"Item Active","العنصر نشط" }
+           {"Item Active","العنصر نشط" },
+           { "Medicine Stock Report", "تقرير مخزون الأدوية" },
+           {"Warehouse", "المستودع" },
+           {"Stock Status", "حالة المخزون" },
+           { "Expiry Status", "المستودع" },
+           {"Generate Report", "توليد التقرير" },
+           {"Reset", "إعادة تعيين" },
+           {"Export Excel", "تصدير إلى إكسل" },
+           {"Total Medicines", "إجمالي الأدوية" },
+           {"Total Stock Value", "إجمالي قيمة المخزون" },
+           {"Low Stock Medicines", "الأدوية منخفضة المخزون" },
+           {"Expired Batches", "الدفعات منتهية الصلاحية" },
+           {"Medicine Stock Details", "تفاصيل مخزون الأدوية" },
+           //{"Medicine Name", "اسم الدواء" },
+           //{"Batch No", "رقم الدفعة" },
+           //{"Expiry Date", "تاريخ الانتهاء" },
+           //{"Available Qty", "الكمية المتاحة" },
+           //{"Unit Price", "سعر الوحدة" },
+           //{"Total Value", "القيمة الإجمالية" },
+           //{"Stock Status", "حالة المخزون" },
+           //{"Expired", "منتهي الصلاحية" },
+           //{"Low Stock", "منخفض المخزون" },
+           //{"In Stock", "متوفر في المخزون" }
 
         };
         public static bool IsArabic { get; set; } = false;

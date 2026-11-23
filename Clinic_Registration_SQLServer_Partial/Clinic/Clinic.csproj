@@ -861,6 +861,12 @@
     <Compile Include="Medical Services\Pharmaciy\frmManageDrugs.Designer.cs">
       <DependentUpon>frmManageDrugs.cs</DependentUpon>
     </Compile>
+    <Compile Include="Medical Services\Pharmaciy\frmMedicineStockReport.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Medical Services\Pharmaciy\frmMedicineStockReport.Designer.cs">
+      <DependentUpon>frmMedicineStockReport.cs</DependentUpon>
+    </Compile>
     <Compile Include="Medical Services\Visit\frmDoctor.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -1554,6 +1560,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Medical Services\Pharmaciy\frmManageDrugs.resx">
       <DependentUpon>frmManageDrugs.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Medical Services\Pharmaciy\frmMedicineStockReport.resx">
+      <DependentUpon>frmMedicineStockReport.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Medical Services\Visit\frmAddUpdateMedicineToPrescription.resx">
       <DependentUpon>frmAddUpdateMedicineToPrescription.cs</DependentUpon>
