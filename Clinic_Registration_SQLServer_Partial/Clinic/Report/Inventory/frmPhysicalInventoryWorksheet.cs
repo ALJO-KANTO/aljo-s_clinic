@@ -1,5 +1,6 @@
-﻿using Clinic.global_classes;
-using Clinic;
+﻿using Clinic;
+using Clinic.global_classes;
+using Clinic.Medical_Services.Pharmaciy;
 using Clinic_DataAccess;
 using MigraDoc.DocumentObjectModel;
 using MigraDoc.DocumentObjectModel.Tables;
@@ -40,9 +41,11 @@ namespace YamyProject
                 }
             lblDate.Text = DateTime.Now.Date.ToString("dd/MM/yyyy");
             lblTime.Text = DateTime.Now.ToString("hh:mm:tt");
+            
         }
         private void btnPrint_Click(object sender, EventArgs e)
         {
+            //new frmMedicineStockReport().ShowDialog();
             contextMenuExport.Show(btnPrint, new Point(0, btnPrint.Height));
         }
 
