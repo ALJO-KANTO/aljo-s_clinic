@@ -24,13 +24,21 @@ namespace Clinic.Medical_Services.Appointment
         public frmAddUpdateAppointment()
         {
             InitializeComponent();
-            this.Shown += (s, e) => FixAppointmentArabicLabels();
+
+            ConfigureAppointmentDate();
+
+            this.Shown += (s, e) =>
+                FixAppointmentArabicLabels();
+
             _Mode = enMode.AddNew;
         }
 
         public frmAddUpdateAppointment(int AppointmentID)
         {
             InitializeComponent();
+
+            ConfigureAppointmentDate();
+
             _AppointmentID = AppointmentID;
             _Mode = enMode.Update;
         }
@@ -111,9 +119,17 @@ namespace Clinic.Medical_Services.Appointment
                 paAppointmentInfo.Enabled = false;
                 cbStatus.SelectedIndex = 0;
                 cbAppointmentType.SelectedIndex = 0;
-                dtpAppointmentDate.Value = DateTime.Now;
-                dtpAppointmentDate.MinDate = DateTime.Now;
-                dtpAppointmentDate.MaxDate = DateTime.Now.AddMonths(1);
+                DateTime now = DateTime.Now;
+
+                dtpAppointmentDate.MinDate =
+                    DateTimePicker.MinimumDateTime;
+
+                dtpAppointmentDate.MaxDate =
+                    now.AddMonths(1);
+
+                dtpAppointmentDate.Value = now;
+
+                dtpAppointmentDate.MinDate = now;
             }
             else
             {
@@ -193,9 +209,17 @@ namespace Clinic.Medical_Services.Appointment
 
             // 5. الوقت والجدول
             lblWorkingDays.Text = _Appointment.DoctorInfo.GetWorkingDays();
-            dtpAppointmentDate.Value = _Appointment.AppointmentDate;
+            DateTime appointmentDate = _Appointment.AppointmentDate;
 
-            _DoctorID=_Appointment.DoctorID;
+            dtpAppointmentDate.MinDate =
+                DateTimePicker.MinimumDateTime;
+
+            dtpAppointmentDate.MaxDate =
+                DateTimePicker.MaximumDateTime;
+
+            dtpAppointmentDate.Value = appointmentDate;
+
+            _DoctorID =_Appointment.DoctorID;
             _PatientID = _Appointment.PatientID;
 
             bool isExpired = (_Appointment.AppointmentDate < DateTime.Now) ||
@@ -509,6 +533,24 @@ namespace Clinic.Medical_Services.Appointment
             // Prevent Arabic captions from being clipped
             label9.AutoSize = true;
             label12.AutoSize = true;
+        }
+        private void ConfigureAppointmentDate()
+        {
+            DateTime now = DateTime.Now;
+
+            dtpAppointmentDate.MinDate =
+                DateTimePicker.MinimumDateTime;
+
+            dtpAppointmentDate.MaxDate =
+                DateTimePicker.MaximumDateTime;
+
+            dtpAppointmentDate.Format =
+                DateTimePickerFormat.Custom;
+
+            dtpAppointmentDate.CustomFormat =
+                "dd/MM/yyyy HH:mm";
+
+            dtpAppointmentDate.Value = now;
         }
         private System.Collections.Generic.IEnumerable<Control> GetAllControls(
             Control parent)
