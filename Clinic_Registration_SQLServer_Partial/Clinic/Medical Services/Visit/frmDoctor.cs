@@ -600,8 +600,16 @@ namespace Clinic.Medical_Services.Visit
                 ? _Visit.PrescriptionInfo.PrescriptionID.ToString()
                 : "New";
 
-            dtpPrescriptionDate.Value =
-                _Visit.PrescriptionInfo.PrescriptionDate;
+            DateTime prescriptionDate =
+    _Visit.PrescriptionInfo.PrescriptionDate;
+
+            if (prescriptionDate < dtpPrescriptionDate.MinDate ||
+                prescriptionDate > dtpPrescriptionDate.MaxDate)
+            {
+                prescriptionDate = DateTime.Today;
+            }
+
+            dtpPrescriptionDate.Value = prescriptionDate;
 
             txtPrescriptionNotes.Text =
                 _Visit.PrescriptionInfo.PrescriptionNotes ?? "";
@@ -2042,7 +2050,22 @@ AND active = 0        ORDER BY name;";
                 loadingTests = false;
             }
         }
+        private void ConfigurePrescriptionDate()
+        {
+            dtpPrescriptionDate.MinDate =
+                DateTimePicker.MinimumDateTime;
 
+            dtpPrescriptionDate.MaxDate =
+                DateTimePicker.MaximumDateTime;
+
+            dtpPrescriptionDate.Format =
+                DateTimePickerFormat.Custom;
+
+            dtpPrescriptionDate.CustomFormat =
+                "dd/MM/yyyy";
+
+            dtpPrescriptionDate.Value = DateTime.Today;
+        }
         private sealed class LabTestItem
         {
             public int ID { get; private set; }

@@ -98,7 +98,7 @@ namespace YamyProject
         {
             //if (dgvPetty.Rows.Count == 0)
             //    return;
-            //ClinicDatabase.ExecuteNonQuery("UPDATE tbl_customer SET state = -1 WHERE id = @id ",
+            //ClinicDatabase.ExecuteNonQuery("UPDATE persons SET state = -1 WHERE id = @id ",
             //                              ClinicDatabase.CreateParameterNew("id", dgvPetty.SelectedRows[0].Cells["id"].Value.ToString()));
             //BindCustomer();
         }

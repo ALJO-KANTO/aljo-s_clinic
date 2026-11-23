@@ -34,7 +34,7 @@ namespace Clinic
         //    LoadTable(ref tableAccount2, "SELECT * FROM tbl_coa_level_2");
         //    LoadTable(ref tableAccount3, "SELECT * FROM tbl_coa_level_3");
         //    LoadTable(ref tableAccount4, "SELECT * FROM tbl_coa_level_4");
-        //    LoadTable(ref tableCustomers, "SELECT * FROM tbl_customer");
+        //    LoadTable(ref tableCustomers, "SELECT * FROM persons");
         //    LoadTable(ref tableCustomerCategory, "SELECT * FROM tbl_customer_category");
         //    LoadTable(ref tableDepartments, "SELECT * FROM tbl_departments");
         //    LoadTable(ref tableEmployee, "SELECT * FROM tbl_employee");
@@ -78,7 +78,7 @@ namespace Clinic
         //    var cached = CacheManager<DataTable>.Get("customers");
         //    if (cached != null) return cached;
 
-        //    string query = "SELECT id, code, name FROM tbl_customer";
+        //    string query = "SELECT PersonID id,PersonID code,fullname name FROM persons";
         //    DataTable dt = ClinicDatabase.ExecuteDataTable(query);
 
         //    CacheManager<DataTable>.Set("customers", dt, TimeSpan.FromMinutes(10));

@@ -641,9 +641,9 @@ namespace YamyProject
                                                 COALESCE(
                                                     CASE 
                                                         WHEN t.type IN ('Customer','Sales Invoice Cash','Sales Invoice','Credit Note','SalesReturn Invoice','Customer Receipt','Customer Opening Balance','Customer Advance Payment','Check Cancel (Customer)','PDC Receivable') THEN
-                                                            (SELECT concat(c.code,' ', c.name) 
-                                                             FROM tbl_customer c
-                                                             JOIN tbl_transaction x ON x.hum_id = c.id 
+                                                            (SELECT concat(p.PersonID,' ', p.fullname) 
+                                                             FROM persons p
+                                                             JOIN tbl_transaction x ON x.hum_id = c.PersonID 
                                                              WHERE x.transaction_id = t.transaction_id AND x.TYPE = t.type 
                                                              LIMIT 1)
                                                         WHEN t.type IN ('Vendor','Purchase Invoice','Vendor Payment','Subcontractor Payment','Purchase Invoice Cash','Purchase Return Invoice','Debit Note','Vendor Opening Balance','Vendor Advance Payment','Check Cancel (Vendor)','PDC Payable') THEN

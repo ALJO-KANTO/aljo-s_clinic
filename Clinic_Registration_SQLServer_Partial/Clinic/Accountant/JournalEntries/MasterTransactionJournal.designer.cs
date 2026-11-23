@@ -181,11 +181,7 @@
             "General Ledger Opening Balance",
             "Customer Opening Balance",
             "Vendor Opening Balance",
-            "Subcontractor Opening Balance",
-            "Sales Invoice",
-            "SalesReturn Invoice",
             "Purchase Invoice",
-            "Customer Receipt",
             "Vendor Payment",
             "Petty Cash",
             "Employee Salary",
@@ -198,18 +194,15 @@
             "Prepaid Expense",
             "Fixed Assets",
             "Fixed Assets Depreciation",
-            "PDC Payable",
-            "PDC Receivable",
-            "Debit Note",
-            "Credit Note",
             "Employee Salary Payment",
             "Loan Request",
             "Vendor Advance Payment",
             "Customer Advance Payment",
+            "Consultation Fee",
+            "By Cash",
             "By Bank",
             "By Insurance",
-            "By Credit Card",
-            "Project Payment"});
+            "By Credit Card"});
             this.cmbSelectionMethod.Location = new System.Drawing.Point(1039, 3);
             this.cmbSelectionMethod.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.cmbSelectionMethod.Name = "cmbSelectionMethod";

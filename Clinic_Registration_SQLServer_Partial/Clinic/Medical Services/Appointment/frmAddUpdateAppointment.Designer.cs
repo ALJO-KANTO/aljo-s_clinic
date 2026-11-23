@@ -320,17 +320,27 @@
             this.pictureBox6.TabStop = false;
             // 
             // dtpAppointmentDate
-            // 
+            //
+            // dtpAppointmentDate
+            //
             this.dtpAppointmentDate.CustomFormat = "dd/MM/yyyy HH:mm";
-            this.dtpAppointmentDate.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
-            this.dtpAppointmentDate.Location = new System.Drawing.Point(302, 494);
-            this.dtpAppointmentDate.MinDate = new System.DateTime(1900, 1, 1, 0, 0, 0, 0);
+
+            this.dtpAppointmentDate.Format =
+                System.Windows.Forms.DateTimePickerFormat.Custom;
+
+            this.dtpAppointmentDate.Location =
+                new System.Drawing.Point(302, 494);
+
             this.dtpAppointmentDate.Name = "dtpAppointmentDate";
-            this.dtpAppointmentDate.Size = new System.Drawing.Size(256, 34);
+
+            this.dtpAppointmentDate.Size =
+                new System.Drawing.Size(256, 34);
+
             this.dtpAppointmentDate.TabIndex = 201;
-            this.dtpAppointmentDate.Value = new System.DateTime(2000, 12, 31, 0, 0, 0, 0);
-            this.dtpAppointmentDate.ValueChanged += new System.EventHandler(this.dtpAppointmentDate_ValueChanged);
-            // 
+
+            this.dtpAppointmentDate.ValueChanged +=
+                new System.EventHandler(
+                    this.dtpAppointmentDate_ValueChanged);
             // label3
             // 
             this.label3.AutoSize = true;

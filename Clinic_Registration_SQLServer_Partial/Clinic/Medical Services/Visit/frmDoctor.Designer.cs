@@ -1051,13 +1051,22 @@
             // 
             // dtpPrescriptionDate
             // 
-            this.dtpPrescriptionDate.CustomFormat = "";
-            this.dtpPrescriptionDate.Location = new System.Drawing.Point(561, 25);
-            this.dtpPrescriptionDate.MinDate = new System.DateTime(1900, 1, 1, 0, 0, 0, 0);
+            //
+            // dtpPrescriptionDate
+            //
+            this.dtpPrescriptionDate.CustomFormat = "dd/MM/yyyy";
+            this.dtpPrescriptionDate.Format =
+                System.Windows.Forms.DateTimePickerFormat.Custom;
+
+            this.dtpPrescriptionDate.Location =
+                new System.Drawing.Point(561, 25);
+
             this.dtpPrescriptionDate.Name = "dtpPrescriptionDate";
-            this.dtpPrescriptionDate.Size = new System.Drawing.Size(335, 29);
+
+            this.dtpPrescriptionDate.Size =
+                new System.Drawing.Size(335, 29);
+
             this.dtpPrescriptionDate.TabIndex = 246;
-            this.dtpPrescriptionDate.Value = new System.DateTime(2000, 12, 31, 0, 0, 0, 0);
             // 
             // lbPrescriptionDate
             // 

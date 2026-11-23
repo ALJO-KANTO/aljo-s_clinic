@@ -233,7 +233,6 @@ namespace YamyProject
                 dgvCustomer.Columns.Add("lvl1", "    ");
                 dgvCustomer.Columns.Add("id", "");
                 dgvCustomer.Columns.Add("currname", "");
-                // here i want column name from job name(customer name) from tbl_customer and total amount from tbl_transaction
                 dgvCustomer.Columns.Add("balance", "Total");
                 dgvCustomer.Columns["lvl1"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
                 dgvCustomer.Columns["state"].Visible = dgvCustomer.Columns["currname"].Visible = dgvCustomer.Columns["id"].Visible = dgvCustomer.Columns["loadState"].Visible = dgvCustomer.Columns["currLvl"].Visible = false;
@@ -665,10 +664,10 @@ namespace YamyProject
                 
                 //dgvCustomer.Columns.Clear();
                 DataTable customersTable = ClinicDatabase.ExecuteDataTable(@"SELECT DISTINCT 
-                                                                            c.name,c.id
-                                                                        FROM tbl_customer AS c
+                                                                            p.fullname name,p.PersonID id
+                                                                        FROM persons AS p
                                                                         JOIN tbl_transaction AS t 
-                                                                            ON c.id = t.hum_id
+                                                                            ON p.PersonID = t.hum_id
                                                                         WHERE t.hum_id <> 0
                                                                           AND EXISTS (
                                                                                 SELECT 1
@@ -693,7 +692,7 @@ namespace YamyProject
                                                                                 'PDC Receivable'
                                                                             )
                                                                           AND t.date BETWEEN @sDate AND @eDate
-                                                                        ORDER BY c.name;
+                                                                        ORDER BY p.name;
                                                                       ", 
                                                                       ClinicDatabase.CreateParameterNew("sDate", dtFrom.Value),
                                                                       ClinicDatabase.CreateParameterNew("eDate", dtTo.Value));
@@ -738,8 +737,8 @@ namespace YamyProject
                                 LEFT JOIN tbl_coa_level_4 AS l4 ON l4.main_id = l3.id
                                 LEFT JOIN tbl_transaction AS t 
                                     ON t.account_id = l4.id
-                                LEFT JOIN tbl_customer AS c 
-                                    ON c.id = t.hum_id
+                                LEFT JOIN persons AS p 
+                                    ON p.PersonID = t.hum_id
                                 WHERE t.hum_id <> 0
                                   AND EXISTS (
                                         SELECT 1
