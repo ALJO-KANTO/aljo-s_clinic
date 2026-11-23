@@ -7,7 +7,6 @@ using System.Data;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Linq;
-
 namespace Clinic.Controls
 {
     public partial class ctrlPatientCardWithFilter : UserControl
@@ -25,9 +24,17 @@ namespace Clinic.Controls
         public ctrlPatientCardWithFilter()
         {
             InitializeComponent();
+
             SetupNameSearch();
+            SetupMedicalHistoryButton();
+
             Load += (s, e) => PositionSearch();
-            Disposed += (s, e) => { if (suggestionPopup != null) suggestionPopup.Dispose(); };
+
+            Disposed += (s, e) =>
+            {
+                if (suggestionPopup != null)
+                    suggestionPopup.Dispose();
+            };
         }
 
         public void OnPatientCreated(int patientID, int personID)
@@ -153,6 +160,45 @@ namespace Clinic.Controls
             Resize += (s, e) => PositionSearch();
             VisibleChanged += (s, e) => { if (!Visible && dgvSuggestions != null) HideSuggestions(); };
             PositionSearch();
+        }
+
+        private Button btnMedicalHistory;
+
+        private void SetupMedicalHistoryButton()
+        {
+            btnMedicalHistory = new Button
+            {
+                Name = "btnMedicalHistory",
+                Text = TranslationClass.IsArabic
+                    ? "السجل الطبي"
+                    : "Medical History",
+                Size = new Size(145, 36),
+                Location = new Point(735, 21),
+                BackColor = Color.FromArgb(0, 121, 107),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                Cursor = Cursors.Hand,
+                Enabled = false
+            };
+
+            btnMedicalHistory.FlatAppearance.BorderSize = 0;
+
+            btnMedicalHistory.Click += (s, e) =>
+            {
+                int patientID = PatientID;
+
+                if (patientID <= 0)
+                    return;
+
+                using (var frm = new frmPatientMedicalHistory(patientID))
+                {
+                    frm.ShowDialog(FindForm());
+                }
+            };
+
+            gbFilters.Controls.Add(btnMedicalHistory);
+            btnMedicalHistory.BringToFront();
         }
 
         private void HideSuggestions()
@@ -350,6 +396,9 @@ namespace Clinic.Controls
         {
             if (!int.TryParse(txtFilterValue.Text, out int patientID) || patientID <= 0) return;
             ctrlPatientCard1.LoadPatientInfo(patientID);
+            btnMedicalHistory.Enabled =
+    ctrlPatientCard1.SelectedPatient != null &&
+    ctrlPatientCard1.PatientID > 0;
             if (ctrlPatientCard1.SelectedPatient == null) return;
             loading = true;
             try

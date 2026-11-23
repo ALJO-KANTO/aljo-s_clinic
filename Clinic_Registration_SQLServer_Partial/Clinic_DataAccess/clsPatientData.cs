@@ -283,6 +283,49 @@ namespace Clinic_DataAccess
             return dt.Rows.Count > 0 ? dt.Rows[0] : null;
         }
 
+        public static DataTable GetPatientVisitHistory(int patientID)
+        {
+            DataTable dt = new DataTable();
+
+            if (patientID <= 0)
+                return dt;
+
+            using (MySqlConnection con = new MySqlConnection(
+                clsDataAccessSettings.ConnectionString))
+            {
+                string query = @"
+            SELECT
+                V.VisitID,
+                A.AppointmentID,
+                A.AppointmentDate AS VisitDate,
+                P.FullName AS DoctorName,
+                V.VisitNotes
+            FROM Visits V
+            LEFT JOIN Appointments A
+                ON A.AppointmentID = V.AppointmentID
+            LEFT JOIN Doctors D
+                ON D.DoctorID = A.DoctorID
+            LEFT JOIN Persons P
+                ON P.PersonID = D.PersonID
+            WHERE V.PatientID = @PatientID
+            ORDER BY A.AppointmentDate DESC,
+                     V.VisitID DESC;";
+
+                using (MySqlCommand cmd = new MySqlCommand(query, con))
+                {
+                    cmd.Parameters.AddWithValue("@PatientID", patientID);
+
+                    using (MySqlDataAdapter adapter =
+                        new MySqlDataAdapter(cmd))
+                    {
+                        adapter.Fill(dt);
+                    }
+                }
+            }
+
+            return dt;
+        }
+
         public static int GetPatientIDByPersonID(int personID)
         {
             try

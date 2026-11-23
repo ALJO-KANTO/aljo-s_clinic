@@ -82,7 +82,51 @@ namespace Clinic_DataAccess
             }
             return false;
         }
+        public static DataTable GetAppointmentsByDoctorID(int doctorID)
+        {
+            DataTable dt = new DataTable();
 
+            if (doctorID <= 0)
+                return dt;
+
+            string query = @"
+        SELECT
+            AppointmentID,
+            PatientID,
+            PatientName,
+            DoctorID,
+            DoctorName,
+            AppointmentDate,
+            AppointmentStatus,
+            AppointmentStatusText,
+            AppointmentTypeID,
+            TypeName,
+            AppointmentFees,
+            CreatedByUserID
+        FROM View_AppointmentsDetails
+        WHERE DoctorID = @DoctorID
+        ORDER BY AppointmentID DESC;";
+
+            using (MySqlConnection connection =
+                new MySqlConnection(
+                    clsDataAccessSettings.ConnectionString))
+            using (MySqlCommand command =
+                new MySqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue(
+                    "@DoctorID", doctorID);
+
+                connection.Open();
+
+                using (MySqlDataReader reader =
+                    command.ExecuteReader())
+                {
+                    dt.Load(reader);
+                }
+            }
+
+            return dt;
+        }
         private static byte StatusFromDatabase(string status)
         {
             if (string.IsNullOrWhiteSpace(status))
@@ -807,6 +851,30 @@ namespace Clinic_DataAccess
             {
                 clsGlobalLogger.LogMySqlException(ex, clsGlobalLogger.LogLevel.Error);
                 return false;
+            }
+        }
+
+        public static int GetTodayAppointmentCountByDoctor(int doctorID)
+        {
+            if (doctorID <= 0)
+                return 0;
+
+            const string query = @"
+        SELECT COUNT(*)
+        FROM Appointments
+        WHERE DoctorID = @DoctorID
+          AND AppointmentDate >= CURDATE()
+          AND AppointmentDate < CURDATE() + INTERVAL 1 DAY
+          AND AppointmentStatus NOT IN ('Cancelled', '6');";
+
+            using (var connection = new MySqlConnection(
+                clsDataAccessSettings.ConnectionString))
+            using (var command = new MySqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@DoctorID", doctorID);
+                connection.Open();
+
+                return Convert.ToInt32(command.ExecuteScalar());
             }
         }
 

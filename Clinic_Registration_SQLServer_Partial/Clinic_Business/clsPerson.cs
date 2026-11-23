@@ -157,9 +157,9 @@ namespace Clinic_Business
             return false;
         }
 
-        public static DataTable GetAllPatients()
+        public new static DataTable GetAllPatients()
         {
-            return clsPersonData.GetAllPatients();
+            return clsPatientData.GetAllPatients();
         }
     }
 }

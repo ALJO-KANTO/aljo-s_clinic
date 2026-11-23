@@ -5,24 +5,30 @@ using Clinic.Patient;
 using Clinic.Person;
 using Clinic_Business;
 using Clinic_Common;
+using Clinic_DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Windows.Forms;
-using System.Drawing.Drawing2D;
 
 namespace Clinic.Medical_Services.Appointment
 {
     public partial class frmListAppointmets : Form
     {
-        private DataTable _dtAppointmets = clsAppointment.GetAllAppointments();
+        private DataTable _dtAppointmets = new DataTable();
         private readonly Dictionary<Control, string> _originalControlTexts =
     new Dictionary<Control, string>();
 
         private readonly Dictionary<ToolStripItem, string> _originalMenuTexts =
             new Dictionary<ToolStripItem, string>();
+
+        public static DataTable GetAppointmentsByDoctorID(int doctorID)
+        {
+            return clsAppointmentData.GetAppointmentsByDoctorID(doctorID);
+        }
         public frmListAppointmets()
         {
             InitializeComponent();
@@ -586,60 +592,95 @@ namespace Clinic.Medical_Services.Appointment
 
         private void _RefreshAppointmentsList()
         {
-            _dtAppointmets = clsAppointment.GetAllAppointments();
-            if (_dtAppointmets != null &&
-    _dtAppointmets.Columns.Contains("AppointmentID"))
-            {
-                _dtAppointmets.PrimaryKey = new DataColumn[]
-                {
-        _dtAppointmets.Columns["AppointmentID"]
-                };
-            }
-    //        MessageBox.Show(
-    //string.Join(", ",
-    //    _dtAppointmets.Columns
-    //        .Cast<DataColumn>()
-    //        .Select(c => c.ColumnName)),
-    //"Appointment Columns");
-            _dtAppointmets.PrimaryKey = new DataColumn[] { _dtAppointmets.Columns["AppointmentID"] };
-            _dtAppointmets.Columns["AppointmentStatusText"].ReadOnly = false;
-            lblRecordsCount.Text = _dtAppointmets.Rows.Count.ToString();
-            dgvAppointments.DataSource = _dtAppointmets;
-            EnsureAppointmentActionColumns();
-            UpdateAppointmentActionButtons();
-            _RefreshRecords();
+            if (clsGlobal.CurrentUser == null)
+                return;
 
-        }
-        private void frmListAppointmets_Load(object sender, EventArgs e)
-        {
-            _dtAppointmets = clsAppointment.GetAllAppointments();
+            if (clsGlobal.CurrentUser.RoleID == (int)UserRole.Doctor)
+            {
+                int doctorID = GetCurrentDoctorID();
+
+                if (doctorID <= 0)
+                {
+                    _dtAppointmets = clsAppointment
+                        .GetAllAppointments()
+                        .Clone();
+
+                    dgvAppointments.DataSource = _dtAppointmets;
+
+                    lblRecordsCount.Text = "0";
+
+                    MessageBox.Show(
+                        "Your login account is not linked to an active doctor.",
+                        "Doctor Account",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+
+                    return;
+                }
+
+                _dtAppointmets =
+                    clsAppointment.GetAppointmentsByDoctorID(doctorID);
+            }
+            else
+            {
+                _dtAppointmets =
+                    clsAppointment.GetAllAppointments();
+            }
+
+            if (_dtAppointmets == null)
+                _dtAppointmets = new DataTable();
+
+            if (_dtAppointmets.Columns.Contains("AppointmentID"))
+            {
+                _dtAppointmets.PrimaryKey = new[]
+                {
+            _dtAppointmets.Columns["AppointmentID"]
+        };
+            }
+
+            if (_dtAppointmets.Columns.Contains("AppointmentStatusText"))
+            {
+                _dtAppointmets.Columns["AppointmentStatusText"]
+                    .ReadOnly = false;
+            }
 
             dgvAppointments.DataSource = null;
+            dgvAppointments.DataSource = _dtAppointmets;
 
-            if (_dtAppointmets != null)
-            {
-                _dtAppointmets.DefaultView.RowFilter = "";
-
-                dgvAppointments.DataSource = _dtAppointmets;
-            }
-
-            int totalRows = _dtAppointmets?.Rows.Count ?? 0;
-            int visibleRows = _dtAppointmets?.DefaultView.Count ?? 0;
-
-
-
-            lblRecordsCount.Text = visibleRows.ToString();
-
-            if (clsGlobal.CurrentUser.RoleID == (int)UserRole.Cashier)
-                dgvAppointments.ContextMenuStrip = cmsAppointmentCasher;
-            else
-                dgvAppointments.ContextMenuStrip = cmsAppointmentRecption;
+            lblRecordsCount.Text =
+                _dtAppointmets.DefaultView.Count.ToString();
 
             EnsureAppointmentActionColumns();
             ArrangeAppointmentColumns();
-            ApplyLocalizationAndMirroring();
             ApplyAppointmentGridLanguage();
+            UpdateAppointmentActionButtons();
+        }
+        private void frmListAppointmets_Load(
+     object sender, EventArgs e)
+        {
+            if (clsGlobal.CurrentUser == null)
+            {
+                MessageBox.Show("Please log in again.");
+                Close();
+                return;
+            }
+
+            if (clsGlobal.CurrentUser.RoleID == (int)UserRole.Cashier)
+            {
+                dgvAppointments.ContextMenuStrip =
+                    cmsAppointmentCasher;
+            }
+            else
+            {
+                dgvAppointments.ContextMenuStrip =
+                    cmsAppointmentRecption;
+            }
+
+            ApplyLocalizationAndMirroring();
+
             cbFilterBy.SelectedIndex = 0;
+
+            _RefreshAppointmentsList();
 
             UpdateAppointmentActionButtons();
         }
@@ -796,28 +837,14 @@ namespace Clinic.Medical_Services.Appointment
         {
             lblRecordsCount.Text = _dtAppointmets.Rows.Count.ToString();
         }
-        private void _DatatBackToAdd(object sender, int AppointmentID)
+        private void _DatatBackToAdd(object sender, int appointmentID)
         {
-            DataRow NewAppointmentRow = clsAppointment.GetAppointmentInfoByID(AppointmentID);
-
-            if (NewAppointmentRow != null)
-            {
-                _dtAppointmets.UpsertRow(NewAppointmentRow, AppointmentID);
-                _RefreshRecords();
-            }
-
-
+            _RefreshAppointmentsList();
         }
 
-        private void _DataBackToUpdate(object sender, int AppointmentID)
+        private void _DataBackToUpdate(object sender, int appointmentID)
         {
-            DataRow UpdateAppointmentRow = clsAppointment.GetAppointmentInfoByID(AppointmentID);
-
-            if (UpdateAppointmentRow != null)
-            {
-                _dtAppointmets.UpsertRow(UpdateAppointmentRow, AppointmentID);
-                _RefreshRecords();
-            }
+            _RefreshAppointmentsList();
         }
 
         private void _DataBackToDelete(int AppointmentID)
@@ -871,7 +898,8 @@ namespace Clinic.Medical_Services.Appointment
         {
             if (dgvAppointments.CurrentRow == null) return;
 
-            int currentAppointmentID = (int)dgvAppointments.CurrentRow.Cells[0].Value;
+            int currentAppointmentID = Convert.ToInt32(
+      dgvAppointments.CurrentRow.Cells["AppointmentID"].Value);
 
             string message = Tr("Are you sure you want to ") + Tr(actionName) + "?";
             string title = Tr("Confirm Action");
@@ -1178,6 +1206,47 @@ namespace Clinic.Medical_Services.Appointment
 
             dgvAppointments.DefaultCellStyle.WrapMode =
                 DataGridViewTriState.False;
+        }
+        private int GetCurrentDoctorID()
+        {
+            if (clsGlobal.CurrentUser == null)
+                return -1;
+
+            int userID = clsGlobal.CurrentUser.UserID;
+
+            using (MySql.Data.MySqlClient.MySqlConnection con =
+                new MySql.Data.MySqlClient.MySqlConnection(
+                    clsDataAccessSettings.ConnectionString))
+            {
+                string query = @"
+            SELECT D.DoctorID
+            FROM Doctors D
+            INNER JOIN Users U
+                ON U.PersonID = D.PersonID
+            WHERE U.UserID = @UserID
+              AND U.IsActive = 1
+              AND D.IsActive = 1
+            LIMIT 1;";
+
+                using (MySql.Data.MySqlClient.MySqlCommand cmd =
+                    new MySql.Data.MySqlClient.MySqlCommand(query, con))
+                {
+                    cmd.Parameters.AddWithValue("@UserID", userID);
+
+                    con.Open();
+
+                    object result = cmd.ExecuteScalar();
+
+                    if (result == null || result == DBNull.Value)
+                        return -1;
+
+                    return Convert.ToInt32(result);
+                }
+            }
+        }
+        private void btnListPatient_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

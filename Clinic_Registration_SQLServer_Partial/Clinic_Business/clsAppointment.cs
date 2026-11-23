@@ -60,6 +60,10 @@ namespace Clinic_Business
                 }
             }
         }
+        public static DataTable GetAppointmentsByDoctorID(int doctorID)
+        {
+            return clsAppointmentData.GetAppointmentsByDoctorID(doctorID);
+        }
         public clsAppointment()
         {
             this.AppointmentID = -1;
@@ -231,7 +235,11 @@ namespace Clinic_Business
                 UserID
             );
         }
-
+        public static int GetTodayAppointmentCountByDoctor(int doctorID)
+        {
+            return clsAppointmentData
+                .GetTodayAppointmentCountByDoctor(doctorID);
+        }
 
         public static void RefreshQueueForDoctor(int doctorID)
         {

@@ -552,6 +552,7 @@ namespace Clinic.Medical_Services.Appointment
 
             dtpAppointmentDate.Value = now;
         }
+
         private System.Collections.Generic.IEnumerable<Control> GetAllControls(
             Control parent)
         {

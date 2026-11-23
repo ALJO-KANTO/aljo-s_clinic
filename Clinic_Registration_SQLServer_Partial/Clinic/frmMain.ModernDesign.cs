@@ -1,3 +1,4 @@
+using Clinic_Business;
 using Clinic_Common;
 using Clinic_DataAccess;
 using MySql.Data.MySqlClient;
@@ -687,21 +688,59 @@ namespace Clinic
             };
             modernDashboard.Controls.Add(welcome);
 
-            TableLayoutPanel stats = new TableLayoutPanel
-            {
-                Height = 126,
-                ColumnCount = 4,
-                RowCount = 1,
-                Margin = new Padding(0, 0, 0, 16)
-            };
-            for (int i = 0; i < 4; i++) stats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
-            AddStat(stats, 0, "♙", "Total Patients", dashboardStats.TotalPatients.ToString("N0"), Color.FromArgb(17, 123, 234), lbl => lblTotalPatients = lbl);
-            AddStat(stats, 1, "▦", "Today's Appointments", dashboardStats.TodayAppointments.ToString("N0"), Color.FromArgb(3, 177, 110), lbl => lblTodayAppointments = lbl);
-            AddStat(stats, 2, "💵", "Today's Revenue", dashboardStats.TodayRevenue.ToString("N0"), Color.FromArgb(190, 38, 202), lbl => lblTodayRevenue = lbl);
-            AddStat(stats, 3, "♡", "Active Visits", dashboardStats.ActiveVisits.ToString("N0"), Color.FromArgb(246, 137, 22), lbl => lblActiveVisits = lbl);
-            modernDashboard.Controls.Add(stats);
 
-            bool isAdmin = clsGlobal.CurrentUser.RoleID == (int)UserRole.Admin;
+            bool isAdmin = clsGlobal.CurrentUser != null &&
+                           clsGlobal.CurrentUser.RoleID == (int)UserRole.Admin;
+
+            // Only Admin can see clinic-wide statistics.
+            if (isAdmin)
+            {
+                if (dashboardStats == null)
+                {
+                    dashboardStats = clsDashboard.GetDashboardStats();
+                }
+
+                if (dashboardStats != null)
+                {
+                    TableLayoutPanel stats = new TableLayoutPanel
+                    {
+                        Name = "adminDashboardStats",
+                        Height = 126,
+                        ColumnCount = 4,
+                        RowCount = 1,
+                        Margin = new Padding(0, 0, 0, 16)
+                    };
+
+                    for (int i = 0; i < 4; i++)
+                    {
+                        stats.ColumnStyles.Add(
+                            new ColumnStyle(SizeType.Percent, 25F));
+                    }
+
+                    AddStat(stats, 0, "♙", "Total Patients",
+                        dashboardStats.TotalPatients.ToString("N0"),
+                        Color.FromArgb(17, 123, 234),
+                        lbl => lblTotalPatients = lbl);
+
+                    AddStat(stats, 1, "▦", "Today's Appointments",
+                        dashboardStats.TodayAppointments.ToString("N0"),
+                        Color.FromArgb(3, 177, 110),
+                        lbl => lblTodayAppointments = lbl);
+
+                    AddStat(stats, 2, "💵", "Today's Revenue",
+                        dashboardStats.TodayRevenue.ToString("N0"),
+                        Color.FromArgb(190, 38, 202),
+                        lbl => lblTodayRevenue = lbl);
+
+                    AddStat(stats, 3, "♡", "Active Visits",
+                        dashboardStats.ActiveVisits.ToString("N0"),
+                        Color.FromArgb(246, 137, 22),
+                        lbl => lblActiveVisits = lbl);
+
+                    modernDashboard.Controls.Add(stats);
+                }
+            }
+
             TableLayoutPanel roleRows = new TableLayoutPanel
             {
                 ColumnCount = isAdmin ? 2 : 1,

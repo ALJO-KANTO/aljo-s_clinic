@@ -62,13 +62,18 @@ namespace Clinic
 
             if (LicenseManager.UsageMode != LicenseUsageMode.Designtime)
             {
-                dashboardStats = clsDashboard.GetDashboardStats();
+                if (clsGlobal.CurrentUser != null &&
+     clsGlobal.CurrentUser.RoleID == (int)UserRole.Admin)
+                {
+                    dashboardStats = clsDashboard.GetDashboardStats();
+                }
                 BuildModernDashboardDesign();
                 RemoveProfitAndLossDetailMenu();
                 BindMigratedAdminSubmenus();
                 AddXRayDashboardButton();
                 AddTranslateButton();
                 ChangeDashboardLanguage(false);
+                ApplyDashboardRoleVisibility();
             }
         }
         private void AddXRayDashboardButton()
@@ -1052,7 +1057,7 @@ namespace Clinic
                 modernUser.Text = translatedRole;
 
                 modernAccountRole.Text =
-                    TranslationClass.Translate("Admin", isArabic);
+      TranslationClass.Translate(roleName, isArabic);
             }
         }
 
@@ -1493,6 +1498,57 @@ namespace Clinic
             PositionTranslateButton();
             PositionAccountHeader();
         }
+
+        private void ApplyDashboardRoleVisibility()
+        {
+            if (clsGlobal.CurrentUser == null || modernDashboard == null)
+                return;
+
+            bool isAdmin =
+                clsGlobal.CurrentUser.RoleID == (int)UserRole.Admin;
+
+            bool isDoctor =
+                clsGlobal.CurrentUser.RoleID == (int)UserRole.Doctor;
+
+            // Hide existing global statistics for non-admin users.
+            foreach (Control control in GetAllDashboardControls(modernDashboard))
+            {
+                if (!(control is Label label))
+                    continue;
+
+                string title = (label.Tag as string ?? label.Text)
+                    .Trim()
+                    .ToLowerInvariant();
+
+                if (title == "total patients" ||
+                    title == "today's revenue" ||
+                    title == "today's appointments" ||
+                    title == "active visits")
+                {
+                    // Hide the card containing this title.
+                    Control card = label.Parent;
+
+                    if (card != null && card != modernDashboard)
+                        card.Visible = isAdmin;
+                }
+            }
+
+            // Doctor and other staff dashboards should use
+            // their own role-specific cards, not global statistics.
+        }
+
+        private System.Collections.Generic.IEnumerable<Control>
+            GetAllDashboardControls(Control parent)
+        {
+            foreach (Control child in parent.Controls)
+            {
+                yield return child;
+
+                foreach (Control nested in GetAllDashboardControls(child))
+                    yield return nested;
+            }
+        }
+
         private void OpenMigratedAdminForm(string className)
         {
             OpenIfAuthorized(() =>
