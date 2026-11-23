@@ -185,6 +185,9 @@
             this.lblModernSubtitle = new System.Windows.Forms.Label();
             this.lblModernBreadcrumb = new System.Windows.Forms.Label();
             this.btnBackEmployees = new Guna.UI2.WinForms.Guna2Button();
+            this.pnlPersonInformation = new System.Windows.Forms.Panel();
+            this.lblPersonInformationTitle = new System.Windows.Forms.Label();
+            this.ctrlPersonCardWithFilter1 = new Clinic.Controls.ctrlPersonCardWithFilter();
             this.panel1.SuspendLayout();
             this.tbC.SuspendLayout();
             this.TabPage1.SuspendLayout();
@@ -195,6 +198,7 @@
             this.cardPassport.SuspendLayout();
             this.modernHeader.SuspendLayout();
             this.SuspendLayout();
+            //
             // 
             // panel1
             // 
@@ -243,8 +247,8 @@
             // 
             // tbC
             // 
-            this.tbC.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.tbC.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tbC.Controls.Add(this.TabPage1);
             this.tbC.Controls.Add(this.TabPage2);
@@ -280,7 +284,6 @@
             this.TabPage1.AutoScroll = true;
             this.TabPage1.BackColor = System.Drawing.Color.White;
             this.TabPage1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.TabPage1.Controls.Add(this.ChkTeacher);
             this.TabPage1.Controls.Add(this.txtPhoneNumEmerg);
             this.TabPage1.Controls.Add(this.txtAddressEmerg);
             this.TabPage1.Controls.Add(this.txtEmergency);
@@ -348,6 +351,30 @@
             this.TabPage1.Controls.Add(this.Label5);
             this.TabPage1.Controls.Add(this.Label4);
             this.TabPage1.Controls.Add(this.linkLabel2);
+            // Person Information section is embedded at the top of Employee Information.
+            this.pnlPersonInformation.BackColor = System.Drawing.Color.FromArgb(249, 249, 252);
+            this.pnlPersonInformation.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pnlPersonInformation.Location = new System.Drawing.Point(20, 12);
+            this.pnlPersonInformation.Name = "pnlPersonInformation";
+            this.pnlPersonInformation.Size = new System.Drawing.Size(1160, 440);
+            this.pnlPersonInformation.TabIndex = 200;
+            this.pnlPersonInformation.Controls.Add(this.lblPersonInformationTitle);
+            this.pnlPersonInformation.Controls.Add(this.ctrlPersonCardWithFilter1);
+            this.lblPersonInformationTitle.AutoSize = true;
+            this.lblPersonInformationTitle.Font = new System.Drawing.Font("Segoe UI Semibold", 11F, System.Drawing.FontStyle.Bold);
+            this.lblPersonInformationTitle.ForeColor = System.Drawing.Color.FromArgb(79, 48, 190);
+            this.lblPersonInformationTitle.Location = new System.Drawing.Point(18, 12);
+            this.lblPersonInformationTitle.Name = "lblPersonInformationTitle";
+            this.lblPersonInformationTitle.Size = new System.Drawing.Size(130, 20);
+            this.lblPersonInformationTitle.TabIndex = 0;
+            this.lblPersonInformationTitle.Text = "Person Information";
+            this.ctrlPersonCardWithFilter1.Location = new System.Drawing.Point(16, 42);
+            this.ctrlPersonCardWithFilter1.Name = "ctrlPersonCardWithFilter1";
+            this.ctrlPersonCardWithFilter1.Size = new System.Drawing.Size(1120, 380);
+            this.ctrlPersonCardWithFilter1.TabIndex = 1;
+            this.ctrlPersonCardWithFilter1.FilterEnabled = true;
+            this.ctrlPersonCardWithFilter1.btnAddNewEnabled = true;
+            this.TabPage1.Controls.Add(this.pnlPersonInformation);
             this.TabPage1.Location = new System.Drawing.Point(4, 52);
             this.TabPage1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.TabPage1.Name = "TabPage1";
@@ -373,6 +400,7 @@
             this.ChkTeacher.UncheckedState.BorderThickness = 0;
             this.ChkTeacher.UncheckedState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(125)))), ((int)(((byte)(137)))), ((int)(((byte)(149)))));
             this.ChkTeacher.UseVisualStyleBackColor = false;
+            this.ChkTeacher.Visible = false; // Kept only for legacy code-behind compatibility; not shown in the clinic form.
             // 
             // txtPhoneNumEmerg
             // 
@@ -1323,7 +1351,7 @@
             this.lblEmployeeType.Name = "lblEmployeeType";
             this.lblEmployeeType.Size = new System.Drawing.Size(87, 15);
             this.lblEmployeeType.TabIndex = 1;
-            this.lblEmployeeType.Text = "Employee Type";
+            this.lblEmployeeType.Text = "Employee Role";
             // 
             // cmbEmployeeType
             // 
@@ -1336,11 +1364,26 @@
             this.cmbEmployeeType.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(68)))), ((int)(((byte)(88)))), ((int)(((byte)(112)))));
             this.cmbEmployeeType.ItemHeight = 30;
             this.cmbEmployeeType.Items.AddRange(new object[] {
-            "Employee",
-            "Student",
-            "Trainee",
-            "Contractor",
-            "Freelancer"});
+            "Select Role",
+            "Doctor",
+            "Dentist",
+            "Nurse",
+            "Pharmacist",
+            "Laboratory Technician",
+            "Radiology Technician",
+            "Physiotherapist",
+            "Medical Coder",
+            "Receptionist",
+            "Billing Officer",
+            "Insurance Coordinator",
+            "Accountant",
+            "HR Officer",
+            "Clinic Manager",
+            "Medical Records Officer",
+            "Admin Staff",
+            "Support Staff",
+            "Housekeeping Staff",
+            "Other"});
             this.cmbEmployeeType.Location = new System.Drawing.Point(28, 376);
             this.cmbEmployeeType.Name = "cmbEmployeeType";
             this.cmbEmployeeType.Size = new System.Drawing.Size(325, 36);
@@ -2306,6 +2349,16 @@
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmViewEmployee_FormClosing);
             this.Load += new System.EventHandler(this.frmViewEmployee_Load);
+            // Move all existing Employee Information controls below the Person Information section.
+            // This must run after every control's original Location has been initialized.
+            foreach (System.Windows.Forms.Control existingControl in this.TabPage1.Controls)
+            {
+                if (existingControl != this.pnlPersonInformation)
+                    existingControl.Location = new System.Drawing.Point(
+                        existingControl.Location.X, existingControl.Location.Y + 450);
+            }
+            this.TabPage1.AutoScrollMinSize = new System.Drawing.Size(0, 1050);
+
             this.panel1.ResumeLayout(false);
             this.tbC.ResumeLayout(false);
             this.TabPage1.ResumeLayout(false);
@@ -2331,6 +2384,9 @@
         private Guna.UI2.WinForms.Guna2Button btnClose;
         private Guna.UI2.WinForms.Guna2Button btnSave;
         internal Guna.UI2.WinForms.Guna2TabControl tbC;
+        private System.Windows.Forms.Panel pnlPersonInformation;
+        private System.Windows.Forms.Label lblPersonInformationTitle;
+        private Clinic.Controls.ctrlPersonCardWithFilter ctrlPersonCardWithFilter1;
         internal System.Windows.Forms.TabPage TabPage1;
         internal System.Windows.Forms.Label Label33;
         internal System.Windows.Forms.Label Label25;

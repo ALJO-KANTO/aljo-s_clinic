@@ -46,6 +46,13 @@ namespace YamyProject
 
             LocalizationManager.LocalizeForm(this);
 
+            // When HR selects or creates a person in the embedded Person
+            // Information section, copy that person's name to Employee Name.
+            // This only updates the existing textbox; it does not change saving
+            // logic or database structure.
+            ctrlPersonCardWithFilter1.OnPersonSelected +=
+                CtrlPersonCardWithFilter1_OnPersonSelected;
+
             empDept = (sender, args) =>
                 BindCombos.PopulateDepartments(cmbDepartments);
 
@@ -72,6 +79,19 @@ namespace YamyProject
             this.Shown += (sender, args) =>
                 BeginInvoke(new Action(() => ApplyEmployeeLanguageLayout()));
         }
+        private void CtrlPersonCardWithFilter1_OnPersonSelected(int personID)
+        {
+            if (personID <= 0 || ctrlPersonCardWithFilter1 == null)
+                return;
+
+            var selectedPerson = ctrlPersonCardWithFilter1.SelectedPerson;
+            if (selectedPerson == null)
+                return;
+
+            // Person master uses Name for the person's displayed full name.
+            txtEmpName.Text = selectedPerson.Name ?? string.Empty;
+        }
+
         private void StartPageLoading()
         {
             _pageLoaderReady = false;
@@ -538,23 +558,23 @@ namespace YamyProject
             }
             else
                 if (updateEmployee())
+            {
+                if (ChkTeacher.Checked)
                 {
-                    if (ChkTeacher.Checked)
-                    {
-                        SaveTeacher();
-                    }
-
-                    //.RefreshEmployee();
-
-                    MessageBox.Show(
-                        "Employee updated successfully.",
-                        "Success",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Information
-                    );
-
-                    frmMain.openChildForm(new MasterEmployee());
+                    SaveTeacher();
                 }
+
+                //.RefreshEmployee();
+
+                MessageBox.Show(
+                    "Employee updated successfully.",
+                    "Success",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information
+                );
+
+                frmMain.openChildForm(new MasterEmployee());
+            }
         }
 
         private void SaveTeacher()
@@ -1342,6 +1362,7 @@ namespace YamyProject
             btnClose.Text = arabic ? "إغلاق" : "Close";
             btnSave.Text = arabic ? "حفظ" : "Save";
             TabPage1.Text = arabic ? "معلومات الموظف" : "Employee Information";
+            lblPersonInformationTitle.Text = arabic ? "معلومات الشخص" : "Person Information";
             ChkTeacher.Text = arabic ? "معلم" : "Teacher";
             label35.Text = arabic ? "رقم التأمين الاجتماعي" : "Social Insurance NO";
             label34.Text = arabic ? "البريد الإلكتروني" : "Email";
@@ -1415,7 +1436,7 @@ namespace YamyProject
             label14.Text = arabic ? "جواز السفر" : "Passport";
             TabPage1.Text = arabic ? "معلومات الموظف" : "Employee Information";
             TabPage2.Text = arabic ? "المستندات القانونية" : "Legal Document";
-            // The Employee Type caption is created separately from the designer labels.
+            // The Employee Role caption is created separately from the designer labels.
             // Find it recursively so its parent panel does not matter.
             TranslateEmployeeTypeControls(this, arabic);
             if (cmbEmployeeType != null)
@@ -1447,10 +1468,39 @@ namespace YamyProject
 
         private static string TranslateEmployeeTypeValue(string value, bool arabic)
         {
-            if (string.Equals(value, "Employee", StringComparison.OrdinalIgnoreCase) || value == "موظف")
-                return arabic ? "موظف" : "Employee";
-            if (string.Equals(value, "Teacher", StringComparison.OrdinalIgnoreCase) || value == "معلم")
-                return arabic ? "معلم" : "Teacher";
+            string[,] roles =
+            {
+                { "Select Role", "اختر المسمى الوظيفي" },
+                { "Doctor", "طبيب" },
+                { "Dentist", "طبيب أسنان" },
+                { "Nurse", "ممرض" },
+                { "Pharmacist", "صيدلي" },
+                { "Laboratory Technician", "فني مختبر" },
+                { "Radiology Technician", "فني أشعة" },
+                { "Physiotherapist", "أخصائي علاج طبيعي" },
+                { "Medical Coder", "أخصائي ترميز طبي" },
+                { "Receptionist", "موظف استقبال" },
+                { "Billing Officer", "مسؤول الفواتير" },
+                { "Insurance Coordinator", "منسق التأمين" },
+                { "Accountant", "محاسب" },
+                { "HR Officer", "مسؤول الموارد البشرية" },
+                { "Clinic Manager", "مدير العيادة" },
+                { "Medical Records Officer", "مسؤول السجلات الطبية" },
+                { "Admin Staff", "موظف إداري" },
+                { "Support Staff", "موظف دعم" },
+                { "Housekeeping Staff", "موظف خدمات" },
+                { "Other", "أخرى" }
+            };
+
+            for (int i = 0; i < roles.GetLength(0); i++)
+            {
+                if (string.Equals(value, roles[i, 0], StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(value, roles[i, 1], StringComparison.Ordinal))
+                {
+                    return arabic ? roles[i, 1] : roles[i, 0];
+                }
+            }
+
             return value;
         }
 
@@ -1469,10 +1519,12 @@ namespace YamyProject
             foreach (Control child in root.Controls)
             {
                 if ((child is Label || child is Guna.UI2.WinForms.Guna2HtmlLabel) &&
-                    (string.Equals(child.Text.Trim(), "Employee Type", StringComparison.OrdinalIgnoreCase) ||
+                    (string.Equals(child.Text.Trim(), "Employee Role", StringComparison.OrdinalIgnoreCase) ||
+                     child.Text.Trim() == "المسمى الوظيفي" ||
+                     string.Equals(child.Text.Trim(), "Employee Type", StringComparison.OrdinalIgnoreCase) ||
                      child.Text.Trim() == "نوع الموظف"))
                 {
-                    child.Text = arabic ? "نوع الموظف" : "Employee Type";
+                    child.Text = arabic ? "المسمى الوظيفي" : "Employee Role";
                     child.RightToLeft = arabic ? RightToLeft.Yes : RightToLeft.No;
                 }
                 if (child.HasChildren) TranslateEmployeeTypeControls(child, arabic);
