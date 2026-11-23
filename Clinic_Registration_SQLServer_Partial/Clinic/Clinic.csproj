@@ -898,6 +898,12 @@
       <DependentUpon>frmNurse.cs</DependentUpon>
     </Compile>
     <Compile Include="PasswordHelper.cs" />
+    <Compile Include="Patient\frmPatientMedicalHistory.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Patient\frmPatientMedicalHistory.Designer.cs">
+      <DependentUpon>frmPatientMedicalHistory.cs</DependentUpon>
+    </Compile>
     <Compile Include="Person\Controls\ctrlPersonCard.cs">
       <SubType>UserControl</SubType>
     </Compile>

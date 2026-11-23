@@ -132,6 +132,14 @@ namespace Clinic_Business
             return FindPatientByID(patientID);
         }
 
+        public static DataTable GetPatientVisitHistory(int patientID)
+        {
+            if (patientID <= 0)
+                return new DataTable();
+
+            return clsPatientData.GetPatientVisitHistory(patientID);
+        }
+
         public bool SavePatient()
         {
  

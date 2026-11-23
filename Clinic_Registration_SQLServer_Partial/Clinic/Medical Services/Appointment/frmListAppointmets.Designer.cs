@@ -459,6 +459,7 @@ namespace Clinic.Medical_Services.Appointment
             this.btnListPatient.TabIndex = 2;
             this.btnListPatient.Text = "List Patient";
             this.btnListPatient.UseVisualStyleBackColor = false;
+            this.btnListPatient.Click += new System.EventHandler(this.btnListPatient_Click);
             // 
             // btnAddNewAppointment
             // 
@@ -514,10 +515,10 @@ namespace Clinic.Medical_Services.Appointment
             this.panelGridContainer.Controls.Add(this.dgvAppointments);
             this.panelGridContainer.Controls.Add(this.panelGridHeader);
             this.panelGridContainer.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panelGridContainer.Location = new System.Drawing.Point(0, 185);
+            this.panelGridContainer.Location = new System.Drawing.Point(0, 250);
             this.panelGridContainer.Name = "panelGridContainer";
             this.panelGridContainer.Padding = new System.Windows.Forms.Padding(25, 20, 25, 20);
-            this.panelGridContainer.Size = new System.Drawing.Size(1233, 515);
+            this.panelGridContainer.Size = new System.Drawing.Size(1233, 450);
             this.panelGridContainer.TabIndex = 122;
             // 
             // panelGridHeader

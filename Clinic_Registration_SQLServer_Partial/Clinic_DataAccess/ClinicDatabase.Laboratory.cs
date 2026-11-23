@@ -317,16 +317,18 @@ LEFT JOIN view_billsummaries bs
             ) PAY
                 ON PAY.BillID = R.BillID
         ) X
-        WHERE (@Status = 'All' OR X.Status = @Status)
-          AND (
-              @Search = ''
-              OR X.PatientName LIKE CONCAT('%', @Search, '%')
-              OR X.TestName LIKE CONCAT('%', @Search, '%')
-              OR CAST(X.LabRequestID AS CHAR)
-                 LIKE CONCAT('%', @Search, '%')
-              OR CAST(X.LabOrderID AS CHAR)
-                 LIKE CONCAT('%', @Search, '%')
-          )
+       WHERE
+    (@Status = 'Cancelled' OR X.Status <> 'Cancelled')
+    AND (@Status = 'All' OR X.Status = @Status)
+    AND (
+        @Search = ''
+        OR X.PatientName LIKE CONCAT('%', @Search, '%')
+        OR X.TestName LIKE CONCAT('%', @Search, '%')
+        OR CAST(X.LabRequestID AS CHAR)
+           LIKE CONCAT('%', @Search, '%')
+        OR CAST(X.LabOrderID AS CHAR)
+           LIKE CONCAT('%', @Search, '%')
+    )
         ORDER BY X.RequestedAt DESC,
                  X.LabRequestID DESC;",
                 new MySqlParameter("@Status", status ?? "All"),
