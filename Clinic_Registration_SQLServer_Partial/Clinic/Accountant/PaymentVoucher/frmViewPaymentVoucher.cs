@@ -1781,14 +1781,14 @@ namespace YamyProject
         {
             return ClinicDatabase.ExecuteDataTable(@"SELECT 1 sn,id,date,CODE AS RvNo,type,method,amount,
                                                   CASE 
-                                                    WHEN tbl_payment_voucher.type = 'Customer' THEN (SELECT code FROM tbl_customer WHERE id=(SELECT hum_id FROM tbl_payment_voucher_details WHERE payment_id = tbl_payment_voucher.id LIMIT 1))
+                                                    WHEN tbl_payment_voucher.type = 'Customer' THEN (SELECT PersonID as code FROM persons WHERE PersonID=(SELECT hum_id FROM tbl_payment_voucher_details WHERE payment_id = tbl_payment_voucher.id LIMIT 1))
                                                     WHEN tbl_payment_voucher.type = 'Vendor' THEN (SELECT code FROM tbl_vendor WHERE id=(SELECT hum_id FROM tbl_payment_voucher_details WHERE payment_id = tbl_payment_voucher.id LIMIT 1))
                                                     WHEN tbl_payment_voucher.type = 'Employee' THEN (SELECT code FROM tbl_employee WHERE id=(SELECT hum_id FROM tbl_payment_voucher_details WHERE payment_id = tbl_payment_voucher.id LIMIT 1))
                                                     WHEN tbl_payment_voucher.type = 'General' THEN (SELECT code FROM tbl_coa_level_4 WHERE id=(SELECT hum_id FROM tbl_payment_voucher_details WHERE payment_id = tbl_payment_voucher.id LIMIT 1))
                                                     ELSE ''
                                                   END AS reciverCode,
                                                     CASE 
-                                                    WHEN tbl_payment_voucher.type = 'Customer' THEN (SELECT name FROM tbl_customer WHERE id=(SELECT hum_id FROM tbl_payment_voucher_details WHERE payment_id = tbl_payment_voucher.id LIMIT 1))
+                                                    WHEN tbl_payment_voucher.type = 'Customer' THEN (SELECT fullname as name FROM persons WHERE PersonID=(SELECT hum_id FROM tbl_payment_voucher_details WHERE payment_id = tbl_payment_voucher.id LIMIT 1))
                                                     WHEN tbl_payment_voucher.type = 'Vendor' THEN (SELECT name FROM tbl_vendor WHERE id=(SELECT hum_id FROM tbl_payment_voucher_details WHERE payment_id = tbl_payment_voucher.id LIMIT 1))
                                                     WHEN tbl_payment_voucher.type = 'Employee' THEN (SELECT name FROM tbl_employee WHERE id=(SELECT hum_id FROM tbl_payment_voucher_details WHERE payment_id = tbl_payment_voucher.id LIMIT 1))
                                                     WHEN tbl_payment_voucher.type = 'General' THEN (SELECT name FROM tbl_coa_level_4 WHERE id=(SELECT hum_id FROM tbl_payment_voucher_details WHERE payment_id = tbl_payment_voucher.id LIMIT 1))
@@ -1811,7 +1811,7 @@ namespace YamyProject
         {
             return ClinicDatabase.ExecuteDataTable(@"SELECT ROW_NUMBER() OVER (ORDER BY d.id) AS sn,d.date,d.inv_id,
                                 CASE
-                                    WHEN i.type = 'Customer' THEN(SELECT NAME FROM tbl_customer WHERE id = d.hum_id)
+                                    WHEN i.type = 'Customer' THEN(SELECT fullname as NAME FROM persons WHERE PersonID = d.hum_id)
                                     WHEN i.type = 'Vendor' THEN (SELECT NAME FROM tbl_vendor WHERE id = d.hum_id)
                                     WHEN i.type = 'Employee' THEN (SELECT NAME FROM tbl_employee WHERE id = d.hum_id)
                                     WHEN i.type = 'General' THEN (SELECT NAME FROM tbl_coa_level_4 WHERE id = d.hum_id)

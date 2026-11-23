@@ -490,7 +490,7 @@
             dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
             this.dgvReport.DefaultCellStyle = dataGridViewCellStyle3;
             this.dgvReport.GridColor = System.Drawing.Color.FromArgb(((int)(((byte)(231)))), ((int)(((byte)(229)))), ((int)(((byte)(255)))));
-            this.dgvReport.Location = new System.Drawing.Point(370, 5);
+            this.dgvReport.Location = new System.Drawing.Point(203, 5);
             this.dgvReport.MultiSelect = false;
             this.dgvReport.Name = "dgvReport";
             this.dgvReport.ReadOnly = true;
@@ -498,7 +498,7 @@
             this.dgvReport.RowHeadersVisible = false;
             this.dgvReport.RowTemplate.Height = 25;
             this.dgvReport.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
-            this.dgvReport.Size = new System.Drawing.Size(335, 443);
+            this.dgvReport.Size = new System.Drawing.Size(644, 443);
             this.dgvReport.TabIndex = 19;
             this.dgvReport.ThemeStyle.AlternatingRowsStyle.BackColor = System.Drawing.Color.White;
             this.dgvReport.ThemeStyle.AlternatingRowsStyle.Font = null;
@@ -590,10 +590,11 @@
             // 
             // headerUC1
             // 
+            this.headerUC1.ArabicLayout = false;
             this.headerUC1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(23)))), ((int)(((byte)(42)))), ((int)(((byte)(83)))));
             this.headerUC1.Dock = System.Windows.Forms.DockStyle.Top;
-            this.headerUC1.FormText = "";
-            this.headerUC1.HeaderText = "";
+            this.headerUC1.FormText = "Title";
+            this.headerUC1.HeaderText = "Title";
             this.headerUC1.Location = new System.Drawing.Point(0, 0);
             this.headerUC1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.headerUC1.Name = "headerUC1";
