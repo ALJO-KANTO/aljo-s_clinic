@@ -38,7 +38,9 @@ namespace YamyProject
 
         private void MasterTransactionJournal_Load(object sender, EventArgs e)
         {
-            lblJVNO.Text = !string.IsNullOrEmpty(transactionId) ? transactionId + " " + type : "";
+            lblJVNO.Text = !string.IsNullOrEmpty(transactionId)
+                ? transactionId + " " + (IsArabicJournal() ? TranslateJournalCaption(type) : type)
+                : "";
             dtFrom.Enabled = dtTo.Enabled = !chkDate.Checked;
             BindJournal();
             // Reapply after the form's load event in case a custom control
@@ -473,7 +475,8 @@ namespace YamyProject
 
         private bool IsArabicJournal()
         {
-            return CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ar"
+            return TranslationClass.IsArabic
+                || CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ar"
                 || CultureInfo.CurrentCulture.TwoLetterISOLanguageName == "ar"
                 || this.RightToLeft == RightToLeft.Yes;
         }
@@ -489,6 +492,12 @@ namespace YamyProject
                 case "Transaction Journal": return "دفتر يومية المعاملات";
                 case "Journal Transactions": return "معاملات اليومية";
                 case "All Transactions": return "جميع المعاملات";
+                case "Date:": return "التاريخ:";
+                case "Export": return "تصدير";
+                case "Excel Files (*.xlsx)|*.xlsx": return "ملفات Excel (*.xlsx)|*.xlsx";
+                case "Save Journal Transactions": return "حفظ معاملات اليومية";
+                case "Save Excel File": return "حفظ ملف Excel";
+                case "Excel exported successfully!": return "تم تصدير ملف Excel بنجاح!";
                 case "General Ledger": return "دفتر الأستاذ العام";
                 case "Default": return "افتراضي";
                 case "Inventory Opening Stock": return "رصيد افتتاحي للمخزون";
@@ -534,11 +543,7 @@ namespace YamyProject
                 case "parent": return "الطرف";
                 case "TOTAL": return "الإجمالي";
                 case "Print": return "طباعة";
-                case "Export": return "تصدير";
                 case "PDF Files (*.pdf)|*.pdf": return "ملفات PDF (*.pdf)|*.pdf";
-                case "Save Journal Transactions": return "حفظ معاملات اليومية";
-                case "Save Excel File": return "حفظ ملف إكسل";
-                case "Excel exported successfully!": return "تم تصدير ملف إكسل بنجاح!";
                 default: return value;
             }
         }
@@ -832,7 +837,8 @@ namespace YamyProject
 
         private void btnPrint_Click(object sender, EventArgs e)
         {
-            string companyName = "Journal Transactions";
+            bool arabic = IsArabicJournal();
+            string companyName = arabic ? "معاملات اليومية" : "Journal Transactions";
 
             // Create PDF document
             Document doc = new Document();
@@ -863,8 +869,8 @@ namespace YamyProject
             center.Format.Font.Name = "Times New Roman";
             center.Format.Alignment = ParagraphAlignment.Center;
             center.AddFormattedText(companyName.ToUpper() + "\n", TextFormat.Bold).Font.Size = 12;
-            center.AddFormattedText("Journal Transactions\n", TextFormat.Bold).Font.Size = 12;
-            center.AddFormattedText("All Transactions", TextFormat.NotBold).Font.Size = 9;
+            center.AddFormattedText((arabic ? "معاملات اليومية" : "Journal Transactions") + "\n", TextFormat.Bold).Font.Size = 12;
+            center.AddFormattedText(arabic ? "جميع المعاملات" : "All Transactions", TextFormat.NotBold).Font.Size = 9;
 
             //section.Add(headerTable);
 
@@ -892,15 +898,11 @@ namespace YamyProject
                 Unit.FromCentimeter(2)); // Total
             Row header = dataTable.AddRow();
             header.Shading.Color = Colors.LightGray;
-            header.Cells[0].AddParagraph("SN").Format.Font.Bold = true;
-            header.Cells[1].AddParagraph("Ref Id").Format.Font.Bold = true;
-            header.Cells[2].AddParagraph("Date").Format.Font.Bold = true;
-            header.Cells[3].AddParagraph("Type").Format.Font.Bold = true;
-            header.Cells[4].AddParagraph("A/C Code").Format.Font.Bold = true;
-            header.Cells[5].AddParagraph("A/C Name").Format.Font.Bold = true;
-            header.Cells[6].AddParagraph("Description").Format.Font.Bold = true;
-            header.Cells[7].AddParagraph("Debit").Format.Font.Bold = true;
-            header.Cells[8].AddParagraph("Credit").Format.Font.Bold = true;
+            string[] pdfHeaders = arabic
+                ? new[] { "م", "رقم المرجع", "التاريخ", "النوع", "رمز الحساب", "اسم الحساب", "الوصف", "مدين", "دائن" }
+                : new[] { "SN", "Ref Id", "Date", "Type", "A/C Code", "A/C Name", "Description", "Debit", "Credit" };
+            for (int i = 0; i < pdfHeaders.Length; i++)
+                header.Cells[i].AddParagraph(pdfHeaders[i]).Format.Font.Bold = true;
 
             foreach (DataGridViewRow row in dgvJournal.Rows)
             {
@@ -920,8 +922,12 @@ namespace YamyProject
             // Ask user to save file
             using (SaveFileDialog saveDialog = new SaveFileDialog())
             {
-                saveDialog.Filter = "PDF Files (*.pdf)|*.pdf";
-                saveDialog.Title = "Save Journal Transactions";
+                saveDialog.Filter = arabic
+                    ? "ملفات PDF (*.pdf)|*.pdf"
+                    : "PDF Files (*.pdf)|*.pdf";
+                saveDialog.Title = arabic
+                    ? "حفظ معاملات اليومية"
+                    : "Save Journal Transactions";
                 saveDialog.FileName = "JournalTransactions.pdf";
 
                 if (saveDialog.ShowDialog() == DialogResult.OK)
@@ -937,10 +943,15 @@ namespace YamyProject
 
         private void btnExcel_Click(object sender, EventArgs e)
         {
+            bool arabic = IsArabicJournal();
             using (SaveFileDialog saveDialog = new SaveFileDialog())
             {
-                saveDialog.Filter = "Excel Files (*.xlsx)|*.xlsx";
-                saveDialog.Title = "Save Excel File";
+                saveDialog.Filter = arabic
+                    ? "ملفات Excel (*.xlsx)|*.xlsx"
+                    : "Excel Files (*.xlsx)|*.xlsx";
+                saveDialog.Title = arabic
+                    ? "حفظ ملف Excel"
+                    : "Save Excel File";
                 saveDialog.FileName = "JournalTransactions.xlsx";
 
                 if (saveDialog.ShowDialog() == DialogResult.OK)
@@ -949,19 +960,21 @@ namespace YamyProject
                     excelApp.Visible = false;
                     var workbook = excelApp.Workbooks.Add(Type.Missing);
                     var worksheet = (Microsoft.Office.Interop.Excel.Worksheet)workbook.Sheets[1];
-                    worksheet.Name = "Journal Transactions";
+                    worksheet.Name = arabic ? "معاملات اليومية" : "Journal Transactions";
 
                     // Header row (Date)
                     Microsoft.Office.Interop.Excel.Range headerRange = worksheet.Range["A1", "C1"];
                     headerRange.Merge();
-                    headerRange.Value = "Date: " + DateTime.Now.ToString("MMM dd, yyyy");
+                    headerRange.Value = (arabic ? "التاريخ: " : "Date: ") + DateTime.Now.ToString("MMM dd, yyyy");
                     headerRange.Font.Bold = true;
                     headerRange.Font.Name = "Times New Roman";
                     headerRange.Font.Size = 10;
                     headerRange.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
 
                     // Column headers
-                    string[] columnHeaders = { "SN", "Ref Id", "Date", "Type", "A/C Code", "A/C Name", "Description", "Debit", "Credit" };
+                    string[] columnHeaders = arabic
+                        ? new[] { "م", "رقم المرجع", "التاريخ", "النوع", "رمز الحساب", "اسم الحساب", "الوصف", "مدين", "دائن" }
+                        : new[] { "SN", "Ref Id", "Date", "Type", "A/C Code", "A/C Name", "Description", "Debit", "Credit" };
                     for (int i = 0; i < columnHeaders.Length; i++)
                     {
                         worksheet.Cells[2, i + 1] = columnHeaders[i];
@@ -995,7 +1008,11 @@ namespace YamyProject
                     workbook.Close(false);
                     excelApp.Quit();
 
-                    MessageBox.Show("Excel exported successfully!", "Export", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show(
+                        arabic ? "تم تصدير ملف Excel بنجاح!" : "Excel exported successfully!",
+                        arabic ? "تصدير" : "Export",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
                 }
             }
         }
