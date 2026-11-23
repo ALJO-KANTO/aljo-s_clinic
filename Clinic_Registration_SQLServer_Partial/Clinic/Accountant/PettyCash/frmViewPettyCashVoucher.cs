@@ -1545,7 +1545,7 @@ namespace YamyProject
                          categoryName.ToLower().Contains("receipt") ||
                          categoryName.ToLower().Contains("customer"))
                 {
-                    query = @"SELECT id, CONCAT(CODE ,' - ' , NAME) as NAME FROM tbl_customer";
+                    query = @"SELECT PersonID id, CONCAT(PersonID ,' - ' , fullNAME) as NAME FROM persons";
                 }
                 else if (categoryName.ToLower().Contains("salary") ||
                          categoryName.ToLower().Contains("employee"))

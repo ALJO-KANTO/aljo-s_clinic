@@ -419,10 +419,10 @@ public static class BindCombos
 
     public static Guna2ComboBox PopulateCustomers(Guna2ComboBox cmb, bool isAddOption = false, bool forceRefresh = false)
     {
-        string query = "SELECT CONCAT(CODE ,' - ' , NAME) as name , id FROM tbl_customer";
+        string query = "SELECT CONCAT(PersonID ,' - ' , fullNAME) as name ,PersonID id FROM persons";
         BindComboBox(cmb, query, "id", "name", isAddOption, "0", "<< Add >>", forceRefresh);
         return cmb;
-        //DataTable dt = ClinicDatabase.ExecuteDataTable("SELECT CONCAT(CODE ,' - ' , NAME) as NAME ,id FROM tbl_customer");
+        //DataTable dt = ClinicDatabase.ExecuteDataTable("SELECT CONCAT(CODE ,' - ' , NAME) as NAME ,id FROM persons");
         //if (isAddOption)
         //{
         //    // Add the "<< Add >>" row at the top
@@ -438,13 +438,13 @@ public static class BindCombos
     }
     public static ComboBox PopulateCustomers(ComboBox cmb, bool isAddOption = false, bool forceRefresh = false)
     {
-        string query = "SELECT id,code,name FROM tbl_customer";
+        string query = "SELECT 0 id,'' code,'' name";
         BindComboBox(cmb, query, "id", "name", isAddOption, "0", "<< Add >>", forceRefresh);
         return cmb;
     }
     public static ComboBox PopulateSoledCustomers(ComboBox cmb, bool isAddOption = false, bool forceRefresh = false)
     {
-        string query = "SELECT id,code,name FROM tbl_customer where id IN (SELECT customer_id from tbl_sales)";
+        string query = "SELECT PersonID id,PersonID code,fullname name FROM persons where PersonID IN (SELECT p.PersonID from bills b INNER JOIN patients p ON b.patientId = p.PatientID)";
         BindComboBox(cmb, query, "id", "name", isAddOption, "0", "<< Add >>", forceRefresh);
         return cmb;
     }
@@ -469,10 +469,10 @@ public static class BindCombos
     }
     public static CheckedListBox PopulateListCustomer(CheckedListBox lst, bool isAddOption = false, bool forceRefresh = false)
     {
-        string query = "SELECT CONCAT(CODE ,' - ' , name) as NAME ,id FROM tbl_customer";
+        string query = "SELECT CONCAT(PersonID ,' - ' , fullname) as NAME ,PersonID id FROM persons";
         BindCheckedListBox(lst, query, "id", "name", isAddOption, "0", "<< Add >>", forceRefresh);
         return lst;
-        //DataTable dt = ClinicDatabase.ExecuteDataTable("SELECT CONCAT(CODE ,' - ' , name) as NAME ,id FROM tbl_customer");
+        //DataTable dt = ClinicDatabase.ExecuteDataTable("SELECT CONCAT(CODE ,' - ' , name) as NAME ,id FROM persons");
         //if (isAddOption)
         //{
         //    // Add the "<< Add >>" row at the top
@@ -492,7 +492,7 @@ public static class BindCombos
         string query = "SELECT CONCAT(CODE ,' - ' , name) as name ,id FROM tbl_projects";
         BindCheckedListBox(lst, query, "id", "name", isAddOption, "0", "<< Add >>", forceRefresh);
         return lst;
-        //DataTable dt = ClinicDatabase.ExecuteDataTable("SELECT CONCAT(CODE ,' - ' , name) as NAME ,id FROM tbl_customer");
+        //DataTable dt = ClinicDatabase.ExecuteDataTable("SELECT CONCAT(CODE ,' - ' , name) as NAME ,id FROM persons");
         //if (isAddOption)
         //{
         //    // Add the "<< Add >>" row at the top
@@ -1729,7 +1729,7 @@ public static class BindDataTable
     //    LoadTable(ref tableAccount2, "SELECT * FROM tbl_coa_level_2");
     //    LoadTable(ref tableAccount3, "SELECT * FROM tbl_coa_level_3");
     //    LoadTable(ref tableAccount4, "SELECT * FROM tbl_coa_level_4");
-    //    LoadTable(ref tableCustomers, "SELECT * FROM tbl_customer");
+    //    LoadTable(ref tableCustomers, "SELECT * FROM persons");
     //    LoadTable(ref tableCustomerCategory, "SELECT * FROM tbl_customer_category");
     //    LoadTable(ref tableDepartments, "SELECT * FROM tbl_departments");
     //    LoadTable(ref tableEmployee, "SELECT * FROM tbl_employee");
@@ -1773,7 +1773,7 @@ public static class BindDataTable
     //    var cached = CacheManager<DataTable>.Get("customers");
     //    if (cached != null) return cached;
 
-    //    string query = "SELECT id, code, name FROM tbl_customer";
+    //    string query = "SELECT id, code, name FROM persons";
     //    DataTable dt = ClinicDatabase.ExecuteDataTable(query);
 
     //    CacheManager<DataTable>.Set("customers", dt, TimeSpan.FromMinutes(10));

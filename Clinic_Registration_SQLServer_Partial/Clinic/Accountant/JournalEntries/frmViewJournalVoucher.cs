@@ -176,7 +176,7 @@ namespace YamyProject
                              UNION ALL
                              SELECT id,CONCAT(CODE ,' - ' , NAME) as NAME FROM tbl_vendor
                              UNION ALL
-                             SELECT id,CONCAT(CODE,' - ', NAME) as NAME FROM tbl_customer";
+                             SELECT personid id,CONCAT(personid,' - ', fullNAME) as NAME FROM persons";
 
             if(dgvJV.CurrentRow != null && dgvJV.CurrentRow.Cells["account_name"].Value != null)
             {
@@ -193,7 +193,7 @@ namespace YamyProject
                     param = string.IsNullOrEmpty(accountName) ? "" : accountName;
                     query = @"SELECT id,CONCAT(CODE ,' - ' , NAME) as NAME FROM tbl_vendor WHERE account_id = (SELECT id FROM tbl_coa_level_4 WHERE NAME = @accountName)
                             UNION ALL
-                            SELECT id,CONCAT(CODE,' - ', NAME) as NAME FROM tbl_customer WHERE account_id = (SELECT id FROM tbl_coa_level_4 WHERE NAME = @accountName)
+                            SELECT PersonID id,CONCAT(PersonID,' - ', fullNAME) as NAME FROM persons WHERE PersonID <0
                             UNION ALL
                             SELECT id,CONCAT(CODE ,' - ' , Name) as NAME FROM tbl_employee WHERE account_id = (SELECT id FROM tbl_coa_level_4 WHERE NAME = @accountName)";
                 }

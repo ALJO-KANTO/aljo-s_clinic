@@ -227,6 +227,11 @@ namespace YamyProject.UI.Reports.Accountant
 
                 if (!dynamicControl)
                 {
+                    // Skip date controls completely.
+                    if (control is DateTimePicker ||
+                        control is Guna.UI2.WinForms.Guna2DateTimePicker)
+                        return;
+
                     if (!_ledgerOriginalTexts.ContainsKey(control))
                         _ledgerOriginalTexts[control] = control.Text;
 

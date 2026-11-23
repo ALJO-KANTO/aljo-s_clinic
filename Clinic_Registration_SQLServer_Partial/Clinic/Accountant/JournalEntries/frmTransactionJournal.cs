@@ -104,7 +104,7 @@ namespace YamyProject
         //                     UNION ALL
         //                     SELECT id,CONCAT(CODE ,' - ' , NAME) as NAME FROM tbl_vendor
         //                     UNION ALL
-        //                     SELECT id,CONCAT(CODE,' - ', NAME) as NAME FROM tbl_customer";
+        //                     SELECT id,CONCAT(CODE,' - ', NAME) as NAME FROM persons";
 
         //    if (buttonColumn.Value == null || buttonColumn.Value.ToString() == "")
         //    {
@@ -233,7 +233,7 @@ namespace YamyProject
                     humId = string.IsNullOrEmpty(dr_details["hum_id"].ToString()) ? int.Parse(dr_details["hum_id"].ToString()) : 0;
                     
                     string tableName = "tbl_coa_level_4";
-                    tableName = helper.IsCustomer(type) ? "tbl_customer" : helper.IsVendor(type) ? "tbl_vendor" : helper.IsEmployee(type) ? "tbl_employee" : tableName;
+                    tableName = helper.IsCustomer(type) ? "persons" : helper.IsVendor(type) ? "tbl_vendor" : helper.IsEmployee(type) ? "tbl_employee" : tableName;
                     currenthumId = humId.ToString();
                     currentVoucherDate = dtJV.Value.ToShortDateString();
                     if (!string.IsNullOrEmpty(type))
@@ -343,8 +343,8 @@ namespace YamyProject
                     string type = currentVoucherName, query = "";
                     if (type == ("Customer Opening Balance"))
                     {
-                        var q = @"UPDATE tbl_customer SET account_id = @acId where id = @hId";
-                        ClinicDatabase.ExecuteNonQuery(q, ClinicDatabase.CreateParameterNew("hId", humId), ClinicDatabase.CreateParameterNew("acId", accountId));
+                        //var q = @"UPDATE persons SET account_id = @acId where id = @hId";
+                        //ClinicDatabase.ExecuteNonQuery(q, ClinicDatabase.CreateParameterNew("hId", humId), ClinicDatabase.CreateParameterNew("acId", accountId));
                     }
                     else if (type == ("Vendor Opening Balance"))
                     {
@@ -421,7 +421,7 @@ namespace YamyProject
             string query = "";
             if (type == ("Customer Opening Balance"))
             {
-                query = @"UPDATE tbl_customer SET Balance='" + _amount + "' where id='" + _humId + "'";
+                //query = @"UPDATE persons SET Balance='" + _amount + "' where id='" + _humId + "'";
             }
             else if (type == ("Vendor Opening Balance"))
             {
@@ -856,7 +856,7 @@ public class TransactionHelper
     {
         if (type == ("Customer Opening Balance"))
         {
-            return "tbl_customer";
+            return "persons";
         }
         else if (type == ("Vendor Opening Balance"))
         {

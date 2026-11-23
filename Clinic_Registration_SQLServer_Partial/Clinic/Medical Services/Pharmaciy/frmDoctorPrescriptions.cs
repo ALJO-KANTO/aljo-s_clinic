@@ -516,6 +516,17 @@ namespace Clinic.Medical_Services.Pharmaciy
 
         private void btnSendToAccounting_Click(object sender, EventArgs e)
         {
+            if (dgPrescriptionDetails.DataSource == null)
+            {
+                MessageBox.Show(
+                    "Please select a pending prescription before sending to billing.",
+                    "No Prescription Selected",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
+                return;
+            }
+
             dgPrescriptionDetails.EndEdit();
             this.BindingContext[dgPrescriptionDetails.DataSource].EndCurrentEdit();
 

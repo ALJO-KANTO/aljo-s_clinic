@@ -48,9 +48,24 @@ namespace YamyProject
         private void BindData()
         {
             string query = "select a as 'Name';";
-            if (type == "Customer")
+            if (type == "Person")
             {
-                query= @"SELECT code,name,balance debit,0 credit,main_phone phone,mobile,email,IFNULL((SELECT NAME FROM tbl_country WHERE id=country),'') country,IFNULL((SELECT NAME FROM tbl_city WHERE id=city),'') city,trn TRN,building_name FROM tbl_customer";
+                query = @"
+                        SELECT
+                            p.PersonID AS code,
+                            p.FullName AS name,
+                            0 AS debit,
+                            0 AS credit,
+                            p.PhoneNumber AS phone,
+                            '' AS mobile,
+                            IFNULL(p.Email, '') AS email,
+                            IFNULL(c.CountryName, '') AS country,
+                            '' AS city,
+                            '' AS TRN,
+                            IFNULL(p.Address, '') AS building_name
+                        FROM persons p
+                        LEFT JOIN tbl_country c
+                            ON c.CountryID = p.NationalityCountryID";
             }
             else if (type == "Vendor")
             {
@@ -72,13 +87,7 @@ namespace YamyProject
             int code = 0;
             if (type == "Customer")
             {
-                using (var reader = ClinicDatabase.ExecuteReader("SELECT MAX(CAST(code AS UNSIGNED)) AS lastCode FROM tbl_customer"))
-                {
-                    if (reader.Read() && reader["lastCode"] != DBNull.Value)
-                        code = int.Parse(reader["lastCode"].ToString());
-                    else
-                        code = 10001;
-                }
+                code = 0;
             }
             if (type == "Vendor")
             {
@@ -154,89 +163,123 @@ namespace YamyProject
                         credit = credit.Replace(",", "");
                         if (type == "Customer")
                         {
-                            using (var reader = ClinicDatabase.ExecuteReader("SELECT 1 FROM tbl_customer WHERE name = @name", ClinicDatabase.CreateParameterNew("name", name)))
+                            using (var reader = ClinicDatabase.ExecuteReader(
+                                "SELECT 1 FROM persons WHERE FullName = @name",
+                                ClinicDatabase.CreateParameterNew("name", name)))
                             {
                                 if (!reader.Read())
                                 {
-                                    int countryId = 0, cityId = 0;
-                                    if (!string.IsNullOrEmpty(country) && !string.IsNullOrEmpty(city))
+                                    int countryId = 0;
+
+                                    if (!string.IsNullOrEmpty(country))
                                     {
-                                        DataRow[] rows1 = BindDataTable.tableCountries.Select($"name = '{country}'");
+                                        DataRow[] rows1 = BindDataTable.tableCountries.Select(
+                                            $"name = '{country.Replace("'", "''")}'");
+
                                         if (rows1.Length > 0)
                                         {
                                             countryId = Convert.ToInt32(rows1[0]["id"]);
-                                            DataRow[] rows2 = BindDataTable.tableCities.Select($"name = '{city}'");
-                                            if (rows2.Length > 0)
-                                            {
-                                                cityId = Convert.ToInt32(rows2[0]["id"]);
-                                            }
-                                            else
-                                            {
-                                                cityId = Convert.ToInt32(ClinicDatabase.ExecuteScalar("INSERT INTO tbl_city (name,country_id) VALUES (@name,@cId);SELECT LAST_INSERT_ID();",
-                                                ClinicDatabase.CreateParameterNew("name", city),
-                                                ClinicDatabase.CreateParameterNew("cId", countryId)).ToString());
-                                            }
                                         }
                                     }
-                                    int customerId = Convert.ToInt32(ClinicDatabase.ExecuteScalar(@"INSERT INTO tbl_customer (code, NAME, Cat_id, Balance, DATE, 
-                                                main_phone, work_phone, mobile, email, ccemail, website, country, city, region, building_name, account_id, 
-                                                trn, facilty_name, active, created_by, created_date, state) 
-                                                VALUES(@code, @name, @cat_id, @balance, @date, @main_phone, @work_phone, @mobile, @email, @ccemail, @website, 
-                                                @country, @city, @region, @building_name, @account_id, @trn, @facilty_name, @active, @created_by, @created_date, @state);
-                                                SELECT LAST_INSERT_ID();",
-                                                        ClinicDatabase.CreateParameterNew("code", code),
-                                                        ClinicDatabase.CreateParameterNew("name", name),
-                                                        ClinicDatabase.CreateParameterNew("cat_id", 0),
-                                                        ClinicDatabase.CreateParameterNew("balance", decimal.Parse(debit) - decimal.Parse(credit)),
-                                                        ClinicDatabase.CreateParameterNew("date", dtpDate.Value.Date),
-                                                        ClinicDatabase.CreateParameterNew("main_phone", phone),
-                                                        ClinicDatabase.CreateParameterNew("work_phone", ""),
-                                                        ClinicDatabase.CreateParameterNew("mobile", mobile),
-                                                        ClinicDatabase.CreateParameterNew("email", email),
-                                                        ClinicDatabase.CreateParameterNew("ccemail", ""),
-                                                        ClinicDatabase.CreateParameterNew("website", ""),
-                                                        ClinicDatabase.CreateParameterNew("country", countryId),
-                                                        ClinicDatabase.CreateParameterNew("city", cityId),
-                                                        ClinicDatabase.CreateParameterNew("region", ""),
-                                                        ClinicDatabase.CreateParameterNew("building_name", buildingName),
-                                                        ClinicDatabase.CreateParameterNew("account_id", accountId),
-                                                        ClinicDatabase.CreateParameterNew("trn", TRN),
-                                                        ClinicDatabase.CreateParameterNew("facilty_name", ""),
-                                                        ClinicDatabase.CreateParameterNew("active", 0),
-                                                        ClinicDatabase.CreateParameterNew("created_by", -1),
-                                                        ClinicDatabase.CreateParameterNew("created_date", DateTime.Now.Date),
-                                                        ClinicDatabase.CreateParameterNew("state", 0)));
 
-                                    //Utilities.LogAudit(-1, "Add Opening Balance", "Opening Balance", customerId, "Added Opening Balance for Customer: " + name);
-                                    if (customerId > 0)
+                                    int personId = Convert.ToInt32(
+                                        ClinicDatabase.ExecuteScalar(@"
+                                            INSERT INTO persons
+                                            (
+                                                FullName,
+                                                DateOfBirth,
+                                                Gender,
+                                                PhoneNumber,
+                                                Email,
+                                                Address,
+                                                NationalityCountryID,
+                                                CreatedAt
+                                            )
+                                            VALUES
+                                            (
+                                                @name,
+                                                '2000-01-01',
+                                                0,
+                                                @phone,
+                                                @email,
+                                                @address,
+                                                @countryId,
+                                                @createdAt
+                                            );
+
+                                            SELECT LAST_INSERT_ID();",
+
+                                            ClinicDatabase.CreateParameterNew("name", name),
+                                            ClinicDatabase.CreateParameterNew("phone", phone),
+                                            ClinicDatabase.CreateParameterNew("email", email),
+                                            ClinicDatabase.CreateParameterNew("address", buildingName),
+                                            ClinicDatabase.CreateParameterNew("countryId", countryId),
+                                            ClinicDatabase.CreateParameterNew("createdAt", DateTime.Now)
+                                        )
+                                    );
+
+                                    if (personId > 0)
                                     {
-                                        decimal creditAmount = decimal.Parse(credit);
-                                        decimal debitAmount = decimal.Parse(debit);
+                                        //decimal creditAmount = decimal.Parse(credit);
+                                        //decimal debitAmount = decimal.Parse(debit);
 
-                                        if (creditAmount != 0)
-                                        {
-                                            CommonInsert.InsertTransactionEntry(dtpDate.Value.Date, openingBalanceEquity, creditAmount.ToString(), "0",
-                                                customerId.ToString(), "0", "Customer Opening Balance", "Opening Balance Equity - Customer Code - " + formattedCode, -1, DateTime.Now.Date);
+                                        //if (creditAmount != 0)
+                                        //{
+                                        //    CommonInsert.InsertTransactionEntry(
+                                        //        dtpDate.Value.Date,
+                                        //        openingBalanceEquity,
+                                        //        creditAmount.ToString(),
+                                        //        "0",
+                                        //        personId.ToString(),
+                                        //        "0",
+                                        //        "Customer Opening Balance",
+                                        //        "Opening Balance Equity - Person ID - " + personId,
+                                        //        -1,
+                                        //        DateTime.Now.Date);
 
-                                            CommonInsert.InsertTransactionEntry(dtpDate.Value.Date, accountId, "0", creditAmount.ToString(),
-                                                customerId.ToString(), customerId.ToString(), "Customer Opening Balance", "Opening Balance - Customer Code - " + formattedCode, -1, DateTime.Now.Date);
+                                        //    CommonInsert.InsertTransactionEntry(
+                                        //        dtpDate.Value.Date,
+                                        //        accountId,
+                                        //        "0",
+                                        //        creditAmount.ToString(),
+                                        //        personId.ToString(),
+                                        //        personId.ToString(),
+                                        //        "Customer Opening Balance",
+                                        //        "Opening Balance - Person ID - " + personId,
+                                        //        -1,
+                                        //        DateTime.Now.Date);
+                                        //}
 
-                                        }
+                                        //if (debitAmount != 0)
+                                        //{
+                                        //    CommonInsert.InsertTransactionEntry(
+                                        //        dtpDate.Value.Date,
+                                        //        openingBalanceEquity,
+                                        //        "0",
+                                        //        debitAmount.ToString(),
+                                        //        personId.ToString(),
+                                        //        "0",
+                                        //        "Customer Opening Balance",
+                                        //        "Opening Balance Equity - Person ID - " + personId,
+                                        //        -1,
+                                        //        DateTime.Now.Date);
 
-                                        if (debitAmount != 0)
-                                        {
-                                            CommonInsert.InsertTransactionEntry(dtpDate.Value.Date, openingBalanceEquity, "0", debitAmount.ToString(),
-                                                customerId.ToString(), "0", "Customer Opening Balance", "Opening Balance Equity - Customer Code - " + formattedCode, -1, DateTime.Now.Date);
-
-                                            CommonInsert.InsertTransactionEntry(dtpDate.Value.Date, accountId, debitAmount.ToString(), "0",
-                                                customerId.ToString(), customerId.ToString(), "Customer Opening Balance", "Opening Balance - Customer Code - " + formattedCode, -1, DateTime.Now.Date);
-                                        }
+                                        //    CommonInsert.InsertTransactionEntry(
+                                        //        dtpDate.Value.Date,
+                                        //        accountId,
+                                        //        debitAmount.ToString(),
+                                        //        "0",
+                                        //        personId.ToString(),
+                                        //        personId.ToString(),
+                                        //        "Customer Opening Balance",
+                                        //        "Opening Balance - Person ID - " + personId,
+                                        //        -1,
+                                        //        DateTime.Now.Date);
+                                        //}
                                     }
-                                    formattedCode++;
                                 }
                             }
                         }
-
                         else if (type == "Vendor")
                         {
                             using (var reader = ClinicDatabase.ExecuteReader("SELECT 1 FROM tbl_vendor WHERE type='Vendor' AND name = @name", ClinicDatabase.CreateParameterNew("name", name)))
