@@ -139,7 +139,6 @@ namespace YamyProject
                                 LPAD(transaction_id, 4, '0') as `Ref Id`,
                                 tbl_transaction.date, tbl_transaction.transaction_id,tbl_transaction.type `Type`,  tbl_coa_level_4.code AS 'A/C CODE', 
                                 tbl_coa_level_4.name AS 'A/C NAME', tbl_transaction.description AS Description, 
-<<<<<<< HEAD
                                 tbl_transaction.debit AS DEBIT, tbl_transaction.credit AS CREDIT, tbl_customer.name AS Partner
                                 FROM tbl_transaction  INNER JOIN tbl_coa_level_4 ON tbl_transaction.account_id = tbl_coa_level_4.id 
                                 INNER JOIN tbl_sales ON tbl_transaction.transaction_id = tbl_sales.id INNER JOIN 
@@ -147,13 +146,6 @@ namespace YamyProject
                                 parameters.ToArray());
                 decimal totalDebit = dt.AsEnumerable().Sum(row => row.Field<decimal>("debit"));
                 decimal totalCredit = dt.AsEnumerable().Sum(row => row.Field<decimal>("credit"));
-=======
-                                '' AS Partner
-                                FROM tbl_transaction  INNER JOIN tbl_coa_level_4 ON tbl_transaction.account_id = tbl_coa_level_4.id",
-                                        parameters.ToArray());
-                        decimal totalDebit = dt.AsEnumerable().Sum(row => row.Field<decimal>("debit"));
-                        decimal totalCredit = dt.AsEnumerable().Sum(row => row.Field<decimal>("credit"));
->>>>>>> d3c926ec144efbf1c8187d99964399581ea530a6
 
                 dt.Rows.Add(null, null, null, null, null, null, null, "TOTAL", totalDebit, totalCredit);
                 dgvJournal.DataSource = dt;
@@ -168,7 +160,6 @@ namespace YamyProject
                                 LPAD(transaction_id, 4, '0') as `Ref Id`,
                                 tbl_transaction.date, tbl_transaction.transaction_id,tbl_transaction.type `Type`,  tbl_coa_level_4.code AS 'A/C CODE', 
                                 tbl_coa_level_4.name AS 'A/C NAME', tbl_transaction.description AS Description, 
-<<<<<<< HEAD
                                 tbl_transaction.debit AS DEBIT, tbl_transaction.credit AS CREDIT, tbl_customer.name AS Partner
                                 FROM tbl_transaction  INNER JOIN tbl_coa_level_4 ON tbl_transaction.account_id = tbl_coa_level_4.id 
                                 INNER JOIN tbl_sales_return ON tbl_transaction.transaction_id = tbl_sales_return.id INNER JOIN 
@@ -176,13 +167,6 @@ namespace YamyProject
                                 parameters.ToArray());
                 decimal totalDebit = dt.AsEnumerable().Sum(row => row.Field<decimal>("debit"));
                 decimal totalCredit = dt.AsEnumerable().Sum(row => row.Field<decimal>("credit"));
-=======
-                                '' AS Partner
-                                FROM tbl_transaction  INNER JOIN tbl_coa_level_4 ON tbl_transaction.account_id = tbl_coa_level_4.id",
-                                        parameters.ToArray());
-                        decimal totalDebit = dt.AsEnumerable().Sum(row => row.Field<decimal>("debit"));
-                        decimal totalCredit = dt.AsEnumerable().Sum(row => row.Field<decimal>("credit"));
->>>>>>> d3c926ec144efbf1c8187d99964399581ea530a6
 
                 dt.Rows.Add(null, null, null, null, null, null, null, "TOTAL", totalDebit, totalCredit);
                 dgvJournal.DataSource = dt;
@@ -275,7 +259,6 @@ namespace YamyProject
                 decimal totalDebit = dt.AsEnumerable().Sum(row => row.Field<decimal>("debit"));
                 decimal totalCredit = dt.AsEnumerable().Sum(row => row.Field<decimal>("credit"));
 
-<<<<<<< HEAD
                 dt.Rows.Add(null, null, null, null, null, null, null, "TOTAL", totalDebit, totalCredit);
                 dgvJournal.DataSource = dt;
                 dgvJournal.Columns["sn"].Width = 50;
@@ -320,52 +303,6 @@ namespace YamyProject
             else if (type.ToLower() == "journal")
             {
                 dt = ClinicDatabase.ExecuteDataTable(@"SELECT 
-=======
-                        dt.Rows.Add(null, null, null, null, null, null, null, "TOTAL", totalDebit, totalCredit);
-                        dgvJournal.DataSource = dt;
-                        dgvJournal.Columns["sn"].Width = 50;
-                        dgvJournal.Columns["A/C NAME"].AutoSizeMode = dgvJournal.Columns["Type"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                        dgvJournal.Columns["transaction_id"].Visible = dgvJournal.Columns["Description"].Visible = false;
-                    }
-                    else if (type.ToLower() == "receipt")
-                    {
-                        //dt = ClinicDatabase.ExecuteDataTable(@"SELECT 
-                        //         ROW_NUMBER() OVER (
-                        //        ORDER BY tbl_transaction.date) AS `SN`,
-                        //                                        LPAD(transaction_id, 4, '0') as `Ref Id`,
-                        //         tbl_transaction.date, tbl_transaction.transaction_id,tbl_transaction.type `Type`,  tbl_coa_level_4.code AS 'A/C CODE', 
-                        //         tbl_coa_level_4.name AS 'A/C NAME', tbl_transaction.description AS Description, 
-                        //         tbl_transaction.debit AS DEBIT, tbl_transaction.credit AS CREDIT, CASE WHEN tbl_receipt_voucher.type = 'Customer' THEN (
-                        //        SELECT name
-                        //        FROM persons
-                        //        WHERE personid=(
-                        //        SELECT hum_id
-                        //        FROM tbl_receipt_voucher_details
-                        //        WHERE payment_id = tbl_receipt_voucher.id limit 1)) WHEN tbl_receipt_voucher.type = 'General' THEN (
-                        //        SELECT name
-                        //        FROM tbl_coa_level_4
-                        //        WHERE id=(
-                        //        SELECT hum_id
-                        //        FROM tbl_receipt_voucher_details
-                        //        WHERE payment_id = tbl_receipt_voucher.id)) ELSE '' END Partner
-                        //        FROM tbl_transaction
-                        //        INNER JOIN tbl_coa_level_4 ON tbl_transaction.account_id = tbl_coa_level_4.id
-                        //        INNER JOIN tbl_receipt_voucher ON tbl_transaction.transaction_id = tbl_receipt_voucher.id
-                        //        WHERE transaction_id= @id AND t_type = 'RECEIPT'",
-                        //                parameters.ToArray());
-                        //decimal totalDebit = dt.AsEnumerable().Sum(row => row.Field<decimal>("debit"));
-                        //decimal totalCredit = dt.AsEnumerable().Sum(row => row.Field<decimal>("credit"));
-
-                        //dt.Rows.Add(null, null, null, null, null, null, null, "TOTAL", totalDebit, totalCredit);
-                        //dgvJournal.DataSource = dt;
-                        //dgvJournal.Columns["sn"].Width = 50;
-                        //dgvJournal.Columns["A/C NAME"].AutoSizeMode = dgvJournal.Columns["Type"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                        //dgvJournal.Columns["transaction_id"].Visible = dgvJournal.Columns["Description"].Visible = false;
-                    }
-                    else if (type.ToLower() == "journal")
-                    {
-                        dt = ClinicDatabase.ExecuteDataTable(@"SELECT 
->>>>>>> d3c926ec144efbf1c8187d99964399581ea530a6
                                  ROW_NUMBER() OVER (
                                 ORDER BY tbl_transaction.date) AS `SN`,
                                                                 LPAD(transaction_id, 4, '0') as `Ref Id`,
