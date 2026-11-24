@@ -228,7 +228,7 @@ namespace Clinic
                     "Employee|Employee Balance Details|frmEmployeeBalanceDetails",
                     "Employee|Employee Balance Summary|frmEmployeeBalanceSummary",
                     "Employee|Employee Salary Report|frmEmployeeSalaryReport",
-                    "Inventory|Physical Inventory Worksheet|frmPhysicalInventoryWorksheet",
+                    "Inventory|Physical Inventory Worksheet|frmMedicineStockReport",
                     "PettyCash|Petty Cash Balance Detail EMP|frmPettyCashBalanceDetailEMP",
                     "PettyCash|Petty Cash Balance Details|frmPettyCashBalanceDetails",
                     "PettyCash|Petty Cash Detail EMP Transaction|frmPettyCashDetailEMPTransactions",
