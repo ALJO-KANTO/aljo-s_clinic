@@ -353,7 +353,7 @@
             this.TabPage1.Controls.Add(this.linkLabel2);
             // Person Information section is embedded at the top of Employee Information.
             this.pnlPersonInformation.BackColor = System.Drawing.Color.FromArgb(249, 249, 252);
-            this.pnlPersonInformation.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pnlPersonInformation.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.pnlPersonInformation.Location = new System.Drawing.Point(20, 12);
             this.pnlPersonInformation.Name = "pnlPersonInformation";
             this.pnlPersonInformation.Size = new System.Drawing.Size(1160, 440);
