@@ -155,11 +155,11 @@ namespace YamyProject
 
                 LocalizationManager.LocalizeForm(this);
 
-               // LocalizationManager.LocalizeDataGridViewHeaders(
-                    //
+                // LocalizationManager.LocalizeDataGridViewHeaders(
+                //
 
-               // LocalizationManager.LocalizeDataGridViewHeaders(
-                   //
+                // LocalizationManager.LocalizeDataGridViewHeaders(
+                //
 
                 // =====================================================
                 // EXISTING DIRECTION LOGIC
@@ -181,80 +181,10 @@ namespace YamyProject
                         ? "جاري إنهاء التحميل..."
                         : "Finishing...");
 
-                SuspendLayout();
-
-                try
-                {
-                    PerformLayout();
-
-                    if (_modernDirectory != null)
-                    {
-                        _modernDirectory.PerformLayout();
-                    }
-
-                    if (_employeeCards != null)
-                    {
-                        _employeeCards.PerformLayout();
-                    }
-
-                    if (_departmentList != null)
-                    {
-                        _departmentList.PerformLayout();
-                    }
-                }
-                finally
-                {
-                    ResumeLayout(true);
-                }
-
-                // Allow queued layout operations to finish.
+                // Avoid repeated full-tree layouts, forced repaints and
+                // Application.DoEvents() while the loading overlay is visible.
+                // WinForms performs the required layout during normal painting.
                 await Task.Yield();
-
-                Application.DoEvents();
-
-                // =====================================================
-                // NOW SHOW THE COMPLETED PAGE
-                // =====================================================
-                // =====================================================
-                // FINAL PAINT - STILL COMPLETELY COVERED BY LOADER
-                // =====================================================
-
-                _masterPageLoaded = true;
-
-                // The real MasterEmployee can now paint,
-                // but the full-screen loader is still above it.
-                this.Opacity = 1;
-
-                PerformLayout();
-
-                if (_modernDirectory != null)
-                {
-                    _modernDirectory.PerformLayout();
-                }
-
-                if (_employeeCards != null)
-                {
-                    _employeeCards.PerformLayout();
-                }
-
-                if (_departmentList != null)
-                {
-                    _departmentList.PerformLayout();
-                }
-
-                Invalidate(true);
-                Update();
-
-                if (_modernDirectory != null)
-                {
-                    _modernDirectory.Invalidate(true);
-                    _modernDirectory.Update();
-                }
-
-                Application.DoEvents();
-
-                // Give Windows one paint cycle while the cover is still visible.
-                await Task.Delay(80);
 
                 // =====================================================
                 // ONLY NOW IS THE PAGE REALLY READY
@@ -265,8 +195,7 @@ namespace YamyProject
                         ? "تم التحميل"
                         : "Ready");
 
-                // Keep 100% visible very briefly.
-                await Task.Delay(120);
+
             }
             catch (Exception ex)
             {
@@ -351,8 +280,8 @@ namespace YamyProject
             //}
             //catch
             //{
-                coverBounds =
-                    Screen.PrimaryScreen.WorkingArea;
+            coverBounds =
+                Screen.PrimaryScreen.WorkingArea;
             //}
 
             _masterLoadingThread =
@@ -1531,7 +1460,7 @@ namespace YamyProject
                 ClearEmployeerDetails();
             }
 
-           LocalizationManager.LocalizeDataGridViewHeaders(dgvCustomer);
+            LocalizationManager.LocalizeDataGridViewHeaders(dgvCustomer);
         }
         private void HideUnusedColumns()
         {
@@ -1653,7 +1582,7 @@ namespace YamyProject
                 column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
             }
 
-           // LocalizationManager.LocalizeDataGridViewHeaders(dgvTransactions);
+            // LocalizationManager.LocalizeDataGridViewHeaders(dgvTransactions);
         }
         private void AdjustColumnWidths()
         {
@@ -2697,13 +2626,19 @@ namespace YamyProject
             };
             content.Controls.Add(_employeeCards, 1, 0);
 
+            int lastCardViewportWidth = -1;
             _employeeCards.Resize += (s, e) =>
             {
+                int currentWidth = _employeeCards.ClientSize.Width;
+                if (currentWidth == lastCardViewportWidth)
+                    return;
+
+                lastCardViewportWidth = currentWidth;
                 if (_modernEmployees != null && IsHandleCreated && !IsDisposed)
                 {
                     BeginInvoke(new Action(() =>
                     {
-                        if (!IsDisposed)
+                        if (!IsDisposed && _employeeCards != null)
                             RenderEmployeeCards();
                     }));
                 }
@@ -2723,10 +2658,10 @@ namespace YamyProject
                         IFNULL(e.name,'') AS Name,
                         IFNULL(e.email,'') AS Email,
                         IFNULL(e.phone,'') AS Phone,
-                        IFNULL(p.name,'Unassigned') AS Department,
+                        IFNULL(NULLIF(TRIM(e.sRole), ''),'Unassigned') AS Department,
                         IFNULL(e.active,0) AS active
                     FROM tbl_employee e
-                    LEFT JOIN tbl_position p ON p.id = e.Position_id
+
                     ORDER BY e.name;";
 
                 _modernEmployees = ClinicDatabase.ExecuteDataTable(sql);

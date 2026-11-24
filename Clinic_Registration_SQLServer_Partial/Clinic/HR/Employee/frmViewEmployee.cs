@@ -406,6 +406,19 @@ namespace YamyProject
                 BindCombos.PopulateDepartments(cmbDepartments);
                 BindCombos.PopulateRegisterBanks(cmbBankName);
 
+                // Populate employee positions
+                int departmentId = cmbDepartments.SelectedValue == null
+                    ? 0
+                    : Convert.ToInt32(cmbDepartments.SelectedValue);
+
+                BindCombos.PopulatePositions(cmbPosition, departmentId);
+
+                // Load saved employee details when opening an existing employee
+                if (id > 0)
+                {
+                    BindEmployee();
+                }
+
                 // =====================================================
                 // KEEP THE REST OF YOUR CURRENT LOAD CODE HERE.
                 //
@@ -520,8 +533,8 @@ namespace YamyProject
 
                     object teacherCount = ClinicDatabase.ExecuteScalar(
                         @"SELECT COUNT(*)
-                          FROM tbl_school_teacher
-                          WHERE employee_id = @employee_id
+                          FROM tbl_employee
+                          WHERE id = @employee_id
                             AND state = 0;",
                         ClinicDatabase.CreateParameterNew("@employee_id", id));
 
@@ -539,13 +552,6 @@ namespace YamyProject
             {
                 if (insertEmployee())
                 {
-                    if (ChkTeacher.Checked)
-                    {
-                        SaveTeacher();
-                    }
-
-                    //.RefreshEmployee();
-
                     MessageBox.Show(
                         "Employee created successfully.",
                         "Success",
@@ -557,114 +563,18 @@ namespace YamyProject
                 }
             }
             else
+            {
                 if (updateEmployee())
-            {
-                if (ChkTeacher.Checked)
                 {
-                    SaveTeacher();
+                    MessageBox.Show(
+                        "Employee updated successfully.",
+                        "Success",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information
+                    );
+
+                    frmMain.openChildForm(new MasterEmployee());
                 }
-
-                //.RefreshEmployee();
-
-                MessageBox.Show(
-                    "Employee updated successfully.",
-                    "Success",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information
-                );
-
-                frmMain.openChildForm(new MasterEmployee());
-            }
-        }
-
-        private void SaveTeacher()
-        {
-            if (id <= 0)
-                return;
-
-            // Only the employee fields required for the School Teacher record
-            // are copied. The employee remains stored normally in tbl_employee.
-            object existingTeacherObj = ClinicDatabase.ExecuteScalar(
-                @"SELECT id
-                  FROM tbl_school_teacher
-                  WHERE employee_id = @employee_id
-                    AND state = 0
-                  LIMIT 1;",
-                ClinicDatabase.CreateParameterNew("@employee_id", id));
-
-            int teacherId = 0;
-            if (existingTeacherObj != null && existingTeacherObj != DBNull.Value)
-                int.TryParse(existingTeacherObj.ToString(), out teacherId);
-
-            if (teacherId > 0)
-            {
-                ClinicDatabase.ExecuteNonQuery(
-                    @"UPDATE tbl_school_teacher
-                      SET teacher_code = @teacher_code,
-                          full_name = @full_name,
-                          phone = @phone,
-                          modified_by = @modified_by,
-                          modified_date = @modified_date,
-                          LastModified = @last_modified,
-                          SyncStatus = 0,
-                          state = 0
-                      WHERE id = @id;",
-                    ClinicDatabase.CreateParameterNew("@teacher_code", txtEmployeeCode.Text.Trim()),
-                    ClinicDatabase.CreateParameterNew("@full_name", txtEmpName.Text.Trim()),
-                    ClinicDatabase.CreateParameterNew("@phone", txtPhoneNum.Text.Trim()),
-                    ClinicDatabase.CreateParameterNew("@modified_by", -1),
-                    ClinicDatabase.CreateParameterNew("@modified_date", DateTime.Now),
-                    ClinicDatabase.CreateParameterNew("@last_modified", DateTime.Now),
-                    ClinicDatabase.CreateParameterNew("@id", teacherId));
-            }
-            else
-            {
-                ClinicDatabase.ExecuteNonQuery(
-                    @"INSERT INTO tbl_school_teacher
-                      (
-                          employee_id,
-                          teacher_code,
-                          full_name,
-                          phone,
-                          status,
-                          created_by,
-                          created_date,
-                          modified_by,
-                          modified_date,
-                          state,
-                          GlobalId,
-                          DeviceId,
-                          LastModified,
-                          SyncStatus
-                      )
-                      VALUES
-                      (
-                          @employee_id,
-                          @teacher_code,
-                          @full_name,
-                          @phone,
-                          'Active',
-                          @created_by,
-                          @created_date,
-                          @modified_by,
-                          @modified_date,
-                          0,
-                          @global_id,
-                          @device_id,
-                          @last_modified,
-                          0
-                      );",
-                    ClinicDatabase.CreateParameterNew("@employee_id", id),
-                    ClinicDatabase.CreateParameterNew("@teacher_code", txtEmployeeCode.Text.Trim()),
-                    ClinicDatabase.CreateParameterNew("@full_name", txtEmpName.Text.Trim()),
-                    ClinicDatabase.CreateParameterNew("@phone", txtPhoneNum.Text.Trim()),
-                    ClinicDatabase.CreateParameterNew("@created_by", -1),
-                    ClinicDatabase.CreateParameterNew("@created_date", DateTime.Now),
-                    ClinicDatabase.CreateParameterNew("@modified_by", -1),
-                    ClinicDatabase.CreateParameterNew("@modified_date", DateTime.Now),
-                    ClinicDatabase.CreateParameterNew("@global_id", Guid.NewGuid().ToString()),
-                    ClinicDatabase.CreateParameterNew("@device_id", Utilities.MachineName),
-                    ClinicDatabase.CreateParameterNew("@last_modified", DateTime.Now));
             }
         }
 
@@ -696,7 +606,7 @@ namespace YamyProject
                         `Other` = @Other, `account_id` = @account_id, `bank_id` = @bank_id, `Iban_Number` = @Iban_Number,
                         `Bank_account_Number` = @Bank_account_Number, `Employee_Recivable_id` = @Employee_Recivable_id,
                         `Accrued_Salaries_id` = @Accrued_Salaries_id, `Acroal_Leave_Salary_id` = @Acroal_Leave_Salary_id,
-                        `Gratuit_id` = @Gratuit_id,Petty_Cash_id=@Petty_Cash_id, `active` = @active, `state` = 0 WHERE `id` = @id;",
+                        `Gratuit_id` = @Gratuit_id,Petty_Cash_id=@Petty_Cash_id, `sRole` = @sRole, `active` = @active, `state` = 0 WHERE `id` = @id;",
                 ClinicDatabase.CreateParameterNew("id", id),
                 ClinicDatabase.CreateParameterNew("code", txtEmployeeCode.Text),
                 ClinicDatabase.CreateParameterNew("name", txtEmpName.Text),
@@ -744,6 +654,11 @@ namespace YamyProject
                 ClinicDatabase.CreateParameterNew("Acroal_Leave_Salary_id", cmbAcroalLeaveSalary.SelectedValue ?? 0),
                 ClinicDatabase.CreateParameterNew("Gratuit_id", cmbGratuit.SelectedValue ?? 0),
                 ClinicDatabase.CreateParameterNew("Petty_Cash_id", cmbPettyCash.SelectedValue ?? 0),
+                ClinicDatabase.CreateParameterNew("sRole", string.IsNullOrWhiteSpace(cmbEmployeeType.Text) ||
+                    string.Equals(cmbEmployeeType.Text.Trim(), "Select Role", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(cmbEmployeeType.Text.Trim(), "اختر المسمى الوظيفي", StringComparison.Ordinal)
+                    ? (object)DBNull.Value
+                    : TranslateEmployeeTypeValue(cmbEmployeeType.Text, false)),
                 ClinicDatabase.CreateParameterNew("active", chkActive.Checked ? 0 : 1));
             ////Utilities.LogAudit(-1, "Update Employee", "Employee", id, GenerateNextEmployeeCode() + ", Updated Employee: " + txtEmpName.Text + ", Code: " + txtEmployeeCode.Text);
 
@@ -784,7 +699,7 @@ namespace YamyProject
                                 `EmiratesIDIssuingAuthority`, `EmiratesIDIssueDate`, `EmiratesIDExpiryDate`, 
                                 `BasicSalary`, `HousingAllowance`, `TransportationAllowance`, `Other`, 
                                 `account_id`, `bank_id`, `Iban_Number`, `Bank_account_Number`, 
-                                `Employee_Recivable_id`, `Accrued_Salaries_id`, `Acroal_Leave_Salary_id`, `Gratuit_id`,Petty_Cash_id,
+                                `Employee_Recivable_id`, `Accrued_Salaries_id`, `Acroal_Leave_Salary_id`, `Gratuit_id`,Petty_Cash_id, `sRole`,
                                 `active`, `state`) 
                         VALUES(@code, @name, @birth_day, @Social_Status, @city_id, @address, @phone, @Email, 
                                @Social_Insurance_Number, @EmergencyName, @EmergencyAddress, @EmergencyPhone, 
@@ -795,7 +710,7 @@ namespace YamyProject
                                @EmiratesIDFileNumber, @EmiratesIDIssuingAuthority, @EmiratesIDIssueDate, 
                                @EmiratesIDExpiryDate, @BasicSalary, @HousingAllowance, @TransportationAllowance, 
                                @Other, @account_id, @bank_id, @Iban_Number, @Bank_account_Number, 
-                               @Employee_Recivable_id, @Accrued_Salaries_id, @Acroal_Leave_Salary_id, @Gratuit_id,@Petty_Cash_id, 
+                               @Employee_Recivable_id, @Accrued_Salaries_id, @Acroal_Leave_Salary_id, @Gratuit_id,@Petty_Cash_id, @sRole,
                                @active, 0);",
                    ClinicDatabase.CreateParameterNew("code", GenerateNextEmployeeCode()),
                    ClinicDatabase.CreateParameterNew("name", txtEmpName.Text),
@@ -843,6 +758,11 @@ namespace YamyProject
                    ClinicDatabase.CreateParameterNew("Acroal_Leave_Salary_id", cmbAcroalLeaveSalary.SelectedValue ?? 0),
                    ClinicDatabase.CreateParameterNew("Gratuit_id", cmbGratuit.SelectedValue ?? 0),
                    ClinicDatabase.CreateParameterNew("Petty_Cash_id", cmbPettyCash.SelectedValue ?? 0),
+                   ClinicDatabase.CreateParameterNew("sRole", string.IsNullOrWhiteSpace(cmbEmployeeType.Text) ||
+                    string.Equals(cmbEmployeeType.Text.Trim(), "Select Role", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(cmbEmployeeType.Text.Trim(), "اختر المسمى الوظيفي", StringComparison.Ordinal)
+                    ? (object)DBNull.Value
+                    : TranslateEmployeeTypeValue(cmbEmployeeType.Text, false)),
                    ClinicDatabase.CreateParameterNew("active", chkActive.Checked ? 0 : 1));
 
             if (refId != 0)

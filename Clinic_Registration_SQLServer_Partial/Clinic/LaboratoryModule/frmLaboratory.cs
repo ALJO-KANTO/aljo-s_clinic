@@ -28,21 +28,61 @@ namespace Clinic.Medical_Services.Laboratory
         }
         private void dgvRequests_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
-            if (e.RowIndex < 0 || e.ColumnIndex < 0 ||
-                dgvRequests.Columns[e.ColumnIndex].Name != "PrintLabReport") return;
+            if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
+
+            string columnName = dgvRequests.Columns[e.ColumnIndex].Name;
             DataGridViewRow row = dgvRequests.Rows[e.RowIndex];
-            bool complete = Convert.ToString(row.Cells["Status"].Value) == "Completed";
-            e.Value = complete ? T("Print") : "—";
-            e.FormattingApplied = true;
+
+            if (columnName == "PrintLabReport")
+            {
+                bool complete = Convert.ToString(row.Cells["Status"].Value) == "Completed";
+                e.Value = complete ? T("Print") : "—";
+                e.FormattingApplied = true;
+                return;
+            }
+
+            if (columnName == "EditLabRequest")
+            {
+                bool canEdit = CanEditGroupedLabRequest(row);
+                e.Value = canEdit ? T("Edit") : "—";
+                e.CellStyle.BackColor = canEdit
+                    ? Color.FromArgb(0, 80, 90)
+                    : Color.FromArgb(235, 238, 242);
+                e.CellStyle.ForeColor = canEdit ? Color.White : Color.Gray;
+                e.FormattingApplied = true;
+            }
         }
 
         private void dgvRequests_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex < 0 || e.ColumnIndex < 0 ||
-                dgvRequests.Columns[e.ColumnIndex].Name != "PrintLabReport") return;
+            if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
+
+            string columnName = dgvRequests.Columns[e.ColumnIndex].Name;
+            if (columnName != "PrintLabReport" && columnName != "EditLabRequest")
+                return;
+
             try
             {
-                DataRow[] requests = GetGroupRequests(dgvRequests.Rows[e.RowIndex]);
+                DataGridViewRow gridRow = dgvRequests.Rows[e.RowIndex];
+
+                if (columnName == "EditLabRequest")
+                {
+                    if (!CanEditGroupedLabRequest(gridRow))
+                    {
+                        MessageBox.Show(T("Only unpaid laboratory invoices can be edited."));
+                        return;
+                    }
+
+                    int billID = Convert.ToInt32(gridRow.Cells["BillID"].Value);
+                    using (var form = new frmLabRequest(billID))
+                    {
+                        if (form.ShowDialog(this) == DialogResult.OK)
+                            ReloadData();
+                    }
+                    return;
+                }
+
+                DataRow[] requests = GetGroupRequests(gridRow);
                 DataRow selected = ChooseRequest(requests, true);
                 if (selected == null) return;
                 int id = Convert.ToInt32(selected["LabRequestID"]);
@@ -285,8 +325,33 @@ namespace Clinic.Medical_Services.Laboratory
                     dgvRequests.Columns.Add(printColumn);
                 }
 
-                dgvRequests.Columns["PrintLabReport"].DisplayIndex =
+                // Edit existing unpaid laboratory orders from this module.
+                if (!dgvRequests.Columns.Contains("EditLabRequest"))
+                {
+                    DataGridViewButtonColumn editColumn =
+                        new DataGridViewButtonColumn();
+
+                    editColumn.Name = "EditLabRequest";
+                    editColumn.HeaderText = T("Edit Lab Request");
+                    editColumn.Text = T("Edit");
+                    editColumn.UseColumnTextForButtonValue = true;
+                    editColumn.Width = 115;
+                    editColumn.MinimumWidth = 105;
+                    editColumn.AutoSizeMode =
+                        DataGridViewAutoSizeColumnMode.None;
+                    editColumn.FlatStyle = FlatStyle.Flat;
+                    editColumn.DefaultCellStyle.BackColor =
+                        Color.FromArgb(0, 80, 90);
+                    editColumn.DefaultCellStyle.ForeColor = Color.White;
+
+                    dgvRequests.Columns.Add(editColumn);
+                }
+
+                dgvRequests.Columns["EditLabRequest"].DisplayIndex =
                     dgvRequests.Columns.Count - 1;
+
+                dgvRequests.Columns["PrintLabReport"].DisplayIndex =
+                    dgvRequests.Columns.Count - 2;
 
                 if (dgvRequests.Columns.Contains("ResultNotes"))
                     dgvRequests.Columns["ResultNotes"].Visible = false;
@@ -371,6 +436,30 @@ namespace Clinic.Medical_Services.Laboratory
                 grouped.Rows.Add(display);
             }
             return grouped;
+        }
+
+        private bool CanEditGroupedLabRequest(DataGridViewRow gridRow)
+        {
+            if (gridRow == null ||
+                !dgvRequests.Columns.Contains("BillID") ||
+                !dgvRequests.Columns.Contains("PaidAmount"))
+                return false;
+
+            string billText = Convert.ToString(gridRow.Cells["BillID"].Value);
+            int billID;
+
+            // Only edit one existing invoice at a time. A grouped row with
+            // multiple bill IDs must not be sent to the editor as one invoice.
+            if (!int.TryParse(billText, out billID) || billID <= 0)
+                return false;
+
+            decimal paidAmount;
+            if (!decimal.TryParse(
+                    Convert.ToString(gridRow.Cells["PaidAmount"].Value),
+                    out paidAmount))
+                return false;
+
+            return paidAmount == 0m;
         }
 
         private decimal SafeDecimal(DataRow row, string column)

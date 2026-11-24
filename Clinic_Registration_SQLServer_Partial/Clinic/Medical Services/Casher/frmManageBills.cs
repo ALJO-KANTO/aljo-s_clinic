@@ -93,7 +93,7 @@ namespace Clinic.Medical_Services.Casher
                 TranslateBillGridHeader("BillDateString", "Bill Date", isArabic);
                 TranslateBillGridHeader("Status", "Status", isArabic);
                 TranslateBillGridHeader("btnPayAction", "Payment / Receipt", isArabic);
-                TranslateBillGridHeader("btnEditAction", "Edit / Refund", isArabic);
+                TranslateBillGridHeader("btnRefundAction", "Refund", isArabic);
                 TranslateBillGridHeader("btnCancelAction", "Cancel Invoice", isArabic);
 
             }
@@ -404,7 +404,7 @@ namespace Clinic.Medical_Services.Casher
             SetBillColumnLayout("ItemsTotal", 72, 85);
             SetBillColumnLayout("Status", 70, 75);
             SetBillColumnLayout("btnPayAction", 98, 100);
-            SetBillColumnLayout("btnEditAction", 92, 95);
+            SetBillColumnLayout("btnRefundAction", 92, 95);
             SetBillColumnLayout("btnCancelAction", 88, 90);
 
             foreach (DataGridViewRow row in dgMasterBillList.Rows)
@@ -658,17 +658,17 @@ namespace Clinic.Medical_Services.Casher
             payColumn.ToolTipText = "Pay an outstanding bill or open its receipt";
             dgMasterBillList.Columns.Add(payColumn);
 
-            // الزر الثاني: زر ديناميكي (تعديل ودفع جزئي في حالة المعلق / أو ارتجاع في حالة المدفوع)
-            DataGridViewButtonColumn editColumn = new DataGridViewButtonColumn();
-            editColumn.Name = "btnEditAction";
-            editColumn.HeaderText = "Edit / Refund";
-            editColumn.Text = "Edit";
-            editColumn.UseColumnTextForButtonValue = true;
-            editColumn.FlatStyle = FlatStyle.Flat;
-            editColumn.MinimumWidth = 108;
-            editColumn.FillWeight = 110;
-            editColumn.ToolTipText = "Edit a pending invoice or process a refund";
-            dgMasterBillList.Columns.Add(editColumn);
+            // Refund action only. Invoice editing is not available in Bill Management.
+            DataGridViewButtonColumn refundColumn = new DataGridViewButtonColumn();
+            refundColumn.Name = "btnRefundAction";
+            refundColumn.HeaderText = "Refund";
+            refundColumn.Text = "Refund";
+            refundColumn.UseColumnTextForButtonValue = true;
+            refundColumn.FlatStyle = FlatStyle.Flat;
+            refundColumn.MinimumWidth = 108;
+            refundColumn.FillWeight = 110;
+            refundColumn.ToolTipText = "Process a refund for a paid or partially paid bill";
+            dgMasterBillList.Columns.Add(refundColumn);
 
             // الزر الثالث: زر الإلغاء النهائي (يظهر فقط للفواتير المعلقة)
             DataGridViewButtonColumn cancelColumn = new DataGridViewButtonColumn();
@@ -684,7 +684,7 @@ namespace Clinic.Medical_Services.Casher
 
             // ترتيب الأعمدة لتظهر أقصى اليمين بشكل منظم
             payColumn.DisplayIndex = dgMasterBillList.Columns.Count - 3;
-            editColumn.DisplayIndex = dgMasterBillList.Columns.Count - 2;
+            refundColumn.DisplayIndex = dgMasterBillList.Columns.Count - 2;
             cancelColumn.DisplayIndex = dgMasterBillList.Columns.Count - 1;
         }
         private string GetBillItemsTotal(DataGridViewRow row)
@@ -746,64 +746,16 @@ namespace Clinic.Medical_Services.Casher
                     e.CellStyle.ForeColor = Color.FromArgb(0, 210, 190);
                 }
             }
-            else if (columnName == "btnEditAction")
+            else if (columnName == "btnRefundAction")
             {
-                if (status == "Pending")
-                {
-                    // Existing prescription and pharmacy edit conditions.
-                    bool canEditExistingItems = hasItemDetails &&
-                        (prescriptionCount > 0 || pharmacySaleCount > 0);
-
-                    // Check whether this invoice belongs to a laboratory order.
-                    bool isLabInvoice = Regex.IsMatch(
-      itemsTotal ?? "",
-      @"\d+\s+Lab Tests?",
-      RegexOptions.IgnoreCase);
-
-
-
-                    // Laboratory invoices can only be edited when nothing is paid.
-                    decimal paidAmount = -1;
-
-                    if (dgMasterBillList.Columns.Contains("PaidAmount") &&
-                        row.Cells["PaidAmount"].Value != null &&
-                        row.Cells["PaidAmount"].Value != DBNull.Value)
-                    {
-                        decimal.TryParse(
-                            Convert.ToString(row.Cells["PaidAmount"].Value),
-                            out paidAmount);
-                    }
-
-
-                    bool canEditLabOrder =
-                        isLabInvoice &&
-                        paidAmount == 0;
-
-                    bool canEdit =
-                        canEditExistingItems || canEditLabOrder;
-
-                    e.Value = canEdit ? "Edit Invoice" : "Unavailable";
-
-                    e.CellStyle.BackColor = canEdit
-                        ? Color.FromArgb(0, 80, 90)
-                        : Color.FromArgb(20, 43, 50);
-
-                    e.CellStyle.ForeColor = canEdit
-                        ? Color.White
-                        : Color.DarkGray;
-                }
-                else if (status == "Paid" || status == "Partial")
-                {
-                    e.Value = "Refund";
-                    e.CellStyle.BackColor = Color.FromArgb(28, 58, 68);
-                    e.CellStyle.ForeColor = Color.FromArgb(0, 210, 190);
-                }
-                else
-                {
-                    e.Value = "Unavailable";
-                    e.CellStyle.BackColor = Color.FromArgb(30, 30, 30);
-                    e.CellStyle.ForeColor = Color.DarkGray;
-                }
+                bool canRefund = status == "Paid" || status == "Partial";
+                e.Value = canRefund ? "Refund" : "N/A";
+                e.CellStyle.BackColor = canRefund
+                    ? Color.FromArgb(28, 58, 68)
+                    : Color.FromArgb(30, 30, 30);
+                e.CellStyle.ForeColor = canRefund
+                    ? Color.FromArgb(0, 210, 190)
+                    : Color.DarkGray;
             }
             else if (columnName == "btnCancelAction")
             {
@@ -816,7 +768,7 @@ namespace Clinic.Medical_Services.Casher
             }
 
             // Translate button-cell captions for display only; internal status values remain English.
-            if (columnName == "btnPayAction" || columnName == "btnEditAction" || columnName == "btnCancelAction")
+            if (columnName == "btnPayAction" || columnName == "btnRefundAction" || columnName == "btnCancelAction")
             {
                 string caption = Convert.ToString(e.Value) ?? string.Empty;
                 e.Value = TranslateBillDisplayText(caption, TranslationClass.IsArabic);
@@ -832,7 +784,7 @@ namespace Clinic.Medical_Services.Casher
 
             string columnName = dgMasterBillList.Columns[e.ColumnIndex].Name;
             if (columnName != "btnPayAction" &&
-                columnName != "btnEditAction" &&
+                columnName != "btnRefundAction" &&
                 columnName != "btnCancelAction")
                 return;
 
@@ -885,65 +837,16 @@ namespace Clinic.Medical_Services.Casher
                 return;
             }
 
-            // EDIT / REFUND
-            if (columnName == "btnEditAction")
+            // REFUND ONLY - invoice editing is handled outside Bill Management.
+            if (columnName == "btnRefundAction")
             {
-                if (currentStatus == "Cancelled" || currentStatus == "Refunded")
-                {
-                    MessageBox.Show("This bill is locked.");
+                if (currentStatus != "Paid" && currentStatus != "Partial")
                     return;
-                }
 
-                if (currentStatus == "Pending")
-                {
-                    if (!hasItemDetails)
-                    {
-                        MessageBox.Show("Bill item details are not available.");
-                        return;
-                    }
+                using (frmMedicineSalesReturn frm = new frmMedicineSalesReturn(billID))
+                    frm.ShowDialog(this);
 
-                    bool isLabInvoice = Regex.IsMatch(
-                        itemsTotal ?? "",
-                        @"\d+\s+Lab Tests?",
-                        RegexOptions.IgnoreCase);
-
-                    if (isLabInvoice)
-                    {
-                        // Open the existing lab order using its BillID.
-                        using (frmLabRequest frm = new frmLabRequest(billID))
-                        {
-                            if (frm.ShowDialog(this) == DialogResult.OK)
-                            {
-                                _RefreshBillsList();
-                            }
-                        }
-
-                        return;
-                    }
-                    // Existing prescription/pharmacy editing remains unchanged.
-                    if (prescriptionCount == 0 && pharmacySaleCount == 0)
-                    {
-                        MessageBox.Show("No prescription items available to edit.");
-                        return;
-                    }
-
-                    using (frmEditPendingPrescription frm =
-                        new frmEditPendingPrescription(billID))
-                    {
-                        frm.ShowDialog(this);
-                    }
-
-                    _RefreshBillsList();
-                    return;
-                }
-
-                if (currentStatus == "Paid" || currentStatus == "Partial")
-                {
-                    using (frmMedicineSalesReturn frm = new frmMedicineSalesReturn(billID))
-                        frm.ShowDialog();
-
-                    _RefreshBillsList();
-                }
+                _RefreshBillsList();
                 return;
             }
 

@@ -297,7 +297,7 @@ namespace Clinic.Medical_Services.Laboratory
                 else if (key.Contains("labrequestid")) width = 125;
                 else if (key.Contains("laborderid")) width = 115;
                 else if (key.Contains("status")) width = 145;
-                else if (key.Contains("print")) width = 135;
+                else if (key.Contains("print") || key.Contains("edit")) width = 126;
                 column.Width = width;
             }
         }
@@ -345,47 +345,87 @@ namespace Clinic.Medical_Services.Laboratory
                 : DataGridViewContentAlignment.MiddleCenter;
         }
 
-        // Draw only the Print Report cell contents; the existing CellClick logic
-        // still receives the click because the DataGridView itself is unchanged.
+        // Draw both action cells consistently as compact rounded buttons.
+        // The DataGridView still owns the cells, so the existing click handlers continue to work.
         private void LaboratoryGrid_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
         {
             if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
+
             DataGridViewColumn col = dgvRequests.Columns[e.ColumnIndex];
             string key = (col.Name + " " + col.HeaderText).ToLowerInvariant();
-            if (!key.Contains("print")) return;
+            bool isPrint = key.Contains("print");
+            bool isEdit = key.Contains("edit");
+            if (!isPrint && !isEdit) return;
 
-            // Paint the entire cell ourselves. A DataGridViewButtonCell may have
-            // a green Style.BackColor even when its value is a dash; letting the
-            // default background paint caused the solid green rectangles.
             bool selected = (e.State & DataGridViewElementStates.Selected) != 0;
             Color rowBack = selected ? Color.FromArgb(203, 230, 255)
                 : (e.RowIndex % 2 == 0 ? Color.White : Color.FromArgb(240, 248, 255));
+
             using (Brush backgroundBrush = new SolidBrush(rowBack))
                 e.Graphics.FillRectangle(backgroundBrush, e.CellBounds);
+
             using (Pen divider = new Pen(Color.FromArgb(222, 234, 245)))
                 e.Graphics.DrawLine(divider, e.CellBounds.Left, e.CellBounds.Bottom - 1,
                     e.CellBounds.Right, e.CellBounds.Bottom - 1);
 
             string value = Convert.ToString(e.FormattedValue) ?? "";
-            bool canPrint = value.Trim().Equals("Print", StringComparison.OrdinalIgnoreCase);
-            Rectangle r = new Rectangle(e.CellBounds.X + 12, e.CellBounds.Y + 9,
-                Math.Max(12, e.CellBounds.Width - 24), Math.Max(12, e.CellBounds.Height - 18));
+            bool enabled = !string.IsNullOrWhiteSpace(value) &&
+                           !value.Trim().Equals("—", StringComparison.Ordinal) &&
+                           !value.Trim().Equals("-", StringComparison.Ordinal);
+
+            Rectangle buttonBounds = new Rectangle(
+                e.CellBounds.X + 12,
+                e.CellBounds.Y + 8,
+                Math.Max(12, e.CellBounds.Width - 24),
+                Math.Max(12, e.CellBounds.Height - 16));
+
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            Color fillColor = canPrint ? Color.FromArgb(4, 132, 105) : Color.FromArgb(245, 248, 252);
-            Color borderColor = canPrint ? Color.FromArgb(4, 132, 105) : Color.FromArgb(215, 227, 239);
-            using (GraphicsPath path = RoundRect(r, 8))
+
+            Color fillColor;
+            Color borderColor;
+            Color textColor;
+
+            if (!enabled)
+            {
+                fillColor = Color.FromArgb(245, 248, 252);
+                borderColor = Color.FromArgb(215, 227, 239);
+                textColor = Color.FromArgb(133, 151, 170);
+            }
+            else if (isPrint)
+            {
+                fillColor = Color.FromArgb(4, 132, 105);
+                borderColor = Color.FromArgb(4, 132, 105);
+                textColor = Color.White;
+            }
+            else
+            {
+                fillColor = Color.FromArgb(224, 239, 255);
+                borderColor = Color.FromArgb(157, 194, 232);
+                textColor = Color.FromArgb(13, 64, 124);
+            }
+
+            using (GraphicsPath path = RoundRect(buttonBounds, 8))
             using (Brush fill = new SolidBrush(fillColor))
             using (Pen outline = new Pen(borderColor))
             {
                 e.Graphics.FillPath(fill, path);
                 e.Graphics.DrawPath(outline, path);
             }
+
+            string caption = enabled
+                ? (isPrint
+                    ? TranslationClass.Translate("Print", TranslationClass.IsArabic)
+                    : TranslationClass.Translate("Edit", TranslationClass.IsArabic))
+                : "—";
+
             using (Font font = new Font("Segoe UI", 9.5f,
-                canPrint ? FontStyle.Bold : FontStyle.Regular))
-                TextRenderer.DrawText(e.Graphics, canPrint ? TranslationClass.Translate("Print", TranslationClass.IsArabic) : "—", font, r,
-                    canPrint ? Color.White : Color.FromArgb(133, 151, 170),
+                enabled ? FontStyle.Bold : FontStyle.Regular))
+            {
+                TextRenderer.DrawText(e.Graphics, caption, font, buttonBounds, textColor,
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter |
-                    TextFormatFlags.NoPadding);
+                    TextFormatFlags.EndEllipsis | TextFormatFlags.NoPadding);
+            }
+
             e.Handled = true;
         }
 
