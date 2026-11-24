@@ -1277,6 +1277,205 @@ namespace Clinic_DataAccess
 
         #endregion
 
+        public static DataTable GetUnbilledLabOrderForEditing(int labOrderID)
+        {
+            const string query = @"
+        SELECT
+            NULL AS BillID,
+            NULL AS BillNumber,
+            O.LabOrderID,
+            O.PatientID,
+            O.VisitID,
+            O.DoctorID,
+            O.RequestSource,
+            R.TestID,
+            0 AS PaidAmount
+        FROM laborders O
+        LEFT JOIN labrequests R
+            ON R.LabOrderID = O.LabOrderID
+           AND R.BillID IS NULL
+           AND R.Status <> 'Cancelled'
+        WHERE O.LabOrderID = @OrderID
+          AND NOT EXISTS
+          (
+              SELECT 1
+              FROM bills B
+              WHERE B.LabOrderID = O.LabOrderID
+          )
+        ORDER BY R.TestID;";
+
+            using (var connection = new MySqlConnection(
+                clsDataAccessSettings.ConnectionString))
+            using (var command = new MySqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@OrderID", labOrderID);
+
+                var dt = new DataTable();
+                using (var adapter = new MySqlDataAdapter(command))
+                    adapter.Fill(dt);
+
+                return dt;
+            }
+        }
+
+        public static bool UpdateUnbilledLabOrder(
+            int labOrderID,
+            IEnumerable<int> selectedTestIDs)
+        {
+            if (labOrderID <= 0)
+                throw new ArgumentException("Invalid laboratory order ID.");
+
+            if (selectedTestIDs == null)
+                throw new ArgumentNullException(nameof(selectedTestIDs));
+
+            int[] tests = selectedTestIDs.Distinct().ToArray();
+
+            if (tests.Length == 0 || tests.Any(x => x <= 0))
+                throw new ArgumentException("Select at least one valid lab test.");
+
+            using (var connection = new MySqlConnection(
+                clsDataAccessSettings.ConnectionString))
+            {
+                connection.Open();
+
+                using (var transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        int patientID;
+                        int? visitID;
+
+                        using (var cmd = new MySqlCommand(@"
+                    SELECT PatientID, VisitID
+                    FROM laborders
+                    WHERE LabOrderID = @OrderID
+                    FOR UPDATE;",
+                            connection, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@OrderID", labOrderID);
+
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                if (!reader.Read())
+                                    throw new InvalidOperationException(
+                                        "Laboratory order not found.");
+
+                                patientID = Convert.ToInt32(reader["PatientID"]);
+
+                                visitID = reader["VisitID"] == DBNull.Value
+                                    ? (int?)null
+                                    : Convert.ToInt32(reader["VisitID"]);
+                            }
+                        }
+
+                        // This method is only for orders without invoices.
+                        using (var cmd = new MySqlCommand(@"
+                    SELECT COUNT(*)
+                    FROM bills
+                    WHERE LabOrderID = @OrderID;",
+                            connection, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@OrderID", labOrderID);
+
+                            if (Convert.ToInt32(cmd.ExecuteScalar()) > 0)
+                                throw new InvalidOperationException(
+                                    "An invoice exists for this order. Please use invoice editing.");
+                        }
+
+                        string testParameters = string.Join(",",
+                            tests.Select((x, i) => "@T" + i));
+
+                        using (var cmd = new MySqlCommand(@"
+                    SELECT COUNT(*)
+                    FROM laboratorytests
+                    WHERE IsActive = 1
+                      AND TestID IN (" + testParameters + ");",
+                            connection, transaction))
+                        {
+                            for (int i = 0; i < tests.Length; i++)
+                                cmd.Parameters.AddWithValue("@T" + i, tests[i]);
+
+                            if (Convert.ToInt32(cmd.ExecuteScalar()) != tests.Length)
+                                throw new InvalidOperationException(
+                                    "One or more selected tests are inactive or unavailable.");
+                        }
+
+                        // Cancel tests unchecked by the user.
+                        using (var cmd = new MySqlCommand(@"
+                    UPDATE labrequests
+                    SET Status = 'Cancelled'
+                    WHERE LabOrderID = @OrderID
+                      AND BillID IS NULL
+                      AND Status <> 'Cancelled'
+                      AND TestID NOT IN (" + testParameters + ");",
+                            connection, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@OrderID", labOrderID);
+
+                            for (int i = 0; i < tests.Length; i++)
+                                cmd.Parameters.AddWithValue("@T" + i, tests[i]);
+
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        // Add newly selected tests to the same order.
+                        foreach (int testID in tests)
+                        {
+                            using (var cmd = new MySqlCommand(@"
+                        INSERT INTO labrequests
+                        (
+                            LabOrderID,
+                            PatientID,
+                            VisitID,
+                            TestID,
+                            BillID,
+                            Status,
+                            SavedTestPrice
+                        )
+                        SELECT
+                            @OrderID,
+                            @PatientID,
+                            @VisitID,
+                            T.TestID,
+                            NULL,
+                            'Ordered',
+                            T.TestPrice
+                        FROM laboratorytests T
+                        WHERE T.TestID = @TestID
+                          AND T.IsActive = 1
+                          AND NOT EXISTS
+                          (
+                              SELECT 1
+                              FROM labrequests R
+                              WHERE R.LabOrderID = @OrderID
+                                AND R.TestID = @TestID
+                                AND R.BillID IS NULL
+                                AND R.Status <> 'Cancelled'
+                          );",
+                                connection, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@OrderID", labOrderID);
+                                cmd.Parameters.AddWithValue("@PatientID", patientID);
+                                cmd.Parameters.AddWithValue(
+                                    "@VisitID", (object)visitID ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@TestID", testID);
+
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+
+                        transaction.Commit();
+                        return true;
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
+                }
+            }
+        }
+
 
     }
 }

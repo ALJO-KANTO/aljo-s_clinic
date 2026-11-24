@@ -504,6 +504,7 @@ namespace Clinic.Medical_Services.Laboratory
         private readonly System.Collections.Generic.HashSet<int> selectedTestIDs =
             new System.Collections.Generic.HashSet<int>();
         private bool loadingTests;
+        private int? _editLabOrderID;
         private int? _editBillID;
         public frmLabRequest(int billID)
     : this(LabRequestMode.Direct)
@@ -512,6 +513,17 @@ namespace Clinic.Medical_Services.Laboratory
                 throw new ArgumentException("Invalid Bill ID.");
 
             _editBillID = billID;
+
+            Text = LabUi.T("Edit Lab Request");
+            btnSave.Text = LabUi.T("Save Changes");
+        }
+        public frmLabRequest(int labOrderID, bool editByOrder)
+    : this(LabRequestMode.Direct)
+        {
+            if (!editByOrder || labOrderID <= 0)
+                throw new ArgumentException("Invalid laboratory order ID.");
+
+            _editLabOrderID = labOrderID;
 
             Text = LabUi.T("Edit Lab Request");
             btnSave.Text = LabUi.T("Save Changes");
@@ -627,11 +639,12 @@ namespace Clinic.Medical_Services.Laboratory
                 cmbPatient.ValueMember = "PatientID";
                 cmbPatient.DataSource = patients;
 
-                if (_editBillID.HasValue)
+                if (_editBillID.HasValue || _editLabOrderID.HasValue)
                 {
-                    DataTable orderData =
-                        clsBillingService.GetLabOrderForEditing(
-                            _editBillID.Value);
+                    DataTable orderData = _editBillID.HasValue
+                        ? clsBillingService.GetLabOrderForEditing(_editBillID.Value)
+                        : clsBillingService.GetUnbilledLabOrderForEditing(
+                            _editLabOrderID.Value);
 
                     if (orderData.Rows.Count == 0)
                         throw new InvalidOperationException(
@@ -639,15 +652,13 @@ namespace Clinic.Medical_Services.Laboratory
 
                     DataRow firstRow = orderData.Rows[0];
 
-                    decimal paidAmount =
-                        Convert.ToDecimal(firstRow["PaidAmount"]);
+                    decimal paidAmount = Convert.ToDecimal(firstRow["PaidAmount"]);
 
                     if (paidAmount > 0)
                         throw new InvalidOperationException(
-                            "This invoice cannot be edited because payment has been received.");
+                            "This laboratory order cannot be edited because payment has been received.");
 
-                    int patientID =
-                        Convert.ToInt32(firstRow["PatientID"]);
+                    int patientID = Convert.ToInt32(firstRow["PatientID"]);
 
                     cmbPatient.SelectedValue = patientID;
                     cmbPatient.Enabled = false;
@@ -655,11 +666,10 @@ namespace Clinic.Medical_Services.Laboratory
                     foreach (DataRow row in orderData.Rows)
                     {
                         if (row["TestID"] != DBNull.Value)
-                        {
-                            selectedTestIDs.Add(
-                                Convert.ToInt32(row["TestID"]));
-                        }
+                            selectedTestIDs.Add(Convert.ToInt32(row["TestID"]));
                     }
+
+                    btnSave.Text = LabUi.T("Save Changes");
                 }
                 else if (_patientID.HasValue)
                 {
@@ -783,11 +793,15 @@ namespace Clinic.Medical_Services.Laboratory
             try
             {
                 // EDIT EXISTING LAB ORDER
-                if (_editBillID.HasValue)
+                if (_editBillID.HasValue || _editLabOrderID.HasValue)
                 {
-                    bool updated = clsBillingService.UpdateUnpaidLabOrder(
-                        _editBillID.Value,
-                        selectedTestIDs);
+                    bool updated = _editBillID.HasValue
+                        ? clsBillingService.UpdateUnpaidLabOrder(
+                            _editBillID.Value,
+                            selectedTestIDs)
+                        : clsBillingService.UpdateUnbilledLabOrder(
+                            _editLabOrderID.Value,
+                            selectedTestIDs);
 
                     if (!updated)
                         throw new InvalidOperationException(

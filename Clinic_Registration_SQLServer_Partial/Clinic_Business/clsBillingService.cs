@@ -155,5 +155,20 @@ namespace Clinic_Business
                 billID,
                 selectedTestIDs);
         }
+
+        public static DataTable GetUnbilledLabOrderForEditing(int labOrderID)
+        {
+            return clsBillingServiceData.GetUnbilledLabOrderForEditing(labOrderID);
+        }
+
+        public static bool UpdateUnbilledLabOrder(
+            int labOrderID,
+            IEnumerable<int> selectedTestIDs)
+        {
+            return clsBillingServiceData.UpdateUnbilledLabOrder(
+                labOrderID,
+                selectedTestIDs);
+        }
+
     }
 }

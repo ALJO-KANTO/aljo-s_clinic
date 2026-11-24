@@ -69,16 +69,44 @@ namespace Clinic.Medical_Services.Laboratory
                 {
                     if (!CanEditGroupedLabRequest(gridRow))
                     {
-                        MessageBox.Show(T("Only unpaid laboratory invoices can be edited."));
+                        MessageBox.Show(
+                            T("Only unpaid laboratory requests can be edited."));
                         return;
                     }
 
-                    int billID = Convert.ToInt32(gridRow.Cells["BillID"].Value);
-                    using (var form = new frmLabRequest(billID))
+                    string billText = Convert.ToString(
+                        gridRow.Cells["BillID"].Value);
+
+                    int billID;
+
+                    if (int.TryParse(billText, out billID) && billID > 0)
                     {
-                        if (form.ShowDialog(this) == DialogResult.OK)
-                            ReloadData();
+                        using (var form = new frmLabRequest(billID))
+                        {
+                            if (form.ShowDialog(this) == DialogResult.OK)
+                                ReloadData();
+                        }
                     }
+                    else
+                    {
+                        object orderValue = gridRow.Cells["LabOrderID"].Value;
+
+                        if (orderValue == null || orderValue == DBNull.Value)
+                        {
+                            MessageBox.Show(
+                                T("The existing laboratory order ID was not found."));
+                            return;
+                        }
+
+                        int labOrderID = Convert.ToInt32(orderValue);
+
+                        using (var form = new frmLabRequest(labOrderID, true))
+                        {
+                            if (form.ShowDialog(this) == DialogResult.OK)
+                                ReloadData();
+                        }
+                    }
+
                     return;
                 }
 
@@ -441,27 +469,18 @@ namespace Clinic.Medical_Services.Laboratory
         private bool CanEditGroupedLabRequest(DataGridViewRow gridRow)
         {
             if (gridRow == null ||
-                !dgvRequests.Columns.Contains("BillID") ||
                 !dgvRequests.Columns.Contains("PaidAmount"))
                 return false;
 
-            string billText = Convert.ToString(gridRow.Cells["BillID"].Value);
-            int billID;
-
-            // Only edit one existing invoice at a time. A grouped row with
-            // multiple bill IDs must not be sent to the editor as one invoice.
-            if (!int.TryParse(billText, out billID) || billID <= 0)
-                return false;
-
             decimal paidAmount;
+
             if (!decimal.TryParse(
-                    Convert.ToString(gridRow.Cells["PaidAmount"].Value),
-                    out paidAmount))
+                Convert.ToString(gridRow.Cells["PaidAmount"].Value),
+                out paidAmount))
                 return false;
 
             return paidAmount == 0m;
         }
-
         private decimal SafeDecimal(DataRow row, string column)
         {
             if (!row.Table.Columns.Contains(column) || row[column] == DBNull.Value) return 0m;
