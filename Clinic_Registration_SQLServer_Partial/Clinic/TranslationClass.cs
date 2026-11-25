@@ -1404,6 +1404,17 @@ namespace Clinic
            //{"Expired", "منتهي الصلاحية" },
            //{"Low Stock", "منخفض المخزون" },
            //{"In Stock", "متوفر في المخزون" }
+           { "Login Info", "معلومات تسجيل الدخول" },
+{ "User Name:", "اسم المستخدم" },
+{ "Password:", "كلمة المرور" },
+{ "Confirm Password:", "تأكيد كلمة المرور" },
+{ "Role Name:", "اسم الصلاحية" },
+{ "User ID:", "رقم المستخدم" },
+{ "Add New User", "إضافة مستخدم جديد" },
+{ "User Name", "اسم المستخدم" },
+{ "Password:", "كلمة المرور" },
+{ "Confirm Password", "تأكيد كلمة المرور" }
+
 
         };
         public static bool IsArabic { get; set; } = false;
