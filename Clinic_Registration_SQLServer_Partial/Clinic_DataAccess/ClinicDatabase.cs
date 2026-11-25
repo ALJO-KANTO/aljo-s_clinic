@@ -78,6 +78,23 @@ namespace Clinic_DataAccess
                         command.ExecuteNonQuery();
                     }
                 }
+
+                // Add default roles if they do not exist
+                string rolesQuery = @"
+        INSERT INTO roles (RoleName)
+        VALUES
+            ('Finance'),
+            ('HR'),
+            ('Procurement'),
+            ('Inventory'),
+            ('Sales')
+        ON DUPLICATE KEY UPDATE
+            RoleName = VALUES(RoleName);";
+
+                using (var command = new MySqlCommand(rolesQuery, connection))
+                {
+                    command.ExecuteNonQuery();
+                }
             }
         }
 

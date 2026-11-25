@@ -29,9 +29,12 @@ namespace Clinic
             }
             else if (navigate == 2)
             {
+                // Initialize database and insert default roles
+                ClinicDatabase.InitializeDatabase();
                 clsCountry.GetAllCountriesList();
                 Application.Run(new frmLogin());
             }
+         
             else
             {
                 Application.Run(new frmConfig());

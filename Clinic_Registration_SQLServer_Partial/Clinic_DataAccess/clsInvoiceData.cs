@@ -93,6 +93,27 @@ namespace Clinic_DataAccess
                         adapter.Fill(ds, "Items");
                     }
                 }
+                // TABLE 3: Payment Methods and Amounts
+                string paymentQuery = @"
+    SELECT
+        PaymentMethod,
+        SUM(PaymentAmount) AS PaymentAmount
+    FROM payments
+    WHERE BillID = @BillID
+    GROUP BY PaymentMethod
+    ORDER BY PaymentMethod;";
+
+                using (MySqlCommand command =
+                    new MySqlCommand(paymentQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@BillID", billID);
+
+                    using (MySqlDataAdapter adapter =
+                        new MySqlDataAdapter(command))
+                    {
+                        adapter.Fill(ds, "Payments");
+                    }
+                }
             }
 
             return ds;

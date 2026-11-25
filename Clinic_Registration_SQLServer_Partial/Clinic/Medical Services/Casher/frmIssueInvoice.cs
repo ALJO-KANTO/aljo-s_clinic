@@ -15,12 +15,14 @@ namespace Clinic.Medical_Services.Casher
 {
     public partial class frmIssueInvoice : Form
     {
+        private Label lblPaymentMethods;
         private int _BillID = -1;
         private clsInvoice _Invoice;
         private decimal _RemainingAmount = 0;
         public frmIssueInvoice(int BillID)
         {
             InitializeComponent();
+            InitializePaymentMethodsDisplay();
 
             _BillID = BillID;
 
@@ -33,6 +35,7 @@ namespace Clinic.Medical_Services.Casher
         public frmIssueInvoice()
         {
             InitializeComponent();
+            InitializePaymentMethodsDisplay();
 
             ApplyInvoiceLocalization();
 
@@ -104,6 +107,34 @@ namespace Clinic.Medical_Services.Casher
             txtPatientID.Text = "";
             _RemainingAmount = 0;
         }
+        private string TranslatePaymentMethod(string method)
+        {
+            if (!TranslationClass.IsArabic)
+                return method;
+
+            switch ((method ?? string.Empty).Trim().ToLowerInvariant())
+            {
+                case "cash":
+                    return "نقداً";
+                case "bank":
+                    return "تحويل بنكي";
+                case "account":
+                    return "حساب";
+                case "card":
+                case "credit card":
+                    return "بطاقة";
+                case "debit card":
+                    return "بطاقة خصم";
+                default:
+                    return method;
+            }
+        }
+
+        private string PaymentMethodsTitle()
+        {
+            return TranslationClass.IsArabic ? "طرق الدفع" : "Payment Methods";
+        }
+
         private void _FillForm()
         {
             _Invoice = clsInvoice.GetInvoice(_BillID);
@@ -116,7 +147,7 @@ namespace Clinic.Medical_Services.Casher
                     TranslationClass.IsArabic ? "خطأ" : "Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error
-                ); 
+                );
                 _ResetForm();
                 return;
             }
@@ -133,6 +164,22 @@ namespace Clinic.Medical_Services.Casher
             txtInvoiceDate.Text = _Invoice.InvoiceDate.ToString("dd/MM/yyyy");
             txtPatientName.Text = _Invoice.PatientName.ToString();
             txtPatientID.Text = _Invoice.PatientID.ToString();
+            if (_Invoice.PaymentDetailsTable != null &&
+    _Invoice.PaymentDetailsTable.Rows.Count > 0)
+            {
+                string paymentMethods = string.Join(" | ",
+                    _Invoice.PaymentDetailsTable.AsEnumerable()
+                        .Select(row =>
+                            $"{TranslatePaymentMethod(Convert.ToString(row["PaymentMethod"]))}: " +
+                            $"{Convert.ToDecimal(row["PaymentAmount"]):N2}"));
+
+                lblPaymentMethods.Text =
+                    PaymentMethodsTitle() + ": " + paymentMethods;
+            }
+            else
+            {
+                lblPaymentMethods.Text = PaymentMethodsTitle() + ": -";
+            }
         }
 
         private void _PrintInvoiceDirectly()
@@ -174,7 +221,7 @@ namespace Clinic.Medical_Services.Casher
             // ترويسة الفاتورة
             g.DrawString("CLINIC MEDICAL CENTER", fontTitle, brush, startX, startY);
             offset += 25;
-            g.DrawString( Tr("Invoice No:") + " " + _Invoice.InvoiceNumber, fontBody, brush, startX, startY + offset);
+            g.DrawString(Tr("Invoice No:") + " " + _Invoice.InvoiceNumber, fontBody, brush, startX, startY + offset);
             offset += 20;
             g.DrawString($"Patient: {_Invoice.PatientName}", fontBody, brush, startX, startY + offset);
             offset += 20;
@@ -326,6 +373,32 @@ namespace Clinic.Medical_Services.Casher
             g.DrawString("Amount Paid:", fontBody, brush, startX, startY + offset);
             g.DrawString($" {_Invoice.PaymentAmount.ToString("N2")}", fontBody, brush, startX + 180, startY + offset);
 
+
+
+            // Print payment methods and their individual amounts
+            if (_Invoice.PaymentDetailsTable != null &&
+                _Invoice.PaymentDetailsTable.Rows.Count > 0)
+            {
+                offset += 20;
+
+                g.DrawString(
+                    TranslationClass.IsArabic ? "تفاصيل الدفع:" : "Payment Details:",
+                    fontHeader, brush, startX, startY + offset);
+
+                foreach (DataRow row in _Invoice.PaymentDetailsTable.Rows)
+                {
+                    offset += 20;
+
+                    string method = TranslatePaymentMethod(Convert.ToString(row["PaymentMethod"]));
+                    decimal amount = Convert.ToDecimal(row["PaymentAmount"]);
+
+                    g.DrawString(method + ":",
+                        fontBody, brush, startX, startY + offset);
+
+                    g.DrawString(amount.ToString("N2"),
+                        fontBody, brush, startX + 180, startY + offset);
+                }
+            }
             // طباعة المتبقي إذا كان دفعاً جزئياً
             if (_RemainingAmount > 0)
             {
@@ -416,6 +489,26 @@ namespace Clinic.Medical_Services.Casher
 
             this.DialogResult = DialogResult.Cancel;
             this.Close();
+        }
+        private void InitializePaymentMethodsDisplay()
+        {
+            lblPaymentMethods = new Label
+            {
+                Name = "lblPaymentMethods",
+                AutoSize = false,
+                Location = new Point(794, 640),
+                Size = new Size(465, 30),
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                ForeColor = Color.White,
+                BackColor = Color.Transparent,
+                Text = "Payment Methods: -",
+                RightToLeft = TranslationClass.IsArabic ? RightToLeft.Yes : RightToLeft.No,
+                TextAlign = TranslationClass.IsArabic ? ContentAlignment.MiddleRight : ContentAlignment.MiddleLeft
+            };
+
+            lblPaymentMethods.Text = PaymentMethodsTitle() + ": -";
+            this.Controls.Add(lblPaymentMethods);
+            lblPaymentMethods.BringToFront();
         }
 
     }

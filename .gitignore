@@ -365,3 +365,5 @@ FodyWeavers.xsd
 
 # Ignore all ZIP files
 *.zip
+/Clinic_Registration_SQLServer_Partial/Clinic/Clinic.csproj
+/Clinic_Registration_SQLServer_Partial/Clinic/Clinic.csproj

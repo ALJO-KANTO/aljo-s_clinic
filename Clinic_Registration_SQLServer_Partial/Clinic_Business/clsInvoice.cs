@@ -20,11 +20,12 @@ namespace Clinic_Business
         public decimal PaymentAmount { get; set; }
         public decimal TotalDiscount { get; set; }
         public DataTable ItemsTable { get; set; }
+        public DataTable PaymentDetailsTable { get; set; }
 
         public static clsInvoice GetInvoice(int billID)
         {
             DataSet ds = clsInvoiceData.GetInvoiceFullData(billID);
-            if (ds.Tables.Count < 3 || ds.Tables[0].Rows.Count == 0) return null;
+            if (ds.Tables.Count < 4 || ds.Tables[0].Rows.Count == 0) return null;
 
             clsInvoice invoice = new clsInvoice();
 
@@ -47,6 +48,7 @@ namespace Clinic_Business
 
             // تعبئة الأصناف (Table 2)
             invoice.ItemsTable = ds.Tables[2];
+            invoice.PaymentDetailsTable = ds.Tables[3];
 
             return invoice;
         }
