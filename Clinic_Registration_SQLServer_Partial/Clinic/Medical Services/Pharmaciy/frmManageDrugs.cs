@@ -30,6 +30,12 @@ namespace Clinic.Medical_Services.Pharmaciy
         public frmManageDrugs()
         {
             InitializeComponent();
+
+
+            dtpExpiryDate.Enabled = true;
+            dtpExpiryDate.Visible = true;
+
+
             nudCurrentStock.DecimalPlaces = 3;
             nudCurrentStock.Maximum = 99999999999.999M;
 
@@ -387,7 +393,8 @@ namespace Clinic.Medical_Services.Pharmaciy
             }
             if (clsMedicine.IsUsedInTransactions(MedicineId) && _Medicine.CurrentStock > 0)
             {
-                nudCurrentStock.Enabled =  txtBatchNo.Enabled =  dtpExpiryDate.Enabled = false;
+                nudCurrentStock.Enabled = txtBatchNo.Enabled = false;
+                dtpExpiryDate.Enabled = true;
             }
             else
             {
